@@ -435,6 +435,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-09-24** — session closed: the per-note evidence is recorded in `.agents/tracking/experiments.md` and the follow-up work in `.agents/roadmap.md` (the confirmatory run under `i-5ed7e8-0d9b6a`; overlapping notes under `i-5ed7e8-d4f710`; per-note summaries under `i-5ed7e8-a89859`; skills packaging under `i-5ed7e8-8623a8`).
 - **2026-09-24** — first version: pilots 1 and 2, the instrument defect, pilots 3 and 4 started.
 - **2026-09-24** — pilot-5 (distance) added; abstract, discussion, threats and conclusion rewritten over all five pilots; two figures in the abstract recomputed from the data after a first draft misstated them.
 - **2026-09-24** — pilot-3 (Haiku 4.5) added: one task with a clean content effect, one note-caused over-application, weaker routing; two instrument notes.

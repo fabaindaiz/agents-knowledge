@@ -111,6 +111,16 @@ bootstrapping, syncing and so on), in files, bytes and estimated tokens:
 python3 .agents/tools/bundle.py report
 ```
 
+## Measuring whether it helps
+
+[`evals/`](evals/) holds a pre-registered experiment on whether carrying the bundle changes what an
+agent does, and whether its content is the cause: hidden-test graders, and arms that separate the
+notes' content from context length and from routing. It lives outside `.agents/` and never travels.
+Five exploratory pilots are reported in [`evals/REPORT.md`](evals/REPORT.md): the bundle costs about
+twice as much per task for a frontier model, and a content effect shows only where the decisive fact
+is out of sight, on few tasks and without significance. The confirmatory run is roadmap item
+`i-5ed7e8-0d9b6a`.
+
 ## Keeping several repositories in sync
 
 This repository is where the bundle is maintained. A *meta-session*
