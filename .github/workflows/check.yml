@@ -1,0 +1,27 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  bundle:
+    # 22.04 because the tool promises Python 3.9, and 3.9 is the version newer runner images drop
+    # first: a CI that tests only 3.12 lets a 3.10-only construct reach a carrier that runs 3.9.
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Tool self-tests
+        run: python3 .agents/tools/bundle.py selftest
+      - name: Digests, provenance, links, reachability, sessions and privacy
+        run: python3 .agents/tools/bundle.py digest .agents --check
+      - name: Privacy of the repository's own published files
+        run: python3 .agents/tools/bundle.py privacy --paths README.md AGENTS.md CLAUDE.md CONTRIBUTING.md .github/workflows/check.yml .githooks/pre-commit .claude/hooks/privacy_guard.py

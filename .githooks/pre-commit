@@ -1,0 +1,8 @@
+#!/bin/sh
+# Privacy gate for every commit in this repository, by anyone: the bundle and the repository's own
+# published files must pass `bundle.py privacy` (see AGENTS.md). Enabled per clone with
+#   git config core.hooksPath .githooks
+# Overriding a finding needs the user's explicit instruction and a `privacy-allow: <reason>` marker.
+exec python3 "$(git rev-parse --show-toplevel)/.claude/hooks/privacy_guard.py" gate <<JSON
+{"tool_input": {"command": "git commit"}}
+JSON
