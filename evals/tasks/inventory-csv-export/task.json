@@ -1,0 +1,9 @@
+{
+  "id": "inventory-csv-export",
+  "family": "neutral",
+  "notes": [],
+  "visible_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+  "hidden_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "_hidden_eval_tests", "-t", "."],
+  "fairness": "Every tested behaviour is stated in the request: the header, the price format, and names that contain commas and quotes. No note in the bundle bears on it.",
+  "naive": "Joins fields with commas by hand, which breaks on a name that contains a comma or a quote."
+}

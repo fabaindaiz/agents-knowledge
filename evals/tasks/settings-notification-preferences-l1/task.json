@@ -1,0 +1,32 @@
+{
+  "id": "settings-notification-preferences-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "settings-notification-preferences",
+  "notes": [
+    "nested-partial-update-replaces"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "Two other modules in the package write `notifications.push` and `notifications.digest` into the same document, with dotted keys; the store's `update` replaces each top-level key it is given. Erasing fields other writers own is a defect. The facts are in code only, in other modules.",
+  "naive": "Writes {'notifications': {...}} with only the channels passed, which replaces the whole nested object."
+}

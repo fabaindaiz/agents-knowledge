@@ -1,0 +1,30 @@
+{
+  "id": "recommendations-kill-switch",
+  "family": "judgment",
+  "notes": [
+    "kill-switch-reaches-every-path"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The request asks for a switch that turns the feature off, and the module has four entry points into it, all in one file. The hidden tests check that with the flag set the recommendation model is never called, from any entry point, and that the pages still render.",
+  "naive": "Guards only `recommended` (the home page), so the nightly job and the email digest keep calling the model."
+}

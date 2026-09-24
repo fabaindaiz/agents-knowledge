@@ -1,0 +1,30 @@
+{
+  "id": "charge-on-order-placement",
+  "family": "judgment",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The README says every outbound call goes through a transport that retries on timeout, and the gateway documents idempotency keys. Charging a customer twice for one order is a defect under any reading of the request; the hidden tests check the amount debited when the provider times out after applying a charge, and the ordinary path.",
+  "naive": "Calls transport.call(gateway.charge, customer, amount) with no idempotency key, so a retried timeout debits twice."
+}

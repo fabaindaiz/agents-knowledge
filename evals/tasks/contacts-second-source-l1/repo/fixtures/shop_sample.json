@@ -1,0 +1,14 @@
+[
+
+
+  {
+    "customer_no": 1,
+    "full_name": "Cy Moss",
+    "mail": "cy@example.test"
+  },
+  {
+    "customer_no": 2,
+    "full_name": "Di Park",
+    "mail": "di@example.test"
+  }
+]

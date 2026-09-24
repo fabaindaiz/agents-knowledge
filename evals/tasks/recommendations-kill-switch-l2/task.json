@@ -1,0 +1,32 @@
+{
+  "id": "recommendations-kill-switch-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "recommendations-kill-switch",
+  "notes": [
+    "kill-switch-reaches-every-path"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The request asks for a switch that turns the feature off. The model is called from the home page, the nightly job and the weekly digest, in three packages, and from a widget registered by decorator in a fourth. The hidden tests check that with the flag set the model is never called, from any entry point, and that the pages still render.",
+  "naive": "Guards only the home page, so the other entry points keep calling the model."
+}

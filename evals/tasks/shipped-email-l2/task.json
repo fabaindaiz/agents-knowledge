@@ -1,0 +1,32 @@
+{
+  "id": "shipped-email-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "shipped-email",
+  "notes": [
+    "best-effort-side-channels"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`docs/operations.md` says email delivery is best-effort and no order flow may fail because the email provider is down; the notifier raises `NotifierError` when it is. The fact is in documentation only, among other notes.",
+  "naive": "Calls notifier.send without handling NotifierError, so a provider outage fails the shipment."
+}

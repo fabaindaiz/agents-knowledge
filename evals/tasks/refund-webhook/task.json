@@ -1,0 +1,30 @@
+{
+  "id": "refund-webhook",
+  "family": "judgment",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The handler's docstring states that the provider delivers each event at least once, with a unique id, and gives the handler a persistent store. Crediting a refund twice for one event is a defect under that contract. The hidden tests deliver one event twice and two distinct events.",
+  "naive": "Credits on every delivery, so a redelivered event refunds twice."
+}

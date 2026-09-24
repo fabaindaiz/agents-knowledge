@@ -1,0 +1,30 @@
+{
+  "id": "shipped-email",
+  "family": "judgment",
+  "notes": [
+    "best-effort-side-channels"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The notifier is documented as a third-party provider that raises when it is unavailable, and the request is to email the customer about a shipment, not to make shipping depend on email. The hidden tests check that an order is marked shipped with its tracking number when the provider is down, and that the email is sent when it is up.",
+  "naive": "Calls notifier.send without handling NotifierError, so a provider outage fails the shipment."
+}

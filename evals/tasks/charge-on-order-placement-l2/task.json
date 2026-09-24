@@ -1,0 +1,32 @@
+{
+  "id": "charge-on-order-placement-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "charge-on-order-placement",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "Every outbound call in the service goes through `Transport` (the existing `cancel` does), whose retry policy is read from `config/outbound.json`: three attempts on timeout for the payment provider; the gateway's `charge` takes an idempotency key. The fact is in configuration, among other providers' policies.",
+  "naive": "Charges through the transport with no idempotency key, so a timeout after the charge applied is retried and debits twice."
+}

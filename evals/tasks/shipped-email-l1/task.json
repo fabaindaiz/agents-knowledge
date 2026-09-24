@@ -1,0 +1,32 @@
+{
+  "id": "shipped-email-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "shipped-email",
+  "notes": [
+    "best-effort-side-channels"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The notifier raises `NotifierError` when its provider is down, and the one existing email in the service (the receipt in `shop/payments.py`) is sent best-effort: the error is caught and logged. Failing a shipment because an email could not be sent is a defect under that convention. The fact is in code only, in another module.",
+  "naive": "Calls notifier.send without handling NotifierError, so a provider outage fails the shipment."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "contacts-second-source-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "contacts-second-source",
+  "notes": [
+    "derived-over-chosen-identifiers"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The sample exports in `fixtures/` show both systems numbering from 1, and `ops/schedule.json` runs both imports every night. Overwriting a CRM contact with an unrelated shop contact is data loss; a re-run creating duplicates is a defect. The facts are in data and configuration files only.",
+  "naive": "Uses customer_no as the id, so shop contact 1 overwrites CRM contact 1."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "refund-webhook-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "refund-webhook",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`docs/integrations/payment-provider.md` says the provider delivers every event at least once and retries until it gets a success, each event with a unique id; the handler has a persistent `state`. The fact is in documentation only, among other notes.",
+  "naive": "Credits on every delivery, so a redelivered event refunds twice."
+}

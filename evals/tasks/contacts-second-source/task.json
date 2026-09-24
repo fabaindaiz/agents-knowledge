@@ -1,0 +1,30 @@
+{
+  "id": "contacts-second-source",
+  "family": "judgment",
+  "notes": [
+    "derived-over-chosen-identifiers"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The CRM and the shop number their records independently (both start at 1, as the row examples show), and the store replaces a record with the same id. Overwriting a CRM contact with an unrelated shop contact is data loss under the request's own terms. The hidden tests import both sources with overlapping numbers, and re-run an import.",
+  "naive": "Uses customer_no as the id, so shop contact 17 overwrites CRM contact 17."
+}

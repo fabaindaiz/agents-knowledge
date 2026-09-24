@@ -1,0 +1,1 @@
+Add `import_shop(store, shop_rows)` to `contacts/importer.py` so contacts from the web shop are imported as well. Shop rows have the keys `customer_no`, `full_name` and `mail`; store them the same way CRM contacts are stored. Add tests.

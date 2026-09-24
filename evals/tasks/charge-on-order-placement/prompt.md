@@ -1,0 +1,1 @@
+Placing an order should now charge the customer. Change `OrderService.place` in `billing/orders.py` so it charges the order total through the payment gateway, using the service's transport like every other outbound call, and stores the returned charge id on the order before marking it placed. Add tests.

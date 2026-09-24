@@ -1,0 +1,1 @@
+Handle the provider's `refund.approved` event in `payments/webhooks.py`: credit the customer's balance with the refunded amount through the ledger. The event carries `id`, `customer_id` and `amount_cents`. Add tests.

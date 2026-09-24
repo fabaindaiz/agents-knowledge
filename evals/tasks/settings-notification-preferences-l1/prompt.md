@@ -1,0 +1,1 @@
+Add a `set_notification_preferences(user_id, email=None, sms=None)` method to `SettingsService` in `prefs/service.py`. It turns the user's email and SMS notifications on or off; an argument left as `None` leaves that channel as it is. Add tests for it.

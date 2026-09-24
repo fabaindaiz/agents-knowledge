@@ -1,0 +1,1 @@
+Add `export_csv(items, path)` to `inventory/report.py`. It writes one row per item under the header `sku,name,quantity,price`, with the price in currency units and two decimals (1250 cents is `12.50`). Item names may contain commas and quotes. Add tests.

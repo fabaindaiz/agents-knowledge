@@ -1,0 +1,32 @@
+{
+  "id": "contacts-second-source-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "contacts-second-source",
+  "notes": [
+    "derived-over-chosen-identifiers"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`docs/integrations.md` says both systems number their records from 1, and `docs/operations.md` that both imports run nightly and are re-run after an outage. The facts are in documentation only, among other notes.",
+  "naive": "Uses customer_no as the id, so shop contact 1 overwrites CRM contact 1."
+}

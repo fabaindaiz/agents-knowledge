@@ -1,0 +1,32 @@
+{
+  "id": "delivery-email-once-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "delivery-email-once",
+  "notes": [
+    "in-process-guarantees"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`docs/operations.md` says the worker runs as four processes; the key-value store in `infra/kv.py` is shared and has an atomic add. The fact about processes is in documentation only, among other notes.",
+  "naive": "Keeps the seen event ids in a set on the worker instance, which holds for one process and none of the others."
+}

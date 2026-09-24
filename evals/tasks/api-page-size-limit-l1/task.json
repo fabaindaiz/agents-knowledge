@@ -1,0 +1,32 @@
+{
+  "id": "api-page-size-limit-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "api-page-size-limit",
+  "notes": [
+    "sanitised-value-must-replace-the-raw"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The request says a larger page_size is treated as 100; the raw value also flows into the serializer and the next-offset computation in other modules. The hidden tests check the items, the reported page_size and the next offset.",
+  "naive": "Clamps only the fetch, so the reported page_size and next_offset still use the raw value and the caller skips items."
+}

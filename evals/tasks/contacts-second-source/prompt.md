@@ -1,0 +1,1 @@
+Add `import_shop(store, shop_rows)` to `contacts/importer.py` so contacts from the web shop are imported as well. Shop rows look like `{"customer_no": 17, "full_name": ..., "mail": ...}`. Store them the same way CRM contacts are stored. Re-running an import must not create duplicates. Add tests.
