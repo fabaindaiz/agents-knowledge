@@ -1,0 +1,28 @@
+{
+
+
+  "geocoder": {
+    "attempts": 2,
+    "retry_on": [
+      "connection"
+    ]
+  },
+  "email_provider": {
+    "attempts": 1,
+    "retry_on": []
+  },
+  "payment_provider": {
+    "attempts": 3,
+    "retry_on": [
+      "timeout",
+      "connection"
+    ]
+  },
+  "fx_rates": {
+    "attempts": 5,
+    "retry_on": [
+      "timeout",
+      "connection"
+    ]
+  }
+}

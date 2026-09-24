@@ -1,0 +1,32 @@
+{
+  "id": "delivery-email-once-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "delivery-email-once",
+  "notes": [
+    "in-process-guarantees"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`deploy/worker.json` runs the worker with four replicas, and `notify/run.py` gives each one a connection to the shared key-value store in `infra/kv.py`, which has an atomic add. A duplicate that reaches a second process is still a duplicate email. The facts are in code and deployment configuration only.",
+  "naive": "Keeps the seen event ids in a set on the worker instance, which holds for one process and none of the others."
+}

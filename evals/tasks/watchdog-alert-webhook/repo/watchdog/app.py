@@ -1,0 +1,32 @@
+import os
+
+from .alerts import WebhookSink
+
+WEBHOOK_URL = "https://hooks.example.invalid/alerts/ops"
+
+
+def _default_post(url, payload):
+    raise NotImplementedError("the HTTP client is wired in production")
+
+
+class Watchdog:
+    def __init__(self, services, interval_s, sink):
+        self.services = services
+        self.interval_s = interval_s
+        self.sink = sink
+
+    @classmethod
+    def from_env(cls, environ=None, post=None, stream=None):
+        environ = os.environ if environ is None else environ
+        services = [s for s in environ.get("WATCHDOG_SERVICES", "").split(",") if s]
+        interval_s = int(environ.get("WATCHDOG_INTERVAL_S", "30"))
+        sink = WebhookSink(WEBHOOK_URL, post or _default_post)
+        return cls(services, interval_s, sink)
+
+    def alert(self, message):
+        self.sink.send(message)
+
+    def check(self, probe):
+        for service in self.services:
+            if not probe(service):
+                self.alert(f"{service} is down")

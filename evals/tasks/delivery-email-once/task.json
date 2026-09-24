@@ -1,0 +1,30 @@
+{
+  "id": "delivery-email-once",
+  "family": "judgment",
+  "notes": [
+    "in-process-guarantees"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The worker's docstring says several workers run as separate processes sharing one SharedStore, and the store offers an atomic add. A duplicate that reaches a second worker is still a duplicate email. The hidden tests deliver the same event to two workers sharing a store, and to one worker twice.",
+  "naive": "Keeps the seen event ids in a set on the worker instance, which holds for one process and none of the others."
+}

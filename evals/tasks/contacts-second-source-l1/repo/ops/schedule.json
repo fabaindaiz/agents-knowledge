@@ -1,0 +1,18 @@
+{
+
+
+  "jobs": [
+    {
+      "name": "import-crm",
+      "cron": "0 2 * * *"
+    },
+    {
+      "name": "import-shop",
+      "cron": "0 3 * * *"
+    },
+    {
+      "name": "vacuum",
+      "cron": "0 5 * * 0"
+    }
+  ]
+}

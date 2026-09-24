@@ -1,0 +1,1 @@
+The courier sometimes sends the same delivery event more than once, and customers get the delivered email twice. Make `Worker.handle` in `notify/worker.py` send the email only once per `event_id`. Add tests.

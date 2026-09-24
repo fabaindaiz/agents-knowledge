@@ -28,6 +28,18 @@ something else depends on — because that is what decides its order.
 
 ## Next
 
+- **`i-5ed7e8-0d9b6a` · Measure whether the bundle changes what an agent does, and whether its
+  content is the cause.** Controlled studies of repository context files found no reliable gain in
+  task success and a cost increase of about a fifth; the bundle has never been measured against that.
+  The pre-registered experiment is in the home repository's `evals/` (it does not travel): judgment,
+  boundary and neutral tasks graded by hidden tests; the bundle against the same bundle with the
+  relevant notes removed, against no bundle, and against the note certainly in context or an
+  irrelevant note of matched length. State: five exploratory pilots run (the home repository's
+  `evals/REPORT.md`); the cost overhead is established, a content effect is seen on few tasks and
+  is not significant, and the confirmatory run waits on new tasks by another author, ablation by
+  principle rather than by note, and boundary tasks at distance. *Collides with:*
+  every packaging change to the method, since a null that comes from routing rather than from content
+  changes what the packaging should be; and the notes' `confidence`.
 - **`i-5ed7e8-973bd7` · Run the cheapest queued experiments** in `tracking/experiments.md`, one
   per note that has none. *Collides with:* the notes' `confidence`, which moves in both directions.
 - **`i-5ed7e8-705aa8` · Clean up the duplicated prose that remains in the method.** The worked

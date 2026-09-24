@@ -23,5 +23,7 @@ jobs:
         run: python3 .agents/tools/bundle.py selftest
       - name: Digests, provenance, links, reachability, sessions and privacy
         run: python3 .agents/tools/bundle.py digest .agents --check
+      - name: The experiment's tasks are valid (each grader seen to fail and pass)
+        run: python3 evals/harness.py check
       - name: Privacy of the repository's own published files
-        run: python3 .agents/tools/bundle.py privacy --paths README.md AGENTS.md CLAUDE.md CONTRIBUTING.md .github/workflows/check.yml .githooks/pre-commit .claude/hooks/privacy_guard.py
+        run: python3 .agents/tools/bundle.py privacy --paths README.md AGENTS.md CLAUDE.md CONTRIBUTING.md .github/workflows/check.yml .githooks/pre-commit .claude/hooks/privacy_guard.py $(git ls-files evals)

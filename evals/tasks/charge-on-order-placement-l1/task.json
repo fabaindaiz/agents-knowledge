@@ -1,0 +1,32 @@
+{
+  "id": "charge-on-order-placement-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "charge-on-order-placement",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "Every outbound call in the service goes through `Transport` (the existing `cancel` does), and `Transport.call` is decorated to retry on timeout in `infra/resilience.py`; the gateway's `charge` takes an idempotency key. Charging a customer twice for one order is a defect under any reading of the request. The fact is in code, two modules away, with no prose.",
+  "naive": "Charges through the transport with no idempotency key, so a timeout after the charge applied is retried and debits twice."
+}

@@ -1,0 +1,30 @@
+{
+  "id": "api-page-size-limit",
+  "family": "judgment",
+  "notes": [
+    "sanitised-value-must-replace-the-raw"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The request says a larger page_size is treated as 100, which covers every use of it: the items returned, the page_size reported and the next offset. The hidden tests check all three for a request of 1000, and the ordinary case.",
+  "naive": "Clamps only the slice, so the reported page_size and next_offset still use the raw value and the caller skips 900 items."
+}

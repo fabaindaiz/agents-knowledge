@@ -10,3 +10,6 @@ __pycache__/
 # Assistant-generated local state is not version controlled (see .agents/layout.md)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Experiment runs: transcripts and diffs (see evals/README.md)
+evals/runs/

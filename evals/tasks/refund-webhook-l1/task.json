@@ -1,0 +1,32 @@
+{
+  "id": "refund-webhook-l1",
+  "family": "judgment",
+  "level": "L1",
+  "trap": "refund-webhook",
+  "notes": [
+    "retry-over-irreversible-effect"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The existing `charge.succeeded` handler, in `payments/handlers/charges.py`, skips an event id it has already processed, using the handler's `state`: the codebase already treats provider events as redeliverable. Crediting a refund twice for one event is a defect under that convention. The fact is in code only.",
+  "naive": "Credits on every delivery, so a redelivered event refunds twice."
+}

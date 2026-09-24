@@ -1,0 +1,32 @@
+{
+  "id": "api-page-size-limit-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "api-page-size-limit",
+  "notes": [
+    "sanitised-value-must-replace-the-raw"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "As L1, and the raw value also keys a cache in `infra/cache.py` usage. The hidden tests check the items, the reported page_size and the next offset.",
+  "naive": "Clamps only the fetch, so the reported page_size and next_offset still use the raw value and the caller skips items."
+}

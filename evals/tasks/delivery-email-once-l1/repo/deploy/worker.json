@@ -1,0 +1,8 @@
+{
+
+
+  "service": "notify-worker",
+  "command": "python -m notify.run",
+  "replicas": 4,
+  "queue": "courier-events"
+}

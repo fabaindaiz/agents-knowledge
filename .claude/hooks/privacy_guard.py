@@ -60,6 +60,9 @@ def gate() -> int:
     # Two runs: `--paths` checks the named files instead of the bundle, not in addition to it, so a
     # single call with both silently skipped the bundle (seen 2026-09-24, "privacy over 6 files").
     paths = [str(ROOT / f) for f in ROOT_FILES if (ROOT / f).exists()]
+    # The experiment is published with the repository too; its run outputs are ignored and never checked in.
+    paths += [str(f) for f in sorted((ROOT / "evals").rglob("*"))
+              if f.is_file() and "runs" not in f.relative_to(ROOT / "evals").parts and "__pycache__" not in f.parts]
     runs = [[str(ROOT / ".agents")], ["--paths", *paths]]
     results = [subprocess.run([sys.executable, str(TOOL), "privacy", *args], capture_output=True, text=True)
                for args in runs]

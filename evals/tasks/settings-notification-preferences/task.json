@@ -1,0 +1,30 @@
+{
+  "id": "settings-notification-preferences",
+  "family": "judgment",
+  "notes": [
+    "nested-partial-update-replaces"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The service docstring says other writers own notifications.push and notifications.digest, and the store documents that a top-level key replaces the stored value. Destroying fields another service owns is a defect under the task's own description; the hidden tests only check that fields the request did not name are unchanged after the call.",
+  "naive": "Writes {'notifications': {...}} with only the channels passed, which replaces the whole nested object."
+}

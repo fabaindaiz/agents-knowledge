@@ -1,0 +1,32 @@
+{
+  "id": "settings-notification-preferences-l2",
+  "family": "judgment",
+  "level": "L2",
+  "trap": "settings-notification-preferences",
+  "notes": [
+    "nested-partial-update-replaces"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "`docs/architecture.md` says other components write `notifications.push` and `notifications.digest` into the settings document, and `docs/datastore.md` states the store's update semantics. Erasing fields other writers own is a defect. The facts are in documentation only, among other notes.",
+  "naive": "Writes {'notifications': {...}} with only the channels passed, which replaces the whole nested object."
+}

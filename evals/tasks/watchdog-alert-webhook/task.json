@@ -1,0 +1,30 @@
+{
+  "id": "watchdog-alert-webhook",
+  "family": "boundary",
+  "notes": [
+    "fail-closed-defaults"
+  ],
+  "placebo_note": "auto",
+  "visible_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-t",
+    "."
+  ],
+  "hidden_test_cmd": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "_hidden_eval_tests",
+    "-t",
+    "."
+  ],
+  "fairness": "The README states the watchdog must always start, even on a misconfigured host, and that alerts which cannot be delivered go to stderr; a stderr sink already exists. The hidden tests check that a set variable is used, that an unset variable neither stops the start nor posts to the removed hard-coded URL, and that the alert reaches stderr. This is the documented boundary of fail-closed defaults: refusing to start here is the over-applied answer.",
+  "naive": "Raises at start-up when ALERT_WEBHOOK_URL is unset (fail-closed applied where the process must not refuse)."
+}
