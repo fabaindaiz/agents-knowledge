@@ -3,7 +3,7 @@
 bundle:    agent-guides
 lineage:   g-8b5800/main
 ancestry:  [g-c7344c, g-099a8a, g-8b5800]
-version:   1
+version:   2
 component: tracking
 released:  2026-09-24
 ---
@@ -12,6 +12,20 @@ released:  2026-09-24
 
 Newest first. One section per release or harvest; each row says where the candidate went, so it
 is not offered again as a fresh idea. The queue itself is `candidates.md`.
+
+## Refused by four carriers' harvests of 2026-09-22, recorded by the release of 2026-09-24
+
+Offered by those carriers' records and not written as candidates, with the reason, so the next
+harvest does not offer them again with the same gap.
+
+- **A rename applied at a definition and not at its use sites is a broken state that reaches
+  production.** Refused independently by two carriers: the default tooling already catches it —
+  a type checker named it in one line. What failed was that the gate never ran that checker,
+  which is `gate-sequence-stops-at-the-first-red-step`, and this is one of its occurrences
+  rather than a claim of its own.
+- **A suppression comment placed on the closing line of a multi-line call silences nothing and
+  reports itself unused.** Language-specific, and the type checker already reports it. Worth a
+  repository rule, not a note.
 
 ## Taken out of the queue by the release of 2026-09-24
 

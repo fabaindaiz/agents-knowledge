@@ -3,7 +3,7 @@
 bundle:    agent-guides
 lineage:   g-8b5800/main        # opaque id of the line this copy descends from
 ancestry:  [g-c7344c, g-099a8a, g-8b5800] # root -> current; a fork appends its own new id
-version:   20                   # monotone within a lineage
+version:   21                   # monotone within a lineage
 forked_at: {lineage: g-c7344c, version: 8}
 digest:    "c27c3d884fe3"           # sha256 over method/ + knowledge/ + layout.md, see Verifying a copy
 released:  2026-09-24

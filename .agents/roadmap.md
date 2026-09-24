@@ -3,7 +3,7 @@
 bundle:    agent-guides
 lineage:   g-8b5800/main
 ancestry:  [g-c7344c, g-099a8a, g-8b5800]
-version:   14
+version:   15
 component: roadmap
 released:  2026-09-24
 ---
@@ -49,8 +49,9 @@ something else depends on — because that is what decides its order.
 ## Blocked outside
 
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** They are listed
-  in `tracking/carriers.md` without ids. Each receives it through its `incoming/`, mints its own
-  random id, and keeps its repository fields. *Blocked on:* a session with those repositories open.
+  in `tracking/carriers.md` without ids, plus `r-a2f271`, registered at v20. Each receives it
+  through its `incoming/` or the next meta-session that has it open, mints its own random id if it
+  has none, and keeps its repository fields. *Blocked on:* a session with those repositories open.
 
 ## Closed by measurement
 
@@ -60,15 +61,13 @@ None yet.
 
 Only the last release is kept here; every earlier one is a row of `method/changelog.md`.
 
-- **Bundle v20 (method v24, knowledge v11), 2026-09-24: privacy is enforced, not remembered.**
-  Nothing in the bundle may identify, directly or by reconstruction, a private repository, its
-  owners, customers or infrastructure, or any person who uses it. Every file was scrubbed:
-  figures became ratios or orders of magnitude, quotes were paraphrased, code, schema and product
-  names became roles, and location and personal context went. Changelogs and history were not
-  exempt. Carrier ids are random and stored in each carrier, because a hash of a guessable remote
-  had been reversed; the unreached carriers' old ids were withdrawn. `bundle.py privacy` runs
-  generic rules and a local list of private terms, inside `digest --check`, in a hook that blocks
-  commits in the home repository, and in CI. An exception needs the user's instruction and is
-  listed on every run. Principle 20 states the rule and every invocation repeats it. The four
-  notes under review got their verdicts, and the six overlapping pairs were resolved: two merges,
-  one split, three kept with transfers. `bundle.py ids` checks record ids.
+- **Bundle v21 (method v24, knowledge v11), 2026-09-24: the `g-c7344c` carriers are reached.**
+  Four carriers that had stayed on that line since it merged into this one were brought onto this
+  line in one meta-session. Their bodies had nothing this line lacked — the merge and the privacy
+  scrub had already taken it — so the release changes `tracking/` only: their harvests of
+  2026-09-22 became candidate rows, generalised first (eleven candidates and eight extensions
+  offered to existing notes), two experiment runs, and two refusals in `tracking/history.md`.
+  `gate-sequence-stops-at-the-first-red-step` arrived with one occurrence in each of the four.
+  Nothing was admitted: admission waits for a release that runs it. The four carriers minted
+  random ids and are registered; their audits now read the three note states and call
+  `bundle.py privacy` and `ids`. Method and knowledge are unchanged, so their digests are too.
