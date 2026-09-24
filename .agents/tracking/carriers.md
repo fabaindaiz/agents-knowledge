@@ -3,7 +3,7 @@
 bundle:    agent-guides
 lineage:   g-8b5800/main
 ancestry:  [g-c7344c, g-099a8a, g-8b5800]
-version:   6
+version:   7
 component: tracking
 released:  2026-09-24
 ---
@@ -20,7 +20,11 @@ is ever written next to its id, here or anywhere in the bundle. **Paths are neve
 | Carrier | Bundle | Method | Knowledge | Aligned on |
 |---|---|---|---|---|
 | r-a2f271 | g-8b5800 v20 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
-| r-5ed7e8 | g-8b5800 v20 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
+| r-5ed7e8 | g-8b5800 v21 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
+| r-882427 | g-8b5800 v21 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
+| r-4ca43d | g-8b5800 v21 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
+| r-0fc418 | g-8b5800 v21 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
+| r-1a1516 | g-8b5800 v21 | m-351cc8 v24 | k-7159bd v11 | 2026-09-24 |
 
 **Every row is written by `bundle.py register`**, never by hand; a carrier that cannot run the
 tool reports that as a defect in `candidates.md`.
@@ -34,4 +38,5 @@ guessing, so they were withdrawn on 2026-09-24. Each mints a random id with
 then, keeping its own repository fields.
 
 - **Several carriers aligned at an older release of this line.**
-- **Several carriers of the `g-c7344c` line**, never reached since that line merged into this one.
+- **Any other carrier of the `g-c7344c` line.** Four were reached by the meta-session of
+  2026-09-24 and are registered above; none other is known on the machine that ran it.
