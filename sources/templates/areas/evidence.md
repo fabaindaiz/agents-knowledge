@@ -3,7 +3,7 @@
 
 **Notes about what a row, a number or a check actually tells you, as opposed to what it suggests.** Reached from `../INDEX.md`, which holds the phase guide for every
 note; this file holds the checks. Every note here is under its topic and under at least one
-*about to do* row — checked by the repository's audit.
+*about to do* row — checked by the build.
 
 ## By topic, with the check that shows each one holds
 

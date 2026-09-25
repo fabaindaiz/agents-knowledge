@@ -15,6 +15,14 @@ issues, competitive programming, code reasoning, optimisation, design by consequ
 automatically, with no task, grader or rule derived from the notes. Study 1 keeps its role; Study 2 does
 not replace it.
 
+**Amendment, 2026-09-25 (release 0.0.22).** The shipped notes are now short; the full note text the
+`oracle` and `oracle_placebo` arms inject, and that `pick_placebo` measures, is read from `sources/notes/`,
+so the placebo picks and the oracle text are unchanged (checked identical for all 26 auto tasks). The
+bundle is identified by its version and the sha256 of `.agents/SHA256SUMS`: a plan keeps that hash under
+`bundle_digest` and adds `bundle_version`. The `bundle` arm's content did change (short notes, cards, the
+trigger wording in the invocation; retired notes and the home's records no longer ship), so a future run
+measures 0.0.22, not the v0.0.21 the pilots carried. Study 2's frozen digest becomes a frozen version tag.
+
 | File | Does |
 |---|---|
 | `PROTOCOL.md` | Study 1's pre-registration: six arms, judgment, boundary and neutral tasks, the analysis plan and its deviations |
@@ -68,5 +76,5 @@ python3 evals/power_tost.py --tasks 40 --reps 3 --margin 0.20 --hetero 0.15   # 
 ```
 
 `evals/runs/` holds transcripts and diffs and is not committed: transcripts carry the logged-in
-account's identity. Python 3.9 or newer, standard library only; Study 1's trials need `bwrap` and `socat`
+account's identity. Python 3.11 or newer, standard library only; Study 1's trials need `bwrap` and `socat`
 for Claude Code's sandbox on Linux.

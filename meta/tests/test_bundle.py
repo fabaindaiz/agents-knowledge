@@ -64,6 +64,17 @@ class Verify(Base):
         self.assertEqual(len(problems), 1)
         self.assertIn("before 0.0.22", problems[0])
 
+    def test_a_release_as_it_arrives_verifies_without_carrier_files(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "carrier.toml").unlink()
+        for rel in B.OUTBOX:
+            (agents / rel).unlink()
+
+        self.assertEqual(B.verify_problems(agents, release=True), [])
+        self.assertNotEqual(B.verify_problems(agents), [])
+        B.write_carrier(agents, {"carrier": "r-bbbbbb"})
+        self.assertIn("another repository's own file", "\n".join(B.verify_problems(agents, release=True)))
+
     def test_digest_is_a_deprecated_alias(self) -> None:
         agents = make_bundle(self.root)
 

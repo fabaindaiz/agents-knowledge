@@ -3,10 +3,9 @@
 **A note or method rule that was withdrawn or superseded, with the evidence that removed it.**
 Kept, one line each and in the order they happened, so that a refuted idea is recognised when it
 is proposed again. A retired note's file is kept in `sources/notes/retired/` — moved there
-with `bundle.py note-state SLUG retired` — with `retired_because:` and, when replaced,
-`superseded_by:` in its frontmatter; it leaves the tables of `../knowledge/INDEX.md` and its area
-index. Each line here points at that file. The procedure is in `../knowledge/README.md`, *The
-lifecycle of a note*.
+with `release.py note-state SLUG retired` — with `retired_because:` and, when replaced,
+`superseded_by:` in its frontmatter; it never ships. Each line here points at that file. The
+procedure is in `sources/README.md`, *The lifecycle of a note*.
 
 | Date | Note | Withdrawn or superseded | Evidence that removed it | Replaced by |
 |---|---|---|---|---|

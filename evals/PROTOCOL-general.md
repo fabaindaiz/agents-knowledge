@@ -46,7 +46,7 @@ no task with the notes and does not replace Study 1.
 > When a repository carries the bundle, wired in the way a carrier's bootstrap wires it, does the agent's
 > success on externally sourced, objectively graded work change, and at what cost?
 
-**The treatment.** The whole `.agents/` bundle at one frozen digest, plus the two lines the bootstrap
+**The treatment.** The whole `.agents/` bundle at one frozen version tag, plus the two lines the bootstrap
 writes into a carrier's root file ([`prompt-bootstrap.md`](../.agents/method/prompt-bootstrap.md),
 phase 4), in this fixed wording:
 
@@ -54,6 +54,13 @@ phase 4), in this fixed wording:
 - Before a design decision or before claiming done, consult `.agents/knowledge/INDEX.md` and read only the notes it points to for the task.
 - Nothing written into `.agents/` or any file that leaves this repository may identify, directly or by reconstruction, a private repository, its people or its users; `python3 .agents/tools/bundle.py privacy .agents` checks it.
 ~~~
+
+*Amended 2026-09-25.* From release 0.0.22 the bundle ships short notes and cards, not the full notes;
+the treatment is identified by its version tag and the sha256 of `.agents/SHA256SUMS` (the plan keys
+`bundle_version` and `bundle_digest`). The bootstrap's wiring now names a trigger (a change touching state,
+a contract, data, security or verification) and the card; the wording above is the draft's, and the
+verbatim lines are taken from the frozen release's bootstrap, phase 4, at G2. Any run measures 0.0.22 or
+later, not v0.0.21, which Study 1's pilots carried.
 
 This wording is not Study 1's `ROUTING` paragraph, whose framing ("where the textbook answer … is wrong")
 no carrier receives. The rest of a real bootstrap is out of scope, because it rewrites a repository's
@@ -216,7 +223,7 @@ families, with Holm within each. Haiku is a separate family.
 | Arm | Root file (`AGENTS.md`, with `CLAUDE.md` = `@AGENTS.md`) | `.agents/` | Isolates |
 |---|---|---|---|
 | `minimal` | a two-line template filled from the benchmark's metadata: what the workspace is and the command that runs its tests | absent | the realistic baseline |
-| `bundle` | `minimal` + the two wiring lines (§2), verbatim | the bundle at the frozen digest, scrubbed (below) | the treatment |
+| `bundle` | `minimal` + the two wiring lines (§2), verbatim | the bundle at the frozen version tag, scrubbed (below) | the treatment |
 | `placebo` | identical to `bundle`, byte for byte | the same tree, with `knowledge/` replaced (below) | the content of the knowledge base, with volume, wiring, method and index lookup held |
 
 **Dropped from Study 1, with reasons.** `none`: four pilots found `minimal` equal to `none` in success,
@@ -224,15 +231,17 @@ and in cost (×0.99). `ablated`, `oracle` and `oracle_placebo`: they need a targ
 have none by design.
 
 **The scrub, identical in `bundle` and `placebo`.** Every line naming the efficacy experiment (Study 1 or
-Study 2, their roadmap items, `evals/`) is removed from `roadmap.md`, `tracking/` and the method
-changelog. The number of lines removed is recorded. This keeps the agent from learning it is under
-evaluation. The frozen digest is taken from a commit made before any Study 2 record exists.
+Study 2, their roadmap items, `evals/`) is removed from `CHANGELOG.md` and `tracking/`, the files that
+still ship from 0.0.22 (the roadmap and the method changelog no longer do). The number of lines removed is
+recorded. This keeps the agent from learning it is under evaluation. The frozen version tag is cut before
+any Study 2 record exists.
 
 **How the placebo is built** (by a frozen, published procedure, not by choice):
 
 - **What is replaced.** Everything under `knowledge/`: the index, the area indexes and the notes.
-  `method/`, `tools/`, `layout.md`, `README.md`, `roadmap.md` and `tracking/` stay identical to `bundle`,
-  so `bundle` − `placebo` isolates the knowledge base's content and nothing else.
+  Everything else (`method/`, `tools/`, `README.md`, `CHANGELOG.md`, `tracking/`) stays identical to
+  `bundle`, so `bundle` − `placebo` isolates the knowledge base's content and nothing else. Whether
+  `SHA256SUMS` is regenerated over the placebo tree is fixed at G0.
 - **The notes.** Off-task software-engineering notes, in the bundle's note template (claim, when it
   applies, when it does NOT apply, how to verify), each matched to a real note's length within ±3% in
   tokens. The index keeps its tables, phases and "about to do" rows, filled with the placebo notes. The
@@ -500,7 +509,7 @@ the cause is fixed. Nothing is reinterpreted.
 
 | Gate | Stage | Conditions for approval |
 |---|---|---|
-| **G0 Instrument** | adapters, graders, containers, placebo, analysis code | (1) Every grader is seen to pass and to fail: the reference passes, an empty or trivial submission fails, and flaky tasks are removed (§7). (2) The placebo matches file lengths within ±3%, its topics pass the term check, and the blind reviewer finds no applicable note (§6). (3) The scrub is applied and counted, and the frozen digest predates any Study 2 record. (4) The probe shows each arm loading exactly its instructions. (5) Isolation is verified by a probe trial per block, including E's egress rules. (6) The analysis script passes the simulation checks of §9.2. (7) Licences and terms are checked: the benchmarks, the judge, the AHC data (not republished), and the subscription's terms for automated use. (8) SWE-Flux oracles reproduce on the sampled variants. (9) `harness.py check` and the selftests pass |
+| **G0 Instrument** | adapters, graders, containers, placebo, analysis code | (1) Every grader is seen to pass and to fail: the reference passes, an empty or trivial submission fails, and flaky tasks are removed (§7). (2) The placebo matches file lengths within ±3%, its topics pass the term check, and the blind reviewer finds no applicable note (§6). (3) The scrub is applied and counted, and the frozen version tag predates any Study 2 record. (4) The probe shows each arm loading exactly its instructions. (5) Isolation is verified by a probe trial per block, including E's egress rules. (6) The analysis script passes the simulation checks of §9.2. (7) Licences and terms are checked: the benchmarks, the judge, the AHC data (not republished), and the subscription's terms for automated use. (8) SWE-Flux oracles reproduce on the sampled variants. (9) `harness.py check` and the tools' tests pass |
 | **G1 Pilot** | disjoint tasks: A 40 and E 40 with arms `minimal`, `minimal-b`, `bundle`, `placebo`, `bundle+plant`, `bundle+decoy` × 3 reps; D 30 and B 4 with `minimal`, `bundle`, `placebo` × 2 reps; the C pilot | (1) All four routed controls pass (§9.1). (2) A/A is quiet (§9.2). (3) A's tier rule is applied (§7.A). (4) Infrastructure failures are under 3%. (5) Cost per trial is measured, and the tier follows mechanically from the budget cap the user set before the pilot (§17). (6) The blinded G1 report (§9.5) is written. No size, family or rule changes on the strength of the pilot, except (3) and (5) |
 | **G2 Freeze** (pre-registration) | before the first confirmatory trial | (1) This protocol is final. (2) The task lists (ids and hashes), seeds, placebo, scrub and templates are committed. (3) The analysis code is committed and has passed §9.2. (4) The forecasts (§13) are filled in and committed. (5) One commit holds all of it and is tagged, and **the tag is pushed to the repository's remote before the first confirmatory trial**, so it serves as a timestamp. The user performs the push. (6) The budget is explicitly approved by the user |
 | **G3 Run validity** | after the run, before unblinding | every check in §9.4 passes. The manipulation tables are written |
@@ -618,7 +627,7 @@ The reasons behind these forecasts:
 
 ## 14. Decision map: what each result means for the bundle
 
-Fixed now. The consequences go through the bundle's own channels (`roadmap.md`, `tracking/`), never by
+Fixed now. The consequences go through the bundle's own channels (`meta/roadmap.md`, `meta/tracking/`), never by
 editing the body as a side effect. Read in order: controls, then E, then unrelated work, then cost.
 
 **Step 0.** If any routed control failed at G1, there is no confirmatory run and no verdict. The

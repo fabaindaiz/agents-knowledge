@@ -1,6 +1,6 @@
 # The method, for the home repository
 
-Sections of the method that only the home repository uses: why the method exists, how it forks and how often it moves, and a worked example. Cut from `.agents/method/prompt-context.md` at 0.0.22 with their text unchanged; a carrier's sessions never read them.
+Sections of the method that only the home repository uses: why the method exists, how it forks and how often it moves, and a worked example. Cut from `.agents/method/prompt-context.md` at 0.0.22; a carrier's sessions never read them.
 
 ## Why this exists
 
@@ -38,51 +38,38 @@ as settled, what it must verify, and what it must refuse to do.
 
 ---
 
-## How to fork, in four lines
+## How to fork, and how versions move
 
-1. Mint one new opaque id with `bundle.py id m PARENT...` — derived from the
-   parents, never chosen.
-2. Append it to `ancestry` and set `lineage` to it.
-3. Set `forked_at` to the `{lineage, version}` you branched from.
-4. Continue numbering: parent's version **+ 1**. `bundle.py stamp --fork` does
-   steps 2 to 4 and writes the digests.
+**A fork is a git fork of the home repository.** Its releases and versions are its own, never
+compared with the home's; anything general either side learns travels the other way as a
+candidate, through a harvest, never by overwriting a file.
 
-Then the two lines evolve independently, and anything general that either learns
-travels the other way through the harvest — not by overwriting a file. Never
-regenerate a lineage id, never make it mnemonic, and never encode a date, a name
-or a counter in it — each of those turns an opaque token back into a leak.
-
-Then the numbering discipline:
-
-- **Versions are cut by a release, never by a carrier.** A release bumps
-  `version` in every document of the set (`bundle.py stamp`), and adds one row to
-  [`method-changelog.md`](../archive/method-changelog.md) — saying what a reader *does differently* now,
-  not what was edited.
+- **Versions are cut by a release in the home, never by a carrier.** One Semantic Versioning
+  version for the whole bundle, set by `release.py release X.Y.Z` in the frontmatter of
+  `.agents/README.md`, a dated section in `.agents/CHANGELOG.md` saying what a reader *does
+  differently* now, not what was edited, and a tag `vX.Y.Z`. While it is `0.0.z`, any release may
+  break; moving to `0.1.0` or `1.0.0` is the user's decision.
 - **Never renumber the principles.** Append. A repository referring to
   "principle 14" must still be right after the next revision, exactly as an enum
   written to disk is appended to and never inserted into. If a principle dies,
   mark it withdrawn and leave the number spent.
-- Same for the artifacts, the phases, the steps of the loop and the method
-  changelog's rows. A repository's own records are not numbered at all
-  (*Workspaces*, record ids).
-- **The header is written in the same change that changes the method, in every
-  document of the set.** A file whose header disagrees with its body, or with
-  its siblings, is worse than one with no header — the triage trusts it.
+- Same for the artifacts, the phases and the steps of the loop. A repository's own records are
+  not numbered at all (*Workspaces*, record ids).
 
 ## The two directions
 
 **Down — distributing an improvement.** Put the newer bundle in the target's
 `.agents/incoming/` — never over the live one — and run the **update
-invocation**; for every carrier open at once, `prompt-sync.md` does the same in
-one pass. The update reads the version the repo had, lists only the deltas
+invocation**; for every carrier open at once, `prompt-sync.md` carries the
+tagged release into each with `release.py splice`. The update reads the version the repo had, lists only the deltas
 since, and — the part that matters — decides which of them apply *there*,
 because a repo with no rendered output does not need the rule about looking at
 the artifact.
 
 **Up — harvesting from a repository.** Rarer and more valuable.
 `prompt-harvest.md` asks the repository *what have you learned that the method
-does not know?* and writes the answers as candidates in `tracking/`. The release
-then applies the generality test, brutally, and takes the two that survive
+does not know?* and writes the answers as candidates in its outbox, `.agents/tracking/`.
+The next release gathers them (`release.py gather`, `release.py intake`), applies the generality test, brutally, and takes the two that survive
 rather than the nine that were offered. The failure mode here is a method that
 accretes one repo's idiosyncrasies until it is portable to nowhere.
 
@@ -96,7 +83,8 @@ gets skipped and an event-driven one does not:
 | Every session close | step 8 — harvest to level 1 and 2 |
 | When a friction is hit a second time | promote it to the roadmap's process area |
 | When the local review skill runs (Phase 9) | ask which level-2 rules pass the generality test |
-| When you notice yourself explaining the same thing to a second repository | record it as a candidate for level 3 in `tracking/candidates.md`; the next release decides and bumps |
+| When you notice yourself explaining the same thing to a second repository | record it as a candidate for level 3 in the outbox, `.agents/tracking/candidates.md`; the next release decides |
+| At every release | `release.py triage`: a candidate that waited three releases without gaining what it lacks is discarded |
 | Before a round of harvests | align every carrier first (`prompt-sync.md` §*The cycle*): two commands when nothing diverged, and what makes every harvest read the same base |
 | Before a meta-session, in every carrier | run the local step, `prompt-harvest.md`: it is what the meta-session gathers |
 | When a repo gets significant new work after a gap | run the update invocation before starting, not after |
@@ -153,5 +141,5 @@ Substitute your own nouns:
 
 ## Method changelog
 
-The table of what each method version changed for the reader lives in
-[`method-changelog.md`](../archive/method-changelog.md), beside this file. A release adds its row there.
+From 0.0.22, each release is a section of `.agents/CHANGELOG.md`. The table of what each earlier
+method version changed is frozen in [`method-changelog.md`](../archive/method-changelog.md).

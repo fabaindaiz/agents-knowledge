@@ -25,8 +25,8 @@ Reads:
 - method/prompt-evaluate.md
 - method/prompt-context.md §The set §The enforcement ladder §The principles §The artifacts §Three agents, one source §The platform's own mechanics §Which document to run §Keeping the set versioned, so other copies can catch up
 
-**First, list every method document sitting beside it** and read the `set`
-field in the header. Use every executable prompt present as criteria,
+**First, list every method document sitting beside it.** Use every
+executable prompt present as criteria,
 including any this prompt does not name — the set can grow. If
 `prompt-context.md` is absent, say so in the report and score what you can.
 
@@ -34,7 +34,8 @@ including any this prompt does not name — the set can grow. If
 obviously wrong in one line. The only file you write is the report.
 
 Read the AI-facing surface first — every instruction file for every assistant,
-`.claude/` in full, any method header, and `docs/` — and then read enough of
+`.claude/` in full, `.agents/README.md` and `.agents/carrier.toml`, and
+`docs/` — and then read enough of
 the repository itself to judge whether those instructions are **true**.
 
 Answer the nine questions. Quote commands and rules from where they are
@@ -48,15 +49,16 @@ finding with its evidence and what it lets through.
 
 Finish with the next-steps table ordered **cheapest first**, marking which
 rows need a decision from me, and one line on how to proceed with the method:
-bootstrap, bootstrap in adopt mode, update from version N, or targeted fixes
+bootstrap, bootstrap in adopt mode, update from X.Y.Z, or targeted fixes
 first.
 
-Report the completeness of the method set itself: which documents are
-present, which are missing, and whether they all carry the same `ancestry` and
-`version`.
+Report whether the bundle is intact: its `version` (the frontmatter of
+`.agents/README.md`) and what `python3 .agents/tools/bundle.py verify` prints —
+it writes nothing.
 
 Write the report to `.agents/evaluation-<today>-<content6>.md` — `<content6>`
-is the last part of `bundle.py id s "<the report's summary paragraph>"`, so two
+is the last part of `bundle.py id s "<the report's summary paragraph>"` (with
+no `carrier.toml` yet, the first six hex of that paragraph's sha256), so two
 branches evaluating on one day never collide — keep it under about
 200 lines with the summary on one screen, and put **no secrets, credentials,
 personal data or customer names** in it — if you find a secret committed here,
@@ -191,12 +193,11 @@ In this order. Stop early if the repository is small; say so if you did.
   `.aider.conf.yml`, `.windsurfrules`, and any other assistant's instruction file
 - `.claude/` in full: `settings.json`, `settings.local.json`, `skills/`,
   `commands/`, `hooks/`, `logs/`
-- Any method header in any of the above — the version and ancestry tell you
-  whether this repo has been through this before
-- **Every prompt document of the method set that is present**, whatever it is
-  called: read the `set` field and list the files beside this one. Each
-  executable prompt you find defines criteria; use all of them, including any
-  this document does not name.
+- `.agents/README.md`'s frontmatter and `.agents/carrier.toml` — the `version`
+  and `adopted` tell you whether this repo has been through this before
+- **Every prompt document of the method that is present**, whatever it is
+  called: list the files beside this one. Each executable prompt you find
+  defines criteria; use all of them, including any this document does not name.
 - `docs/` in full, with attention to anything that looks like decisions, ADRs,
   architecture, a roadmap, references or a changelog
 
@@ -239,29 +240,29 @@ Claude Code, Cursor and Copilot are the common set — and answer:
   for the others, and that is either a deviation to record or a rule to push up
   the ladder.
 
-### 2. Is there a method header, and is the set complete?
+### 2. Is the bundle here, and is it intact?
 
-If there is one, report `lineage`, `ancestry`, `version`, `adopted`, and the
-contents of `adapted` and `declined`.
+If it is, report its `version` (the frontmatter of `.agents/README.md`) and,
+from `.agents/carrier.toml`, `adopted`, `upstream`, `adapted` and `declined`.
 
-**Then check the set against reality**: every document the `set` field names,
-present or missing; every document present that the field does not name; and
-whether all of them carry the *same* `ancestry` and `version`. A mixed set is a
-finding — somebody copied one file and not the others, and the prompts now
-disagree about the method. Name which file is the odd one out.
+**Then check the copy against its release** with `bundle.py verify` (or
+`sha256sum -c SHA256SUMS` inside `.agents/`): a shipped file changed, missing
+or unlisted is a finding — the next update overwrites it; name the file. So is
+a `carrier.toml`, `tracking/` rows or an evaluation report copied from another
+repository (the tell: an `adapted` entry naming a file this repository lacks).
 
 The contents of `adapted` and `declined` are the most informative lines in the
-whole header: they are this repository's own record of
-what it changed and what it refused, and they are what stops the next update
-re-proposing both.
+bundle: they are this repository's own record of what it changed and what it
+refused, and they are what stops the next update re-proposing both.
 
-This answer decides what the reader does next: no header means bootstrap, an
-older version means update, a divergent ancestry means a conversation, and a
-present header with absent artifacts means repair.
+This answer decides what the reader does next: no bundle means bootstrap, an
+older version means update, a copy on the layout before 0.0.22 (a README header
+with `lineage:`) means an update from a release through the home repository,
+and a `carrier.toml` with absent artifacts means repair.
 
-If the header claims `adopted` but the artifacts it names do not exist, say so
-plainly: **the file was copied without the work.** That is a specific and common
-state, and it is worth its own sentence.
+If `carrier.toml` claims `adopted` but the artifacts it names do not exist, say
+so plainly: **the files were copied without the work.** That is a specific and
+common state, and it is worth its own sentence.
 
 ### 3. Does every rule name its consequence and its enforcer?
 
@@ -391,7 +392,7 @@ than exhaustive.
 
 ```markdown
 # AI instruction system — evaluation
-**Repository:** <name> · **Date:** <date> · **Method header:** <version + ancestry, or "none">
+**Repository:** <name> · **Date:** <date> · **Bundle:** <version, or "none">
 
 ## In one paragraph
 <Where this repository stands, what the single most valuable next step is, and
@@ -427,7 +428,7 @@ roughly what it costs. Someone who reads only this should be able to decide.>
 | 1 | <cheapest first> | <hours/days> | | |
 
 ## How to proceed with the method
-<One of: run bootstrap · run bootstrap in adopt mode · run update from vN ·
+<One of: run bootstrap · run bootstrap in adopt mode · run update from X.Y.Z ·
 targeted fixes first, then bootstrap. With the reason.>
 
 ## Not determined

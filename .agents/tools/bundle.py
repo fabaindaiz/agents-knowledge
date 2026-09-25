@@ -1704,11 +1704,13 @@ def _scope_report(scope: Scope, verb: str) -> list[str]:
 # --- verify ----------------------------------------------------------------------------------------
 
 
-def verify_problems(tree: Path, privacy: PrivacyReport | None = None) -> list[str]:
+def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: bool = False) -> list[str]:
     """Everything a carrier's gate fails on: the copy is the release, it links and routes, it leaks nothing.
 
     Privacy warnings are advisory and printed by the caller, not failed on. A bundle from before 0.0.22
     fails with one line that says how to update it, instead of every check failing on the old layout.
+    With `release`, the tree is a release as it arrives (in `incoming/`, say): it has no carrier file and
+    no outbox yet, and holding either would be another repository's own files.
     """
     _a_bundle(tree)
     if is_legacy(tree):
@@ -1719,6 +1721,10 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None) -> list[st
     privacy = privacy if privacy is not None else privacy_check(tree)
     problems += [f"privacy: {f.where} {f.rule}: {f.match}" for f in privacy.failures]
     problems += invisible_characters(tree, [r for r in all_files(tree) if not r.startswith("incoming/")])
+    if release:
+        foreign = [r for r in all_files(tree) if is_carrier_owned(r) and not r.startswith("incoming/")]
+        return problems + [f"{r}: another repository's own file, which a release never carries" for r in foreign] \
+            + incoming_problems(tree)
     problems += outbox_problems(tree)
     try:
         carrier = read_carrier(tree)
@@ -1751,7 +1757,7 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
 # crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
 # tenth.
-BUDGETS = {"coding": 13_000, "card": 250}
+BUDGETS = {"coding": 9_900, "card": 240}
 CARD_ROW = re.compile(r"^\| \[[\w-]+\]\(\.\./notes/(?:active|review)/[\w-]+\.md\)")
 
 
@@ -1804,6 +1810,7 @@ def _parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=help_text)
         p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
         p.add_argument("--check", action="store_true", help=argparse.SUPPRESS)
+        p.add_argument("--release", action="store_true", help="the tree is a release as it arrives: no carrier file, no outbox")
     p = sub.add_parser("check-local", help="the carrier changed only what it owns (exit 1)")
     p.add_argument("repos", nargs="*")
     p = sub.add_parser("carrier-id", help="a repository's stored random id; --mint writes one where there is none")
@@ -1850,7 +1857,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print("  . `digest` is deprecated: the bundle is verified by SHA256SUMS now; running `verify`")
         tree = Path(args.tree)
         privacy = privacy_check(tree) if not is_legacy(_a_bundle(tree)) else None
-        problems = verify_problems(tree, privacy)
+        problems = verify_problems(tree, privacy, release=args.release)
         for note in privacy.notes() if privacy else []:
             print(note)
         for problem in problems:

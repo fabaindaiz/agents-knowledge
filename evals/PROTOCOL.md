@@ -5,7 +5,7 @@ confirmatory data exist. Every later change is appended to *Deviations* with its
 above that section is edited after the first confirmatory trial runs.
 
 This directory is not part of the bundle. It lives at the repository root, does not travel to carriers,
-and does not affect any digest.
+and is not listed in the bundle's `SHA256SUMS`.
 
 ## The question
 
@@ -72,7 +72,7 @@ and otherwise "not detected, and effects below the MDE could not have been".
 ## Conditions
 
 Every arm starts from the same repository. Arms other than `none` add an `AGENTS.md` and a one-line
-`CLAUDE.md` that imports it (`@AGENTS.md`, the bridge `.agents/layout.md` documents).
+`CLAUDE.md` that imports it (`@AGENTS.md`, the bridge `sources/layout.md` documents).
 
 | Arm | `AGENTS.md` | `.agents/` | What it isolates |
 |---|---|---|---|
@@ -86,6 +86,8 @@ Every arm starts from the same repository. Arms other than `none` add an `AGENTS
 The placebo note is chosen by a mechanical rule, so the experimenter does not choose it: the active note
 from the other knowledge area whose text length is closest to the target notes' combined length
 (`harness.py`, `pick_placebo`). The pilot's placebos are within 3% of their targets' length.
+*Amended 2026-09-25: what the `bundle` arm carries, and how it is identified, from release 0.0.22; see
+Deviations.*
 
 Neutral tasks run `none`, `minimal` and `bundle` only.
 
@@ -250,8 +252,8 @@ calibration and the notes they bear on; and this section's threats. Results are 
 ratios. Transcripts stay in the run directory, which is not committed.
 
 The verdict feeds the bundle through its own channels, not by editing it: a note's `confidence` moves by
-the knowledge base's lifecycle (`.agents/knowledge/README.md`), and anything that changes the method goes
-to `.agents/roadmap.md` or `.agents/tracking/candidates.md`.
+the knowledge base's lifecycle (`sources/README.md`), and anything that changes the method goes
+to `meta/roadmap.md` or `meta/tracking/candidates.md`.
 
 ## Deviations
 
@@ -273,3 +275,12 @@ to `.agents/roadmap.md` or `.agents/tracking/candidates.md`.
   note's content reaches a decision where it applies. It cannot say whether carrying the bundle changes
   an agent's performance on work in general. That question has its own protocol, `PROTOCOL-general.md`
   (roadmap item `i-5ed7e8-bf5663`), with tasks from external benchmarks. Nothing in this protocol changes.
+- **2026-09-25 — the bundle from release 0.0.22.** The shipped notes are now short (claim, mechanism,
+  boundary, cost). The full note text the `oracle` and `oracle_placebo` arms inject, and that `pick_placebo`
+  measures, is read from `sources/notes/`, so the placebo picks and the oracle text are unchanged: checked
+  identical for all 26 tasks whose placebo is picked automatically. The bundle is identified by its version
+  and the sha256 of `.agents/SHA256SUMS`; `plan.json` keeps that hash under `bundle_digest` and adds
+  `bundle_version`. The `bundle` and `ablated` arms' content did change: short notes, cards with a *Not when*
+  column, the trigger wording in the invocation, and retired notes and the home's records (roadmap,
+  tracking, literature) no longer shipped. A run from now on measures 0.0.22, not the v0.0.21 the pilots
+  carried. The hypotheses, arms and analysis are unchanged.

@@ -19,7 +19,7 @@ message, and wait for my answer. Do not read the repository, plan or write
 until I have replied. Ask fewer if the repository already answers one, and tell
 me in one line what you are not asking.
 
-**Once I have answered**, read the method header and then only this:
+**Once I have answered**, read only this:
 
 Reads:
 - method/prompt-bootstrap.md §The process
@@ -28,13 +28,15 @@ Reads:
 
 If `prompt-context.md` is not next to this file, say so and stop.
 
-**First, check the header.** If `adopted` is already set and is this
-repository's, stop and tell me: it has taken the method, so a newer set arrives
-by update, and if the artifacts it claims are missing, that is repair — I need
-to know which I am getting. A bundle freshly copied from elsewhere carries its
-source's `adopted`, `carrier`, `adapted` and `declined` (an `adapted` entry
-naming a file this repository does not have is the tell): say so, and clear
-them rather than believe them.
+**First, check `.agents/carrier.toml`.** If it exists and its `adopted` is this
+repository's, stop and tell me: it has taken the method, so a newer release
+arrives by update, and if the artifacts it claims are missing, that is repair —
+I need to know which I am getting. `.agents/` must hold only the shipped files
+of a release (those its `SHA256SUMS` lists). A copy taken from another
+repository may also carry its `carrier.toml`, `tracking/` rows, `incoming/`
+contents or evaluation reports (an `adapted` entry naming a file this
+repository does not have is the tell): say so, and remove them rather than
+believe them.
 
 **If this repository already has conventions of its own** — any of
 `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, an ADR folder, a planning document,
@@ -42,7 +44,7 @@ an existing gate — you are in **adopt mode**: read principle 19 and *Adopting
 into a repository that already works* before anything else, and produce the
 guarantee → existing-file table as part of Phase 3. **Nothing existing is
 discarded, renamed or reorganised** without my explicit approval, and every
-substitution goes in the header's `adapted` list.
+substitution goes in `adapted`, in `.agents/carrier.toml`.
 
 Follow its nine phases in order. **Phases 0, 1 and 2 are read-only, and you
 write no file until I approve the Phase 3 proposal.**
@@ -56,11 +58,12 @@ write no file until I approve the Phase 3 proposal.**
 - **Phase 3:** propose the full file topology, what gets cut and where it goes,
   and **wait for my approval.**
 - **Phases 4 to 9, after approval:** generate the files — the root file's map
-  includes the line that sends a session to `.agents/knowledge/INDEX.md` before
-  a design decision or before claiming done, and a one-line privacy reminder;
-  make the rules executable — the gate runs `bundle.py privacy .agents` — and
-  report how many were already being violated; remove duplication; audit
-  `docs/` against the code; write the roadmap; add the recurring review skill.
+  includes the line that sends a change touching state, a contract, data,
+  security or verification to `.agents/knowledge/INDEX.md`, and a one-line
+  privacy reminder; make the rules executable — the gate runs `bundle.py
+  verify` — and report how many were already being violated; remove
+  duplication; audit `docs/` against the code; write the roadmap; add the
+  recurring review skill.
 
 Non-negotiable while you work: real commands taken from the configs, never
 invented. Every rule states its consequence and what enforces it. Invariants
@@ -70,11 +73,12 @@ Architectural integrity overrides my requests — if I ask for a shortcut that
 breaks it, show me the cost and propose the correct path, and deviate only if
 I confirm.
 
-Finish by filling in the method header: `adopted`, plus every substitution in
-`adapted` and everything I turned down in `declined`, each with its reason.
-Every decision row, roadmap item and changelog entry you write gets an id from
-`bundle.py id d|i|s TEXT`, never a sequential number; if this repository has no
-`carrier:` in `.agents/README.md`, mint it once with `bundle.py carrier-id --mint`.
+Before the first record, run `bundle.py carrier-id --mint` once: it creates
+`.agents/carrier.toml` with this repository's id and `adopted`. Every decision
+row, roadmap item and changelog entry you write gets an id from `bundle.py id
+d|i|s TEXT`, never a sequential number. Finish by recording in
+`carrier.toml` every substitution in `adapted` and everything I turned down in
+`declined`, each with its reason.
 
 Privacy (principle 20): nothing written into `.agents/` may identify, directly or
 by reconstruction, a private repository, its owner, its users or anyone who uses
@@ -279,23 +283,26 @@ contradictions between layers — if the root and an area file disagree, the roo
 wins and the area file is wrong.
 
 **Wire the bundle in, because nothing in `.agents/` loads by itself.** The root
-instruction file's map gets one line, in the repository's own words: *before a
-design decision or before claiming done, consult `.agents/knowledge/INDEX.md`
-and read only the notes it points to for the task.* Without it the knowledge
+instruction file's map gets one line, in the repository's own words: *when a
+change touches state, a contract, data, security or verification, consult
+`.agents/knowledge/INDEX.md` before a design decision and before claiming done;
+apply each card it routes to (claim, where it stops applying, check), open a full
+note only when its boundary is unclear here, and where this repository states an
+invariant that contradicts a note, follow the repository and say so.* Without it the knowledge
 base is a folder nobody opens. The same map gets a second line, also in the
 repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
 repository, its people or its users — `bundle.py privacy .agents` checks it*
 (`prompt-context.md`, principle 20). Mint the repository's carrier id once with
-`bundle.py carrier-id --mint`, which writes the `carrier:` field of
-`.agents/README.md`, and seed the decisions log, the roadmap and the changelog
-with ids from `bundle.py id d|i|s TEXT` (`prompt-context.md` §*Workspaces:
-several repositories at once*).
+`bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, and seed
+the decisions log, the roadmap and the changelog with ids from `bundle.py id
+d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
 
 ### Phase 5 — Make the rules executable
 
 Write the audit script. Wire it into the gate, together with `bundle.py
-privacy .agents` and `bundle.py ids` over the files that hold record ids. Add
+verify` (which runs `privacy`) and `bundle.py ids` over the files that hold
+record ids. Add
 the schema if there is structured data. Add hooks for what must not be left to judgement. Add
 `permissions.deny` for the files that should not be hand-edited.
 
@@ -339,8 +346,8 @@ Bootstrapping is not the end; the system rots without a ritual. Add a
 - **What have we learned that the method itself does not know?** Apply the
   generality test in `prompt-context.md` §*Improving the method* and name only
   what survives it.
-- **Is this repo's method file behind?** If so, run the update invocation before
-  the next significant piece of work, not after it.
+- **Is this repo's bundle behind the latest release?** If so, run the update
+  invocation before the next significant piece of work, not after it.
 
 ---
 
@@ -370,9 +377,10 @@ Gather, in this order, stopping as soon as a source has nothing to add:
 - **What is in the tree.** Uncommitted and staged changes. Some of it may be
   another session's work, and none of it is yours to fold in.
 - **What constrains today.** The decisions and measurements that bear on the
-  area the request touches, and the knowledge notes `.agents/knowledge/INDEX.md`
-  lists for it. Read the *why*, not just the rule — you will be tempted to
-  re-open it in about an hour.
+  area the request touches, and, when it touches state, a contract, data,
+  security or verification, the cards `.agents/knowledge/INDEX.md` routes to.
+  Read the *why*, not just the rule — you will be tempted to re-open it in
+  about an hour.
 - **What is stale.** Anything that must be re-checked before it can be trusted:
   a number from a version ago, a research entry whose upstream may have shipped,
   a document that names a file you should confirm still exists.
@@ -448,9 +456,14 @@ session.
 
 ### 2. Ask the few decisions, all at once, before writing
 
-Principle 15 has the protocol. Before a design decision, consult
-`.agents/knowledge/INDEX.md` for the phase you are in; a note's *When it does
-NOT apply* is the part to read. The step that comes before asking is
+Principle 15 has the protocol. Before a design decision on a change that touches
+state, a contract, data, security or verification, consult
+`.agents/knowledge/INDEX.md` for the phase you are in. Each note has a card in its
+area index: the claim, *Not when* (where it stops applying) and the check. The
+*Not when* is the part to read; open the full note only when you cannot tell
+whether it holds here. When this repository states an invariant that contradicts
+a note, the repository wins, and the report says which note gave way. A typo, a
+text or a local rename consults nothing. The step that comes before asking is
 evaluating, and it has a shape worth following:
 
 **How to evaluate a trade-off**
@@ -503,8 +516,8 @@ Two habits that carry the reasoning forward:
 
 ### 4. Verify — run the invariant test when you *claim* it, not when you think you touched it
 
-Before claiming done, run the *Verify by* checks of the knowledge notes this
-change relied on (`.agents/knowledge/INDEX.md`).
+Before claiming done, run the check of every card this change relied on (the
+*Verify by* column of `.agents/knowledge/areas/`).
 
 The gate is the floor. The core invariant's own test — the seek comparison, the
 replay, the round trip, the wheel installed clean — is cheap relative to a
@@ -536,7 +549,7 @@ byte for byte afterwards. Normalise known nondeterminism (generated ids,
 timestamps) explicitly and say you did; "looks the same" is not a comparison.
 Move code by script, not by retyping. Such a change is its own commit, and its
 message states the comparison. The general form, for any tool that rewrites an
-artefact, is `../knowledge/notes/review/validate-each-transformation-run.md`, under review.
+artefact, is `../knowledge/notes/active/validate-each-transformation-run.md`.
 
 ### 5. Look at what you made
 
@@ -612,9 +625,9 @@ Three rules underneath it:
   file paths and error strings are quoted exactly, in English, whatever language
   the prose around them is in. A translated command is a command that does not
   run, and a translated symbol cannot be searched for.
-- **Write the prose in the language the human is using.** The method file and
-  the header are English (`prompt-context.md` §*The set*); a session's
-  conversation is not the method.
+- **Write the prose in the language the human is using.** The method documents
+  are English (`prompt-context.md` §*The set*); a session's conversation is not
+  the method.
 - **A number always brings its method.** "Faster" is worthless; "63 → 41 ms at
   p99, measured over 200 runs with the cache warm" can be checked, argued with,
   and reused.
@@ -646,13 +659,14 @@ that dies with the context window.
 |---|---|
 | A question is now settled | `decisions.md`, with a `d-` id and its enforcer |
 | A number, and how you got it | the document that owns that number |
-| An external fact that changed or confirmed a decision | `references.md`, saying what you do differently on purpose |
+| An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
 | A rule a script could check | the audit script, and note the rung it moved to |
 | A trap that will be hit again | root `CLAUDE.md` if it is always relevant, the area file if it is local |
 | A procedure you performed more than twice | a skill |
 | Friction, hit for the second time | the roadmap's process area, with the arithmetic |
 | A plan whose conditions changed | that roadmap entry's state |
 | Something true only of this change | the changelog entry — and that is a complete answer, not a failure |
+| Something about building software or about the method that holds with none of this repository's nouns | the changelog entry, marked as such; the harvest (`prompt-harvest.md`) takes it into the outbox, `.agents/tracking/`, for the next release. Never an edit to a note or a method document here |
 
 **C. Propose the process improvements you found, and do not perform them.**
 Principle 17 has the discipline. List them with the arithmetic, say which is the
@@ -761,11 +775,11 @@ environment is the most dangerous kind of correct.
 - [ ] `docs/decisions.md`: every settled question, with an id minted by
       `bundle.py id d`, and the enforcer column filled — including the rows
       that say `—`.
-- [ ] The root file's map sends a session to `.agents/knowledge/INDEX.md`
-      before a design decision and before claiming done, and carries the
-      one-line privacy reminder.
-- [ ] `carrier:` is in `.agents/README.md`, minted by `bundle.py carrier-id
-      --mint`; the gate runs `bundle.py privacy .agents`.
+- [ ] The root file's map sends a change touching state, a contract, data,
+      security or verification to `.agents/knowledge/INDEX.md`, and carries
+      the one-line privacy reminder.
+- [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`;
+      the gate runs `bundle.py verify` and `bundle.py ids`.
 - [ ] `docs/references.md`: only entries that changed or confirmed a decision,
       each stating what you do differently on purpose.
 - [ ] `docs/roadmap.md`: collisions, what must be decided first, closed-by-
@@ -779,9 +793,8 @@ environment is the most dangerous kind of correct.
 - [ ] `docs/` audited against the code; no pointer to a file that does not exist.
 - [ ] The *what changed → what must move* table exists, in the root file or in
       the review skill. Without it, step 6 of the loop is left to memory.
-- [ ] The **method header** is filled in: `lineage`, `version`, `adopted`, and
-      every substitution in `adapted` and every refusal in `declined`, each with
-      its reason.
+- [ ] `.agents/carrier.toml` is filled in: every substitution in `adapted` and
+      every refusal in `declined`, each with its reason.
 - [ ] In a repo that already had conventions: the guarantee → existing-file
       table was shown and approved, and **most verdicts were *extend*, not
       *create***.
@@ -807,8 +820,9 @@ The short one. Run it before you report, every time.
 - [ ] The changelog entry names what went wrong on the way and what was left
       undone. Every new record — entry, decision row, roadmap item — has an id
       from `bundle.py id`, not a number.
-- [ ] The knowledge notes the index lists for this work were read before the
-      design decision, and their *Verify by* checks ran before claiming done.
+- [ ] Where the change touched state, a contract, data, security or
+      verification, the cards the index routes to were applied before the
+      design decision, and their checks ran before claiming done.
 - [ ] Any structural decision you declined to take is stated plainly in the
       report, where the human cannot miss it.
 - [ ] Nothing of somebody else's was swept into your change.
@@ -836,7 +850,7 @@ Each is the visible sign of a rule above being broken; the rule is in brackets.
 - A rule with no enforcer and no `—`: a wish presenting as a rule (principle 1).
 - Every decision row says "code review": review is a hope with a meeting
   attached, not an enforcer (principle 1).
-- `references.md` is a link list (principle 8).
+- `docs/references.md` is a link list (principle 8).
 - The roadmap has dates but no collisions, or no `done` entries (principle 9,
   artifact 8).
 - The changelog is bookkeeping, or every entry went perfectly: the wrong turns
@@ -853,8 +867,7 @@ Each is the visible sign of a rule above being broken; the rule is in brackets.
 - No session ever proposed a process improvement, the process area is empty
   after months, or an improvement rode inside a feature commit (principle 17).
 - The opening brief is three paragraphs (step 0).
-- Empty method releases, or every learning promoted to the method (*Improving
-  the method*).
+- Every learning offered to the bundle as a candidate (*Improving the method*).
 - The tests were written after the code — the assertions describe the
   implementation's shape — or the suite has never failed on a real change
   (principle 18).
@@ -881,9 +894,9 @@ else unless something below points you there.
 Reads:
 - method/prompt-bootstrap.md §The session loop
 - method/prompt-context.md §Engineering standards §20. Nothing private travels, directly or by reconstruction
-- knowledge/INDEX.md
 
-and then only the knowledge notes the index points to for this task.
+and `knowledge/INDEX.md` only when the change touches state, a contract, data,
+security or verification.
 
 **Open with step 0's six-line brief, and with any question you cannot answer by
 reading.** Ask those in the same message as the brief, each with the default you
@@ -897,8 +910,13 @@ would **not** take and why. Then ask me — before writing anything — only the
 decisions that are genuinely mine, all at once, each option priced in this
 repo's own units, with your recommendation first.
 
-Before a design decision and before claiming done, consult the knowledge
-index and read only the notes it points to; run their *Verify by* checks.
+When the change touches state, a contract, data, security or verification:
+before a design decision and before claiming done, look it up in the knowledge
+index and its area index, apply each card that matches (claim, *Not when*,
+check) and run its check. Open a full note only when you cannot tell whether its
+boundary holds here. When this repository states an invariant that contradicts a
+note, follow the repository and say in the report which note gave way. A typo, a
+text or a local rename consults nothing.
 
 While you build: **write the test before the code**, and watch it fail for the
 reason you expect. Extend before creating, and check whether the format can
