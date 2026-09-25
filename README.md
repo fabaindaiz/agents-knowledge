@@ -121,6 +121,13 @@ twice as much per task for a frontier model, and a content effect shows only whe
 is out of sight, on few tasks and without significance. The confirmatory run is roadmap item
 `i-5ed7e8-0d9b6a`.
 
+Those tasks were written from the notes, so they measure whether a note's content reaches a decision,
+not whether the agent works better in general. That second question has its own protocol,
+[`evals/PROTOCOL-general.md`](evals/PROTOCOL-general.md) (roadmap item `i-5ed7e8-bf5663`), with tasks from
+external benchmarks: real issues opened after the models' training cutoffs, competitive programming,
+code reasoning, optimisation and design judged by what it costs to change later. It is a reviewed
+draft; nothing of it has run.
+
 ## Keeping several repositories in sync
 
 This repository is where the bundle is maintained. A *meta-session*
