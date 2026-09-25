@@ -56,8 +56,9 @@ not having loaded this file, is never a reason to skip it.
 
 This repository is always one of its carriers (`r-5ed7e8`). The order:
 
-1. **List the carriers open on this machine** in the local manifest (below). Name every repository
-   the session may write, and only those.
+1. **Read `meta/roadmap.md` §*Where we are* first**: the state the last session left, what waits on the
+   user, and what is next. Then **list the carriers open on this machine** in the local manifest
+   (below), naming every repository the session may write, and only those.
 2. **Phase 1, read-only:** `bundle.py check-local` in each carrier, then `release.py gather --out DIR`.
    Give every item a verdict and **ask for approval of the one table**
    before writing anything.
@@ -69,8 +70,9 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
    there, and write one changelog entry per carrier in that carrier's own format.
 5. **Phase 3:** `release.py register`, then `release.py align` must report every reached carrier
    aligned. Carriers not reached go in `meta/roadmap.md` under *Blocked outside*.
-6. **Close:** one commit per carrier, following that repository's own commit rules; here the release
-   is also recorded in `meta/roadmap.md` under *Done*. Push, with the tag.
+6. **Close:** this repository's own learnings go to its outbox (`prompt-harvest.md`); `meta/roadmap.md`
+   records the release under *Done* and rewrites *Where we are*; one commit per carrier, following that
+   repository's own commit rules. Push, with the tag.
 
 The tools report what they found; they decide nothing. Read what `gather` and `lost` print.
 
