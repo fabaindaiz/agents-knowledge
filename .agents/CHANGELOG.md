@@ -20,23 +20,34 @@ repository tags them `v0.0.20` and `v0.0.21`, and keeps their method changelog.
   procedures that build and carry a release stay in the home repository.
 - **The knowledge is generated.** Each note ships short (claim, mechanism, boundary, cost), and every index
   table is built from the notes' own fields. The area indexes gained a *Not when* column: a card is the
-  claim, where it stops applying, and the check.
+  claim, where it stops applying, and the check. Rows are ordered by topic, then by note, no longer by
+  hand.
 - **Versions and integrity use industry formats.** One Semantic Versioning version for the whole bundle, in
   the README's frontmatter; `SHA256SUMS` in the GNU coreutils format, which `sha256sum -c` verifies without
   this tool; this changelog in Keep a Changelog format.
 - **A carrier's own fields live in `carrier.toml`**, which no release writes: its id, when it adopted the
   bundle, where it pulls from, what it adapted and what it declined.
-- **`tracking/` is this carrier's outbox**: only what its harvest learned since the last release. The home
-  reads it at the next release; `knowledge/OPEN.md` lists what the home is still waiting for.
+- **`tracking/` is this carrier's outbox**: only what its harvest learned since the last release, refusals
+  included (a row whose *Lacks* is `refused: <reason>`). The home reads it at the next release;
+  `knowledge/OPEN.md` lists what the home is still waiting for.
+- **The coding session consults the knowledge only when a change touches state, a contract, data, security
+  or verification**, applies the card before opening a note, and follows the repository where it states an
+  invariant that contradicts a note. `knowledge/INDEX.md` left the session's fixed load.
+- A release arrives in `incoming/release/`, written by `bundle.py export` in a repository that holds it.
 - `bundle.py` needs Python 3.11 or newer.
 
 ### Added
 
-- `bundle.py verify`: checksums, links, routing, session reads, privacy, invisible characters, the outbox,
-  the carrier file and `incoming/`, in one command.
+- `bundle.py verify`: checksums, links, routing, session reads, privacy, invisible characters, hidden and
+  stray files, the outbox, the carrier file and `incoming/`, in one command; `--release` checks a release
+  as it arrives.
+- `bundle.py export DEST`: this bundle's shipped files and `SHA256SUMS`, never this repository's own.
 - `bundle.py changelog --since X.Y.Z`, `bundle.py outbox --reset`, `bundle.py report --check` (static budgets).
-- `incoming/` is refused when it holds invisible or bidirectional Unicode, symbolic links, executable files,
-  assistant, git or editor configuration, or scripts other than the bundle's tool.
+- `incoming/` is refused when it holds invisible or bidirectional Unicode (in text or names), text that is
+  not UTF-8, symbolic links, executable files, assistant, git or editor configuration and instruction files,
+  or scripts other than the bundle's tool.
+- Frontmatter is read as a documented subset of YAML: a plain value that YAML parsers would read as another
+  type or refuse (`yes`, `1.0`, a date, `a: b`) must be quoted.
 
 ### Deprecated
 

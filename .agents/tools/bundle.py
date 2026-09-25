@@ -19,6 +19,7 @@ own tool, never by this one.
                                                                 or defined under another carrier's id
     python3 .agents/tools/bundle.py report [TREE] [--json] [--check]   size per folder and session; budgets
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
+    python3 .agents/tools/bundle.py export DEST                 the shipped files and SHA256SUMS: a release as it travels
     python3 .agents/tools/bundle.py outbox --reset              the harvest outbox back to its empty templates
     python3 .agents/tools/bundle.py digest [TREE] --check       deprecated alias of `verify` (0.0.x only)
 
@@ -617,10 +618,34 @@ def _evidence_file(rel: str) -> bool:
     return rel.startswith(("tracking/", "meta/tracking/"))
 
 
+def _never_travels(rel: str) -> bool:  # noqa: D103
+    """An evaluation report or material offered in `incoming/`: this repository's own, never published by
+    the bundle, so not what the privacy check guards (an evaluation report names its repository)."""
+    parts = rel.split("/")
+    return (len(parts) == 1 and parts[0].startswith("evaluation-")) or (parts[0] == "incoming" and rel != "incoming/README.md")
+
+
 def all_files(tree: Path) -> list[str]:
-    """Every file of a bundle, the carrier's own included: what privacy and invisible-text checks read."""
+    """Every file of a bundle, the carrier's own and hidden ones included: what privacy, invisible-text and
+    stray-file checks read. Only caches and a file browser's `.DS_Store` are left out."""
     return sorted((rel for p in tree.rglob("*") if p.is_file() and "__pycache__" not in p.parts
-                   and not _hidden(rel := p.relative_to(tree).as_posix())), key=str.encode)
+                   and (rel := p.relative_to(tree).as_posix()).rsplit("/", 1)[-1] != ".DS_Store"), key=str.encode)
+
+
+def stray_problems(tree: Path) -> list[str]:
+    """Files no release ships and no carrier writes: hidden files, and anything in the carrier's own space
+    that is not its carrier file, its two outbox files or a markdown evaluation report."""
+    problems = []
+    for rel in all_files(tree):
+        top = rel.split("/")
+        if top[0] == "incoming":
+            continue
+        if _hidden(rel):
+            problems.append(f"{rel}: a hidden file in the bundle; no release ships one and no check reads it")
+        elif is_carrier_owned(rel) and rel != CARRIER_FILE and rel not in OUTBOX and not (
+                len(top) == 1 and rel.startswith("evaluation-") and rel.endswith(".md")):
+            problems.append(f"{rel}: not a file this repository owns in the bundle (carrier.toml, the outbox, evaluation-*.md)")
+    return problems
 
 
 def _privacy_lines(path: Path, rel: str, shown: str) -> list[PrivacyLine]:
@@ -687,7 +712,7 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
         targets = [(p, _bundle_rel(p), str(p)) for p in paths]
     else:
         tree = _a_bundle(tree if tree is not None else OWN_BUNDLE)
-        targets = [(tree / rel, rel, rel) for rel in all_files(tree)]
+        targets = [(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
     findings: list[Finding] = []
     allowances: list[tuple[str, str]] = []
     for path, rel, shown in targets:
@@ -1086,7 +1111,15 @@ class FrontmatterError(ValueError):
     """Frontmatter outside the YAML subset the tool reads: refused rather than guessed at."""
 
 
-FRONT_KEY = re.compile(r"^([A-Za-z_][\w-]*):(?:[ \t]+|$)")
+FRONT_KEY = re.compile(r"^([A-Za-z_][\w-]*):(?: +|$)")
+# A plain (unquoted) scalar is kept only when every YAML parser reads it as this same string: no `: ` or
+# trailing `:`, no tab or control character, no line separator, and not a word or number YAML types.
+PLAIN_REFUSED = re.compile(r":\s|:$|[\t\x00-\x08\x0b-\x1f\x7f\x85\u2028\u2029]| #")
+PLAIN_TYPED = re.compile(
+    r"(?i)y|n|yes|no|on|off|true|false|null|~"
+    r"|[-+]?(?:\d[\d_]*)?\.?\d[\d_]*(?:e[-+]?\d+)?|[-+]?0x[\da-f_]+|[-+]?0o?[0-7_]+|[-+]?0b[01_]+"
+    r"|[-+]?\.(?:inf|nan)|[-+]?\d+(?::[0-5]?\d)+(?:\.\d*)?"
+    r"|\d{4}-\d\d?-\d\d?(?:[Tt ]\d\d?:\d\d:\d\d(?:\.\d*)?(?:Z|[-+]\d\d?(?::\d\d)?)?)?")
 _DQ_ESCAPES = {"\\": "\\", '"': '"', "/": "/", "n": "\n", "t": "\t", "r": "\r", "0": "\0", " ": " "}
 
 
@@ -1158,10 +1191,12 @@ class _Scanner:
             if ch == "\n" or ch in stops or (ch == "#" and self.text[self.at - 1] in " \t"):
                 break
             self.at += 1
-        value = self.text[start : self.at].strip()
-        if value[:1] in ("&", "*", "!", "|", ">", "@", "`", "%"):
-            raise self.fail(f"{value[:1]!r} starts a YAML feature outside the subset")
-        return None if value in ("", "~", "null") else value
+        value = self.text[start : self.at].strip(" ")
+        if value in ("", "~", "null"):
+            return None
+        if value[:1] in "&*!|>@`%-?:,=<[]{}#'\"" or PLAIN_REFUSED.search(value) or PLAIN_TYPED.fullmatch(value):
+            raise self.fail(f"the plain scalar {value[:30]!r} is read differently by YAML parsers; quote it")
+        return value
 
     def value(self, flow: bool = False) -> object:
         self.skip_spaces(newlines=flow)
@@ -1182,6 +1217,8 @@ class _Scanner:
             if self.peek() == "]":
                 self.at += 1
                 return items
+            if self.peek() == ",":
+                raise self.fail("an empty item in a flow sequence")
             items.append(self.value(flow=True))
             self.skip_spaces(newlines=True)
             if self.peek() == ",":
@@ -1257,10 +1294,13 @@ def parse_frontmatter(block: str, where: str = "frontmatter") -> dict:
         if scan.peek() in ("\n", "#", ""):
             scan.rest_of_line()
             items = []
-            while block.startswith("  - ", scan.at) or block.startswith("- ", scan.at):
-                scan.at = block.index("- ", scan.at) + 2
+            indent = "  - " if block.startswith("  - ", scan.at) else "- "
+            while block.startswith(indent, scan.at):
+                scan.at += len(indent)
                 items.append(scan.value())
                 scan.rest_of_line()
+            if block.startswith(("  -", "- ", "    -"), scan.at):
+                raise scan.fail("a block sequence item at another indentation")
             data[key.group(1)] = items if items else None
             continue
         data[key.group(1)] = scan.value()
@@ -1448,8 +1488,8 @@ def checksums_text(tree: Path) -> str:
     """The `SHA256SUMS` content for a tree: GNU coreutils text format, `<hex>  <path>`, byte order."""
     lines = []
     for rel in shipped(tree):
-        if "\\" in rel or "\n" in rel:
-            raise RefusedError(f"{rel}: a path GNU sha256sum would escape; rename it")
+        if "\\" in rel or len(rel.splitlines()) != 1 or rel != rel.strip("\n"):
+            raise RefusedError(f"{rel!r}: a path GNU sha256sum would escape or split; rename it")
         lines.append(f"{sha256_file(tree / rel)}  {rel}\n")
     return "".join(lines)
 
@@ -1468,7 +1508,12 @@ def read_checksums(tree: Path) -> dict[str, str]:
         m = CHECKSUM_LINE.match(line)
         if not m:
             raise RefusedError(f"{CHECKSUMS}:{number}: not `<64 hex>  <path>`")
-        listed[m.group(2)] = m.group(1)
+        path = m.group(2)
+        if path in listed:
+            raise RefusedError(f"{CHECKSUMS}:{number}: {path} is listed twice")
+        if path.startswith("/") or ".." in path.split("/"):
+            raise RefusedError(f"{CHECKSUMS}:{number}: {path} is outside the bundle")
+        listed[path] = m.group(1)
     return listed
 
 
@@ -1480,7 +1525,10 @@ def checksum_problems(tree: Path) -> list[str]:
     """
     if not (tree / CHECKSUMS).is_file():
         return [f"{CHECKSUMS}: missing, so nothing in this bundle can be verified"]
-    listed = read_checksums(tree)
+    try:
+        listed = read_checksums(tree)
+    except RefusedError as error:
+        return [str(error)]
     problems = []
     for rel, digest in listed.items():
         path = tree / rel
@@ -1569,15 +1617,23 @@ def invisible_characters(tree: Path, rels: list[str]) -> list[str]:
         text = path.read_bytes().decode("utf-8", errors="replace")
         for number, line in enumerate(text.split("\n"), 1):
             for column, ch in enumerate(line, 1):
-                if unicodedata.category(ch) == "Cf":
+                if unicodedata.category(ch) == "Cf" or ch in INVISIBLE_OTHER:
                     found.append(f"{rel}:{number}:{column}: invisible U+{ord(ch):04X} {unicodedata.name(ch, 'format character')}")
     return found
 
 
 # What may never arrive through `incoming/`: configuration a coding assistant or git would execute in
 # the receiving repository, and scripts. The bundle's own tool is the one script a release carries.
-INCOMING_REFUSED_NAMES = re.compile(r"(^|/)(settings[^/]*\.json|hooks|\.claude|\.git[^/]*|\.githooks|\.github|\.vscode)(/|$)")
-INCOMING_SCRIPT = re.compile(r"\.(sh|bash|zsh|fish|py|js|mjs|cjs|ts|rb|pl|ps1|bat|cmd|exe)$", re.IGNORECASE)
+INCOMING_REFUSED_NAMES = re.compile(
+    r"(?i)(^|/)(settings[^/]*\.json|hooks|\.claude|\.git[^/]*|\.githooks|\.github|\.vscode|\.idea|\.cursor|\.mcp\.json|"
+    r"\.envrc|\.env|makefile|claude\.md|agents\.md|gemini\.md|\.cursorrules|copilot-instructions\.md)(/|$)")
+INCOMING_SCRIPT = re.compile(r"(?i)\.(sh|bash|zsh|fish|py|pyc|pyw|pyz|js|mjs|cjs|ts|rb|pl|php|ps1|psm1|bat|cmd|com|command|"
+                             r"exe|dll|so|dylib|jar|app|vbs|scpt|applescript)$")
+# The one script a release carries, at its place in the release: `tools/bundle.py`, or under one folder
+# the release was exported into.
+INCOMING_TOOL = re.compile(r"^(?:[^/]+/)?tools/bundle\.py$")
+# Characters that render as nothing and are not format characters (Cf): fillers and a grapheme joiner.
+INVISIBLE_OTHER = frozenset("\u034f\u115f\u1160\u3164\uffa0\u2800\u180e")
 
 
 def incoming_problems(tree: Path) -> list[str]:
@@ -1599,14 +1655,20 @@ def incoming_problems(tree: Path) -> list[str]:
             problems.append(f"{rel}: a symbolic link; incoming material is copied, never linked")
             continue
         inner = path.relative_to(folder).as_posix()
+        if any(unicodedata.category(ch) == "Cf" or ch in INVISIBLE_OTHER for ch in inner):
+            problems.append(f"{rel!r}: an invisible character in the name")
         if INCOMING_REFUSED_NAMES.search(inner):
             problems.append(f"{rel}: assistant, git or editor configuration, which would run in this repository")
         if path.is_file():
             rels.append(rel)
             if os.stat(path).st_mode & 0o111:
                 problems.append(f"{rel}: has an executable bit")
-            if INCOMING_SCRIPT.search(inner) and not inner.endswith("tools/bundle.py"):
+            if INCOMING_SCRIPT.search(inner) and not INCOMING_TOOL.match(inner):
                 problems.append(f"{rel}: a script; the only one a release carries is tools/bundle.py")
+            try:
+                path.read_bytes().decode("utf-8")
+            except UnicodeDecodeError:
+                problems.append(f"{rel}: not UTF-8 text, so no check can read it")
     return problems + invisible_characters(tree, rels)
 
 # --- command line ----------------------------------------------------------------------------------
@@ -1717,10 +1779,12 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         return [f"{tree}: a bundle from before 0.0.22 (its README header names a `lineage`); update it with "
                 "`method/prompt-update.md` from a release, whose layout this tool checks"]
     problems = [] if bundle_version(tree) else ["README.md: its frontmatter has no Semantic Versioning `version`"]
-    problems += checksum_problems(tree) + link_problems(tree) + reachability_problems(tree) + session_problems(tree)
+    sessions = [p for p in session_problems(tree) if not (release and re.search(r": tracking/[^:]*: no such file", p))]
+    problems += checksum_problems(tree) + link_problems(tree) + reachability_problems(tree) + sessions
     privacy = privacy if privacy is not None else privacy_check(tree)
     problems += [f"privacy: {f.where} {f.rule}: {f.match}" for f in privacy.failures]
     problems += invisible_characters(tree, [r for r in all_files(tree) if not r.startswith("incoming/")])
+    problems += stray_problems(tree) if not release else [p for p in stray_problems(tree) if "hidden" in p]
     if release:
         foreign = [r for r in all_files(tree) if is_carrier_owned(r) and not r.startswith("incoming/")]
         return problems + [f"{r}: another repository's own file, which a release never carries" for r in foreign] \
@@ -1732,19 +1796,25 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         carrier, problems = {}, [*problems, str(error)]
     if carrier is None:
         problems.append(f"{CARRIER_FILE}: missing; this repository's own fields live there (`bundle.py carrier-id --mint`)")
-    elif carrier.get(CARRIER_FIELD) and not CARRIER_ID.match(carrier[CARRIER_FIELD]):
-        problems.append(f"{CARRIER_FILE}: `{CARRIER_FIELD}` is not `r-` and six hex")
+    else:
+        if not CARRIER_ID.match(str(carrier.get(CARRIER_FIELD, ""))):
+            problems.append(f"{CARRIER_FILE}: `{CARRIER_FIELD}` is missing or not `r-` and six hex (`bundle.py carrier-id --mint`)")
+        problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
+        problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
+                     if k in carrier and not isinstance(carrier[k], list)]
     return problems + incoming_problems(tree)
 
 
 def check_local(repo: Path) -> list[str]:
     """Every change to a carrier's bundle that the carrier itself may not make.
 
+    `incoming/` is read as it is offered: a release copied in for an update is not a change of ours.
+
     Read from the checksums, not from git: a note edited and committed in a carrier is as much a fork of
     the release as one left uncommitted, and git status saw only the second. The carrier's own files
     (its carrier file, its outbox, `incoming/`, evaluation reports) are never in the checksums.
     """
-    return checksum_problems(repo / ".agents")
+    return [p for p in checksum_problems(repo / ".agents") if not p.startswith("incoming/")]
 
 
 def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
@@ -1781,6 +1851,24 @@ def budget_problems(tree: Path, data: dict | None = None) -> list[str]:
     if card > BUDGETS["card"]:
         problems.append(f"the card of {note} is about {card} tokens, over the card budget of {BUDGETS['card']}")
     return problems
+
+
+def export(tree: Path, dest: Path) -> list[str]:
+    """Copies this bundle's shipped files and `SHA256SUMS` into `dest`: a release as it travels.
+
+    Never the carrier's own files (its carrier file, its outbox, `incoming/` contents, evaluation reports),
+    which another repository would otherwise take as its own. Refused unless the copy verifies first.
+    """
+    problems = checksum_problems(tree)
+    if problems:
+        raise RefusedError(f"{tree}: does not match its SHA256SUMS ({problems[0]}); export only a verified release")
+    if dest.exists() and any(dest.iterdir()):
+        raise RefusedError(f"{dest}: not empty; export into a new folder")
+    rels = [*shipped(tree), CHECKSUMS]
+    for rel in rels:
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(tree / rel, dest / rel)
+    return rels
 
 
 def reset_outbox(tree: Path) -> list[str]:
@@ -1834,6 +1922,9 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("changelog", help="the CHANGELOG sections newer than a version")
     p.add_argument("--since", required=True, metavar="X.Y.Z")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
+    p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder: a release as it travels")
+    p.add_argument("dest")
+    p.add_argument("--tree", default=str(OWN_BUNDLE))
     p = sub.add_parser("outbox", help="the harvest outbox")
     p.add_argument("--reset", action="store_true", required=True, help="write the empty templates back")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
@@ -1865,7 +1956,8 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         print(f"verify {tree}: " + (f"{bundle_version(tree)} verified" if not problems else f"{len(problems)} problems"))
         return 1 if problems else 0
     if args.command == "check-local":
-        repos = workspace(args.repos).repos
+        declared = args.repos or os.environ.get(WORKSPACE_ENV) or MANIFEST.exists()
+        repos = workspace(args.repos).repos if declared else [OWN_REPO]
         found = check_local_all(repos)
         for name, problems in found:
             for problem in problems:
@@ -1916,6 +2008,9 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 0
     if args.command == "changelog":
         print(changelog_since(Path(args.tree), args.since), end="")
+        return 0
+    if args.command == "export":
+        print(f"exported {len(export(Path(args.tree), Path(args.dest)))} files to {args.dest}")
         return 0
     if args.command == "outbox":
         changed = reset_outbox(Path(args.tree))

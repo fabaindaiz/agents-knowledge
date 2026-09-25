@@ -19,10 +19,18 @@ class Frontmatter(Base):
         self.assertEqual(body, "\n# Body\n")
 
     def test_plain_scalars_comments_and_null_read_as_yaml_reads_them(self) -> None:
-        block = "version:   21                   # monotone\nforked_at: null\nset: [context, sync]\nmap: {lineage: g-1, version: 8}\n"
+        block = "slug:   a-slug                   # a comment\nforked_at: null\nset: [context, sync]\nmap: {lineage: g-1, kind: text}\n"
 
         self.assertEqual(bundle.parse_frontmatter(block),
-                         {"version": "21", "forked_at": None, "set": ["context", "sync"], "map": {"lineage": "g-1", "version": "8"}})
+                         {"slug": "a-slug", "forked_at": None, "set": ["context", "sync"], "map": {"lineage": "g-1", "kind": "text"}})
+
+    def test_a_plain_scalar_yaml_would_type_or_refuse_must_be_quoted(self) -> None:
+        for value in ("21", "1.0", "yes", "Off", "2026-01-01", "0x1F", "1:20", ".inf", "a: b", "a:", "- x", "? x", "=", "<<",
+                      "a\tb", "[, a]"):
+            with self.subTest(value=value), self.assertRaises(bundle.FrontmatterError):
+                bundle.parse_frontmatter(f"claim: {value}\n")
+        with self.assertRaises(bundle.FrontmatterError):
+            bundle.parse_frontmatter("phases:\n  - a\n- b\n")
 
     def test_a_block_list_of_quoted_strings_folds_across_lines(self) -> None:
         block = 'adapted:                        # local\n  - "one line\n    continued"\n  - "two"\ndeclined:  []\n'
@@ -93,6 +101,15 @@ class Checksums(Base):
 
         self.assertEqual(bundle.checksum_problems(agents), [])
 
+    def test_a_path_listed_twice_or_outside_the_bundle_is_refused(self) -> None:
+        agents = make_bundle(self.root)
+        sums = agents / "SHA256SUMS"
+        first = sums.read_text().splitlines()[0]
+        sums.write_text("0" * 64 + "  " + first.split("  ", 1)[1] + "\n" + sums.read_text())
+        self.assertIn("listed twice", "\n".join(bundle.checksum_problems(agents)))
+        sums.write_text("0" * 64 + "  ../outside.md\n")
+        self.assertIn("outside the bundle", "\n".join(bundle.checksum_problems(agents)))
+
     def test_a_crlf_checkout_is_named_as_such(self) -> None:
         agents = make_bundle(self.root)
         path = agents / "method/prompt-context.md"
@@ -162,6 +179,25 @@ class Incoming(Base):
         for expected in ("hooks/run.sh: assistant", "hooks/run.sh: a script", "settings.json: assistant",
                          "U+200B", "exec.md: has an executable bit", "link.md: a symbolic link"):
             self.assertIn(expected, problems)
+
+    def test_evasions_by_case_name_kind_and_place_are_refused(self) -> None:
+        agents = make_bundle(self.root)
+        offered = agents / "incoming/release"
+        for rel, text in {"Settings.JSON": "{}", "Hooks/x.md": "x", ".Github/workflows/ci.yml": "x", "CLAUDE.md": "x",
+                          "sub/AGENTS.md": "x", "x.pyc": "x", "run.command": "x", ".mcp.json": "{}", "Makefile": "all:",
+                          "deep/down/tools/bundle.py": "x", "filler.md": "a\u3164b"}.items():
+            (offered / rel).parent.mkdir(parents=True, exist_ok=True)
+            (offered / rel).write_text(text)
+        (offered / "tools").mkdir()
+        (offered / "tools/bundle.py").write_text("the tool\n")
+        (offered / "utf16.md").write_bytes("text".encode("utf-16"))
+
+        problems = "\n".join(bundle.incoming_problems(agents))
+
+        for rel in ("Settings.JSON", "Hooks", ".Github", "CLAUDE.md", "AGENTS.md", "x.pyc", "run.command", ".mcp.json",
+                    "Makefile", "deep/down/tools/bundle.py: a script", "U+3164", "utf16.md: not UTF-8"):
+            self.assertIn(rel, problems)
+        self.assertNotIn("release/tools/bundle.py: a script", problems)
 
     def test_bidirectional_controls_anywhere_in_the_bundle_are_found(self) -> None:
         agents = make_bundle(self.root)

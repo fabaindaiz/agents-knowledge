@@ -95,9 +95,9 @@ admission needs, or says what it lacks:
 
 | Column | Holds |
 |---|---|
-| *Candidate* | `slug — claim`, the claim in one sentence **without a single project noun**. An extension of an existing note names that note: `extends <slug> — the new boundary, number or occurrence` |
+| *Candidate* | `slug — claim`, the claim in one sentence **without a single project noun**, then where it stops applying and what it costs. An extension of an existing note names that note: `extends <slug> — the new boundary, number or occurrence`; a claim that overlaps one says `overlaps <slug>` |
 | *Kind* | **K** knowledge (true about building the software) or **M** method (how the work is done) |
-| *Lacks* | what admission still needs: a second occurrence, a number, the literature, a generality statement, or "nothing" |
+| *Lacks* | what admission still needs: a second occurrence, a number, the literature, a generality statement, or "nothing". A learning the harvest refused is written too, as `refused: <reason>`: the home records it where the next harvest looks, so it is not offered again with the same gap |
 | *Evidence* | the occurrence, generalised under principle 20 (`../method/prompt-context.md`): the repository by its kind, figures as ratios or orders of magnitude, quotes paraphrased, identifiers named by their role; plus the literature consulted and what it said |
 | *First seen* | the date this repository first saw it |
 

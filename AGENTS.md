@@ -58,13 +58,14 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
 
 1. **List the carriers open on this machine** in the local manifest (below). Name every repository
    the session may write, and only those.
-2. **Phase 1, read-only:** `bundle.py check-local` in each carrier, then `release.py gather --out DIR`
-   and `release.py intake DIR`. Give every item a verdict and **ask for approval of the one table**
+2. **Phase 1, read-only:** `bundle.py check-local` in each carrier, then `release.py gather --out DIR`.
+   Give every item a verdict and **ask for approval of the one table**
    before writing anything.
-3. **Build the release:** edit `sources/` and `.agents/method/`, run `release.py lost`, add the dated
-   `## [X.Y.Z] - DATE` section to `.agents/CHANGELOG.md`, then `release.py release X.Y.Z`, commit, and
-   create the tag it prints.
-4. **Phase 2:** `release.py splice --write --backup DIR` into each carrier. Run each carrier's own gate
+3. **Build the release:** `release.py intake DIR --version X.Y.Z`, edit `sources/` and `.agents/method/`,
+   account for every line `gather` reported lost, `release.py triage`, add the dated `## [X.Y.Z] - DATE`
+   section to `.agents/CHANGELOG.md`, `release.py build` and `check`, then `release.py release X.Y.Z`,
+   commit, and create the tag it prints. The full order is `meta/method/prompt-sync.md`.
+4. **Phase 2:** `release.py splice --write --backup BACKUP --taken DIR` into each carrier. Run each carrier's own gate
    there, and write one changelog entry per carrier in that carrier's own format.
 5. **Phase 3:** `release.py register`, then `release.py align` must report every reached carrier
    aligned. Carriers not reached go in `meta/roadmap.md` under *Blocked outside*.

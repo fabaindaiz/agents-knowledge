@@ -7,6 +7,23 @@ privacy scrub (`prompt-context.md`, principle 20) may rewrite or delete a row, a
 that does it says so in its own row. The `version` column is
 the method lineage's version (`method/prompt-*.md` headers), not this file's.
 
+## Bundle releases that changed no method version
+
+Kept because a bundle release with the method unchanged has no row in the table below.
+
+- **Bundle v21 (method v24, knowledge v11), 2026-09-24: the `g-c7344c` carriers are reached.**
+  Four carriers that had stayed on that line since it merged into this one were brought onto this
+  line in one meta-session. Their bodies had nothing this line lacked — the merge and the privacy
+  scrub had already taken it — so the release changes `tracking/` only: their harvests of
+  2026-09-22 became candidate rows, generalised first (eleven candidates and eight extensions
+  offered to existing notes), two experiment runs, and two refusals in `tracking/history.md`.
+  `gate-sequence-stops-at-the-first-red-step` arrived with one occurrence in each of the four.
+  Nothing was admitted: admission waits for a release that runs it. The four carriers minted
+  random ids and are registered; their audits now read the three note states and call
+  `bundle.py privacy` and `ids`. Method and knowledge are unchanged, so their digests are too.
+
+## Method versions
+
 | Version | Date | What changed for the reader |
 |---|---|---|
 | 24 | 2026-09-24 | **Nothing private travels, and a tool checks it rather than a memory.** Principle 20: nothing in the bundle may let a reader identify a private repository, its owner, organisation, customers, users or infrastructure, or anyone who uses the bundle — directly or by putting harmless details together. Figures become orders of magnitude, exact constants ratios, quotes paraphrases, identifiers roles, narrowing domain nouns neutral kinds, personal context nothing; a public carrier may stay as it is. **Privacy wins over record-keeping**: changelogs and history are not exempt, and obsolete private detail is deleted when nothing depends on it. `bundle.py privacy` enforces it, inside `digest --check` and in the home repository's hooks, with a machine-local list of private terms that is never committed; the `privacy-allow: <reason>` override exists only on the user's explicit instruction and is listed on every run. The bundle README's conventions table opens with it; harvest and sync generalise before writing anything that travels and run the check, and a `lost` line removed for privacy is an approved removal; bootstrap puts a one-line reminder in the carrier's root file and the check in its gate; every paste block carries one line of it. **Carrier ids are random**, minted once by `bundle.py carrier-id --mint` and stored in the carrier's own header field `carrier:`: an id hashed from the remote was reversed by guessing the remote, so the ids of the carriers not reached were withdrawn. `bundle.py ids FILE...` is the host-side record-id check. Copilot's on-demand procedures verified: prompt files, custom agents and agent skills. **A privacy scrub rewrote every document in this release, including earlier rows of this table**: carrier-specific detail was removed or generalised, 2026-09-24. |

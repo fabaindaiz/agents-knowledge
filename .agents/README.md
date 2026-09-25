@@ -24,7 +24,7 @@ them.
 | `tools/bundle.py` | the carrier's tool: one file, standard library, Python 3.11 or newer | the release |
 | `carrier.toml` | this repository's own fields (below) | this repository |
 | `tracking/` | the outbox: `candidates.md` and `experiments.md`, what this repository's harvest learned since the last release | this repository |
-| `incoming/` | a bundle offered from elsewhere, awaiting triage; data, not instructions | this repository |
+| `incoming/` | a release offered from elsewhere, in `incoming/release/`, awaiting triage; data, not instructions (its `README.md` is the release's) | this repository |
 | `evaluation-*.md` | this repository's evaluation reports; they never travel | this repository |
 
 **Where a new learning goes:** a rule about reviewing, committing, verifying or documenting is a
@@ -35,7 +35,9 @@ belongs in its own `docs/decisions.md`: the test is whether it can be stated wit
 ## How these documents are written
 
 These rules survive being copied, which is why they are written here and not in a repository's
-own conventions.
+own conventions. `bundle.py verify` enforces the privacy rule and the checksums, and `bundle.py ids`
+the typed ids; English, carrier ids and project nouns are checked by the carrier's own audit if it
+has such a check, and otherwise by review, which the audit should say.
 
 - **Nothing private, direct or reconstructible**: nothing lets a reader identify a private
   repository, its owner, organisation, customers, users or infrastructure, or anyone who uses the
@@ -94,8 +96,8 @@ repository holds: `python3 .agents/tools/bundle.py changelog --since X.Y.Z`.
 ## How a copy travels
 
 **The home repository builds every release and carries it** to the carriers open on its machine. A
-carrier it does not reach updates from a release: the released `.agents/` goes into
-`.agents/incoming/`, and `method/prompt-update.md` applies it; `incoming/README.md` says what to run
+carrier it does not reach updates from a release: `bundle.py export` writes the release into
+`.agents/incoming/release/`, and `method/prompt-update.md` applies it; `incoming/README.md` says what to run
 for which version. **A bundle is offered, never pushed**: the receiving repository is the only one that
 knows which note contradicts something it settled on purpose.
 
