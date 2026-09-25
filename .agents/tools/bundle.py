@@ -227,7 +227,7 @@ def _links(tree: Path, rel: str) -> list[tuple[str, str]]:
         if resolved is not None:
             found.append((target, resolved))
 
-    _each_link((tree / rel).read_text(encoding="utf-8"), visit)
+    _each_link((tree / rel).read_text(encoding="utf-8", errors="replace"), visit)
     return found
 
 
@@ -1115,11 +1115,13 @@ FRONT_KEY = re.compile(r"^([A-Za-z_][\w-]*):(?: +|$)")
 # A plain (unquoted) scalar is kept only when every YAML parser reads it as this same string: no `: ` or
 # trailing `:`, no tab or control character, no line separator, and not a word or number YAML types.
 PLAIN_REFUSED = re.compile(r":\s|:$|[\t\x00-\x08\x0b-\x1f\x7f\x85\u2028\u2029]| #")
-PLAIN_TYPED = re.compile(
-    r"(?i)y|n|yes|no|on|off|true|false|null|~"
-    r"|[-+]?(?:\d[\d_]*)?\.?\d[\d_]*(?:e[-+]?\d+)?|[-+]?0x[\da-f_]+|[-+]?0o?[0-7_]+|[-+]?0b[01_]+"
-    r"|[-+]?\.(?:inf|nan)|[-+]?\d+(?::[0-5]?\d)+(?:\.\d*)?"
-    r"|\d{4}-\d\d?-\d\d?(?:[Tt ]\d\d?:\d\d:\d\d(?:\.\d*)?(?:Z|[-+]\d\d?(?::\d\d)?)?)?")
+PLAIN_TYPED = re.compile(  # PyYAML's implicit resolvers (bool, int, float, null, timestamp, merge, value), and y/n
+    r"(?i)y|n|yes|no|on|off|true|false|null|~|<<|="
+    r"|[-+]?0b[0-1_]+|[-+]?0[0-7_]+|[-+]?(?:0|[1-9][0-9_]*)|[-+]?0x[0-9a-f_]+|[-+]?[1-9][0-9_]*(?::[0-5]?[0-9])+"
+    r"|[-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:e[-+][0-9]+)?|\.[0-9_]+(?:e[-+][0-9]+)?|[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*"
+    r"|[-+]?\.inf|\.nan|[-+]?[0-9_]+(?:\.[0-9_]*)?(?:e[-+]?[0-9]+)?"
+    r"|[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    r"|[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}(?:t|[ \t]+)[0-9]{1,2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]*)?(?:[ \t]*(?:z|[-+][0-9]{1,2}(?::[0-9]{2})?))?")
 _DQ_ESCAPES = {"\\": "\\", '"': '"', "/": "/", "n": "\n", "t": "\t", "r": "\r", "0": "\0", " ": " "}
 
 
@@ -1513,6 +1515,8 @@ def read_checksums(tree: Path) -> dict[str, str]:
             raise RefusedError(f"{CHECKSUMS}:{number}: {path} is listed twice")
         if path.startswith("/") or ".." in path.split("/"):
             raise RefusedError(f"{CHECKSUMS}:{number}: {path} is outside the bundle")
+        if posixpath.normpath(path) != path or _hidden(path) or "__pycache__" in path.split("/"):
+            raise RefusedError(f"{CHECKSUMS}:{number}: {path} is not a shipped path in normal form")
         listed[path] = m.group(1)
     return listed
 
@@ -1571,6 +1575,8 @@ CHANGELOG_SECTION = re.compile(r"^## \[([^\]]+)\](?: - (\d{4}-\d{2}-\d{2}))?\s*$
 
 def changelog_since(tree: Path, since: str) -> str:
     """The sections of the bundle's Keep a Changelog file for every version newer than `since`."""
+    if not (tree / CHANGELOG).is_file():
+        raise RefusedError(f"{tree / CHANGELOG}: no such file; is the release where you said?")
     text = (tree / CHANGELOG).read_text(encoding="utf-8")
     heads = list(CHANGELOG_SECTION.finditer(text))
     floor = semver_key(since)
@@ -1626,8 +1632,9 @@ def invisible_characters(tree: Path, rels: list[str]) -> list[str]:
 # the receiving repository, and scripts. The bundle's own tool is the one script a release carries.
 INCOMING_REFUSED_NAMES = re.compile(
     r"(?i)(^|/)(settings[^/]*\.json|hooks|\.claude|\.git[^/]*|\.githooks|\.github|\.vscode|\.idea|\.cursor|\.mcp\.json|"
-    r"\.envrc|\.env|makefile|claude\.md|agents\.md|gemini\.md|\.cursorrules|copilot-instructions\.md)(/|$)")
-INCOMING_SCRIPT = re.compile(r"(?i)\.(sh|bash|zsh|fish|py|pyc|pyw|pyz|js|mjs|cjs|ts|rb|pl|php|ps1|psm1|bat|cmd|com|command|"
+    r"\.envrc|\.env|makefile|gnumakefile|justfile|package\.json|\.pre-commit-config\.yaml|\.windsurfrules|"
+    r"claude\.md|agents\.md|gemini\.md|\.cursorrules|copilot-instructions\.md)(/|$)")
+INCOMING_SCRIPT = re.compile(r"(?i)\.(sh|bash|zsh|fish|py|pyc|pyw|pyz|js|jsx|mjs|cjs|ts|tsx|go|rs|rb|pl|php|ps1|psm1|bat|cmd|com|command|"
                              r"exe|dll|so|dylib|jar|app|vbs|scpt|applescript)$")
 # The one script a release carries, at its place in the release: `tools/bundle.py`, or under one folder
 # the release was exported into.
@@ -1636,42 +1643,48 @@ INCOMING_TOOL = re.compile(r"^(?:[^/]+/)?tools/bundle\.py$")
 INVISIBLE_OTHER = frozenset("\u034f\u115f\u1160\u3164\uffa0\u2800\u180e")
 
 
-def incoming_problems(tree: Path) -> list[str]:
-    """Everything in `incoming/` a triage must not even open: invisible text, links, executables, config.
+def material_problems(root: Path, shown: str = "") -> list[str]:
+    """Everything under `root` a triage must not even open: invisible text, links, executables, config.
 
-    `incoming/` is data. A symlink can point outside it, an executable bit or a settings file is run
-    by whatever reads the folder next, and a format character hides text from the reviewer.
+    Offered material is data. A symlink can point outside it, an executable bit or a settings file is
+    run by whatever reads the folder next, an instruction file is loaded by an assistant on sight, and
+    a format character hides text from the reviewer. The bundle's own tool, at `tools/bundle.py` (or
+    under one folder the release was exported into), is the one script a release carries.
     """
-    folder = tree / "incoming"
-    if not folder.is_dir():
-        return []
     problems = []
-    rels = []
-    for path in sorted(folder.rglob("*")):
-        rel = path.relative_to(tree).as_posix()
-        if rel == "incoming/README.md":
-            continue
+    for path in sorted(root.rglob("*")):
+        inner = path.relative_to(root).as_posix()
+        rel = shown + inner
         if path.is_symlink():
-            problems.append(f"{rel}: a symbolic link; incoming material is copied, never linked")
+            problems.append(f"{rel}: a symbolic link; offered material is copied, never linked")
             continue
-        inner = path.relative_to(folder).as_posix()
         if any(unicodedata.category(ch) == "Cf" or ch in INVISIBLE_OTHER for ch in inner):
             problems.append(f"{rel!r}: an invisible character in the name")
-        if INCOMING_REFUSED_NAMES.search(inner):
-            problems.append(f"{rel}: assistant, git or editor configuration, which would run in this repository")
+        if INCOMING_REFUSED_NAMES.search(inner) or "__pycache__" in inner.split("/"):
+            problems.append(f"{rel}: assistant, git, editor or build configuration, or a cache, which would run or load here")
         if path.is_file():
-            rels.append(rel)
             if os.stat(path).st_mode & 0o111:
                 problems.append(f"{rel}: has an executable bit")
             if INCOMING_SCRIPT.search(inner) and not INCOMING_TOOL.match(inner):
                 problems.append(f"{rel}: a script; the only one a release carries is tools/bundle.py")
             try:
-                path.read_bytes().decode("utf-8")
+                text = path.read_bytes().decode("utf-8")
             except UnicodeDecodeError:
                 problems.append(f"{rel}: not UTF-8 text, so no check can read it")
-    return problems + invisible_characters(tree, rels)
+                continue
+            for number, line in enumerate(text.split("\n"), 1):
+                hits = [ch for ch in line if unicodedata.category(ch) == "Cf" or ch in INVISIBLE_OTHER]
+                if hits:
+                    problems.append(f"{rel}:{number}: invisible U+{ord(hits[0]):04X} {unicodedata.name(hits[0], 'format character')}")
+    return problems
 
-# --- command line ----------------------------------------------------------------------------------
+
+def incoming_problems(tree: Path) -> list[str]:
+    """What `incoming/` holds besides its README, checked as offered material."""
+    folder = tree / "incoming"
+    if not folder.is_dir():
+        return []
+    return [p for p in material_problems(folder, "incoming/") if not p.startswith("incoming/README.md")]
 
 
 @dataclass(frozen=True)
@@ -1778,6 +1791,10 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
     if is_legacy(tree):
         return [f"{tree}: a bundle from before 0.0.22 (its README header names a `lineage`); update it with "
                 "`method/prompt-update.md` from a release, whose layout this tool checks"]
+    if release:
+        unreadable = [p for p in material_problems(tree) if "not UTF-8" in p]
+        if unreadable:
+            return unreadable
     problems = [] if bundle_version(tree) else ["README.md: its frontmatter has no Semantic Versioning `version`"]
     sessions = [p for p in session_problems(tree) if not (release and re.search(r": tracking/[^:]*: no such file", p))]
     problems += checksum_problems(tree) + link_problems(tree) + reachability_problems(tree) + sessions
@@ -1788,7 +1805,7 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
     if release:
         foreign = [r for r in all_files(tree) if is_carrier_owned(r) and not r.startswith("incoming/")]
         return problems + [f"{r}: another repository's own file, which a release never carries" for r in foreign] \
-            + incoming_problems(tree)
+            + material_problems(tree)
     problems += outbox_problems(tree)
     try:
         carrier = read_carrier(tree)

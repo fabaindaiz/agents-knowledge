@@ -13,3 +13,9 @@ __pycache__/
 
 # Experiment runs: transcripts and diffs (see evals/README.md)
 evals/runs/
+
+# The home carries its own bundle as a carrier: a release offered to it and its evaluation reports are
+# its own working files, never committed to this public repository (the privacy check does not read them).
+.agents/incoming/*
+!.agents/incoming/README.md
+.agents/evaluation-*

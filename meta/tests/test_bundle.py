@@ -86,6 +86,24 @@ class Verify(Base):
         self.assertFalse((out / "tracking").exists())
         self.assertEqual(B.verify_problems(out, release=True), [])
 
+    def test_a_release_carrying_what_incoming_refuses_fails_even_with_its_own_checksums(self) -> None:
+        real = Path(__file__).resolve().parents[2] / ".agents"
+        out = self.root / "release"
+        B.export(real, out)
+        (out / "CLAUDE.md").write_text("instructions\n")
+        (out / "tools/evil.py").write_text("print()\n")
+        (out / "u16.md").write_bytes("text".encode("utf-16"))
+        B.write_checksums(out)
+
+        problems = "\n".join(B.verify_problems(out, release=True))
+
+        self.assertIn("u16.md: not UTF-8", problems)
+        (out / "u16.md").unlink()
+        B.write_checksums(out)
+        problems = "\n".join(B.verify_problems(out, release=True))
+        self.assertIn("CLAUDE.md: assistant", problems)
+        self.assertIn("tools/evil.py: a script", problems)
+
     def test_what_a_carrier_never_publishes_is_not_privacy_checked(self) -> None:
         agents = make_bundle(self.root)
         (agents / "evaluation-2026-01-01-abcdef.md").write_text("Cloned from https://git" + "hub.com/" + "jdoe/ledger.\n")

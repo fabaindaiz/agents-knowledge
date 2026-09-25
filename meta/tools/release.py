@@ -76,7 +76,7 @@ GENERATED_MARKER = re.compile(r"^<!-- generated: (cards|about|founded) ?([\w-]*)
 PHASE_TOKEN = re.compile(r"\{\{notes:([\w-]+)\}\}")
 # Anything that looks like a marker or a token must be one the build knows: a misspelt one would ship
 # literally, and its table would be silently missing.
-ANY_MARKER = re.compile(r"<!--\s*generated\b[^>]*-->|\{\{[^}]*\}\}")
+ANY_MARKER = re.compile(r"(?i)<!--\s*generated\b[^>]*-->|\{\{[^}]*\}\}")
 REVIEW_MARK = " ⚠ review"
 
 
@@ -308,6 +308,16 @@ def _clip(text: str, limit: int = OPEN_CELL) -> str:
     return text if len(text) <= limit else text[: text.rfind(" ", 0, limit)].rstrip(",;:—- ") + " …"
 
 
+def answered(meta_dir: Path) -> list[str]:
+    """The slugs the home's history says left the queue, from the first cell of its tables."""
+    path = meta_dir / "tracking/history.md"
+    if not path.is_file():
+        return []
+    slugs = {m.group(1) for line in path.read_text(encoding="utf-8").split("\n")
+             if (m := re.match(r"^\| `([\w-]+)` \|", line))}
+    return sorted(slugs)
+
+
 def render_open(meta_dir: Path) -> str:
     """`knowledge/OPEN.md`: what a harvest checks before it offers something, from the home's records.
 
@@ -334,6 +344,10 @@ def render_open(meta_dir: Path) -> str:
         "| Candidate | Kind | Lacks |",
         "|---|---|---|",
         *[_row([_clip(r[0]), r[1], _clip(r[2], 120)]) for r in candidates],
+        "",
+        "## Answered: admitted, folded, refused or discarded, not to offer again",
+        "",
+        ", ".join(f"`{s}`" for s in answered(meta_dir)) or "None yet.",
     ]
     return "\n".join(lines) + "\n"
 
@@ -388,9 +402,14 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
         raise BuildError("\n".join(problems))
     for path in [*areas, templates / "INDEX.md"]:
         text = path.read_text(encoding="utf-8")
-        known = {m.group(0) for m in GENERATED_MARKER.finditer(text)} | {m.group(0) for m in PHASE_TOKEN.finditer(text)}
+        # Known by position, not by text: an indented copy of a real marker is not one. Phase tokens only
+        # have a meaning in INDEX, markers only in the area templates.
+        if path.name == "INDEX.md" and path.parent == templates:
+            known = {m.start() for m in PHASE_TOKEN.finditer(text) if m.group(1) in PHASES}
+        else:
+            known = {m.start() for m in GENERATED_MARKER.finditer(text)}
         problems += [f"{path.relative_to(root).as_posix()}: {m.group(0)!r} is not a marker the build knows"
-                     for m in ANY_MARKER.finditer(text) if m.group(0) not in known]
+                     for m in ANY_MARKER.finditer(text) if m.start() not in known]
     shipped_topics = {n.topic for n in notes if n.state in SHIPPED_STATES}
     problems += [f"topic {t!r} has a cards marker and no note" for t in topics if t not in shipped_topics]
     if problems:
@@ -742,7 +761,10 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
                 refused.append(f"| `{slug}` | {row[2]} |")
                 result["refused"].append(slug)
                 continue
-            cells = (row + [""] * 5)[:5]
+            if sum(1 for c in row if c.strip()) < 3:
+                result.setdefault("malformed", []).append(f"{name}: {row[0][:60]!r} has too few cells to be a candidate")
+                continue
+            cells = (row + [""] * 5)[:5] if len(row) <= 5 else [*row[:3], "; ".join(row[3:-1]), row[-1]]
             if slug in queued or slug in notes or f"`{slug}`" in history:
                 result["duplicates"].append(f"{name}: {slug} (already {'a note' if slug in notes else 'queued or answered'})")
                 again.append(_row([*cells, version]))
@@ -752,7 +774,10 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
             result["queued"].append(slug)
         for row in entry["rows"]["experiments"]:
             taken.append(_row(row))
-            new_runs.append(_row(row))
+            if not re.match(r"\d{4}-\d{2}-\d{2}", row[0]) or len(row) < 6:
+                result.setdefault("malformed", []).append(f"{name}: experiment row {row[0][:40]!r} needs a date and six cells")
+                continue
+            new_runs.append(_row(row[:6]))
     _insert_rows(queue_path, CANDIDATES_HEADER, new_rows, at_top=False)
     if again:
         # Another occurrence of something known is evidence: kept, for the release to add to its row or note.
@@ -1123,6 +1148,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             result = intake(Path(args.out), args.version or B.bundle_version(ROOT / ".agents"))
             for line in result["duplicates"]:
                 print(f"  ! already known: {line}")
+            for line in result.get("malformed", []):
+                print(f"  x not taken in: {line}")
             print(f"intake: {len(result['queued'])} candidates queued, {result['runs']} experiment runs logged")
             return 0
         if args.command == "lost":

@@ -40,7 +40,7 @@ repository tags them `v0.0.20` and `v0.0.21`, and keeps their method changelog.
 
 - `bundle.py verify`: checksums, links, routing, session reads, privacy, invisible characters, hidden and
   stray files, the outbox, the carrier file and `incoming/`, in one command; `--release` checks a release
-  as it arrives.
+  as it arrives, with the same refusals as `incoming/` applied to every file it carries.
 - `bundle.py export DEST`: this bundle's shipped files and `SHA256SUMS`, never this repository's own.
 - `bundle.py changelog --since X.Y.Z`, `bundle.py outbox --reset`, `bundle.py report --check` (static budgets).
 - `incoming/` is refused when it holds invisible or bidirectional Unicode (in text or names), text that is

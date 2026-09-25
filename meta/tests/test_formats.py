@@ -25,7 +25,7 @@ class Frontmatter(Base):
                          {"slug": "a-slug", "forked_at": None, "set": ["context", "sync"], "map": {"lineage": "g-1", "kind": "text"}})
 
     def test_a_plain_scalar_yaml_would_type_or_refuse_must_be_quoted(self) -> None:
-        for value in ("21", "1.0", "yes", "Off", "2026-01-01", "0x1F", "1:20", ".inf", "a: b", "a:", "- x", "? x", "=", "<<",
+        for value in ("1.", "+1.", "01.", "2026-09-25 10:00:00 Z", "2026-09-25T10:00:00 +05:00", "1_2:30", "21", "1.0", "yes", "Off", "2026-01-01", "0x1F", "1:20", ".inf", "a: b", "a:", "- x", "? x", "=", "<<",
                       "a\tb", "[, a]"):
             with self.subTest(value=value), self.assertRaises(bundle.FrontmatterError):
                 bundle.parse_frontmatter(f"claim: {value}\n")
@@ -84,13 +84,13 @@ class Checksums(Base):
     def test_a_changed_a_missing_and_an_unlisted_file_are_each_named(self) -> None:
         agents = make_bundle(self.root)
         (agents / "knowledge/notes/active/a-check.md").write_text("edited\n")
-        (agents / "tools/example.py").unlink()
+        (agents / "tools/bundle.py").unlink()
         (agents / "method/prompt-extra.md").write_text("# new\n")
 
         problems = "\n".join(bundle.checksum_problems(agents))
 
         self.assertIn("knowledge/notes/active/a-check.md: changed", problems)
-        self.assertIn("tools/example.py: listed in SHA256SUMS and missing", problems)
+        self.assertIn("tools/bundle.py: listed in SHA256SUMS and missing", problems)
         self.assertIn("method/prompt-extra.md: not in SHA256SUMS", problems)
 
     def test_the_carriers_own_files_may_change(self) -> None:
@@ -107,6 +107,8 @@ class Checksums(Base):
         first = sums.read_text().splitlines()[0]
         sums.write_text("0" * 64 + "  " + first.split("  ", 1)[1] + "\n" + sums.read_text())
         self.assertIn("listed twice", "\n".join(bundle.checksum_problems(agents)))
+        sums.write_text("0" * 64 + "  ./README.md\n")
+        self.assertIn("normal form", "\n".join(bundle.checksum_problems(agents)))
         sums.write_text("0" * 64 + "  ../outside.md\n")
         self.assertIn("outside the bundle", "\n".join(bundle.checksum_problems(agents)))
 
