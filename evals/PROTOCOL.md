@@ -268,4 +268,8 @@ to `.agents/roadmap.md` or `.agents/tracking/candidates.md`.
   judgment trap is built at two distances: L1, the fact only in code, in another module, with no prose;
   L2, the fact only in documentation or configuration elsewhere in the repository, among distractors.
   The original tasks are kept as L0 and reported separately. The confirmatory set uses L1 and L2.
-
+- **2026-09-25 — scope of this study.** The tasks this protocol prescribes are written from the notes'
+  claims, and the hidden tests check those claims, so the study measures instruction transfer: whether a
+  note's content reaches a decision where it applies. It cannot say whether carrying the bundle changes
+  an agent's performance on work in general. That question has its own protocol, `PROTOCOL-general.md`
+  (roadmap item `i-5ed7e8-bf5663`), with tasks from external benchmarks. Nothing in this protocol changes.

@@ -5,6 +5,14 @@ pre-registered in [`PROTOCOL.md`](PROTOCOL.md) (roadmap item `i-5ed7e8-0d9b6a`).
 confirmatory result. It is written as it happens, including what went wrong in the instrument, and
 it is updated after every run; the changelog at the end dates each revision.
 
+**What this study can and cannot say.** Every task here was written from a note: `task.json` names its
+target note, the hidden test checks that note's claim, the tasks' author had read the notes, and the
+`oracle` arm is given the note in full. So a pass in a note-carrying arm measures, in part, whether an
+instruction reached a decision on a task built to reward it. This study measures **instruction
+transfer**. It says nothing about whether carrying the bundle makes the agent better or worse at work
+in general. That question is Study 2 ([`PROTOCOL-general.md`](PROTOCOL-general.md), roadmap item
+`i-5ed7e8-bf5663`), on tasks from external benchmarks with no task, grader or rule derived from the notes.
+
 ## Abstract
 
 Repository instruction files are now common, but controlled studies find that they do not improve task
@@ -435,6 +443,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-09-25** — scope stated at the top: this study measures instruction transfer, because its tasks are written from the notes; the general-performance question moved to Study 2 (`PROTOCOL-general.md`, `i-5ed7e8-bf5663`).
 - **2026-09-24** — session closed: the per-note evidence is recorded in `.agents/tracking/experiments.md` and the follow-up work in `.agents/roadmap.md` (the confirmatory run under `i-5ed7e8-0d9b6a`; overlapping notes under `i-5ed7e8-d4f710`; per-note summaries under `i-5ed7e8-a89859`; skills packaging under `i-5ed7e8-8623a8`).
 - **2026-09-24** — first version: pilots 1 and 2, the instrument defect, pilots 3 and 4 started.
 - **2026-09-24** — pilot-5 (distance) added; abstract, discussion, threats and conclusion rewritten over all five pilots; two figures in the abstract recomputed from the data after a first draft misstated them.

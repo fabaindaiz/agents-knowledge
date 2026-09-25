@@ -28,6 +28,20 @@ something else depends on — because that is what decides its order.
 
 ## Next
 
+- **`i-5ed7e8-bf5663` · Measure whether carrying the bundle changes general performance, on tasks
+  nobody chose to suit it.** The tasks of `i-5ed7e8-0d9b6a` are written from the notes, so they measure
+  whether a note's content reaches a decision, not whether the agent works better in general. The
+  protocol is in the home repository's `evals/PROTOCOL-general.md` (it does not travel): tasks from
+  external benchmarks graded automatically; real issues opened after the models' training cutoffs as
+  the primary block, deciding benefit or harm within ±10 points; competitive programming and code
+  reasoning to test that the bundle does no harm where it has nothing to say; the bundle wired as a
+  carrier's bootstrap wires it, against a placebo knowledge base of the same shape and a minimal
+  baseline; and controls routed through the index that must show the instrument can see both a
+  benefit and a harm before any confirmatory trial. State: draft 2, reviewed adversarially and checked
+  against its data sources; it waits on a budget cap, forecasts and the freeze, then on building its
+  gate-G0 instrument. *Collides with:* the default routing to the knowledge index in every carrier,
+  since the protocol's decision map includes routing by relevance or not by default; skills packaging
+  (`i-5ed7e8-8623a8`) and per-note summaries (`i-5ed7e8-a89859`), which change what the treatment is.
 - **`i-5ed7e8-0d9b6a` · Measure whether the bundle changes what an agent does, and whether its
   content is the cause.** Controlled studies of repository context files found no reliable gain in
   task success and a cost increase of about a fifth; the bundle has never been measured against that.

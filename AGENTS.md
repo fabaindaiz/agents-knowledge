@@ -108,11 +108,13 @@ python3 .agents/tools/bundle.py report                 # size per folder and per
 python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible (also in digest --check)
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates
 python3 evals/harness.py check                         # the efficacy experiment's graders are seen to fail and pass
+python3 evals/power_tost.py                            # Study 2's severity figures (equivalence, non-inferiority, harm)
 ```
 
-The efficacy experiment (`evals/`, outside the bundle) is run and read by its own procedure:
-[`evals/README.md`](evals/README.md) and [`evals/PROTOCOL.md`](evals/PROTOCOL.md). Its run directories hold
-transcripts that carry the logged-in account's identity and are never committed.
+The efficacy experiments (`evals/`, outside the bundle) are run and read by their own procedures:
+[`evals/README.md`](evals/README.md), [`evals/PROTOCOL.md`](evals/PROTOCOL.md) (Study 1, instruction
+transfer) and [`evals/PROTOCOL-general.md`](evals/PROTOCOL-general.md) (Study 2, general performance). Their
+run directories hold transcripts that carry the logged-in account's identity and are never committed.
 
 Two commands write, and each one replaces a hand edit that used to go wrong:
 
