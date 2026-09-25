@@ -1,17 +1,19 @@
 # Candidates — learnings that have not passed admission
 
 **A learning offered by a harvest that is not yet a note or a method rule.** It waits here
-until it passes the five admission steps in `../knowledge/README.md` (*The lifecycle of a
-note*), is folded into an existing note, or is discarded with a reason. Nothing here is
-followed as guidance — it is a queue, not a knowledge base.
+until it passes the five admission steps in `sources/README.md` (*The lifecycle of a note*), is
+folded into an existing note, or is discarded with a reason. Nothing here is followed as
+guidance — it is a queue, not a knowledge base. `.agents/knowledge/OPEN.md` shows it to every
+carrier, without the evidence.
 
 **One table, one row per candidate**: slug and claim, kind (**K** knowledge, **M** method), what
 it lacks, where the evidence lives (by the kind of repository in neutral words, never by name or id),
-and when it was first offered. A candidate that has waited through three harvests without
-gaining what it lacks is discarded with that reason, not kept forever: *First seen* is what
-that rule counts from. Where a candidate went once it left this table — admitted, folded,
-fixed, refused or discarded — is recorded in `history.md`, so a later harvest offering it
-again can see it was answered rather than lost.
+when it was first offered, and *Since*, the release it entered the queue at. `release.py intake`
+adds the rows the carriers' outboxes offer; a slug already here is another occurrence of its row,
+added by hand. A candidate that waited three releases (counted from *Since*) without gaining what
+it lacks is discarded by `release.py triage --apply-discards`. Where a candidate went once it left
+this table — admitted, folded, fixed, refused or discarded — is recorded in `history.md`, so a
+later harvest offering it again can see it was answered rather than lost.
 
 | Candidate | Kind | Lacks | Evidence | First seen | Since |
 |---|---|---|---|---|---|

@@ -10,7 +10,8 @@ retyped; and it proves nothing was lost:
     python3 meta/migrations/v0_0_22_notes.py --verify-against v0.0.21   the proof, repeatable at any time
 
 The proof renders the current sources in the old tables' own row order, without the new column, and
-compares them byte for byte with the tables of the tagged release. Deleted in 0.0.23; the tag keeps it.
+compares every table byte for byte with the tables of the tagged release (the prose around them is the
+templates' own). Deleted in 0.0.23; the tag keeps it.
 """
 
 from __future__ import annotations
@@ -189,12 +190,25 @@ def verify(old: Path, root: Path) -> list[str]:
     pairs.append(("knowledge/INDEX.md", R.render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order)))
     for rel, rendered in pairs:
         _, expected = B.split_frontmatter((old / rel).read_text(encoding="utf-8"))
-        if rendered != expected:
-            a, b = rendered.split("\n"), expected.split("\n")
-            line = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
-            problems.append(f"{rel}: differs from the old table from line {line + 1}: "
-                            f"{(a[line] if line < len(a) else '<end>')[:90]!r} vs {(b[line] if line < len(b) else '<end>')[:90]!r}")
+        # The tables are what the notes' fields reproduce; the prose around them is the templates' own and
+        # is edited freely after the migration.
+        a, b = tables(rendered), tables(expected)
+        if a != b:
+            n = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+            problems.append(f"{rel}: table {n + 1} of {len(b)} differs from the old one")
     return problems
+
+
+def tables(text: str) -> list[list[str]]:
+    """Every markdown table of a document, as its lines, in order."""
+    out, current = [], []
+    for line in text.split("\n"):
+        if line.startswith("|"):
+            current.append(line)
+        elif current:
+            out.append(current)
+            current = []
+    return out + ([current] if current else [])
 
 
 def _extract(tag: str, into: Path) -> Path:

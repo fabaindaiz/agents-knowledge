@@ -17,7 +17,7 @@ is ever written next to its id, here or anywhere in the bundle. **Paths are neve
 | r-1a1516 | 0.0.21 | 2026-09-24 |
 
 **Every row is written by `release.py register`**, never by hand; a carrier that cannot run the
-tool reports that as a defect in `candidates.md`.
+tool reports that as a defect in its outbox.
 
 ## Not reached
 
@@ -25,8 +25,8 @@ Carriers known to exist and not aligned by the last meta-session. They are descr
 ids: the ids they were registered under were derived from their remotes and could be reversed by
 guessing, so they were withdrawn on 2026-09-24. Each mints a random id with
 `bundle.py carrier-id --mint` when a meta-session next reaches it, and receives the current release
-then, keeping its own repository fields.
+then, keeping its own fields (the splice moves them into its `carrier.toml`).
 
 - **Several carriers aligned at an older release of this line.**
-- **Any other carrier of the `g-c7344c` line.** Four were reached by the meta-session of
-  2026-09-24 and are registered above; none other is known on the machine that ran it.
+- **Any other carrier of this bundle.** Four were reached by the meta-session of 2026-09-24 and
+  are registered above; none other is known on the machine that ran it.

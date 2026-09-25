@@ -2,13 +2,13 @@
 
 **Every note ends with the experiment that would settle it. This is where those experiments
 are queued, run and recorded**, so that `confidence` is earned by data rather than by prose,
-and a note contradicted by evidence goes to review and is revised or retired (`../knowledge/README.md`, *The
-lifecycle of a note*).
+and a note contradicted by evidence goes to review and is revised or retired (`sources/README.md`,
+*The lifecycle of a note*). *Queued* is shown to every carrier in `.agents/knowledge/OPEN.md`.
 
 Cheapest first. When one is run, record the date, the repository (by a neutral kind of software,
 never by name, and never with a carrier id beside that description), the number as a ratio or an
 order of magnitude, and the verdict — **confirms**, **moves the boundary**,
-or **falsifies** — then apply it to the note in the same change.
+or **falsifies** — then apply it to the full note in `sources/notes/` at the release.
 
 ## Queued
 
@@ -64,7 +64,7 @@ or **falsifies** — then apply it to the note in the same change.
 
 ## Run
 
-Newest first. Numbers measured before this file existed are recorded in each note's *Evidence*.
+Newest first; `release.py intake` adds the runs the carriers' outboxes offer. Numbers measured before this file existed are recorded in each note's *Evidence*.
 
 | Date | Note | Where | What was run | Result | Verdict |
 |---|---|---|---|---|---|

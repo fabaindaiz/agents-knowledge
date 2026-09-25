@@ -4,11 +4,10 @@
 >
 > **It is a library.** There is nothing here to paste and nothing to execute. It
 > holds what more than one of the executable prompts needs, so each of them can
-> stay about its own job: the method header and how copies are matched, the
-> enforcement ladder, the principles, the engineering standards, the
-> artifacts and the guarantees behind them, how to adopt into a repository that
-> already works, the platform's own mechanics, workspaces, model tiers, and how
-> the method itself improves and travels.
+> stay about its own job: the enforcement ladder, the principles, the
+> engineering standards, the artifacts and the guarantees behind them, how to
+> adopt into a repository that already works, the platform's own mechanics,
+> workspaces, model tiers, and how the method itself improves and is versioned.
 >
 > If you arrived here looking for something to run, you want
 > **`prompt-evaluate.md`** — it is the front door, it is read-only, and its
@@ -23,31 +22,24 @@
 | `prompt-context.md` | the shared reference every executable prompt reads from | **no — library** | nothing |
 | `prompt-evaluate.md` | assess a repository's AI instruction system | yes | one Markdown report |
 | `prompt-bootstrap.md` | build the instruction system into a repository | yes | the instruction system |
-| `prompt-update.md` | bring an older copy up to the current release | yes | edits, after approval |
-| `prompt-merge.md` | join two copies that both moved after a common point | yes | the merged bundle, after approval |
-| `prompt-sync.md` | a meta-session over every carrier: gather, apply in each, align | yes | every carrier, after approval, each backed up |
-| `prompt-harvest.md` | the local step: what one repository learned, as candidates | yes | that repository's `tracking/` only |
+| `prompt-update.md` | bring this copy up to a newer release | yes | edits, after approval |
+| `prompt-harvest.md` | the local step: what one repository learned, as candidates | yes | that repository's outbox, `tracking/`, only |
 
-Beside them, `changelog.md` holds the method's version history. It travels with the set and is
-read by an update to list the deltas; it is not a prompt.
+Merging copies and bringing several carriers onto one release are the home
+repository's procedures, and are run there. The version history is `../CHANGELOG.md`.
 
-Every one carries the identical method header above. **Same `ancestry` and
-`version` everywhere means you hold a matched set**; if they disagree, someone
-mixed releases, and the oldest is the one to trust least.
-
-**The set can grow.** Nothing should hard-code how many documents it has: read
-the `set` field, and list what is actually present next to this file.
-`prompt-evaluate.md` is required to do exactly that.
+**The set can grow.** Nothing should hard-code how many documents it has: list
+what is actually present next to this file. `prompt-evaluate.md` is required to
+do exactly that.
 
 **Who owns what.** Each executable prompt owns its own procedure and nothing
-else. Everything they share — the set and which one to run, the method header
-and how copies are matched, the enforcement ladder, the principles, the
-engineering standards, the artifacts, adopting into a repository that already
-works, the platform's loading mechanics, workspaces, model tiers, the pre-flight
-rules, and how the method improves and travels — lives here, once. If this file
-is not beside a prompt that needs it, that prompt says so and stops: the
-procedure without the reference produces plausible output with no argument
-behind any of its rules.
+else. Everything they share — which one to run, the enforcement ladder, the
+principles, the engineering standards, the artifacts, adopting into a repository
+that already works, the platform's loading mechanics, workspaces, model tiers,
+the pre-flight rules, and how the method improves and is versioned — lives here,
+once. If this file is not beside a prompt that needs it, that prompt says so and
+stops: the procedure without the reference produces plausible output with no
+argument behind any of its rules.
 
 **Precedence, when two documents disagree:** this file is the record for
 principles, artifacts and standards; each executable prompt is the record for
@@ -58,13 +50,13 @@ record for that subject.
 relative to `.agents/`, followed by the sections it needs, each written `§` and
 the exact heading text; a file with no `§` is read whole. No job needs the whole
 of this file, and nothing in it is written to be read in sequence.
-`tools/bundle.py` declares the same lists, `digest --check` fails when a named
+`tools/bundle.py` declares the same lists, `verify` fails when a named
 heading does not exist, and `bundle.py report` measures what each session type
 costs to load.
 
 **These documents are written in English and stay in English**, whatever
 language the repository they are pointed at documents itself in. Two practical
-reasons: the method is matched and merged across repositories that do not share
+reasons: the method is carried across repositories that do not share
 a language, and technical identifiers are English everywhere anyway. A
 repository whose prose is in another language keeps its prose. Reports
 and conversations follow the reader.
@@ -78,10 +70,11 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
 
 ## Using the set (for the human)
 
-1. Copy the whole bundle into the target repository as `.agents/`. **If that
-   repo already has one, do not overwrite it** — put the new one in
-   `.agents/incoming/` and run `prompt-update.md`: the old header is the only
-   record of what that repo already adapted and turned down.
+1. Copy a released `.agents/` into the target repository. **If that repo
+   already has one, do not overwrite it** — put the new one in
+   `.agents/incoming/` and run `prompt-update.md`: the update triages every
+   change against what that repo already adapted and turned down
+   (`carrier.toml`).
 2. Open the agent at the repository root.
 3. **Run `prompt-evaluate.md` first.** It writes one report and changes nothing,
    so it is safe on any repository. Its report says which document you need
@@ -107,11 +100,10 @@ claims.**
    `prompt-bootstrap.md` (its working invocation). The bootstrap is the cheap
    half; the loop is what the files were for.
 8. Keep the method moving. Sessions capture learnings at step 8;
-   `prompt-harvest.md` writes them as candidates in `tracking/`; a release
-   (`prompt-sync.md`) applies the generality test across every carrier's
-   candidates, cuts the next version, and it reaches your other repositories
-   through the same meta-session or their own `incoming/`. It is the only part
-   that compounds across projects rather than within one.
+   `prompt-harvest.md` writes them as candidates in the outbox, `tracking/`; the
+   home repository gathers every outbox, applies the generality test and cuts
+   the next release, which reaches your repositories by update. It is the only
+   part that compounds across projects rather than within one.
 
 **On the length of these documents.** The method argues for a 200-line budget
 and is itself long. `CLAUDE.md` is **loaded into every session** and paid for
@@ -161,7 +153,7 @@ rungs:
 | Migrations | "always write a down migration" | a CI check that every up has a down | a migration framework that will not accept one without |
 | Layering in a rendered view | "an element's position decides what it is drawn over" | a validator walking the view's data | a data **format** in which an element names a *layer*, never a number — so an element whose number contradicts its layer cannot be written down |
 
-That last row is from the worked example at the end, and it is the cleanest
+That last row came from one repository, and it is the cleanest
 instance of rung 4: the check did not get better, **the thing being checked
 stopped being expressible.**
 
@@ -222,7 +214,7 @@ are the claims that rot fastest, because nothing else ever runs them.
 Anything verifiable by reading the tree should be verified by a script that runs
 in the gate. Write it early, and expect it to fail on day one.
 
-> **Example.** When the worked example's structural audit was first
+> **Example.** When one repository's structural audit was first
 > written, **every one of its rules was being violated somewhere** — every one of them documented, every
 > one believed to be held.
 
@@ -232,7 +224,7 @@ Structural rules worth a script in almost any repo:
 - **Naming**: file name ↔ exported symbol, test file ↔ subject, migration
   ordering.
 - **Uniqueness**: two definitions of the same public name (the most expensive
-  failure in the worked example's history — two classes with one name,
+  failure in that repository's history — two classes with one name,
   the runtime resolved one, and callers of the other failed with errors that
   named neither).
 - **Orphans**: dead exports, signals/events with no listener, files nothing
@@ -494,7 +486,7 @@ them lie. Changelog entries, decision rows and roadmap items carry an id built
 from what the writer *can* see — the repository and the record's own text:
 `<kind>-<repo6>-<content6>`, minted by `bundle.py id` (*Workspaces* has the
 scheme). Numbers stay only for what a single writer, the release, produces:
-principles, artifacts, phases, method changelog rows and versions.
+principles, artifacts, phases and versions.
 
 **Prevents:** silent concurrent divergence, and changes whose reasoning is lost
 the moment the session ends.
@@ -762,7 +754,7 @@ The split that makes adoption workable:
 When the two meet, **the shape wins and the guarantee is added into it.** A repo
 with a `PLANNING.md` that already serves as a roadmap does not get a
 `docs/roadmap.md`; it gets the missing *sections* inside `PLANNING.md`, and the
-mapping is written into the method header's `adapted` list so the next update
+mapping is written into the `adapted` list of `.agents/carrier.toml` so the next update
 does not propose the rename again.
 
 Three rules that keep this from becoming drift:
@@ -773,7 +765,7 @@ Three rules that keep this from becoming drift:
 2. **One artifact per session, never a big-bang.** Adoption is incremental by
    construction. A session that reorganises four things has made itself
    unreviewable.
-3. **Record every substitution in the header.** An adaptation that is not
+3. **Record every substitution in `carrier.toml`.** An adaptation that is not
    written down will be re-proposed by the next update, and re-declined, forever.
 
 And the direction that is easy to forget: **the host repo usually knows
@@ -796,8 +788,8 @@ whatever enters it is public for good, and no later edit recalls it.
 The leak is rarely a name. It is a combination: an exact threshold, a quoted
 comment, a field name and a domain noun, each harmless alone, together enough to
 find the one codebase they came from — re-identification works from
-combinations of ordinary attributes (`../references.md`, *Privacy and
-re-identification*). So the lesson is kept and the fingerprint is removed:
+combinations of ordinary attributes (the home repository's `sources/references.md`,
+*Privacy and re-identification*). So the lesson is kept and the fingerprint is removed:
 
 | What | Becomes |
 |---|---|
@@ -828,15 +820,16 @@ scrub, and the release that does it says so. A deletion is recorded generically 
 "carrier-specific detail removed for privacy" and the date — never by restating
 what was removed.
 
-**It holds whether or not you remember loading it.** An agent writing into
-`tracking/`, a note, a method document or any other file that travels applies
-the rule even when this section is not in its context — and does not trust
-itself to have applied it. `bundle.py privacy` checks the tree against generic
+**It holds whether or not you remember loading it.** An agent writing into the
+outbox (`tracking/`), `carrier.toml`, a note, a method document or any other file
+that travels applies the rule even when this section is not in its context — and
+does not trust itself to have applied it. The carrier-owned files are checked like
+the released ones, and in the home repository so are `meta/` and `sources/`. `bundle.py privacy` checks the tree against generic
 patterns (addresses, home paths, forge URLs, currency amounts, time-zone
 offsets, pinned versions, chosen ids, code identifiers in evidence, a record id
 beside a domain noun) and against this machine's own
 `~/.config/agent-guides/private-terms.txt`, which is never committed;
-`digest --check` runs it, and the home repository's hooks run it before a
+`bundle.py verify` runs it, and the home repository's hooks run it before a
 commit. The one override is a `privacy-allow: <reason>` marker on the line,
 written only when the user explicitly says so; every run lists every allowance,
 so none is silent.
@@ -852,7 +845,7 @@ method that cannot be reverted.
 The principles say what the repository must guarantee. This says what the code
 itself must look like. **These are the defaults the method assumes**; a host
 repository that has already decided differently keeps its decision (principle
-19), and the substitution goes in the header's `adapted` list.
+19), and the substitution goes in the `adapted` list of `.agents/carrier.toml`.
 
 Every standard here is stated as *what it prevents*, and every one of them is
 something an agent gets wrong in a characteristic way.
@@ -1043,8 +1036,11 @@ Language conventions for code and for docs.
 ## The documents, and which one answers what
 | Question | Document |
 A table. Questions in the words someone would actually ask. One row is always:
-before a design decision or before claiming done, consult
-`.agents/knowledge/INDEX.md` and read only the notes it points to.
+when a change touches state, a contract, data, security or verification, consult
+`.agents/knowledge/INDEX.md` before a design decision and before claiming done;
+apply each card it routes to (claim, where it stops applying, check), open a full
+note only when its boundary is unclear here, and where this repository states an
+invariant that contradicts a note, follow the repository and say so.
 ```
 
 **What does not go here:** any number that has an owner document, anything the
@@ -1330,6 +1326,9 @@ it forever is not.
 Keep the rule and the check pointing at each other. A check with no rule is a
 trap; a rule with no check is rung 1.
 
+In a carrier, the gate also runs the bundle's own checks: `bundle.py verify`,
+`bundle.py privacy .agents`, and `bundle.py ids` over the files that hold record ids.
+
 ### 10. `README.md`, `docs/architecture.md`, `.editorconfig`
 
 - **README** — what this is, the core invariant in one paragraph, how to run it,
@@ -1368,8 +1367,8 @@ failure with an extra step.
 
 ### What each surface can actually do
 
-Checked against each vendor's documentation on 2026-09-24; the sources are in
-`../references.md`, *Writing for an agent*.
+Checked against each vendor's documentation on 2026-09-24; the sources are in the
+home repository's `sources/references.md`, *Writing for an agent*.
 
 | | Claude Code | Cursor | Copilot |
 |---|---|---|---|
@@ -1537,7 +1536,7 @@ example, and it is answered at a report, not at a pre-flight. The pre-flight
 covers what is knowable up front; the prompt's own procedure keeps its own
 approval points, and they are not merged into it.
 
-It is also not a place to re-ask what the header already records. `adapted` and
+It is also not a place to re-ask what `carrier.toml` already records. `adapted` and
 `declined` are answers a previous run already obtained; re-asking them is how a
 set of prompts becomes something people avoid running.
 
@@ -1547,19 +1546,20 @@ set of prompts becomes something people avoid running.
 
 Evaluate comes before the others and writes nothing, so it cannot conflict
 with any of them. Bootstrap and update are the ones a single repository runs to write, and they are
-designed so that **neither can undo the other's work.** The header is what makes that true:
-bootstrap writes it, update reads it and carries it forward, and both leave it
-correct.
+designed so that **neither can undo the other's work.** `carrier.toml` is what makes that
+true: bootstrap writes it, update reads it and carries it forward, and both leave it
+correct. Versions are compared by SemVer precedence (*Version numbers*).
 
 | The situation you are in | Run | Because |
 |---|---|---|
-| No method header, no agent instructions of any kind | **bootstrap** | nothing to preserve; the full nine phases |
-| No method header, but the repo already has `CLAUDE.md`, `AGENTS.md`, `.cursorrules` or its own conventions | **bootstrap, in adopt mode** | Phase 1 classifies what exists and **nothing is discarded**; see principle 19 |
-| Header present, `version` lower than the incoming set's | **update** | only the deltas, triaged against this repo |
-| Header present, same version, and the repo has learned something | **harvest** (`prompt-harvest.md`) | the repo is ahead of the method; it writes candidates, a release takes them |
-| Header present, ancestries share a prefix and then **diverge** | **merge** (`prompt-merge.md`) | both lines moved; it stops at a reconciliation table the human approves |
-| Header present but the artifacts it claims do not exist | **bootstrap, in repair mode** | the file was copied without the work; list what is missing and build it |
-| Several carriers of the bundle at once | **sync** (`prompt-sync.md`) | one base, one table, one release, applied in each carrier |
+| No bundle, no agent instructions of any kind | **bootstrap** | nothing to preserve; the full nine phases |
+| No bundle, but the repo already has `CLAUDE.md`, `AGENTS.md`, `.cursorrules` or its own conventions | **bootstrap, in adopt mode** | Phase 1 classifies what exists and **nothing is discarded**; see principle 19 |
+| A release in `incoming/` newer than this copy's `version` | **update** | only the changes since this version, triaged against this repo |
+| An incoming release at the same `version` or older | nothing | there is nothing to take |
+| Same version, and the repo has learned something | **harvest** (`prompt-harvest.md`) | the repo is ahead of the method; it writes candidates to its outbox, the next release takes them |
+| One side on the layout before 0.0.22 (a README header with `lineage:`) | update **from a release, through the home repository** | the old layout is converted there; here, treat the other copy as data |
+| A bundle present but the artifacts it assumes do not exist | **bootstrap, in repair mode** | the files were copied without the work; list what is missing and build it |
+| Several carriers onto one release | **the home repository** | alignment and releases are run there, never from a carrier |
 
 **What update will not do.** It will not bootstrap. If the repo has the file but
 not the artifacts, update stops, says which guarantees have no home, and hands
@@ -1568,15 +1568,14 @@ log has skipped the phases that make a decisions log worth anything — Phase 1
 and Phase 2 — and will fill it with plausible rows nobody verified.
 
 **What bootstrap will not do.** It will not run from scratch on a repository
-whose header has `adopted` set by this repository: it has already taken the
-method, so a newer set reaches it by update, and missing artifacts are repair
-mode, which bootstrap runs only when told. (A bundle just copied in from
-elsewhere carries its source's repository fields; those are cleared, not
-believed.) Rebuilding on top of work that is already there is how it gets lost.
+whose `carrier.toml` has `adopted` set by this repository: it has already taken the
+method, so a newer release reaches it by update, and missing artifacts are repair
+mode, which bootstrap runs only when told. (A `carrier.toml` copied in from
+elsewhere is another repository's; it is cleared, not believed.) Rebuilding on top of work that is already there is how it gets lost.
 
 **What they share, and must both leave true:**
 
-- the header block, including `adapted` and `declined`
+- `carrier.toml`, including `adapted` and `declined`
 - one row in this repo's decisions log for anything now settled
 - one changelog entry, naming what was skipped and why
 - the artifacts' *guarantees*, in whatever shapes this repo uses for them
@@ -1608,7 +1607,8 @@ you are replacing, and you should stop and re-read principle 19.
   home. Add a pointer, record it in `adapted`, and do not import it.
 - Every *extend* and every substitution is one line in `adapted`; every refusal
   is one line in `declined` **with the reason, written for a stranger** — the
-  next update reads both (`../README.md`, *The fields that are this repository's*).
+  next update reads both in `../carrier.toml` (`../README.md`, *The fields that are
+  this repository's*).
 
 ### Reordering without breaking
 
@@ -1735,14 +1735,11 @@ Then the normal six lines, **for that repository only.**
   leakage wearing a reason's clothes.
 - **Each repo's gate runs in its own repo.** There is no workspace-level green.
 - **The workspace is what gets written: all of the repositories open here, and only those.** This
-  is the one statement of the rule; every prompt points here. A machine usually holds more carriers
-  of the shared bundle than a session has open; one that is not open gets no report read, no gate
-  run and no commit reviewed, so nothing reaches it from here — it is named as not reached, and it
-  receives the release from its own session or its own `incoming/`. `tools/bundle.py` takes the
-  workspace from its arguments, else `AGENT_WORKSPACE`, else the local manifest; a command that
-  writes refuses a workspace it had to infer, refuses to write outside it, and names every carrier
-  it did not touch. All of them, too: a learning seen in two open repositories is a second
-  occurrence, and that count exists only while both are open.
+  is the one statement of the rule; every prompt points here. A repository that is not open gets
+  no report read, no gate run and no commit reviewed, so nothing reaches it from here: it is named
+  as not reached, and gets its update from its own session or its own `incoming/`. All of them,
+  too: a learning seen in two open repositories is a second occurrence, and that count exists
+  only while both are open.
 - **A change spanning several repos states its order and its blast radius**
   before starting — which repo must land first, what breaks between the two
   landings, and whether the intermediate state is shippable. If it is not, say
@@ -1752,23 +1749,18 @@ Then the normal six lines, **for that repository only.**
   ago.
 - **Uncommitted work belongs to whoever left it.** In a workspace there are more
   trees and more chances to sweep in somebody's half-finished afternoon.
-- **Method headers are per repository.** Two repos in one workspace routinely sit
-  at different versions and different lineages, and that is fine. Never update
-  one because its neighbour was updated; run the update invocation, per repo,
-  with its triage.
-- **A release that has to reach several carriers is one meta-session, not several
-  updates**: `prompt-sync.md`, run by `tools/bundle.py`. One base found by content,
-  one reconciliation table, one release built outside every carrier, then each
-  carrier by itself, and a close that `align` has to confirm.
+- **Versions are per repository.** Two repos in one workspace routinely sit at
+  different versions, and that is fine. Never update one because its neighbour
+  was updated; run the update invocation, per repo, with its triage. Bringing
+  several carriers onto one release is run from the home repository, not here.
 - **Record ids are derived, never counted and never chosen.** Anything parallel
   sessions write into a repository's own logs — a decision row, a roadmap item,
   a changelog entry — gets `<kind>-<repo6>-<content6>`, for example
   `d-abcdef-123456`: `d-` decision, `i-` roadmap item, `s-` session (changelog)
   entry. `repo6` is the six hex of the repository's **carrier id** (`r-abcdef`),
-  which is **random**: minted once by `bundle.py carrier-id --mint` and stored in
-  the `carrier:` field of the repository's own `.agents/README.md` header, among
-  the fields that are the repository's, so a splice keeps it and `align` ignores
-  it; `bundle.py carrier-id` prints it and refuses when there is none. It is
+  which is **random**: minted once by `bundle.py carrier-id --mint` and stored as
+  `carrier` in the repository's own `.agents/carrier.toml`, which no release
+  writes; `bundle.py carrier-id` prints it and refuses when there is none. It is
   **never derived from the remote**: a hash of a remote someone can guess is
   reversed by guessing — confirmed in one carrier from 66 guesses — and would
   name a private repository in every id it prefixes. A row cited from another
@@ -1892,7 +1884,7 @@ top. That is the system working**, not failing.
 | 1 | A sentence in one changelog entry | it happens a second time |
 | 2 | A rule in this repo's `CLAUDE.md`, a decisions row, or a check in the audit | it turns out not to depend on this repo's nouns |
 | 3 | A principle, artifact or step in **the method documents** | it would be true in a repo that shares none of this one's vocabulary |
-| 4 | Every other repository | a release carries it: `prompt-sync.md`, or `prompt-update.md` for a single copy |
+| 4 | Every other repository | a release carries it, and `prompt-update.md` applies it in each |
 
 **The generality test, and it is strict.** Try to state the learning without a
 single noun specific to your project. If you cannot — if it needs *our render
@@ -1910,13 +1902,12 @@ candidate for level 3.
 > at level 3.
 
 **The procedure is split in two, by who may write.** In a carrier,
-`prompt-harvest.md` writes candidates and evidence into `../tracking/` and
-nothing else; a release (`prompt-sync.md`, *Build the release, once*) applies
-the generality test across every carrier's candidates and writes the notes,
-principles and versions, once. A learning about building software rather than
-about working goes through the knowledge base's admission and lifecycle
-(`../knowledge/README.md`) instead of becoming a principle. What does not pass
-waits in `../tracking/candidates.md`.
+`prompt-harvest.md` writes candidates and evidence into its outbox, `../tracking/`,
+and nothing else; the home repository gathers every outbox at the next release,
+applies the generality test and writes the notes and principles, once. A learning
+about building software rather than about working becomes a knowledge note
+(`../knowledge/README.md`) instead of a principle. What is still waiting is listed
+in `../knowledge/OPEN.md`, so a harvest does not offer it twice.
 
 **The second filter: has it earned it?** A principle costs every future reader
 attention on every future read. Add one only when you can name the failure it
@@ -1926,100 +1917,51 @@ argued.
 
 ### Keeping the set versioned, so other copies can catch up
 
-A distributed document without a version cannot be updated — the receiving repo
-has no way to tell what it already has. The **method header**, identical at the
-top of every document of the set, is that record, and it carries more than a number:
+A distributed document without a version cannot be updated: the receiving repository
+has no way to tell what it already has. The bundle has **one version**, in Semantic
+Versioning 2.0.0 form, in the frontmatter of `../README.md` (`bundle`, `version`,
+`released`); no other document carries a header. What changed is `../CHANGELOG.md`, in
+Keep a Changelog 1.1.0 format, and `bundle.py changelog --since X.Y.Z` prints only what is
+newer than the version this repository holds, which is what an update triages.
 
-| Field | What it is for | Read by |
+**A copy holds two kinds of file, and mixing them up is the most common way a distribution
+goes wrong.** The version, the changelog and every file listed in `../SHA256SUMS` are **the
+release**: they travel together and are replaced together. `../carrier.toml` and the outbox
+in `../tracking/` are **the repository's**: no release writes them and none lists them. The
+rule and its reasons have one home, `../README.md`, *The fields that are this repository's*.
+
+| Field of `carrier.toml` | What it is for | Read by |
 |---|---|---|
-| `set` | which documents this release ships as | checking you hold a matched set |
-| `lineage` | which line of the method this copy descends from | matching two repos before merging anything |
-| `ancestry` | root → current; the visible shape of the tree, with opaque nodes | seeing where two copies separated |
-| `version` | how far along **that lineage** this copy is | the update triage, to compute the deltas |
-| `forked_at` | the `{lineage, version}` this line branched from, or `null` for a root | making a merge conversation concrete |
-| `digest` | a fingerprint of the set's **content** | catching two copies that claim the same version and are not the same |
-| `upstream` | where this copy pulls from — a repo, a path, or `""` if it is a root | whoever runs the update; it is this repository's, like the three below |
+| `carrier` | this repository's random id, `r-` and six hex | record ids (*Workspaces*), and the home's list of carriers |
 | `adopted` | when this repository took the method | telling a prepared repo from one that only has the files |
+| `upstream` | where this copy pulls from — a repo, a path, or `""` for the home | whoever runs the update |
+| `harvested_through` | the date the last harvest read up to | the next harvest, so nothing is offered twice |
 | `adapted` | every local renaming and substitution, one line each | principle 19, so a rename is never re-proposed |
-| `declined` | every delta deliberately not taken, **with its reason** | the update, so a decision is not re-litigated every release |
+| `declined` | every change deliberately not taken, **with its reason** | the update, so a decision is not re-litigated every release |
 
-**The header splits into two kinds of field, and mixing them up is the most common way
-a distribution goes wrong.** `lineage`, `ancestry`, `version`, `forked_at`, `digest` and
-`released` describe **the set**: they travel with the body, always — on a descendant line
-they are taken from the incoming set — and a copy that takes the body without them ends up
-claiming a version it is not. `upstream`, `adopted`, `adapted` and `declined` — and, in the
-bundle `README.md` only, `carrier` — describe **the repository** and stay put; the rule and its reasons have one home, `../README.md`, *The
-fields that are this repository's*. After any propagation, `bundle.py digest --check` and
-`bundle.py align` compare version, lineage and computed digest; equal digests with different
-versions is the signature of getting it backwards.
+**Integrity.** `../SHA256SUMS` lists every released file with its sha256 in the GNU
+coreutils format, so `sha256sum -c SHA256SUMS` (or `shasum -a 256 -c`) inside `.agents/`
+checks a copy without this tool. `bundle.py verify` checks the same, catches a file the list
+does not name, and runs the links, session reads and privacy checks. It proves the copy is
+the one released, not who released it: integrity, not authenticity. **A copy that fails is
+not believed**: treat it as unversioned, compare content, and say so.
 
-**On lineage, and why the id is deliberately meaningless.** A lineage id is an
-**opaque token** — `m-7c41a9` — never derived from a repository, a product, a
-team or a person, so a copy can travel to organisations that use, match and fork
-it **without learning anything about where it came from**; `acme-billing/main`
-would leak a customer, a project and a team every time the file is forwarded.
-**`ancestry` is what stays readable**: an ordered list, root first, of every line
-this copy descends through. A copy that tracks its parent does not touch it; a
-copy that forks **appends one new opaque id** and sets `lineage` to it. So a
-reader sees the **shape of the tree** — how deep their line is, where two copies
-separated — and never what any node *is*.
+### Version numbers
 
-### Version numbers, and the collision they would otherwise have
+**One writer.** The home repository is the only place a version is cut, and it tags each
+release `vX.Y.Z`. Anyone else who changes the method forks it in git; a fork's versions
+are its own and are never compared with the home's.
 
-**A monotone integer does not survive two writers.** If two repositories on
-lineage `m-7c41a9` at version 6 both improve the method and bump to 7, there are
-**two different version 7s on one lineage**, and the naive comparison calls them
-identical — silent, and it discards one side's work. The fix is one rule, which
-makes the collision impossible, and one check, which catches the rule being
-broken.
+**While the version is `0.0.z`, every release may break** what a carrier depends on
+(SemVer §4), so an update reads every changelog section since its own version rather than
+trusting the size of the step. Moving to `0.1.0` or `1.0.0` is the user's decision.
 
-**The rule: a lineage has exactly one writer.**
-
-> **`version` is monotone *within a lineage*, and only the owner of that lineage
-> may bump it.** Anyone else who changes the method **forks**: appends a new
-> opaque id to `ancestry`, sets `lineage` to it, records `forked_at`, and
-> continues numbering from where they branched.
-
-That is rung 4 of the ladder applied to the method itself: changing the method
-*is* forking, and forking is cheap. **Numbering does not restart at a fork** — a
-line branching from version 6 makes its first release **7** — so `version`
-still means "how much has happened", `ancestry` says whose 7 it is, and version 3
-of two lines never looks comparable when it is not.
-
-**The check: the digest.**
-
-`digest` is a fingerprint of what the documents actually say, so equality stops
-being a claim and becomes something you can verify. **The tool is the one
-recipe**: `bundle.py digest [TREE] --check` recomputes every digest a header
-declares and fails on any that is not true, and `bundle.py stamp` writes them.
-In words, for a reader who cannot run it: each file's body with its frontmatter
-stripped, concatenated in byte order of the path (never a locale's collation,
-which skips punctuation and changes the result between machines), sha256, the
-first twelve hex characters. The method digest covers the set's documents; the
-knowledge digest covers every `.md` under `knowledge/notes/`, recursively, bodies
-only, and refuses an empty set.
-
-Twelve characters: short enough to compare by eye in a report, long enough that
-two different sets will not share one. The header is excluded so that writing
-the digest into the header does not change the digest. A second recipe written
-for the occasion is how a locale once got into a published digest; do not write
-one.
-
-**It degrades safely.** If a copy's `digest` does not match the content you are
-reading, **do not trust the header** — treat the copy as unversioned and compare
-content directly. A stale digest is a stale claim, and the one thing it must
-never do is be believed.
-
-**Matching two copies**, with both mechanisms in play — six outcomes:
+**Matching two copies:**
 
 | Comparison | Meaning | What to do |
 |---|---|---|
-| Same `ancestry`, same `version`, same `digest` | identical | nothing |
-| Same `ancestry`, same `version`, **different `digest`** | **the collision** — someone changed the method without forking | **stop.** Report both digests and both changelogs. One side must fork retroactively before anything else happens |
-| Same `ancestry`, different `version` | one is simply behind | update, mechanically |
-| Shared **prefix**, then divergence | forked lines; `forked_at` says exactly where | **stop**, report the common ancestor and the versions each side added since; merging is a human decision |
-| No shared prefix | unrelated methods sharing a filename | **never merge**; they are different documents |
-| `digest` absent or not matching its own content | an untrustworthy header | ignore the header, compare content, and say so |
-
-Silently overwriting one lineage with another discards everything the first line
-learned, which is the entire asset. That is why three of those six rows stop.
+| Same `version`, `verify` passes on both | identical | nothing |
+| Same `version`, a checksum fails | a released file was edited in place | **stop**: that copy is not the release; compare content and say so |
+| Different `version` (SemVer precedence) | one is behind | the older one updates (`prompt-update.md`) |
+| One side's README header has `lineage:` | the layout before 0.0.22 | update it from a release through the home repository, or treat it as data |
+| No README frontmatter | not a copy of this bundle | bootstrap, or leave it alone |

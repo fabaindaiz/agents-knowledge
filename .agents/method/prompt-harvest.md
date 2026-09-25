@@ -1,7 +1,8 @@
 # The local step — what this repository learned, written where a release can take it
 
-**Where this sits:** step 2 of the cycle in `prompt-sync.md` §*The cycle* — the carriers are aligned
-first, every repository harvests, and one release then gathers what they wrote.
+**Where this sits:** between releases, in every carrier. The harvest writes this repository's outbox;
+the home repository gathers every carrier's outbox at its next release, decides what is admitted, and
+empties the rows it took.
 
 ## ▶ Paste this to start
 
@@ -23,21 +24,22 @@ Reads:
 - method/prompt-context.md §20. Nothing private travels, directly or by reconstruction
 - knowledge/README.md
 - knowledge/INDEX.md
+- knowledge/OPEN.md
 - tracking/candidates.md
 - tracking/experiments.md
 
 **Close what is open before reading anything.** In each repository, finish the
 session that is in flight — its closing review, its documents put back to true,
 its changelog entry, its gate — or, if I tell you to leave it, say so and
-harvest only what is already recorded. A harvest reads the record, so a session
-that was never closed is a harvest of everything except the freshest thing that
-happened.
+harvest only what is already recorded.
 
-Then read what this repository recorded since its last harvest and write down
-what it learned that the bundle does not know — **as candidates and evidence in
-`.agents/tracking/`, and nowhere else in `.agents/`**. Notes, method documents,
-indexes, headers and versions belong to a release, which is written once for
-every carrier; a note edited here is a lineage forked here.
+Then read what this repository recorded since `harvested_through` in
+`.agents/carrier.toml`, check `.agents/knowledge/OPEN.md` for what the home is
+already waiting for, and write what it learned that the bundle does not know —
+**as rows in `.agents/tracking/candidates.md` and `.agents/tracking/experiments.md`,
+and nowhere else in `.agents/`** except `harvested_through`, which moves to the
+last date read. Every other file there belongs to the release; a note edited
+here is a fork of it.
 
 Do each repository as its own pass, with that repository as today's repo, and
 never carry one's conventions into another.
@@ -45,12 +47,12 @@ never carry one's conventions into another.
 Privacy (principle 20): every candidate and every line of evidence is
 generalised before it is written — no figure, quote, identifier, domain noun or
 personal detail that could identify a private repository, its people or its
-users — and `bundle.py privacy .agents` passes before the commit.
+users — and `bundle.py privacy` passes before the commit.
 
-Finish with `python3 .agents/tools/bundle.py check-local`, which has to report
-that only `tracking/` changed in every one of them, and a report per repository
-of what you found, what you refused and why, and what now waits for the next
-meta-session.
+Finish with `python3 .agents/tools/bundle.py verify` and
+`python3 .agents/tools/bundle.py check-local`, which must report nothing, and a
+report per repository of what you found, what you refused and why, and what now
+waits for the next release.
 ~~~
 
 **╚══════════ COPY EVERYTHING INSIDE THE BOX ABOVE ══════════╝**
@@ -67,138 +69,121 @@ as proposed.
 
 1. The repositories and the period. I will harvest **every repository this
    session has open and only those** — say if one should be left out — and read
-   everything each of them recorded since its own last harvest (the newest date
-   in its `.agents/tracking/`, or its bundle's `adopted` date). A carrier this
-   machine knows that is not open here is named as not harvested, never guessed
-   at. Say if you want a different starting point.
+   everything each of them recorded since `harvested_through` in its
+   `.agents/carrier.toml` (or its `adopted` date, if that is empty). A carrier
+   this machine knows that is not open here is named as not harvested, never
+   guessed at. Say if you want a different starting point.
 
-2. Experiments. `tracking/experiments.md` queues experiments that would move a
-   note's confidence. I will run only the ones that cost minutes here and
-   record what they showed; the rest stay queued. Say if you want none run, or
-   a specific one run whatever it costs.
+2. Experiments. `knowledge/OPEN.md` lists experiments that would move a note's
+   confidence. I will run only the ones that cost minutes here and record what
+   they showed in `tracking/experiments.md`; the rest stay queued. Say if you
+   want none run, or a specific one run whatever it costs.
 
 3. Work in flight. Where a repository has an unclosed session — uncommitted
    work, a changelog entry not written, documents a change made false — I will
    close it first and then harvest it. Say if you want it left alone instead,
    and I will harvest only what is already recorded and name what I skipped.
 
-4. Scope. I will write only in `.agents/tracking/`, and process friction that
-   belongs to this repository in its own roadmap. Nothing else in `.agents/`
-   changes. Say if you want something else touched, and I will tell you what it
-   forks.
+4. Scope. I will write only the outbox in `.agents/tracking/` and
+   `harvested_through`, and put process friction that belongs to this
+   repository in its own roadmap. Nothing else in `.agents/` changes.
 ~~~
 
 ---
 
-## Why the local step is separate, and why it writes so little
+## Why the local step writes so little
 
-A meta-session takes one release to every carrier. **The local step is what gives it something to
-take**, and the discipline that makes it cheap is a negative one:
+> A carrier that edits its own note, adds its own, or changes a method document has **forked the
+> release**. Nothing fails that day. It fails at the next update, which has to decide which of two
+> true sentences to keep, and a carrier that forked once drifts further every release.
 
-> A carrier that edits its own note, adds its own, or bumps its own version has **forked the
-> lineage**. Nothing fails that day. It fails at the next meta-session, which now has to merge two
-> lines and decide which of two true sentences to keep — and that is how a base gets re-derived by
-> hand, how a `tracking/` folder gets overwritten, and how three carriers end up on two versions.
-
-So the local step writes **candidates and evidence**, in `tracking/`, which the bundle merges line
-by line precisely because it is written in several carriers at once. Everything else — a note, its
-index row, a method rule, a version, a digest — is written **once, for every carrier**, by
-`prompt-sync.md`.
-
-`python3 .agents/tools/bundle.py check-local` is that rule as a check: it compares this carrier's
-working bundle with its committed one and names anything changed outside `tracking/`.
+So the local step writes **candidates and evidence** in its outbox, which the home reads beside every
+other carrier's. A note, a card, a method rule and a version are written **once, for every carrier**,
+by the release. `bundle.py check-local` is that rule as a check: it compares every released file with
+`SHA256SUMS` and names the ones changed, committed or not.
 
 ## The scope: every repository open here, and no other
 
 The rule and its reasons are in `prompt-context.md` §*Workspaces: several repositories at once*.
 What it means here: every open repository is harvested, because a learning seen in two of them is
-the second occurrence admission asks for; a carrier of the manifest that is not open is named in
-the report as not harvested, never reached into.
+the second occurrence admission asks for; a carrier that is not open is named in the report as not
+harvested, never reached into.
 
 ## Phase 0 — close the session that is open, in each repository
 
 **A harvest reads what was written down, so it is worth nothing until what happened is written
-down.** The order is not a preference: an unclosed session keeps its learnings in a working tree and
-in the head of whoever ran it, and the head is gone by the time the harvest runs.
-
-For each repository, before reading it, run the closing review of the session loop
-(`prompt-bootstrap.md` §*The session loop*, step 8) over whatever it has in flight:
+down.** For each repository, run the closing review of the session loop (`prompt-bootstrap.md`
+§*The session loop*, step 8) over whatever it has in flight:
 
 1. **Re-run what the work invalidated** — a measurement recorded elsewhere that is now wrong, a
    roadmap entry a change unblocked, a rule that became checkable.
-2. **Put the documents back to true**, in the same change: the *what changed → what must move* table.
+2. **Put the documents back to true**, in the same change.
 3. **Write the changelog entry**, including what the first attempt got wrong and what caught it. That
-   entry is most of what the harvest will read tomorrow.
+   entry is most of what the harvest will read.
 4. **Run the gate** and report which selection ran.
-5. **Commit**, in that repository's own style, so the bundle is clean before the harvest touches
-   `tracking/` — otherwise `check-local` cannot tell the harvest's writes from the session's.
+5. **Commit**, in that repository's own style, so the harvest's writes stand apart from the session's.
 
 **If the maintainer says to leave work in flight alone**, harvest only what is already recorded, and
-name in the report what was skipped and why. Never close somebody else's session without being told:
-the uncommitted diff is their work.
+name in the report what was skipped. Never close somebody else's session without being told: the
+uncommitted diff is their work.
 
 ## Phase 1 — the harvest, per repository
 
-1. **Read what this repository recorded**, not what it summarises: the root instruction file, the
-   area rules, the decisions log and its evidence, the changelog in full (it holds the discarded
-   alternatives and the numbers), the roadmap, the audit script's comments, and the commit
-   messages of the period. With several repositories open, one read-only agent per repository is
-   cheap and keeps the reading from crowding out the judgement.
-2. **Write each candidate in the form admission needs** (`knowledge/README.md`, *The lifecycle of a
-   note*), **generalised before it is written** (`prompt-context.md`, principle 20): the claim
-   **without a single project noun**, whether it is knowledge or method, the occurrence with its
-   numbers as orders of magnitude or ratios, paraphrased rather than quoted, its identifiers named
-   by their role, and its date, the boundary, the cost, the literature consulted
-   against its source, and which existing note or principle it overlaps. **Consult the literature
-   before writing anything**, and check each citation against its source: an established result is
-   cited with what it contributes, a contradicting one kills or narrows the candidate, and nothing
-   found is written as "none known".
+1. **Read what this repository recorded since `harvested_through`**, not what it summarises: the root
+   instruction file, the area rules, the decisions log and its evidence, the changelog in full (it
+   holds the discarded alternatives and the numbers), the roadmap, the audit script's comments, and
+   the commit messages of the period. With several repositories open, one read-only agent per
+   repository is cheap and keeps the reading from crowding out the judgement.
+2. **Write each candidate in the form admission needs** (`knowledge/README.md`, *What a candidate
+   carries*), **generalised before it is written** (`prompt-context.md`, principle 20). **Consult the
+   literature before writing anything**, and check each citation against its source: an established
+   result is cited with what it contributes, a contradicting one kills or narrows the candidate, and
+   nothing found is written as "none known".
 3. **Apply the generality test strictly**, and report plainly when nothing survives. **That is the
    common and correct outcome**; a bundle that takes every offered learning is portable to nowhere.
-4. **Extend before adding — as a candidate.** A new occurrence, number or boundary of an existing
-   note is the most valuable thing a harvest produces, and it is *still* not written into the note
-   here: the candidate line names the note it extends and carries the evidence, and the release
-   applies it. Same for a claim a measurement here contradicts: that is a line in
-   `tracking/experiments.md`, with the verdict — *confirms*, *moves the boundary* or *falsifies* —
-   never an edit to the note.
-5. **Run the cheap queued experiments** that this repository can answer, and record each one in
-   `tracking/experiments.md` under *Run*: the date, the repository by mechanism rather than by name,
-   what was run, the number, and the verdict.
+4. **Extend before adding — as a candidate.** Check `knowledge/OPEN.md` and the index first. A new
+   occurrence, number or boundary of an existing note, or of a candidate `OPEN.md` lists, is the most
+   valuable thing a harvest produces, and it is *still* not written into the note here: the row names
+   what it extends and carries the evidence. A claim a measurement here contradicts is a row in
+   `tracking/experiments.md` with the verdict — *confirms*, *moves the boundary* or *falsifies*.
+5. **Run the cheap queued experiments** from `knowledge/OPEN.md` that this repository can answer, and
+   record each in `tracking/experiments.md`: the date, the note, the repository by mechanism rather
+   than by name, what was run, the result, and the verdict. Only this repository's runs since the last
+   release go there.
 6. **Friction that belongs to this repository** — a command that is awkward here, a check this host
-   needs — goes in **this repository's** roadmap, not in the bundle's. Only the part that is true of
-   any repository is a method candidate.
-7. **Check and commit**: `bundle.py privacy .agents` passes, `bundle.py check-local` reports only
-   `tracking/` changed, then one commit in this repository's own style. An allowance the privacy
-   check lists exists only because the user asked for it. The bundle's own `roadmap.md` is not touched by the local step.
+   needs — goes in **this repository's** roadmap. Only the part that is true of any repository is a
+   method candidate.
+7. **Check and commit**: set `harvested_through` in `carrier.toml` to the last date read; then
+   `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local` pass; then one commit in this
+   repository's own style. An allowance the privacy check lists exists only because the user asked for
+   it. If an outbox table was damaged, `bundle.py outbox --reset` restores the empty template, and the
+   rows are written again.
 8. **Report**, per repository: what was found, what was refused and the reason for each, what
-   experiments ran and what they showed, and what now waits for the next meta-session — plus, once,
-   the carriers that were not open here and so were not harvested.
+   experiments ran and what they showed, and what now waits for the next release — plus, once, the
+   carriers that were not open here and so were not harvested.
 
 ## When to run it
 
 | When | Why |
 |---|---|
-| Before a meta-session, in every carrier | it is what `prompt-sync.md` phase 1 gathers; a carrier that has not run it contributes nothing but its divergence |
+| Before a release, in every carrier | the release gathers the outboxes; a carrier that has not harvested contributes nothing |
 | When a friction is hit a second time here | the second occurrence is the evidence admission asks for, and it is available now |
 | When a repository has run for a while without one | the changelog still holds the numbers; a year later it holds the summaries |
 
 ## What the local step must never do
 
-- **Never write outside `tracking/`** in the bundle: not a note, not an index row, not a method
-  document, not a header, not a version, not a digest.
-- **Never bump a version or recompute a digest.** One writer per lineage, and it is the release.
-- **Never promote a candidate to a note here**, however obviously true it is. It is one line in
-  `candidates.md` with what it lacks, and the release decides — with every other carrier's
-  candidates on the table, which is the only place the generality test can honestly be applied.
+- **Never write a released file**: not a note, a card, an index, a method document, the README or the
+  tool. Only the outbox and `harvested_through` change.
+- **Never promote a candidate to a note here**, however obviously true it is. It is one row with what
+  it lacks, and the release decides, with every other carrier's candidates on the table, which is the
+  only place the generality test can honestly be applied.
 - **Never write what identifies a private repository** into `tracking/` — not its figures, quotes,
   identifiers, domain nouns or anyone's personal context — and never trust memory over
   `bundle.py privacy`.
-- **Never invent a second occurrence.** One repository seeing something twice is one repository;
-  the count that matters is across carriers, and the meta-session is where it is taken.
-- **Never harvest a repository this session does not have open**, however reachable its path is. It
-  is named as not harvested, and its own session writes its candidates.
+- **Never invent a second occurrence.** One repository seeing something twice is one repository; the
+  count that matters is across carriers, and the release is where it is taken.
+- **Never harvest a repository this session does not have open**, however reachable its path is.
 - **Never harvest over an unclosed session in silence.** Either it is closed first, or what was left
-  out is named in the report. A harvest that quietly misses the last week's work is worse than none:
-  it will be trusted.
-- **Never leave a refusal unwritten.** A learning that did not pass admission is a line with the
-  reason, so the next harvest does not offer it again with the same gap.
+  out is named in the report. A harvest that quietly misses the last week's work will be trusted.
+- **Never leave a refusal unwritten.** A learning that did not pass the generality test is named in the
+  report with the reason; `harvested_through` keeps the next harvest from reading that period again.

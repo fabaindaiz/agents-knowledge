@@ -7,7 +7,7 @@
 __pycache__/
 *.pyc
 
-# Assistant-generated local state is not version controlled (see .agents/layout.md)
+# Assistant-generated local state is not version controlled (see sources/layout.md)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 
