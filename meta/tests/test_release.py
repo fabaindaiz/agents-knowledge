@@ -438,8 +438,8 @@ class Carry(Base):
             self.splice(outside, scope=[inside])
 
 
-class Funnel(Base):
-    def test_a_candidate_is_due_after_three_releases_and_discarded_into_history(self) -> None:
+class Ledger(Base):
+    def test_nothing_is_discarded_by_age_and_the_ledger_names_every_idea_met(self) -> None:
         R = release()
         home = make_home(self.root)
         for n in (2, 3, 4):
@@ -448,11 +448,17 @@ class Funnel(Base):
             R.release(f"0.0.{n}", home)
             commit(home, f"release 0.0.{n}")
             git(home, "tag", "-a", f"v0.0.{n}", "-m", f"0.0.{n}")
-            self.assertEqual(R.funnel(home)["discard_due"], [] if n < 4 else ["old-idea"])
+        history = home / "meta/tracking/history.md"
+        history.write_text(history.read_text() + "\n| Candidate | Where it went |\n|---|---|\n| `dropped-idea` | dropped: the default already does it |\n")
+        R.build(home)
 
-        queue = home / "meta/tracking/candidates.md"
-        queue.write_text(queue.read_text().rstrip("\n") + "\n| old-idea — the same slug, newer | K | a number | here | 2026-02-04 | 0.0.4 |\n")
-        self.assertEqual(R.triage(apply=True, root=home), ["old-idea"])
-        self.assertIn("the same slug, newer", queue.read_text())
-        self.assertNotIn("an idea that waited", (home / "meta/tracking/candidates.md").read_text())
-        self.assertIn("`old-idea`", (home / "meta/tracking/history.md").read_text())
+        ledger = (home / "meta/tracking/INDEX.md").read_text()
+
+        self.assertEqual(R.funnel(home)["by_releases_waited"], {"3": 1})
+        self.assertFalse(hasattr(R, "triage"))
+        self.assertIn("- `old-idea` — K, since 0.0.1", ledger)
+        self.assertIn("- `dropped-idea` — dropped: the default already does it", ledger)
+        self.assertIn("- `gone` — superseded", ledger)
+        self.assertEqual(R.build(home, check=True), [])
+        history.write_text(history.read_text() + "| `another` | refused |\n")
+        self.assertIn("meta/tracking/INDEX.md", "\n".join(R.build(home, check=True)))

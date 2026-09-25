@@ -2,8 +2,9 @@
 
 Newest first. One section per release or harvest; each row says where the candidate went, so it
 is not offered again as a fresh idea. The queue itself is `candidates.md`. Name a candidate by its
-slug in backticks: that is how `release.py intake` recognises one answered here.
-`release.py triage --apply-discards` writes its own section for the three-release rule.
+slug in backticks, in the first cell of a table row: that is how `release.py intake` recognises one
+answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
+row here is a release's decision, with its reason.
 
 ## Refused by four carriers' harvests of 2026-09-22, recorded by the release of 2026-09-24
 

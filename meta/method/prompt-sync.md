@@ -26,7 +26,7 @@ Reads:
 - .agents/README.md §The fields that are this repository's
 - sources/README.md
 - .agents/knowledge/README.md
-- meta/tracking/candidates.md
+- meta/tracking/INDEX.md
 - meta/tracking/experiments.md
 
 Then work the three phases. **Phase 1 is read-only, and you write nothing
@@ -107,8 +107,7 @@ A carrier writes only what it owns: `.agents/carrier.toml` and its harvest outbo
 | the offered rows into the records | `release.py intake DIR [--version X.Y.Z]` | `meta/tracking/candidates.md`, `meta/tracking/experiments.md`, `DIR/intake.json` |
 | the loss check | `release.py lost BASE SNAPSHOT...` — run by `gather` for a carrier on the layout before 0.0.22 | nothing |
 | move a note | `release.py note-state SLUG active\|review\|retired` | `sources/`, its links in `meta/`, then a build |
-| due discards | `release.py triage`; `--apply-discards` removes them | with the flag: the queue and `meta/tracking/history.md` |
-| the generated knowledge | `release.py build [--check]` | `.agents/knowledge/` (generated files) and `SHA256SUMS` |
+| the generated knowledge | `release.py build [--check]` | `.agents/knowledge/` (generated files), `SHA256SUMS` and the ledger `meta/tracking/INDEX.md` |
 | sizes and the funnel | `release.py report [--check]` | nothing |
 | cut the release | `release.py release X.Y.Z` — prints the tag command | `.agents/README.md` version and date, then a build |
 | phase 2 | `release.py splice [REPO...]`, then `--write --backup BACKUP --taken DIR` (`DIR`: the gather's) | each carrier, after a backup |
@@ -131,7 +130,7 @@ In the home, never in a carrier.
 1. **`release.py intake DIR --version X.Y.Z`**, with the version this release will carry. New candidates enter `meta/tracking/candidates.md` with that version as *Since*; runs enter `meta/tracking/experiments.md` under *Run*. A row whose slug the queue, the history or a note already holds is printed as `already known`: add it to that row or note as another occurrence, which is what admission counts.
 2. **Apply the approved verdicts.** **Candidates become the bundle here, and only here**, generalised first (principle 20). Knowledge runs admission (`sources/README.md`, *The lifecycle of a note*); the method, the generality test. **Extend before adding.** A note is written only in full, in `sources/notes/<state>/<slug>.md`, and its frontmatter places it in every table; a state changes only by `release.py note-state`, and a retirement adds a row to `meta/tracking/retired.md`. Experiments a note names go to `meta/tracking/experiments.md` *Queued*. What does not pass stays in the queue with what it lacks; a candidate that leaves it another way gets its row in `meta/tracking/history.md`. The closing review of `sources/README.md` §4 runs here, and a note admitted in this release may only be *kept* or *queued* by it.
 3. **Account for every lost line.** Each line gather printed is taken into the file it belongs to or is an approved removal, named in the changelog; a removal for privacy is named generically ("carrier-specific detail removed for privacy"), never restated. Rerun `release.py lost DIR/base/<version>/.agents DIR/carriers/<name>/.agents` until it prints only approved removals.
-4. **`release.py triage`** lists the candidates that waited three releases without gaining what they lack; `--apply-discards` moves them to `meta/tracking/history.md`.
+4. **Check the ledger, `meta/tracking/INDEX.md`, before admitting a note or keeping a candidate**: every note under review or retired, every queued candidate and every answered one is listed there by slug. An idea already listed is extended, merged or left answered, never created again under a new name. Nothing leaves the queue by age: dropping a candidate is a decision of this release, written in `meta/tracking/history.md` with its reason.
 5. **No empty releases**: if nothing a carrier reads changed, cut none and say so; a version history of empty releases teaches the next reader that versions mean nothing. Otherwise **write the changelog**: a `## [X.Y.Z] - YYYY-MM-DD` section in `.agents/CHANGELOG.md` (Keep a Changelog), saying what a reader does differently, not what was edited. While the version is `0.0.z`, any release may break.
 6. **`release.py build`, then `release.py check`**, which passes (and the tests, when a tool changed); every privacy allowance it lists was given by the user, explicitly.
 7. **`release.py release X.Y.Z`.** It refuses a version not newer than every tag, or one the changelog does not describe, then writes the version and date and builds. **Commit** (Conventional Commits; `!` when it breaks), then run the tag command it printed: `git tag -a vX.Y.Z -m "agent-guides X.Y.Z"`. Splice refuses anything but the tagged release.
