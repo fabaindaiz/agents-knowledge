@@ -15,13 +15,20 @@ The user may override one finding, and only on their explicit instruction: the a
 run, so an override is never silent.
 """
 
+from __future__ import annotations
+
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# The tools need Python 3.11 or newer (`tomllib`); this hook itself stays runnable by an older `python3`,
+# because it is what a machine's default interpreter runs, and it looks for a newer one to run them.
+MINIMUM = (3, 11)
 TOOL = ROOT / ".agents/tools/bundle.py"
 # The repository's own files that are published with it, checked with the same rules as the bundle.
 ROOT_FILES = ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", ".github/workflows/check.yml"]
@@ -38,6 +45,17 @@ REMINDER = (
 )
 
 GIT_WRITE = re.compile(r"(^|[;&|\s(])git(\s+-C\s+\S+)?\s+(commit|push)\b")
+
+
+def modern_python() -> str | None:
+    """The first interpreter at `MINIMUM` or newer: this one, a versioned `python3.N`, or a common install."""
+    names = [sys.executable, *(shutil.which(f"python3.{minor}") for minor in range(20, MINIMUM[1] - 1, -1)),
+             shutil.which("python3"), "/opt/homebrew/bin/python3", "/usr/local/bin/python3"]
+    probe = f"import sys; sys.exit(sys.version_info < {MINIMUM})"
+    for name in names:
+        if name and os.path.isfile(name) and subprocess.run([name, "-c", probe], capture_output=True).returncode == 0:
+            return name
+    return None
 
 
 def remind() -> int:
@@ -63,8 +81,13 @@ def gate() -> int:
     # The experiment is published with the repository too; its run outputs are ignored and never checked in.
     paths += [str(f) for f in sorted((ROOT / "evals").rglob("*"))
               if f.is_file() and "runs" not in f.relative_to(ROOT / "evals").parts and "__pycache__" not in f.parts]
+    python = modern_python()
+    if python is None:
+        print(f"privacy gate: the tools need Python {MINIMUM[0]}.{MINIMUM[1]} or newer and none was found; "
+              "refusing the commit rather than letting it through unchecked.", file=sys.stderr)
+        return 2
     runs = [[str(ROOT / ".agents")], ["--paths", *paths]]
-    results = [subprocess.run([sys.executable, str(TOOL), "privacy", *args], capture_output=True, text=True)
+    results = [subprocess.run([python, str(TOOL), "privacy", *args], capture_output=True, text=True)
                for args in runs]
     if all(r.returncode == 0 for r in results):
         return 0
