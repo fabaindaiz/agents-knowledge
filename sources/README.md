@@ -46,7 +46,7 @@ A candidate becomes a note only when all five hold. Until then it is a row of th
 4. **It has an occurrence.** A measurement, an incident, or a design decision it changed — named in *Where it came from*. A note with no occurrence is an opinion, and opinions are obeyed anyway, which is worse than being argued with.
 5. **It is not already here.** Check every note in the same topic and the neighbouring ones. A new occurrence, number or boundary of an existing claim **extends that note**; it does not become a second one.
 
-**The queue is bounded by time.** `release.py intake` enters each new candidate with *Since*, the release it arrived at; a row offered again by another carrier is another occurrence of that row, not a second row. A candidate that waited three releases without gaining what it lacks is discarded by `release.py triage --apply-discards` into [`../meta/tracking/history.md`](../meta/tracking/history.md), which also records where every other candidate went, so an answered idea is not offered again as fresh.
+**The queue is bounded by time.** `release.py intake` enters each new candidate with *Since*, the release it arrived at; a row offered again for a known slug lands in the queue's *Offered again, to merge* table, and the release adds it to its row or note as another occurrence; a row a harvest refused (`refused: <reason>` in *Lacks*) goes straight to the history. A candidate that waited three releases without gaining what it lacks is discarded by `release.py triage --apply-discards` into [`../meta/tracking/history.md`](../meta/tracking/history.md), which also records where every other candidate went, so an answered idea is not offered again as fresh.
 
 ### 2. Evidence — kept separate from the claim
 

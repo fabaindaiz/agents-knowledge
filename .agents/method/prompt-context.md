@@ -50,7 +50,7 @@ record for that subject.
 relative to `.agents/`, followed by the sections it needs, each written `§` and
 the exact heading text; a file with no `§` is read whole. No job needs the whole
 of this file, and nothing in it is written to be read in sequence.
-`tools/bundle.py` declares the same lists, `verify` fails when a named
+`tools/bundle.py` reads these lists, `verify` fails when a named
 heading does not exist, and `bundle.py report` measures what each session type
 costs to load.
 
@@ -788,8 +788,7 @@ whatever enters it is public for good, and no later edit recalls it.
 The leak is rarely a name. It is a combination: an exact threshold, a quoted
 comment, a field name and a domain noun, each harmless alone, together enough to
 find the one codebase they came from — re-identification works from
-combinations of ordinary attributes (the home repository's `sources/references.md`,
-*Privacy and re-identification*). So the lesson is kept and the fingerprint is removed:
+combinations of ordinary attributes. So the lesson is kept and the fingerprint is removed:
 
 | What | Becomes |
 |---|---|
@@ -824,13 +823,12 @@ what was removed.
 outbox (`tracking/`), `carrier.toml`, a note, a method document or any other file
 that travels applies the rule even when this section is not in its context — and
 does not trust itself to have applied it. The carrier-owned files are checked like
-the released ones, and in the home repository so are `meta/` and `sources/`. `bundle.py privacy` checks the tree against generic
+the released ones. `bundle.py privacy` checks the tree against generic
 patterns (addresses, home paths, forge URLs, currency amounts, time-zone
 offsets, pinned versions, chosen ids, code identifiers in evidence, a record id
 beside a domain noun) and against this machine's own
 `~/.config/agent-guides/private-terms.txt`, which is never committed;
-`bundle.py verify` runs it, and the home repository's hooks run it before a
-commit. The one override is a `privacy-allow: <reason>` marker on the line,
+`bundle.py verify` runs it. The one override is a `privacy-allow: <reason>` marker on the line,
 written only when the user explicitly says so; every run lists every allowance,
 so none is silent.
 
@@ -1326,8 +1324,8 @@ it forever is not.
 Keep the rule and the check pointing at each other. A check with no rule is a
 trap; a rule with no check is rung 1.
 
-In a carrier, the gate also runs the bundle's own checks: `bundle.py verify`,
-`bundle.py privacy .agents`, and `bundle.py ids` over the files that hold record ids.
+In a carrier, the gate also runs the bundle's own checks: `bundle.py verify` (which runs
+privacy) and `bundle.py ids` over the files that hold record ids.
 
 ### 10. `README.md`, `docs/architecture.md`, `.editorconfig`
 
@@ -1762,7 +1760,7 @@ Then the normal six lines, **for that repository only.**
   `carrier` in the repository's own `.agents/carrier.toml`, which no release
   writes; `bundle.py carrier-id` prints it and refuses when there is none. It is
   **never derived from the remote**: a hash of a remote someone can guess is
-  reversed by guessing — confirmed in one carrier from 66 guesses — and would
+  reversed by guessing — confirmed in one carrier within a few dozen guesses — and would
   name a private repository in every id it prefixes. A row cited from another
   repository still says where it lives and survives renaming the directory; a
   prefix someone picks (`EDGE`, `API`) is picked independently in two
@@ -1930,21 +1928,8 @@ release**: they travel together and are replaced together. `../carrier.toml` and
 in `../tracking/` are **the repository's**: no release writes them and none lists them. The
 rule and its reasons have one home, `../README.md`, *The fields that are this repository's*.
 
-| Field of `carrier.toml` | What it is for | Read by |
-|---|---|---|
-| `carrier` | this repository's random id, `r-` and six hex | record ids (*Workspaces*), and the home's list of carriers |
-| `adopted` | when this repository took the method | telling a prepared repo from one that only has the files |
-| `upstream` | where this copy pulls from — a repo, a path, or `""` for the home | whoever runs the update |
-| `harvested_through` | the date the last harvest read up to | the next harvest, so nothing is offered twice |
-| `adapted` | every local renaming and substitution, one line each | principle 19, so a rename is never re-proposed |
-| `declined` | every change deliberately not taken, **with its reason** | the update, so a decision is not re-litigated every release |
-
-**Integrity.** `../SHA256SUMS` lists every released file with its sha256 in the GNU
-coreutils format, so `sha256sum -c SHA256SUMS` (or `shasum -a 256 -c`) inside `.agents/`
-checks a copy without this tool. `bundle.py verify` checks the same, catches a file the list
-does not name, and runs the links, session reads and privacy checks. It proves the copy is
-the one released, not who released it: integrity, not authenticity. **A copy that fails is
-not believed**: treat it as unversioned, compare content, and say so.
+Integrity is checked as `../README.md`, *Verifying a copy*, says; a copy that fails is not
+believed: treat it as unversioned, compare content, and say so.
 
 ### Version numbers
 
@@ -1956,12 +1941,4 @@ are its own and are never compared with the home's.
 (SemVer §4), so an update reads every changelog section since its own version rather than
 trusting the size of the step. Moving to `0.1.0` or `1.0.0` is the user's decision.
 
-**Matching two copies:**
-
-| Comparison | Meaning | What to do |
-|---|---|---|
-| Same `version`, `verify` passes on both | identical | nothing |
-| Same `version`, a checksum fails | a released file was edited in place | **stop**: that copy is not the release; compare content and say so |
-| Different `version` (SemVer precedence) | one is behind | the older one updates (`prompt-update.md`) |
-| One side's README header has `lineage:` | the layout before 0.0.22 | update it from a release through the home repository, or treat it as data |
-| No README frontmatter | not a copy of this bundle | bootstrap, or leave it alone |
+Which copy is newer, and what to run in each case, is §*Which document to run*.

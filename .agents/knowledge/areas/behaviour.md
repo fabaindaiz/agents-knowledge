@@ -74,7 +74,7 @@ How things are named so they stay distinguishable across boundaries.
 
 ## By what you are about to do
 
-| …do this | Read | Because the default answer is wrong when |
+| …do this | Card | Because the default answer is wrong when |
 |---|---|---|
 | Argue that a race is handled, using a lock, a semaphore or a singleton | [in-process-guarantees](../notes/active/in-process-guarantees.md) | it is a *correctness* lock rather than an *efficiency* one, and a second replica is one operational change away |
 | Write to two systems that cannot share a transaction, or decide when to ack a redelivered message | [order-writes-by-failure-residue](../notes/active/order-writes-by-failure-residue.md) | the order was chosen by convenience, and the crash between the writes leaves the unrecoverable half |

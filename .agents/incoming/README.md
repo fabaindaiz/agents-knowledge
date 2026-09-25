@@ -6,10 +6,11 @@ first finding of the next one.
 
 ## What goes here
 
-A whole released `.agents/` from somewhere else: its `README.md` with its frontmatter, its
-`CHANGELOG.md` and `SHA256SUMS`, its `method/`, `knowledge/` and `tools/bundle.py`. **Partial copies
-are not triaged** — ask for the rest rather than comparing a fragment against a whole. Check it
-against its own checksums before reading it: `cd .agents/incoming && sha256sum -c SHA256SUMS`.
+A whole release, in `incoming/release/`: the files its `SHA256SUMS` lists and `SHA256SUMS` itself,
+as `bundle.py export` writes them from a repository that holds it. **Partial copies are not
+triaged** — ask for the rest rather than comparing a fragment against a whole. Check it before
+reading it: `python3 .agents/tools/bundle.py verify --release .agents/incoming/release`, or without
+the tool `cd .agents/incoming/release && sha256sum -c SHA256SUMS`.
 
 ## What `bundle.py verify` refuses here
 
@@ -35,7 +36,7 @@ dates decide nothing.
 | is the same version | nothing: empty the folder. What this repository learned is a harvest (`../method/prompt-harvest.md`) |
 | is older | nothing: the other repository is behind; offer it ours (below) |
 | has a `README.md` header that names a `lineage` (the layout before 0.0.22) | not triaged here: it is updated from a release by the home repository, or read as data only. Merging two copies that diverged before 0.0.22 is done only in the home |
-| has no header at all | `../method/prompt-bootstrap.md` — there is nothing to compare against |
+| has no `README.md` frontmatter at all | nothing: it is not a release of this bundle; empty the folder |
 
 ## What this folder is not
 
@@ -47,9 +48,8 @@ Editing an incoming copy quietly forges somebody else's record.
 
 ## In the other direction
 
-To offer what this repository has, point the other repository to the release in the home
-repository, or copy the files this `SHA256SUMS` lists, with `SHA256SUMS` itself, into its
-`incoming/` — only while `bundle.py check-local` is clean here, and never `carrier.toml`, `tracking/`
-or anything else this repository owns. Then let it run its own triage. **A bundle is offered, never
+To offer what this repository has, run `python3 .agents/tools/bundle.py export
+<other repository>/.agents/incoming/release`: it copies only the files this `SHA256SUMS` lists, and
+refuses while this copy does not verify. Then let it run its own triage. **A bundle is offered, never
 pushed** — the receiving side is the only one that knows which note contradicts something it settled
 deliberately, and its `declined` list is the record of exactly that.

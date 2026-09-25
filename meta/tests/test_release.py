@@ -242,7 +242,7 @@ class Build(Base):
         self.assertIn("| alpha | A paper — **well established** | reasoned |", area)
         self.assertIn("| **Plan and design** | What will this touch? | [alpha](notes/active/alpha.md) · [beta](notes/active/beta.md) |", index)
         self.assertIn("| **Review** | What could this remove? | [alpha](notes/active/alpha.md) |", index)
-        self.assertIn("| alpha | run it | minutes | the confidence |", (self.agents / "knowledge/OPEN.md").read_text())
+        self.assertIn("| alpha | run it | minutes |", (self.agents / "knowledge/OPEN.md").read_text())
 
     def test_a_hand_edit_and_a_stale_source_are_both_caught(self) -> None:
         generated = self.agents / "knowledge/notes/active/alpha.md"
@@ -255,6 +255,15 @@ class Build(Base):
         problems = "\n".join(self.R.build(self.home, check=True))
         self.assertIn("knowledge/areas/one.md", problems)
         self.assertIn("knowledge/notes/active/beta.md", problems)
+
+    def test_an_unknown_marker_or_token_is_refused(self) -> None:
+        area = self.home / "sources/templates/areas/one.md"
+        area.write_text(area.read_text() + "\n<!-- generated: abuot -->\n")
+        with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
+            self.R.build(self.home)
+        area.write_text(AREA + "\n{{notes: plan}}\n")
+        with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
+            self.R.build(self.home)
 
     def test_a_card_needs_exactly_one_boundary(self) -> None:
         both = self.home / "sources/notes/active/gamma.md"
@@ -331,7 +340,8 @@ class Carry(Base):
         self.splice(repo)
         outbox = repo / ".agents/tracking/candidates.md"
         row = "| new-idea — learned in one | K | a second occurrence | a repository | 2026-01-06 |"
-        outbox.write_text(outbox.read_text() + row + "\n")
+        no = "| weak-idea — did not pass | K | refused: already the default behaviour | a repository | 2026-01-06 |"
+        outbox.write_text(outbox.read_text() + row + "\n" + no + "\n")
         commit(repo, "harvest")
 
         gathered = self.R.gather([repo], self.root / "out", self.home)
@@ -340,10 +350,44 @@ class Carry(Base):
         self.assertEqual(gathered["carriers"]["one"]["forked"], [])
         self.assertEqual(result["queued"], ["new-idea"])
         self.assertIn("new-idea", (self.home / "meta/tracking/candidates.md").read_text())
+        self.assertEqual(result["refused"], ["weak-idea"])
+        self.assertNotIn("weak-idea", (self.home / "meta/tracking/candidates.md").read_text())
+        self.assertIn("`weak-idea` | refused: already the default behaviour", (self.home / "meta/tracking/history.md").read_text())
         self.splice(repo, taken=result["taken"]["one"])
         self.assertNotIn("new-idea", outbox.read_text())
         self.R.register([repo], "2026-01-07", self.home)
         self.assertEqual(self.R.align([repo], self.home), [])
+
+    def test_a_fork_with_rewritten_checksums_is_still_named_by_gather(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        note = repo / ".agents/knowledge/notes/active/alpha.md"
+        note.write_text(note.read_text() + "\na local edit\n")
+        B.write_checksums(repo / ".agents")
+        commit(repo, "fork, hidden")
+
+        gathered = self.R.gather([repo], self.root / "out", self.home)
+
+        self.assertIn("knowledge/notes/active/alpha.md: differs from the tagged release", " ".join(gathered["carriers"]["one"]["forked"]))
+
+    def test_intake_keeps_another_occurrence_and_pads_short_rows(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        outbox = repo / ".agents/tracking/candidates.md"
+        outbox.write_text(outbox.read_text() + "| Extends old-idea — seen again here | K | nothing | a second repository | 2026-01-08 |\n"
+                          "| short | K |\n")
+        commit(repo, "harvest")
+        self.R.gather([repo], self.root / "out", self.home)
+
+        result = self.R.intake(self.root / "out", "0.0.1", self.home)
+
+        queue = (self.home / "meta/tracking/candidates.md").read_text()
+        self.assertEqual(result["queued"], ["short"])
+        self.assertIn("| short | K |  |  |  | 0.0.1 |", queue)
+        self.assertIn("## Offered again, to merge", queue)
+        self.assertIn("Extends old-idea — seen again here", queue.split("## Offered again")[1])
 
     def test_a_forked_carrier_is_named_by_gather(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -401,6 +445,9 @@ class Funnel(Base):
             git(home, "tag", "-a", f"v0.0.{n}", "-m", f"0.0.{n}")
             self.assertEqual(R.funnel(home)["discard_due"], [] if n < 4 else ["old-idea"])
 
+        queue = home / "meta/tracking/candidates.md"
+        queue.write_text(queue.read_text().rstrip("\n") + "\n| old-idea — the same slug, newer | K | a number | here | 2026-02-04 | 0.0.4 |\n")
         self.assertEqual(R.triage(apply=True, root=home), ["old-idea"])
-        self.assertNotIn("old-idea", (home / "meta/tracking/candidates.md").read_text())
+        self.assertIn("the same slug, newer", queue.read_text())
+        self.assertNotIn("an idea that waited", (home / "meta/tracking/candidates.md").read_text())
         self.assertIn("`old-idea`", (home / "meta/tracking/history.md").read_text())

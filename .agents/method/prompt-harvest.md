@@ -50,7 +50,7 @@ personal detail that could identify a private repository, its people or its
 users — and `bundle.py privacy` passes before the commit.
 
 Finish with `python3 .agents/tools/bundle.py verify` and
-`python3 .agents/tools/bundle.py check-local`, which must report nothing, and a
+`python3 .agents/tools/bundle.py check-local .`, which must report nothing, and a
 report per repository of what you found, what you refused and why, and what now
 waits for the next release.
 ~~~
@@ -154,7 +154,7 @@ uncommitted diff is their work.
    needs — goes in **this repository's** roadmap. Only the part that is true of any repository is a
    method candidate.
 7. **Check and commit**: set `harvested_through` in `carrier.toml` to the last date read; then
-   `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local` pass; then one commit in this
+   `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local .` pass; then one commit in this
    repository's own style. An allowance the privacy check lists exists only because the user asked for
    it. If an outbox table was damaged, `bundle.py outbox --reset` restores the empty template, and the
    rows are written again.
@@ -185,5 +185,6 @@ uncommitted diff is their work.
 - **Never harvest a repository this session does not have open**, however reachable its path is.
 - **Never harvest over an unclosed session in silence.** Either it is closed first, or what was left
   out is named in the report. A harvest that quietly misses the last week's work will be trusted.
-- **Never leave a refusal unwritten.** A learning that did not pass the generality test is named in the
-  report with the reason; `harvested_through` keeps the next harvest from reading that period again.
+- **Never leave a refusal unwritten.** A learning that did not pass the generality test is a row of the
+  outbox with `refused: <reason>` in *Lacks*, and is named in the report: the home records it in its
+  history, where every later harvest can see it was answered.

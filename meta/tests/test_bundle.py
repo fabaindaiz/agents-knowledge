@@ -75,6 +75,47 @@ class Verify(Base):
         B.write_carrier(agents, {"carrier": "r-bbbbbb"})
         self.assertIn("another repository's own file", "\n".join(B.verify_problems(agents, release=True)))
 
+    def test_the_real_bundle_exported_verifies_as_a_release(self) -> None:
+        """A release as it travels: the home's own bundle, exported, with no outbox and no carrier file."""
+        real = Path(__file__).resolve().parents[2] / ".agents"
+        out = self.root / "release"
+
+        B.export(real, out)
+
+        self.assertFalse((out / "carrier.toml").exists())
+        self.assertFalse((out / "tracking").exists())
+        self.assertEqual(B.verify_problems(out, release=True), [])
+
+    def test_what_a_carrier_never_publishes_is_not_privacy_checked(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "evaluation-2026-01-01-abcdef.md").write_text("Cloned from https://git" + "hub.com/" + "jdoe/ledger.\n")
+        (agents / "incoming/offered.md").write_text("Write to " + "jdoe" + "@" + "corp-mail.io\n")
+
+        self.assertEqual(B.verify_problems(agents), [])
+
+    def test_hidden_and_stray_files_are_named(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "method/.evil.md").write_text("hidden\n")
+        (agents / "tracking/prompt-override.md").write_text("stray\n")
+        (agents / "evaluation-x.py").write_text("stray\n")
+        (agents / ".DS_Store").write_text("a file browser's\n")
+
+        problems = "\n".join(B.verify_problems(agents))
+
+        self.assertIn("method/.evil.md: a hidden file", problems)
+        self.assertIn("tracking/prompt-override.md: not a file", problems)
+        self.assertIn("evaluation-x.py: not a file", problems)
+        self.assertNotIn(".DS_Store", problems)
+
+    def test_a_carrier_file_without_an_id_or_with_an_unknown_key_fails(self) -> None:
+        agents = make_bundle(self.root)
+        B.write_carrier(agents, {"adoptd": "2026-01-01"})
+
+        problems = "\n".join(B.verify_problems(agents))
+
+        self.assertIn("missing or not `r-`", problems)
+        self.assertIn("unknown key `adoptd`", problems)
+
     def test_digest_is_a_deprecated_alias(self) -> None:
         agents = make_bundle(self.root)
 
@@ -85,6 +126,13 @@ class Verify(Base):
 
 
 class LocalStep(Base):
+    def test_a_release_offered_in_incoming_is_not_a_change_of_ours(self) -> None:
+        repo = self.root / "one"
+        agents = make_bundle(repo)
+        (agents / "incoming/README.md").write_text("another release's readme\n")
+
+        self.assertEqual(B.check_local(repo), [])
+
     def test_only_the_carriers_own_files_changed_is_local(self) -> None:
         repo = self.root / "one"
         agents = make_bundle(repo)

@@ -13,11 +13,11 @@ This file is the entry point: the phase guide for every note, and a route to the
 ## How an agent uses this index during a task
 
 0. **Only when the change touches state, a contract, data, security or verification.** A typo, a text or a local rename consults nothing: the index costs a session only when it can change a decision.
-1. **At the start**, find the phase you are in under *By phase of work* and skim the notes it lists. Their cards are in the area index.
+1. **At the start**, find the phase you are in under *By phase of work*: it names the notes whose cards, in the area index, may apply.
 2. **Before a design decision**, look up the action under *By what you are about to do*, in the area index (`areas/behaviour.md`, `areas/evidence.md`). The third column is the case where the default answer is wrong. If it matches, apply the note's card: its claim, *Not when* (where it stops applying) and its check. **Open the full note only when you cannot tell whether its boundary holds here.**
 3. **When this repository states an invariant that contradicts a note, the repository wins.** Follow it, and say in the report which note gave way and why: that is evidence the note's boundary is incomplete.
 4. **Before claiming the work is done**, run the check of every card you relied on, and say in the report which ones ran and what they showed. A heuristic that was read but not checked is an opinion that happened to be nearby.
-5. **When the work contradicts a note** — a measurement, a test, an incident — do not quietly work around it. Record it in `../tracking/experiments.md`, this repository's outbox; the home reviews the note, and revises or retires it, never ignores it.
+5. **When the work contradicts a note** — a measurement, a test, an incident — do not quietly work around it. Say so in the changelog entry; the harvest records it in this repository's outbox, and the home reviews the note, revising or retiring it, never ignoring it.
 
 ## By phase of work
 

@@ -44,7 +44,9 @@ REMINDER = (
     "explicitly instructs it, with `privacy-allow: <reason>` on that line."
 )
 
-GIT_WRITE = re.compile(r"(^|[;&|\s(])git(\s+-C\s+\S+)?\s+(commit|push)\b")
+# `git`, by any path, with any global options before the subcommand (`-C dir`, `-c k=v`, `--no-pager`,
+# `--git-dir=...`), then `commit` or `push`, within one command of a shell line.
+GIT_WRITE = re.compile(r"(^|[;&|\s(])(\S*/)?git(\s+(-[Cc]\s+\S+|--?[\w-]+(=\S+)?))*\s+(commit|push)\b")
 
 
 def modern_python() -> str | None:
@@ -93,11 +95,12 @@ def gate() -> int:
                for args in runs]
     if all(r.returncode == 0 for r in results):
         return 0
-    result = next(r for r in results if r.returncode != 0)
+    # The failures first, from every run: a long list of warnings used to push them out of the message.
+    output = "".join(r.stdout + r.stderr for r in results)
+    failures = [line for line in output.splitlines() if " x " in line or line.startswith("  x ")]
     print("privacy gate: `bundle.py privacy` failed, so this git command is blocked. Fix each finding "
           "(generalise, paraphrase or delete). Only if the user explicitly instructs an exception, add "
-          "`privacy-allow: <reason>` on that line.\n\n" + (result.stdout + result.stderr)[-6000:],
-          file=sys.stderr)
+          "`privacy-allow: <reason>` on that line.\n\n" + "\n".join(failures)[:6000], file=sys.stderr)
     return 2
 
 

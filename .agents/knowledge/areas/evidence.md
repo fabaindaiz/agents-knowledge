@@ -45,7 +45,7 @@ What a check actually tells you, as opposed to what its number suggests.
 
 ## By what you are about to do
 
-| …do this | Read | Because the default answer is wrong when |
+| …do this | Card | Because the default answer is wrong when |
 |---|---|---|
 | Add a feature that is a count, a total or an age | [absolute-level-is-a-time-index](../notes/active/absolute-level-is-a-time-index.md) | the population grows, so the level is a clock the model will extrapolate |
 | Label rows whose outcome resolves over time | [censoring-is-information](../notes/active/censoring-is-information.md) | the newest rows have not resolved yet, and the convenient fill-in is the negative class |

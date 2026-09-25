@@ -32,10 +32,10 @@ If `prompt-context.md` is not next to this file, say so and stop.
 repository's, stop and tell me: it has taken the method, so a newer release
 arrives by update, and if the artifacts it claims are missing, that is repair —
 I need to know which I am getting. `.agents/` must hold only the shipped files
-of a release (those its `SHA256SUMS` lists). A copy taken from another
-repository may also carry its `carrier.toml`, `tracking/` rows, `incoming/`
-contents or evaluation reports (an `adapted` entry naming a file this
-repository does not have is the tell): say so, and remove them rather than
+of a release, as `bundle.py export .agents` writes them from a repository that
+holds it (the files its `SHA256SUMS` lists, and that file). A copy made any
+other way may carry another repository's `carrier.toml`, `tracking/` rows,
+`incoming/` contents or evaluation reports: say so, and remove them rather than
 believe them.
 
 **If this repository already has conventions of its own** — any of
@@ -74,7 +74,8 @@ breaks it, show me the cost and propose the correct path, and deviate only if
 I confirm.
 
 Before the first record, run `bundle.py carrier-id --mint` once: it creates
-`.agents/carrier.toml` with this repository's id and `adopted`. Every decision
+`.agents/carrier.toml` with this repository's id and `adopted`; then
+`bundle.py outbox --reset` creates the empty harvest outbox in `tracking/`. Every decision
 row, roadmap item and changelog entry you write gets an id from `bundle.py id
 d|i|s TEXT`, never a sequential number. Finish by recording in
 `carrier.toml` every substitution in `adapted` and everything I turned down in
@@ -294,7 +295,8 @@ repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
 repository, its people or its users — `bundle.py privacy .agents` checks it*
 (`prompt-context.md`, principle 20). Mint the repository's carrier id once with
-`bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, and seed
+`bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, create the
+outbox with `bundle.py outbox --reset`, and seed
 the decisions log, the roadmap and the changelog with ids from `bundle.py id
 d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
 
@@ -302,7 +304,8 @@ d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
 
 Write the audit script. Wire it into the gate, together with `bundle.py
 verify` (which runs `privacy`) and `bundle.py ids` over the files that hold
-record ids. Add
+record ids; wherever the gate runs, CI included, the tool needs Python 3.11 or
+newer. Add
 the schema if there is structured data. Add hooks for what must not be left to judgement. Add
 `permissions.deny` for the files that should not be hand-edited.
 
@@ -778,8 +781,9 @@ environment is the most dangerous kind of correct.
 - [ ] The root file's map sends a change touching state, a contract, data,
       security or verification to `.agents/knowledge/INDEX.md`, and carries
       the one-line privacy reminder.
-- [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`;
-      the gate runs `bundle.py verify` and `bundle.py ids`.
+- [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`,
+      and the outbox by `bundle.py outbox --reset`; the gate runs
+      `bundle.py verify` and `bundle.py ids`, on Python 3.11 or newer.
 - [ ] `docs/references.md`: only entries that changed or confirmed a decision,
       each stating what you do differently on purpose.
 - [ ] `docs/roadmap.md`: collisions, what must be decided first, closed-by-

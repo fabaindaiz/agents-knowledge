@@ -73,6 +73,10 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
   run and none changes; a warning that is always there stops being read. Reword each line or, where the
   user explicitly decides it may stay, mark it with a reason. *Collides with:* nothing but the warned
   lines.
+- **`i-5ed7e8-3fa5c5` · A release cadence.** The method moved through about two dozen versions in
+  one week, each needing a meta-session, and one carrier already trails. Batch releases on a cadence;
+  the discard half of this item shipped in 0.0.22 (`release.py triage`). *Collides with:*
+  `meta/method/prompt-sync.md` §*The cycle*.
 - **`i-5ed7e8-973bd7` · Run the cheapest queued experiments** in `meta/tracking/experiments.md`, one
   per note that has none. *Collides with:* the notes' `confidence`, which moves in both directions.
 - **`i-5ed7e8-705aa8` · Clean up the duplicated prose that remains in the method.** The worked
@@ -81,7 +85,8 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
 - **`i-5ed7e8-13a8be` · Keep the private-terms list of each machine complete.** `bundle.py
   privacy` checks the names in `~/.config/agent-guides/private-terms.txt`, which never travels; a
   private name missing from it is caught only by the generic rules. *Collides with:* nothing in the
-  bundle; it is the one list that must never enter it.
+  bundle; it is the one list that must never enter it. Each machine's owner adds the names of private
+  repositories, organisations, products and people.
 
 ## Later
 
@@ -135,8 +140,8 @@ None yet.
 
 ## Done
 
-Only the last release is kept here; the ones before 0.0.22 are rows of the home's
-`meta/archive/method-changelog.md`.
+Only the last release is kept here; the ones before 0.0.22 are in the home's
+`meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
 - **0.0.22, 2026-09-25: the bundle holds only what a carrier runs, and what it holds is generated.**
   Decided in one session with the user, on the literature and the five pilots, without a new run.
