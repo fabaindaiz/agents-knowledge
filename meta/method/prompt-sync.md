@@ -152,7 +152,7 @@ For each carrier, and **with that carrier as today's repository** (`prompt-conte
 2. **`release.py align REPO...`.** It fails on a carrier that does not verify, whose `SHA256SUMS` is not the home's, or that is missing from `meta/tracking/carriers.md` or registered at another version. **The meta-session is not closed while it reports anything.**
 3. **Empty every `incoming/`** this session triaged.
 4. **Name what was not reached**: every registered carrier with no path here goes into `meta/roadmap.md`, *Blocked outside*, by its id alone.
-5. **Close**: the release under *Done* in `meta/roadmap.md`, and one commit in the home (Conventional Commits). The closing report gives, per carrier, its branch, its commit, the gate selection that ran and what it declined; the verdict counts; every *divergent* item and how it was reconciled; every *undecidable* one, which is the agenda for the next meta-session; and where the backups are.
+5. **Close**: the home's own learnings into its outbox (`prompt-harvest.md`), the release under *Done* in `meta/roadmap.md`, *Where we are* rewritten there for the next session, and one commit in the home (Conventional Commits), pushed with the tag. The closing report gives, per carrier, its branch, its commit, the gate selection that ran and what it declined; the verdict counts; every *divergent* item and how it was reconciled; every *undecidable* one, which is the agenda for the next meta-session; and where the backups are.
 
 ## What a meta-session must never do
 
