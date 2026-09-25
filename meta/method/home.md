@@ -84,7 +84,7 @@ gets skipped and an event-driven one does not:
 | When a friction is hit a second time | promote it to the roadmap's process area |
 | When the local review skill runs (Phase 9) | ask which level-2 rules pass the generality test |
 | When you notice yourself explaining the same thing to a second repository | record it as a candidate for level 3 in the outbox, `.agents/tracking/candidates.md`; the next release decides |
-| At every release | `release.py triage`: a candidate that waited three releases without gaining what it lacks is discarded |
+| At every release | read the ledger, `meta/tracking/INDEX.md`, before admitting or keeping anything: nothing met once is created again; nothing is dropped by age |
 | Before a round of harvests | align every carrier first (`prompt-sync.md` §*The cycle*): two commands when nothing diverged, and what makes every harvest read the same base |
 | Before a meta-session, in every carrier | run the local step, `prompt-harvest.md`: it is what the meta-session gathers |
 | When a repo gets significant new work after a gap | run the update invocation before starting, not after |

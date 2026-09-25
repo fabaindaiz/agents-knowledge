@@ -62,7 +62,7 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
    Give every item a verdict and **ask for approval of the one table**
    before writing anything.
 3. **Build the release:** `release.py intake DIR --version X.Y.Z`, edit `sources/` and `.agents/method/`,
-   account for every line `gather` reported lost, `release.py triage`, add the dated `## [X.Y.Z] - DATE`
+   account for every line `gather` reported lost, check the ledger `meta/tracking/INDEX.md`, add the dated `## [X.Y.Z] - DATE`
    section to `.agents/CHANGELOG.md`, `release.py build` and `check`, then `release.py release X.Y.Z`,
    commit, and create the tag it prints. The full order is `meta/method/prompt-sync.md`.
 4. **Phase 2:** `release.py splice --write --backup BACKUP --taken DIR` into each carrier. Run each carrier's own gate

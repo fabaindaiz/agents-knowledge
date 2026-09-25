@@ -74,8 +74,10 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
   user explicitly decides it may stay, mark it with a reason. *Collides with:* nothing but the warned
   lines.
 - **`i-5ed7e8-3fa5c5` · A release cadence.** The method moved through about two dozen versions in
-  one week, each needing a meta-session, and one carrier already trails. Batch releases on a cadence;
-  the discard half of this item shipped in 0.0.22 (`release.py triage`). *Collides with:*
+  one week, each needing a meta-session, and one carrier already trails. Batch releases on a cadence.
+  The discard half of this item is closed without a discard: by the user's decision of 2026-09-25
+  nothing leaves the queue by age, and the generated ledger `meta/tracking/INDEX.md` keeps every idea
+  already met in view, so a meta-session does not create it again. *Collides with:*
   `meta/method/prompt-sync.md` §*The cycle*.
 - **`i-5ed7e8-973bd7` · Run the cheapest queued experiments** in `meta/tracking/experiments.md`, one
   per note that has none. *Collides with:* the notes' `confidence`, which moves in both directions.
@@ -150,10 +152,9 @@ Only the last release is kept here; the ones before 0.0.22 are in the home's
   the roadmap, records and release procedures to `meta/`. Each note ships short and its index rows are
   built from its own fields (the migration proved the old tables byte-identical); the area rows
   gained a *Not when* column. Semantic Versioning, git tags, `SHA256SUMS`, Keep a Changelog, `carrier.toml`, an
-  outbox per carrier, a derived `Since` column and the three-release discard rule in code, an
+  outbox per carrier, a derived `Since` column and a generated ledger of every idea already met, an
   `incoming/` check (`i-5ed7e8-c5f622`), Python 3.11. Closes `i-5ed7e8-a89859` (short notes and index rows)
-  and `i-5ed7e8-f71f36` (tags and a hashed file per release), and the discard half of
-  `i-5ed7e8-3fa5c5`. The coding session consults the index only when a change touches state, a
+  and `i-5ed7e8-f71f36` (tags and a hashed file per release). The coding session consults the index only when a change touches state, a
   contract, data, security or verification, applies the card first, and lets the repository win over a
   note. Measured statically: `.agents/` from about 0.9 MB to about 0.55 MB; the notes about half; the
   coding session's fixed load from about 12k to about 9k estimated tokens; a harvest from about 28k to
