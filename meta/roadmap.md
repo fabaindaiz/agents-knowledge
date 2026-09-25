@@ -24,7 +24,8 @@ something else depends on — because that is what decides its order.
 pushed with the retro-tags `v0.0.20` and `v0.0.21`; CI passed on `main`. After the tag, `main` changed
 only the home: the ledger `meta/tracking/INDEX.md` replaced the three-release discard rule, withdrawn by
 the user the same day, and this section. `.agents/` is byte-identical to the tag. The home is registered
-at 0.0.22; every other carrier is registered below it (*Blocked outside*). The history before `v0.0.20`
+at 0.0.22, and so is one more carrier, spliced on 2026-09-25 from a session that had it open; every
+other carrier is registered below it (*Blocked outside*). The history before `v0.0.20`
 exists only on the local branch `backup/pre-flatten`, which is never tagged or pushed.
 
 **Decisions of this session** (the reasons are in `.agents/CHANGELOG.md` [0.0.22] and under *Done*):
