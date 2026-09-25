@@ -1,0 +1,7 @@
+# This repository's own fields. Carrier-owned: never listed in SHA256SUMS, never written by a release.
+carrier = "r-5ed7e8"
+adopted = "2026-09-17"
+upstream = ""
+harvested_through = "2026-09-24"
+adapted = []
+declined = []

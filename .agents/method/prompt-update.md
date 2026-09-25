@@ -1,20 +1,3 @@
----
-# method-header — the only machine-readable part of this file. Keep it first.
-# Identical in every document of the set; they travel together.
-method:    claude-code-repo-method
-set:       [context, evaluate, bootstrap, update, merge, sync, harvest]
-lineage:   m-351cc8/main    # opaque id of the line this copy descends from
-ancestry:  [m-7c41a9, m-bc50b0, m-a194bd, m-351cc8]  # root -> current; a fork appends its own new id
-version:   24                   # monotone within a lineage; only its owner bumps it
-forked_at: {lineage: m-bc50b0, version: 12}   # what this line branched from
-digest:    "4b2506d91c12"            # content fingerprint; see Keeping the set versioned
-released:  2026-09-24
-upstream:  ""           # where this copy pulls updates from
-adopted:   "2026-09-17"         # date this repository took the method
-adapted:   []                  # local renamings and substitutions, one line each
-declined:  []                  # deltas deliberately not taken, with the reason
----
-
 # Update a repository to a newer version of the method
 
 ## ▶ Paste this to start
@@ -41,7 +24,7 @@ Reads:
 - method/prompt-update.md
 - method/prompt-context.md §Which document to run §Keeping the set versioned, so other copies can catch up §Version numbers, and the collision they would otherwise have §20. Nothing private travels, directly or by reconstruction
 - README.md §The fields that are this repository's
-- method/changelog.md
+- CHANGELOG.md
 - knowledge/README.md
 
 and, from `incoming/`, its headers and its `method/changelog.md`.

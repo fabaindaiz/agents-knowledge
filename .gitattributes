@@ -1,0 +1,4 @@
+# The bundle is verified by SHA256SUMS over its bytes: a checkout that rewrote line endings would
+# change them. Every text file is checked out with LF.
+.agents/** text eol=lf
+sources/** text eol=lf

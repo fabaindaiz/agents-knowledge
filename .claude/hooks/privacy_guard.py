@@ -78,9 +78,11 @@ def gate() -> int:
     # Two runs: `--paths` checks the named files instead of the bundle, not in addition to it, so a
     # single call with both silently skipped the bundle (seen 2026-09-24, "privacy over 6 files").
     paths = [str(ROOT / f) for f in ROOT_FILES if (ROOT / f).exists()]
-    # The experiment is published with the repository too; its run outputs are ignored and never checked in.
-    paths += [str(f) for f in sorted((ROOT / "evals").rglob("*"))
-              if f.is_file() and "runs" not in f.relative_to(ROOT / "evals").parts and "__pycache__" not in f.parts]
+    # The experiment, the release records and the full notes are published with the repository too; the
+    # experiment's run outputs are ignored and never checked in.
+    for folder in ("evals", "meta", "sources"):
+        paths += [str(f) for f in sorted((ROOT / folder).rglob("*"))
+                  if f.is_file() and "runs" not in f.relative_to(ROOT / folder).parts and "__pycache__" not in f.parts]
     python = modern_python()
     if python is None:
         print(f"privacy gate: the tools need Python {MINIMUM[0]}.{MINIMUM[1]} or newer and none was found; "

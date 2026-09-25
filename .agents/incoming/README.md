@@ -1,13 +1,3 @@
----
-# bundle-header — provenance for this document. Identical across the bundle.
-bundle:    agent-guides
-lineage:   g-8b5800/main
-ancestry:  [g-c7344c, g-099a8a, g-8b5800]
-version:   5
-component: intake
-released:  2026-09-24
----
-
 # `incoming/` — where another repository's bundle arrives
 
 **Empty between updates, except this `README.md`**, which travels with the bundle so the folder
