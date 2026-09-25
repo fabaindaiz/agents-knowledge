@@ -16,14 +16,24 @@ jobs:
         python-version: ["3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the release tags: the migration proof and the funnel read them
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Tool self-tests
-        run: python3 .agents/tools/bundle.py selftest
-      - name: Digests, provenance, links, reachability, sessions and privacy
-        run: python3 .agents/tools/bundle.py digest .agents --check
+      - name: The tools' tests
+        run: python3 -m unittest discover -s meta/tests -t .
+      - name: The bundle verifies as a carrier would verify it
+        run: python3 .agents/tools/bundle.py verify
+      - name: The checksums verify without the tool
+        run: cd .agents && sha256sum --check --quiet SHA256SUMS
+      - name: The home's check (build current, records private and linked, budgets)
+        run: python3 meta/tools/release.py check
+      - name: Every frontmatter reads the same through PyYAML
+        run: python3 -m pip install --quiet pyyaml && python3 meta/tools/check_yaml.py
+      - name: The 0.0.22 migration lost nothing against the last release before it
+        run: python3 meta/migrations/v0_0_22_notes.py --verify-against v0.0.21
       - name: The experiment's tasks are valid (each grader seen to fail and pass)
         run: python3 evals/harness.py check
       - name: Privacy of the repository's own published files
-        run: python3 .agents/tools/bundle.py privacy --paths README.md AGENTS.md CLAUDE.md CONTRIBUTING.md .github/workflows/check.yml .githooks/pre-commit .claude/hooks/privacy_guard.py $(git ls-files evals)
+        run: python3 .agents/tools/bundle.py privacy --paths README.md AGENTS.md CLAUDE.md CONTRIBUTING.md .github/workflows/check.yml .githooks/pre-commit .claude/hooks/privacy_guard.py $(git ls-files evals meta sources)

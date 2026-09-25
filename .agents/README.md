@@ -1,20 +1,7 @@
 ---
-# bundle-header — the only machine-readable part of this folder. Keep it first.
-bundle:    agent-guides
-lineage:   g-8b5800/main        # opaque id of the line this copy descends from
-ancestry:  [g-c7344c, g-099a8a, g-8b5800] # root -> current; a fork appends its own new id
-version:   21                   # monotone within a lineage
-forked_at: {lineage: g-c7344c, version: 8}
-digest:    "c27c3d884fe3"           # sha256 over method/ + knowledge/ + layout.md, see Verifying a copy
-released:  2026-09-24
-upstream:  ""          # where this copy pulls from; "" = it is a root
-contains:
-  method:    m-351cc8 v24      # how work is done
-  knowledge: k-7159bd v11       # what is true about building the software
-adopted:   "2026-09-17"        # when this repository took the bundle
-carrier:   r-5ed7e8            # this repository's id: random, minted once, never derived
-adapted:   []                  # local substitutions — see method/prompt-context.md
-declined:  []                  # deltas deliberately refused, with the reason
+bundle: "agent-guides"
+version: "0.0.22"
+released: "2026-09-25"
 ---
 
 # Agent guides

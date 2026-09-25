@@ -42,6 +42,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 TASKS = HERE / "tasks"
 BUNDLE = ROOT / ".agents"
+# The full notes. From 0.0.22 the bundle ships short notes built from these; the oracle and placebo arms
+# inject, and the placebo rule measures, the full text, as they did in every pilot.
+SOURCES = ROOT / "sources" / "notes"
 HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
@@ -87,6 +90,15 @@ def load_task(task_id: str) -> dict:
     return meta
 
 
+def _bundle_tool():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("bundle", BUNDLE / "tools" / "bundle.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("bundle", module)
+    spec.loader.exec_module(module)
+    return module
+
+
 def topic_areas() -> dict:
     """topic -> area, read from the routing table in INDEX.md."""
     areas = {}
@@ -103,11 +115,11 @@ def pick_placebo(targets: list) -> str:
     targets' combined length. Mechanical, so the experimenter does not choose it."""
     areas = topic_areas()
     def topic(slug):
-        return re.search(r"^topic:\s*(\S+)", note_path(slug).read_text(), re.M).group(1)
+        return _bundle_tool().read_frontmatter(note_path(slug).read_text())[0]["topic"]
     target_areas = {areas[topic(t)] for t in targets}
     length = sum(len(note_text(t)) for t in targets)
     cands = []
-    for p in sorted((BUNDLE / "knowledge" / "notes" / "active").glob("*.md")):
+    for p in sorted((SOURCES / "active").glob("*.md")):
         if p.stem in targets or areas.get(topic(p.stem)) in target_areas:
             continue
         cands.append((abs(len(note_text(p.stem)) - length), p.stem))
@@ -128,21 +140,17 @@ def tree_hash(path: Path) -> str:
 
 def note_path(slug: str) -> Path:
     for state in ("active", "review"):
-        p = BUNDLE / "knowledge" / "notes" / state / f"{slug}.md"
+        p = SOURCES / state / f"{slug}.md"
         if p.exists():
             return p
-    return BUNDLE / "knowledge" / "notes" / "active" / f"{slug}.md"
+    return SOURCES / "active" / f"{slug}.md"
 
 
 def note_text(slug: str) -> str:
-    text = note_path(slug).read_text()
-    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
-    claim = ""
-    if m:
-        cm = re.search(r"^claim:\s*(.+)$", m.group(1), re.M)
-        claim = cm.group(1).strip() if cm else ""
-        text = text[m.end():]
-    return (f"**Claim:** {claim}\n" if claim else "") + text.strip() + "\n"
+    """The full note as the oracle arm injects it: its claim, then its body."""
+    meta, body = _bundle_tool().read_frontmatter(note_path(slug).read_text())
+    claim = meta.get("claim", "")
+    return (f"**Claim:** {claim}\n" if claim else "") + body.strip() + "\n"
 
 
 # ---------------------------------------------------------------- conditions
@@ -154,6 +162,10 @@ def copy_bundle(dst: Path) -> None:
             skip |= {n for n in names if n != "README.md"}
         return skip & set(names) | {n for n in names if n.startswith("evaluation-")}
     shutil.copytree(BUNDLE, dst / ".agents", ignore=ignore)
+    # A carrier holds its own carrier file; the workspace gets a neutral one, not the home's.
+    _bundle_tool().write_carrier(dst / ".agents", {"carrier": "r-000000", "adopted": "2026-01-01", "upstream": "",
+                                                  "adapted": [], "declined": []})
+    _bundle_tool().reset_outbox(dst / ".agents")
 
 
 def ablate(agents: Path, slugs: list[str]) -> dict:
@@ -193,6 +205,8 @@ def ablate(agents: Path, slugs: list[str]) -> dict:
             kept.append(line)
         if len(kept) != len(lines) or kept != lines:
             p.write_text("".join(kept))
+    # The ablated copy is a release without those notes: its checksums say so, so `verify` passes there too.
+    _bundle_tool().write_checksums(agents)
     return {"lines_touched": removed_lines}
 
 
@@ -215,7 +229,7 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
         agents_md = task["agents_minimal"].rstrip() + "\n" + ORACLE_HEADER + note_text(task["placebo_note"])
     if agents_md is not None:
         (ws / "AGENTS.md").write_text(agents_md)
-        # Claude Code reads AGENTS.md through CLAUDE.md, the documented bridge (see .agents/layout.md).
+        # Claude Code reads AGENTS.md through CLAUDE.md, the documented bridge (see sources/layout.md).
         (ws / "CLAUDE.md").write_text("@AGENTS.md\n")
         info["agents_md_chars"] = len(agents_md)
     if (ws / ".agents").exists():
@@ -515,10 +529,13 @@ def cmd_plan(args) -> int:
     for i, tr in enumerate(ordered):
         tr["order"] = i
         tr["trial"] = hashlib.sha256(f"{args.seed}:{i}:{tr['task']}:{tr['condition']}:{tr['rep']}".encode()).hexdigest()[:10]
-    digest = subprocess.run([sys.executable, str(BUNDLE / "tools" / "bundle.py"), "digest", str(BUNDLE)],
-                            capture_output=True, text=True).stdout.strip().splitlines()[:1]
+    # From 0.0.22 the bundle is identified by its version and the hash of its SHA256SUMS; the plan keeps the
+    # `bundle_digest` key, now that hash, so the analysis reads old and new plans alike.
+    sums = BUNDLE / "SHA256SUMS"
+    digest = [hashlib.sha256(sums.read_bytes()).hexdigest()[:12]] if sums.exists() else []
+    bundle_version = _bundle_tool().bundle_version(BUNDLE)
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", ".agents", "evals"], cwd=ROOT,
+    dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", ".agents", "sources", "evals"], cwd=ROOT,
                                 capture_output=True, text=True).stdout.strip())
     plan = {
         "created": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
@@ -526,7 +543,7 @@ def cmd_plan(args) -> int:
         "config_dir": str(cfg), "isolation": "degraded: user CLAUDE.md in every arm" if str(cfg) == DEFAULT_CONFIG else "clean",
         "workspace_base": args.workspace_base,
         "max_turns": args.max_turns, "timeout_s": args.timeout, "seed": args.seed, "reps": args.reps,
-        "bundle_digest": digest[0] if digest else None, "repo_head": head, "repo_dirty": dirty,
+        "bundle_digest": digest[0] if digest else None, "bundle_version": bundle_version, "repo_head": head, "repo_dirty": dirty,
         "tasks": {t["id"]: {"family": t["family"], "level": t.get("level", "L0"), "trap": t.get("trap", t["id"]),
                             "notes": t.get("notes", []),
                             "placebo_note": t.get("placebo_note"), "hash": tree_hash(Path(t["dir"])),
