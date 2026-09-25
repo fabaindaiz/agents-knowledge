@@ -7,13 +7,13 @@ on:
 
 jobs:
   bundle:
-    # 22.04 because the tool promises Python 3.9, and 3.9 is the version newer runner images drop
-    # first: a CI that tests only 3.12 lets a 3.10-only construct reach a carrier that runs 3.9.
-    runs-on: ubuntu-22.04
+    # The oldest supported Python the tools promise (3.11, for `tomllib`) and a current one: a CI that
+    # tests only the newest lets a construct the oldest lacks reach a carrier.
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.12"]
+        python-version: ["3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
