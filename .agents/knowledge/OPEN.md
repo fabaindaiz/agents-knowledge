@@ -132,3 +132,7 @@ Generated at each release from the home repository's records, each cell shortene
 | extends `ratchet-in-a-pinned-environment` — a count is code × environment × **the state of the working tree it was taken in**; and a rule introduced against a backlog needs its … | K | a release to apply it |
 | extends `best-effort-side-channels` — the cost of the pattern, stated: a call inside a log-and-continue block is indistinguishable, from outside, between working and never having … | K | a release to apply it |
 | extends `nested-partial-update-replaces` — the semantics of an embedded document store, measured rather than assumed | K | a release to apply it |
+
+## Answered: admitted, folded, refused or discarded, not to offer again
+
+`a-cap-that-hands-off-is-not-a-cap-that-exempts`, `a-constraint-needs-a-second-subject-to-be-visible`, `a-principle-can-have-no-subject-in-a-carrier`, `assert-the-reason-not-only-the-outcome`, `correction-lands-where-the-rule-is-enforced`, `default-scope-is-the-widest-one`, `fingerprint-fixes-its-collation`, `incoming-cannot-be-checked-empty-while-the-bundle-ships-a-file-into-it`, `parallel-session-id-allocation`, `skills-have-two-declared-homes-in-one-bundle`, `the-set-declares-a-version-the-changelog-does-not-reach`

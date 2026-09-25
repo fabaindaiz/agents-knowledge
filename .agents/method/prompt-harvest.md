@@ -187,4 +187,4 @@ uncommitted diff is their work.
   out is named in the report. A harvest that quietly misses the last week's work will be trusted.
 - **Never leave a refusal unwritten.** A learning that did not pass the generality test is a row of the
   outbox with `refused: <reason>` in *Lacks*, and is named in the report: the home records it in its
-  history, where every later harvest can see it was answered.
+  history, and `knowledge/OPEN.md` lists it among the answered, so no later harvest offers it again.

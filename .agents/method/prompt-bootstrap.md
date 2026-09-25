@@ -32,8 +32,8 @@ If `prompt-context.md` is not next to this file, say so and stop.
 repository's, stop and tell me: it has taken the method, so a newer release
 arrives by update, and if the artifacts it claims are missing, that is repair —
 I need to know which I am getting. `.agents/` must hold only the shipped files
-of a release, as `bundle.py export .agents` writes them from a repository that
-holds it (the files its `SHA256SUMS` lists, and that file). A copy made any
+of a release, as `bundle.py export <this repository>/.agents` writes them when
+run in a repository that holds it (the files its `SHA256SUMS` lists, and that file). A copy made any
 other way may carry another repository's `carrier.toml`, `tracking/` rows,
 `incoming/` contents or evaluation reports: say so, and remove them rather than
 believe them.

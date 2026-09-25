@@ -261,6 +261,10 @@ class Build(Base):
         area.write_text(area.read_text() + "\n<!-- generated: abuot -->\n")
         with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
             self.R.build(self.home)
+        for bad in ("\n<!-- GENERATED: cards x -->\n", "\n{{notes:plan}}\n", "\n  <!-- generated: about -->\n"):
+            area.write_text(AREA + bad)
+            with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
+                self.R.build(self.home)
         area.write_text(AREA + "\n{{notes: plan}}\n")
         with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
             self.R.build(self.home)
@@ -377,15 +381,16 @@ class Carry(Base):
         self.splice(repo)
         outbox = repo / ".agents/tracking/candidates.md"
         outbox.write_text(outbox.read_text() + "| Extends old-idea — seen again here | K | nothing | a second repository | 2026-01-08 |\n"
-                          "| short | K |\n")
+                          "| short | K |\n| padded — a claim | K | a number |\n")
         commit(repo, "harvest")
         self.R.gather([repo], self.root / "out", self.home)
 
         result = self.R.intake(self.root / "out", "0.0.1", self.home)
 
         queue = (self.home / "meta/tracking/candidates.md").read_text()
-        self.assertEqual(result["queued"], ["short"])
-        self.assertIn("| short | K |  |  |  | 0.0.1 |", queue)
+        self.assertEqual(result["queued"], ["padded"])
+        self.assertIn("short", " ".join(result["malformed"]))
+        self.assertIn("| padded — a claim | K | a number |  |  | 0.0.1 |", queue)
         self.assertIn("## Offered again, to merge", queue)
         self.assertIn("Extends old-idea — seen again here", queue.split("## Offered again")[1])
 

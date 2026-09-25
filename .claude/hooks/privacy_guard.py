@@ -44,9 +44,10 @@ REMINDER = (
     "explicitly instructs it, with `privacy-allow: <reason>` on that line."
 )
 
-# `git`, by any path, with any global options before the subcommand (`-C dir`, `-c k=v`, `--no-pager`,
-# `--git-dir=...`), then `commit` or `push`, within one command of a shell line.
-GIT_WRITE = re.compile(r"(^|[;&|\s(])(\S*/)?git(\s+(-[Cc]\s+\S+|--?[\w-]+(=\S+)?))*\s+(commit|push)\b")
+# Any shell line that names git and a commit or a push: quoted, wrapped in `bash -c`, with global options
+# or a path. Broad on purpose: a line that is not a commit costs one privacy run, and blocks nothing unless
+# the check fails.
+GIT_WRITE = re.compile(r"\bgit\b.*\b(commit|push)\b", re.DOTALL)
 
 
 def modern_python() -> str | None:
