@@ -129,10 +129,11 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
 
 ## Blocked outside
 
-- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** They are listed
-  in `meta/tracking/carriers.md`, the older ones without ids, plus `r-a2f271`, registered at 0.0.20.
-  Each receives 0.0.22 from a meta-session that has it open (`release.py splice` converts the old
-  layout and keeps its own fields). *Blocked on:* a session with those repositories open.
+- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** Every carrier
+  registered in `meta/tracking/carriers.md` below 0.0.22, and the older ones listed there without ids.
+  Each receives 0.0.22 from a meta-session that has it open: `release.py splice` converts the layout
+  before 0.0.22 and keeps its own fields (checked on a scratch copy of one of them: nothing lost, its
+  own fields intact, `verify` green). *Blocked on:* a session with those repositories open.
 
 ## Closed by measurement
 
