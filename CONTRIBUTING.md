@@ -79,7 +79,8 @@ pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `build:`, `chore:`; `!` or `BREAKING CHANGE:` for a
-breaking change).
+breaking change). Every commit and tag has the maintainer as its sole author: no `Co-Authored-By:`
+trailer or other attribution line, including from tools that add one by default.
 
 A change under `sources/` or `.agents/method/` changes the bundle, so it reaches carriers only in a
 release. **Releases are cut by a meta-session** (`meta/method/prompt-sync.md`): the version, the dated

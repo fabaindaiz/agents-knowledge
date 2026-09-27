@@ -109,6 +109,10 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
   the next release. Say so and stop, or run the meta-session.
 - **Commit messages follow Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`,
   `build:`, `chore:`; `!` or `BREAKING CHANGE:` for a breaking change). Carriers keep their own rules.
+- **The user is the sole author of every commit and tag.** Author, committer and tagger are the user;
+  no `Co-Authored-By:` trailer and no other attribution line, whatever a tool's default says. Other
+  trailers (`Session:`, `BREAKING CHANGE:`) stay. The history has been rewritten once to this rule;
+  do not reintroduce a trailer.
 
 ## Checks
 
