@@ -351,6 +351,35 @@ cost of carrying the bundle was the largest yet: ×2.32 [2.16, 2.50] in estimate
 ×1.73 in wall time against `minimal`; `oracle`, which buys the same success rate on these tasks, loads one
 note and nothing else.
 
+### 4.8 The cost of release 0.0.22 (pilot-6, 2026-09-28)
+
+A smoke test of the release's written cost predictions, registered in `PROTOCOL.md` (Deviations) before
+any trial: the pilots' frontier model, two repetitions, 36 trials, all valid, a few dollars at API prices.
+`bundle` carries 0.0.22 with the v21 wiring paragraph; `bundle_v22` the same bundle with the 0.0.22
+wiring (consult only when a change touches state, a contract, data, security or verification; the card
+before the note; the repository before the note). Exploratory: two trivial tasks, one neutral, three
+discriminating; nothing here is significant.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | `bundle_v22` / `minimal` | `bundle` / `minimal` | Prediction for `bundle_v22` |
+|---|---:|---:|---|
+| trivial tasks (2) | ×1.01 [0.93, 1.08] | ×1.62 [1.57, 1.69] | at most ×1.2: **holds** |
+| other tasks (4) | ×2.78 [2.02, 3.34] | ×2.25 [1.77, 2.60] | at most ×1.5, refuted above ×1.8: **refuted** |
+
+**The trigger works; the card does not save what it was meant to.** On the trivial tasks no
+`bundle_v22` trial opened anything in the bundle (0 of 4, against 4 of 4 under the v21 wiring), and the
+cost equals `minimal`'s. On the others the cost rose above the v21 wiring's: card-first sent 6 of 8
+trials to an area index (3 of 8 under v21), while the notes opened barely changed (about one per trial
+in both). The area indexes are the largest files a session reads for one card (about 27 and 17 thousand
+characters), so the release moved the cost from notes to indexes instead of removing it.
+
+**The content effect holds.** On the three tasks that discriminated in pilot-5, `minimal` passed 0 of 6,
+`bundle` 5 of 6 and `bundle_v22` 5 of 6. The trivial and neutral tasks were passed in every arm.
+
+**What it decides**, by the rule registered before the run: the phased session of 0.0.23 makes the review
+in a subagent the default path, so the knowledge a review reads never enters the main context; and a card
+must be reachable without loading a whole area index. Both go to the roadmap; the full tables are
+`evals/cost_smoke.py` over the run.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -450,3 +479,4 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 - **2026-09-24** — pilot-3 (Haiku 4.5) added: one task with a clean content effect, one note-caused over-application, weaker routing; two instrument notes.
 - **2026-09-24** — pilot-4 added: the instrument correction holds, the red-tests observation is withdrawn, the cost overhead is confirmed.
 - **2026-09-24** — §4.3 corrected: the ceiling is attributed to the task design (facts adjacent to the code, hints in prompts), not to real repositories; pilot-5 with distance levels L1 and L2 added.
+- **2026-09-28** — pilot-6 (§4.8): the cost smoke test of release 0.0.22; the trivial-task prediction holds, the other-task prediction is refuted, and the cost moved to the area indexes.
