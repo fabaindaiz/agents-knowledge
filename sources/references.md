@@ -205,6 +205,63 @@ verbatim. A source that could not be opened is either marked as unverified or le
   following, and used models older than the ones this bundle is used with. It is indirect
   evidence. *Verified 2026-09-23 against the abstract.*
 
+## Evidence on context files, skills and sessions
+
+Read for the research route after 0.0.22. Each entry was checked against its abstract on the date
+shown and is paraphrased, not quoted; none of them was read in full.
+
+- **[SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?](https://arxiv.org/abs/2603.15401)**
+  (arXiv 2603.15401). Public software-engineering skills paired with repositories and requirement
+  documents, several hundred task instances, graded by execution with and without the skill: most
+  skills gave no gain at all, and the average gain was about one point.
+  **Changes:** roadmap item `i-5ed7e8-290fce`: of the generated skills, only the reviewer subagent's
+  definition is kept; skills per area wait for a measurement. The companion benchmark SkillsBench
+  (`evals/REPORT.md`, related work) found software engineering the domain with the smallest gain.
+  *Checked 2026-09-28 against the abstract.*
+
+- **[Instruction Adherence in Coding Agent Configuration Files: A Factorial Study of Four File-Structure Variables](https://arxiv.org/abs/2605.10039)**
+  (arXiv 2605.10039). Size, instruction position, file architecture and contradictions between
+  adjacent configuration files, crossed over a large number of coding-agent sessions: none had a
+  detectable effect after correction; adherence fell with every function the agent generated in the
+  session, by a few percent in odds per function.
+  **Changes:** roadmap item `i-5ed7e8-863fb1` becomes the core of 0.0.23: a review in a fresh
+  context at the end of a session answers the decay. **Lowers** `i-5ed7e8-bc5867`: trimming a file's
+  prose is not where adherence is lost. *Checked 2026-09-28 against the abstract.*
+
+- **[From Agent Behaviour to Agent-Friendly Documentation](https://arxiv.org/abs/2608.20195)**
+  (arXiv 2608.20195). How coding agents discover, read and write documentation: most consultations
+  are self-initiated, instruction files and working notes are the majority of what they read, and
+  consulting documentation went with less immediate testing, not more.
+  **Changes:** the review phase of `i-5ed7e8-863fb1` runs each note's check rather than only reading
+  it; supports `i-5ed7e8-d65a4c` (say where the decisive fact is found). *Checked 2026-09-28 against
+  the abstract.*
+
+- **[SkillReducer: Optimizing LLM Agent Skills for Token Efficiency](https://arxiv.org/abs/2603.29919)**
+  (arXiv 2603.29919). Most of a skill's text is not actionable; compressing the description and the
+  body by a third to a half, with the rest loaded on demand, kept or slightly improved quality across
+  model families.
+  **Confirms:** the short notes of 0.0.22. **Supports:** compressing the method in 0.0.24, as a build
+  rule over the full originals, never as an edit of the release. *Checked 2026-09-28 against the
+  abstract.*
+
+- **[How Many Instructions Can LLMs Follow at Once?](https://arxiv.org/abs/2507.11538)** (IFScale,
+  arXiv 2507.11538), with a 2026 industry re-run reporting that frontier models now hold an order of
+  magnitude more simultaneous instructions (secondary source, not peer reviewed).
+  **Lowers:** `i-5ed7e8-bc5867` for frontier models; it may still matter for smaller ones.
+  *Checked 2026-09-28 against the abstract and the re-run's summary.*
+
+- **[Towards a Systems Foundation for Agentic Skills](https://arxiv.org/abs/2608.29596)**
+  (arXiv 2608.29596). A lifecycle for agent skills, naming prompt injection through skills and supply
+  chain risk through public registries as threats.
+  **Confirms:** the `incoming/` check of 0.0.22; keeps `i-5ed7e8-7425a6` (signed tags) on the
+  roadmap. *Checked 2026-09-28 against the abstract.*
+
+- **[Agent READMEs: An Empirical Study of Context Files for Agentic Coding](https://arxiv.org/abs/2511.12884)**
+  (arXiv 2511.12884). Thousands of context files studied: they evolve like configuration code,
+  through frequent small additions, and grow hard to read.
+  **Confirms:** changing the bundle only through releases, with generated files, rather than by
+  accretion in place. *Checked 2026-09-28 against the abstract.*
+
 ## Privacy and re-identification
 
 - **[Sweeney, 2002, "k-anonymity: a model for protecting privacy"](https://doi.org/10.1142/S0218488502001648)**
