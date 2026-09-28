@@ -228,7 +228,7 @@ class Sessions(Base):
         sessions, missing = B.sessions_of(agents)
 
         self.assertEqual(missing, [])
-        self.assertEqual(set(sessions), {"coding", "consult", "evaluate", "bootstrap", "update", "harvest"})
+        self.assertEqual(set(sessions), {"coding", "consult", "evaluate", "bootstrap", "update", "harvest", "review"})
         self.assertEqual(sessions["coding"], [("method/prompt-bootstrap.md", "The session loop"), ("knowledge/INDEX.md", None)])
         self.assertEqual(B.reads_lists("Reads:\n- a.md §One §Two, with a comma\n\nReads:\n- b.md\n"),
                          [[("a.md", "One"), ("a.md", "Two, with a comma")], [("b.md", None)]])

@@ -759,6 +759,8 @@ SESSION_SOURCES: dict[str, tuple[str, int]] = {
     "bootstrap": ("method/prompt-bootstrap.md", 0),
     "update": ("method/prompt-update.md", 0),
     "harvest": ("method/prompt-harvest.md", 0),
+    # The reviewer subagent of the phased session: what it loads before it opens any card.
+    "review": ("agents/knowledge-reviewer.md", 0),
 }
 Sessions = "dict[str, list[tuple[str, str | None]]]"
 
@@ -1844,7 +1846,7 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
 # crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
 # tenth.
-BUDGETS = {"coding": 9_900, "card": 320}
+BUDGETS = {"coding": 10_100, "card": 320, "review": 6_900}
 def largest_card(tree: Path) -> tuple[str, int]:
     """(note, estimated tokens) of the largest card: what one lookup from the index costs."""
     best = ("", 0)
@@ -1861,6 +1863,9 @@ def budget_problems(tree: Path, data: dict | None = None) -> list[str]:
     coding = data["sessions"].get("coding", {}).get("tokens_estimate", 0)
     if coding > BUDGETS["coding"]:
         problems.append(f"the coding session loads about {coding} tokens, over its budget of {BUDGETS['coding']}")
+    review = data["sessions"].get("review", {}).get("tokens_estimate", 0)
+    if review > BUDGETS["review"]:
+        problems.append(f"the reviewer loads about {review} tokens before any card, over its budget of {BUDGETS['review']}")
     note, card = largest_card(tree)
     if card > BUDGETS["card"]:
         problems.append(f"the card of {note} is about {card} tokens, over the card budget of {BUDGETS['card']}")

@@ -498,6 +498,14 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
     out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order,
                                                      link=_card_link if banner else None)
     out.update({f"knowledge/cards/{n.slug}.md": render_card(n) for n in notes if n.state in SHIPPED_STATES})
+    reviewer = templates / "knowledge-reviewer.md"
+    if reviewer.is_file():
+        # The reviewer subagent of the phased session: one template, the topics filled in from the areas.
+        text = reviewer.read_text(encoding="utf-8").replace("{{topics}}", "topics: " + ", ".join(topics))
+        if "{{" in text:
+            raise BuildError(f"{reviewer.relative_to(root).as_posix()}: a token the build does not fill")
+        banner = f"{RELEASE_MARK} from the home repository's sources/templates/knowledge-reviewer.md; edit that, never this file"
+        out["agents/knowledge-reviewer.md"] = "---\n# " + banner + "\n" + text[4:]
     out["knowledge/OPEN.md"] = head + render_open(root / "meta")
     originals = root / ORIGINALS
     for path in sorted(originals.rglob("*"), key=lambda p: p.as_posix().encode()):

@@ -129,6 +129,8 @@ def make_home(root: Path) -> Path:
     (sources / "templates/areas").mkdir(parents=True)
     (sources / "templates/areas/one.md").write_text(AREA)
     (sources / "templates/INDEX.md").write_text(INDEX)
+    (sources / "templates/knowledge-reviewer.md").write_text(
+        '---\nname: "knowledge-reviewer"\ndescription: "Reviews against {{topics}}."\n---\n\nReview.\n\nReads:\n- knowledge/INDEX.md\n')
     for state in ("active", "review", "retired"):
         (sources / "notes" / state).mkdir(parents=True)
     (sources / "notes/active/alpha.md").write_text(full_note("alpha", '"plan", "review"'))

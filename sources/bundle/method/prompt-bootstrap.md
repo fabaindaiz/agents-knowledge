@@ -285,11 +285,14 @@ wins and the area file is wrong.
 
 **Wire the bundle in, because nothing in `.agents/` loads by itself.** The root
 instruction file's map gets one line, in the repository's own words: *when a
-change touches state, a contract, data, security or verification, consult
-`.agents/knowledge/INDEX.md` before a design decision and before claiming done;
-apply each card it routes to (claim, where it stops applying, check), open a full
-note only when its boundary is unclear here, and where this repository states an
-invariant that contradicts a note, follow the repository and say so.* Without it the knowledge
+change touches state, a contract, data, security or verification, have the
+`knowledge-reviewer` subagent review the plan before a design decision and the
+diff before claiming done, and fix its findings; without it, consult
+`.agents/knowledge/INDEX.md` and apply only the cards it links; where this
+repository states an invariant that contradicts a note, follow the repository and
+say so.* **Install the reviewer**: copy `.agents/agents/knowledge-reviewer.md`
+into the assistant's agent folder (Claude Code: `.claude/agents/`); every release
+regenerates it, and the update copies it again. Without the line the knowledge
 base is a folder nobody opens. The same map gets a second line, also in the
 repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
@@ -365,6 +368,16 @@ are what make the loop compound instead of just repeat: one loads the state of
 the world before deciding anything, the other returns what the session learned
 to the repository. Of the seven in between, steps 1, 2, 6 and 7 are the ones
 agents skip, and they are the ones that cost the most when skipped.
+
+**Three phases, and what each one loads.** Steps 0 to 2 plan, from the
+repository's own records. Step 3 builds, with the repository in view and no
+knowledge note. Step 4 verifies, and on a change that touches state, a contract,
+data, security or verification it ends with *The review, in a fresh context*: a
+subagent reads the knowledge so that the author's context never does. Steps 5 to
+8 close. The phases exist for two measured reasons: an agent follows its
+instructions less the longer it has been generating, and whatever enters the
+author's context is paid again at every later turn, while a reviewer that starts
+empty pays once for what it reads.
 
 ### 0. The opening brief — load the world before you touch the request
 
@@ -460,13 +473,13 @@ session.
 ### 2. Ask the few decisions, all at once, before writing
 
 Principle 15 has the protocol. Before a design decision on a change that touches
-state, a contract, data, security or verification, consult
-`.agents/knowledge/INDEX.md` for the phase you are in. Each note has a card, one
-small file the index links: the claim, *Not when* (where it stops applying) and the check. The
-*Not when* is the part to read; open the full note only when you cannot tell
-whether it holds here. When this repository states an invariant that contradicts
-a note, the repository wins, and the report says which note gave way. A typo, a
-text or a local rename consults nothing. The step that comes before asking is
+state, a contract, data, security or verification, **send the plan to the
+reviewer** (*The review, in a fresh context*, step 4) and decide with its
+findings in hand: it reads the cards, you read its verdict. Where no reviewer can
+run, consult `.agents/knowledge/INDEX.md` yourself and open only the cards it
+links; a card's *Not when* is the part to read. When this repository states an
+invariant that contradicts a note, the repository wins, and the report says which
+note gave way. A typo, a text or a local rename consults nothing. The step that comes before asking is
 evaluating, and it has a shape worth following:
 
 **How to evaluate a trade-off**
@@ -528,6 +541,23 @@ command by command in a scratch copy, as its reader would, before calling it
 done: reading it again finds what the author meant, running it finds what it
 says. An instruction that cannot be followed as written is a defect of the
 change.
+
+#### The review, in a fresh context
+
+On a change that touches state, a contract, data, security or verification, the
+last thing before claiming done is a review by the reviewer subagent, installed
+from `.agents/agents/knowledge-reviewer.md` (in Claude Code,
+`.claude/agents/knowledge-reviewer.md`). Give it the diff and one line of intent,
+nothing else. It reads the cards, cites evidence from the repository for each,
+runs their checks, and returns findings; its reading never enters your context.
+
+- **Fix the findings and nothing else**, then send only what changed for a
+  second review. **At most two re-reviews**: what is still open after them goes
+  to the user as a decision, not into a third round.
+- A finding you reject is reported with the evidence that rejects it.
+- Where no subagent can run (another assistant, a restricted session), do the
+  same here, in order: the card, the evidence, the check; and say in the report
+  that the review was not isolated.
 
 The gate is the floor. The core invariant's own test — the seek comparison, the
 replay, the round trip, the wheel installed clean — is cheap relative to a
@@ -791,6 +821,8 @@ environment is the most dangerous kind of correct.
 - [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`,
       and the outbox by `bundle.py outbox --reset`; the gate runs
       `bundle.py verify` and `bundle.py ids`, on Python 3.11 or newer.
+- [ ] The reviewer is installed from `.agents/agents/knowledge-reviewer.md` in the
+      assistant's agent folder, and the root file sends reviews to it.
 - [ ] `docs/references.md`: only entries that changed or confirmed a decision,
       each stating what you do differently on purpose.
 - [ ] `docs/roadmap.md`: collisions, what must be decided first, closed-by-
@@ -921,13 +953,14 @@ would **not** take and why. Then ask me — before writing anything — only the
 decisions that are genuinely mine, all at once, each option priced in this
 repo's own units, with your recommendation first.
 
-When the change touches state, a contract, data, security or verification:
-before a design decision and before claiming done, look it up in the knowledge
-index, open the card it links for each match (claim, *Not when*, check) and
-run its check. Open a full note only when you cannot tell whether its
-boundary holds here. When this repository states an invariant that contradicts a
-note, follow the repository and say in the report which note gave way. A typo, a
-text or a local rename consults nothing.
+When the change touches state, a contract, data, security or verification, the
+knowledge is read by the reviewer, not by you: send it the plan before a design
+decision and the diff before claiming done (*The review, in a fresh context*,
+step 4), fix only its findings, at most two re-reviews. Without a reviewer, look
+the change up in the knowledge index and open only the cards it links. When this
+repository states an invariant that contradicts a note, follow the repository and
+say in the report which note gave way. A typo, a text or a local rename consults
+nothing.
 
 While you build: **write the test before the code**, and watch it fail for the
 reason you expect. Extend before creating, and check whether the format can

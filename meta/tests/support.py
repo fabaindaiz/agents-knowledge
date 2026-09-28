@@ -121,6 +121,8 @@ def make_bundle(root: Path, version: str = "0.0.1") -> Path:
     (agents / "method/prompt-bootstrap.md").write_text(BOOTSTRAP)
     for session in ("evaluate", "update", "harvest"):
         (agents / f"method/prompt-{session}.md").write_text(f"# {session}\n\nReads:\n- method/prompt-{session}.md\n")
+    (agents / "agents").mkdir(parents=True, exist_ok=True)
+    (agents / "agents/knowledge-reviewer.md").write_text('---\nname: "knowledge-reviewer"\n---\n\nReview.\n\nReads:\n- knowledge/INDEX.md\n')
     (agents / "knowledge/INDEX.md").write_text(
         "# Index\n\n- [a-check](notes/active/a-check.md)\n- [absence](notes/active/absence.md)\n")
     for slug in ("a-check", "absence"):
