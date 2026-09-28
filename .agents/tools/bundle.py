@@ -1847,7 +1847,7 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
 # crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
 # tenth.
-BUDGETS = {"coding": 10_100, "card": 320, "review": 6_900}
+BUDGETS = {"coding": 10_100, "card": 360, "review": 6_900}
 def largest_card(tree: Path) -> tuple[str, int]:
     """(note, estimated tokens) of the largest card: what one lookup from the index costs."""
     best = ("", 0)

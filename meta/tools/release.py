@@ -347,6 +347,7 @@ def render_card(note: Note, siblings: list[Note] | None = None) -> str:
         "",
         f"**Claim.** {note.meta['claim']}",
         "",
+        *([f"**Applies if.** {note.meta['applies_if']}", ""] if note.meta.get("applies_if") else []),
         f"**Not when.** {note.boundary}",
         "",
         f"**Check.** {note.meta['check']}",

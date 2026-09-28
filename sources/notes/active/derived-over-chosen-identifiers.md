@@ -4,6 +4,7 @@ topic: "identity-and-naming"
 claim: "An identifier that must be unique across boundaries is derived from something already unique, never chosen by whoever creates it."
 confidence: "reasoned"
 principle: "same-only-by-a-shared-fact"
+applies_if: "Two sources, teams or systems create identifiers in one space. Look where records enter from outside (imports, integrations, sample exports, their documentation) and whether their id ranges can meet."
 phases: ["plan"]
 check: "a check fails when a derived identifier drifts from its source"
 about:

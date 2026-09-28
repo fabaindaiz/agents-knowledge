@@ -4,6 +4,7 @@ topic: "distributed-correctness"
 claim: "When two writes cannot be atomic, order them so a crash between them leaves the state you can recover from; acknowledge an at-least-once delivery right after its one non-idempotent step, never after slow side work."
 confidence: "reasoned"
 principle: "a-failure-between-two-steps-is-certain"
+applies_if: "Two writes go to two systems that share no transaction, or a message is redelivered on timeout. Look at where each write lands and at the queue's acknowledgement timeout."
 phases: ["plan"]
 check: "for each non-atomic pair, the residue of a crash between them is written down and recoverable"
 about:

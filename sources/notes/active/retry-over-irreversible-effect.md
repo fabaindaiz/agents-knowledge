@@ -4,6 +4,7 @@ topic: "distributed-correctness"
 claim: "Any transport that retries will eventually re-execute an irreversible effect; idempotency is a property you build, not one you configure."
 confidence: "reasoned"
 principle: "a-failure-between-two-steps-is-certain"
+applies_if: "Something between the caller and the effect retries or redelivers. Look at the transport's delivery guarantee, the queue or webhook documentation, and the retry configuration."
 phases: ["plan"]
 check: "every irreversible call has a caller-chosen key stored with the effect; a replay test returns the first outcome"
 about:

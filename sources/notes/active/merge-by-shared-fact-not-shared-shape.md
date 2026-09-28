@@ -4,6 +4,7 @@ topic: "evolving-contracts"
 claim: "Merge copies that must agree by contract and whose divergence would be invisible; keep copies that only look alike, especially where merging would hide an error from a symmetric test, and write down why they stay."
 confidence: "reasoned"
 principle: "same-only-by-a-shared-fact"
+applies_if: "Two copies encode one fact that must agree. Look for the contract, schema or document that says they must, and for a test that exercises both copies the same way."
 phases: ["plan", "review"]
 check: "every kept duplicate has a recorded reason; every merged one has a test that fails if a caller diverges"
 about:

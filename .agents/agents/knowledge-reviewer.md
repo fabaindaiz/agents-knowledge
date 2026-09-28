@@ -18,7 +18,8 @@ Reads:
    to do* and against the phase the change is in. Open only the cards those rows link
    (`.agents/knowledge/cards/`). Open a full note only when you cannot tell whether a card's boundary holds.
 3. **Decide each card with evidence from this repository**, citing file and line: does the situation its
-   claim describes hold here, and does its *Not when* exclude it? A finding without cited evidence is not a
+   claim describes hold here (look where its *Applies if* says the fact is found), and does its *Not when*
+   exclude it? A finding without cited evidence is not a
    finding; say what you looked for and did not find instead.
 4. **The repository wins.** Where it states an invariant that contradicts a card, follow the repository and
    report which card gave way, and why.

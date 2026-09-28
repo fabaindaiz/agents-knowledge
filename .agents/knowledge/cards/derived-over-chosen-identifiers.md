@@ -3,6 +3,8 @@
 
 **Claim.** An identifier that must be unique across boundaries is derived from something already unique, never chosen by whoever creates it.
 
+**Applies if.** Two sources, teams or systems create identifiers in one space. Look where records enter from outside (imports, integrations, sample exports, their documentation) and whether their id ranges can meet.
+
 **Not when.** When humans type it · When the source of derivation is not stable · When the source of derivation is content that will be edited · When the source is private, guessable, and the identifier travels in public · When the namespace is genuinely closed and small
 
 **Check.** a check fails when a derived identifier drifts from its source
