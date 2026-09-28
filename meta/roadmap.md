@@ -22,8 +22,8 @@ something else depends on — because that is what decides its order.
 
 **State on 2026-09-28, at the close of 0.0.23.** Release 0.0.23 is tagged (`v0.0.23`) and this
 repository is aligned on it, with the reviewer installed in `.claude/agents/`. The other carriers were not
-open in this session and stay on their versions (*Blocked outside*); one of them already had its outbox
-rows taken in at 0.0.23's intake, so its next splice passes `--taken` with that gather. The history before
+open in this session and stay on their versions (*Blocked outside*, `i-5ed7e8-b83f16`, which says what
+each needs). The history before
 `v0.0.20` exists only on the local branch `backup/pre-flatten`, never tagged or pushed.
 
 **What 0.0.23 measured** (`evals/REPORT.md` §4.8–4.10, all exploratory, same six tasks and model):
