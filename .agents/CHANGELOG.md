@@ -13,22 +13,26 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 Measured before it was built: a cost smoke test of 0.0.22 found that
 reading a summary first sent sessions into whole area indexes, at about 2.8 times the cost of working without
-the bundle, while the knowledge still made the difference on the tasks where the unaided agent fails.
+the bundle, while the knowledge still made the difference on the tasks where the unaided agent fails. A
+first candidate of this release, with every review in a subagent by default, measured several times that
+again for the same passes, and was changed before it was tagged.
 
 ### Changed
 
 - **The coding session runs in phases**: plan, build, verify, close. On a change that touches state, a
-  contract, data, security or verification, the knowledge is read by a **reviewer subagent in a context of
-  its own**, not by the author: the plan before a design decision and the diff before claiming done. It
-  cites evidence from the repository for each card and runs its check; the author fixes only its findings,
-  with at most two re-reviews. Without a subagent, the same steps run in one context and the report says so.
+  contract, data, security or verification, the plan looks the change up in `knowledge/INDEX.md` and opens
+  only the cards it links, and the verify step runs their checks.
+- **A review in a fresh context, on request.** A `knowledge-reviewer` subagent reviews a diff against the
+  cards in a context of its own, citing evidence from the repository for each and running its check; the
+  author fixes only its findings, with at most two re-reviews. It runs only when the user asks; a change
+  that deletes or rewrites stored data, moves money or touches authentication offers it in its report.
 - **One lookup reaches one card.** Each note has a card of a few hundred characters in `knowledge/cards/`,
   linked from `knowledge/INDEX.md` by phase and by what you are about to do; the area indexes are for
   browsing.
 - A card shows **Applies if** (the precondition, and where the fact that decides it is usually found) when
   its note has one, and names the notes that **share its principle**; the area indexes list those groups.
-- The root file's knowledge line sends reviews to the reviewer; the bootstrap installs it and the update
-  refreshes it. **A carrier updating from 0.0.22 installs it on this update**, since its live update
+- The root file's knowledge line sends a change to the index and its cards, and a review asked for to the
+  reviewer; the bootstrap installs it and the update refreshes it. **A carrier updating from 0.0.22 installs it on this update**, since its live update
   procedure has no such step: copy `.agents/agents/knowledge-reviewer.md` into the assistant's agent folder
   (Claude Code: `.claude/agents/`), and rewrite the root file's knowledge line as `prompt-bootstrap.md`
   Phase 4 words it.
@@ -58,7 +62,10 @@ the bundle, while the knowledge still made the difference on the tasks where the
 Written before measuring, to be tested on this release in the home's experiments with the pilots' model,
 all arms with subagents available: on trivial tasks at most 1.2 times the cost of working without
 the bundle (refuted above 1.4); on the others at most 2 times (refuted above 2.3); the three tasks that
-discriminated in the pilots still passed with the bundle (refuted at half or fewer).
+discriminated in the pilots still passed with the bundle (refuted at half or fewer). The first candidate,
+with the review by default, refuted the second at about 8 times; the same three predictions are tested
+again on this one, with a fourth: no session calls the reviewer without being asked (refuted if more
+than one in the run does).
 
 ## [0.0.22] - 2026-09-25
 

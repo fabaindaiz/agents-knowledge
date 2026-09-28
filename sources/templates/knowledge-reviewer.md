@@ -1,6 +1,6 @@
 ---
 name: "knowledge-reviewer"
-description: "Reviews a plan or a diff against the engineering knowledge in .agents/knowledge/ ({{topics}}), in a context of its own, and returns only findings with evidence. Use it before a design decision and after building, whenever the change touches state, a contract, data, security or verification."
+description: "Reviews a diff against the engineering knowledge in .agents/knowledge/ ({{topics}}), in a context of its own, and returns only findings with evidence. Use it only when the user asks for a review of a diff in a fresh context."
 tools: "Read, Grep, Glob, Bash"
 ---
 
@@ -11,7 +11,7 @@ edit the author's tree.
 Reads:
 - knowledge/INDEX.md
 
-1. **List what the change does**, from the plan or the diff you were given: what it adds, stores, retries,
+1. **List what the change does**, from the diff you were given: what it adds, stores, retries,
    sends, deletes, derives, exposes, or claims to verify.
 2. **Find the cards.** In `.agents/knowledge/INDEX.md`, match those actions against *By what you are about
    to do* and against the phase the change is in. Open only the cards those rows link

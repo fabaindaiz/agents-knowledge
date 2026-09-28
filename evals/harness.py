@@ -48,14 +48,14 @@ SOURCES = ROOT / "sources" / "notes"
 HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
-CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23"]
+CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b"],
 }
 
 ROUTING = """
@@ -88,7 +88,19 @@ subagent review the plan before a design decision and the diff before claiming d
 findings; without it, consult `.agents/knowledge/INDEX.md` and apply only the cards it links; where this
 repository states an invariant that contradicts a note, follow the repository and say so.
 """
-ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23}
+# pilot-7 refuted that candidate's cost; the one tagged as 0.0.23 reads the index and its cards itself and
+# runs the reviewer only on request (pilot-8). The reviewer is installed as in `bundle_v23`.
+ROUTING_V23B = """
+## Engineering knowledge
+
+When a change touches state, a contract, data, security or verification, look it up in
+`.agents/knowledge/INDEX.md` before a design decision and open only the cards it links; apply each (its
+Applies if, Not when and check), and open a full note only when a card's boundary is unclear here; where
+this repository states an invariant that contradicts a note, follow the repository and say so. When asked
+for a review in a fresh context, give the diff to the `knowledge-reviewer` subagent and wait for its answer.
+"""
+ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23,
+            "bundle_v23b": ROUTING_V23B}
 
 ORACLE_HEADER = """
 ## Engineering note
@@ -244,11 +256,11 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23"):
+    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b"):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws)
         reviewer = ws / ".agents/agents/knowledge-reviewer.md"
-        if condition == "bundle_v23" and reviewer.is_file():
+        if condition in ("bundle_v23", "bundle_v23b") and reviewer.is_file():
             (ws / ".claude/agents").mkdir(parents=True, exist_ok=True)
             shutil.copyfile(reviewer, ws / ".claude/agents/knowledge-reviewer.md")
         if condition == "ablated":

@@ -316,3 +316,13 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   non-trivial tasks ran on the frozen candidate (`420ac5200289`), two on a later build. Reported apart in
   `REPORT.md` §4.9; the verdict is the same over both. From this date the harness records each trial's
   bundle digest and refuses a trial whose bundle is not the plan's.
+- **2026-09-28, exploratory — pilot-8, the changed 0.0.23 candidate.** Registered before any trial, on
+  pilot-7's six tasks, model, repetitions, isolation and tools (the subagent tool in every arm), with a new
+  seed. *Arms:* `minimal` and `bundle_v23b`: the candidate changed after pilot-7, whose wiring
+  (`ROUTING_V23B`) has the author look the change up in the index and open only the cards it links, and
+  run the `knowledge-reviewer` subagent, installed as in `bundle_v23`, only when asked; the task prompts
+  never ask. *Predictions* (`.agents/CHANGELOG.md` [0.0.23], unchanged from pilot-7 but for the fourth):
+  cost at most ×1.2 on trivial tasks (refuted above ×1.4) and at most ×2 on the others (refuted above
+  ×2.3); the three discriminating tasks passed at least 4 of 6 times (refuted at half or fewer); at most
+  one of the 12 `bundle_v23b` trials calls the reviewer. *Decision:* holding, 0.0.23 is tagged; refuted,
+  it is not, and the result goes to the user before anything else changes.

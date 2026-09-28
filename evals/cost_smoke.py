@@ -29,9 +29,10 @@ DISCRIMINATING = ("contacts-second-source-l1", "contacts-second-source-l2", "ref
 PREDICTIONS = {
     "bundle_v22": {"trivial": (1.2, 1.4), "normal": (1.5, 1.8)},   # .agents/CHANGELOG.md [0.0.22], pilot-6
     "bundle_v23": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},   # .agents/CHANGELOG.md [0.0.23], pilot-7
+    "bundle_v23b": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},  # the same, on the changed candidate, pilot-8
 }
 METRICS = ("cost", "turns", "out_tokens")
-ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23")
+ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b")
 CHECK_MENTION = re.compile(r"(?i)\b(verify by|the check|its check|card)\b")
 
 
@@ -51,6 +52,24 @@ def final_text(run: Path, trial: str) -> str:
     return text
 
 
+def called_reviewer(run: Path, trial: str) -> bool:
+    """Whether the main session handed anything to the reviewer subagent (0.0.23's fourth prediction)."""
+    path = run / "trials" / trial / "transcript.jsonl"
+    if not path.is_file():
+        return False
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if ev.get("type") == "assistant" and not ev.get("parent_tool_use_id"):
+            for c in (ev.get("message") or {}).get("content") or []:
+                if isinstance(c, dict) and c.get("type") == "tool_use" and c.get("name") in ("Agent", "Task") \
+                        and (c.get("input") or {}).get("subagent_type") == "knowledge-reviewer":
+                    return True
+    return False
+
+
 def adherence(run: Path, rec: dict) -> dict:
     """What a trial read of the bundle, and whether its report names a check: counted, never judged."""
     reads = (rec.get("trace") or {}).get("reads") or []
@@ -61,6 +80,7 @@ def adherence(run: Path, rec: dict) -> dict:
         "area": any("knowledge/areas/" in r for r in bundle),
         "notes": sum(1 for r in bundle if "knowledge/notes/" in r),
         "mentions_check": bool(CHECK_MENTION.search(final_text(run, rec["trial"]))),
+        "reviewer": called_reviewer(run, rec["trial"]),
     }
 
 
@@ -86,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
          "| Group | Contrast | Metric | Ratio | 95% CI | Tasks | Prediction | Verdict |",
          "|---|---|---|---:|---|---:|---|---|"]
     for group, tasks in groups.items():
-        for a_arm, b_arm in (("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
+        for a_arm, b_arm in (("bundle_v23b", "minimal"), ("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
             for metric in METRICS:
                 cell: dict = {}
                 for r in valid:
@@ -111,17 +131,17 @@ def main(argv: list[str] | None = None) -> int:
         L.append(f"| {task}{mark} | " + " | ".join(vals) + " |")
     L += ["", "## Directive adherence, counted from the transcripts (i-5ed7e8-a2f016)\n",
           "Mechanical counts; *mentions a check* is a keyword heuristic on the final message, not a judgement.\n",
-          "| Group | Arm | Trials | Read the bundle | Index | Area index | Notes opened (mean) | Mentions a check |",
-          "|---|---|---:|---:|---:|---:|---:|---:|"]
+          "| Group | Arm | Trials | Read the bundle | Index | Area index | Notes opened (mean) | Mentions a check | Called the reviewer |",
+          "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
     for group, tasks in groups.items():
-        for arm in ("bundle", "bundle_v22", "bundle_v23"):
+        for arm in ("bundle", "bundle_v22", "bundle_v23", "bundle_v23b"):
             rs = [adherence(run, r) for r in valid if r["task"] in tasks and r["condition"] == arm]
             if not rs:
                 continue
             n = len(rs)
             L.append(f"| {group} | {arm} | {n} | {sum(x['any_bundle_read'] for x in rs)}/{n} | {sum(x['index'] for x in rs)}/{n} | "
                      f"{sum(x['area'] for x in rs)}/{n} | {statistics.fmean(x['notes'] for x in rs):.1f} | "
-                     f"{sum(x['mentions_check'] for x in rs)}/{n} |")
+                     f"{sum(x['mentions_check'] for x in rs)}/{n} | {sum(x['reviewer'] for x in rs)}/{n} |")
     out = "\n".join(L) + "\n"
     if a.out:
         Path(a.out).write_text(out, encoding="utf-8")

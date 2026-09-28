@@ -59,8 +59,9 @@ write no file until I approve the Phase 3 proposal.**
   and **wait for my approval.**
 - **Phases 4 to 9, after approval:** generate the files — the root file's map
   includes the line that sends a change touching state, a contract, data,
-  security or verification to the `knowledge-reviewer` subagent (installed from
-  `.agents/agents/`, with `.agents/knowledge/INDEX.md` as the fallback), and a
+  security or verification to `.agents/knowledge/INDEX.md` and the cards it
+  links (and a review in a fresh context, on request, to the
+  `knowledge-reviewer` subagent installed from `.agents/agents/`), and a
   one-line privacy reminder; make the rules executable — the gate runs `bundle.py
   verify` — and report how many were already being violated; remove
   duplication; audit `docs/` against the code; write the roadmap; add the
@@ -286,14 +287,16 @@ wins and the area file is wrong.
 
 **Wire the bundle in, because nothing in `.agents/` loads by itself.** The root
 instruction file's map gets one line, in the repository's own words: *when a
-change touches state, a contract, data, security or verification, have the
-`knowledge-reviewer` subagent review the plan before a design decision and the
-diff before claiming done, and fix its findings; without it, consult
-`.agents/knowledge/INDEX.md` and apply only the cards it links; where this
-repository states an invariant that contradicts a note, follow the repository and
-say so.* **Install the reviewer**: copy `.agents/agents/knowledge-reviewer.md`
-into the assistant's agent folder (Claude Code: `.claude/agents/`); every release
-regenerates it, and the update copies it again. Without the line the knowledge
+change touches state, a contract, data, security or verification, look it up in
+`.agents/knowledge/INDEX.md` before a design decision and open only the cards it
+links; apply each (its Applies if, Not when and check), and open a full note only
+when a card's boundary is unclear here; where this repository states an
+invariant that contradicts a note, follow the repository and say so. When asked
+for a review in a fresh context, give the diff to the `knowledge-reviewer`
+subagent and wait for its answer.* **Install the reviewer**: copy
+`.agents/agents/knowledge-reviewer.md` into the assistant's agent folder (Claude
+Code: `.claude/agents/`); every release regenerates it, and the update copies it
+again. Without the line the knowledge
 base is a folder nobody opens. The same map gets a second line, also in the
 repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
@@ -371,14 +374,15 @@ to the repository. Of the seven in between, steps 1, 2, 6 and 7 are the ones
 agents skip, and they are the ones that cost the most when skipped.
 
 **Three phases, and what each one loads.** Steps 0 to 2 plan, from the
-repository's own records. Step 3 builds, with the repository in view and no
-knowledge note. Step 4 verifies, and on a change that touches state, a contract,
-data, security or verification it ends with *The review, in a fresh context*: a
-subagent reads the knowledge so that the author's context never does. Steps 5 to
-8 close. The phases exist for two measured reasons: an agent follows its
-instructions less the longer it has been generating, and whatever enters the
-author's context is paid again at every later turn, while a reviewer that starts
-empty pays once for what it reads.
+repository's own records and, on a change that touches state, a contract, data,
+security or verification, the cards the knowledge index links (one lookup, one
+small file each). Step 3 builds, with the repository in view and no knowledge
+note. Step 4 verifies, and runs the checks of the cards the change relied on.
+Steps 5 to 8 close. Whatever enters the author's context is paid again at every
+later turn, which is why a card is read and not an area index or a note. A
+review in a fresh context (step 4) is run on request, not by default: measured,
+it cost several times a session without it and made no task pass that the
+cards alone did not.
 
 ### 0. The opening brief — load the world before you touch the request
 
@@ -394,8 +398,8 @@ Gather, in this order, stopping as soon as a source has nothing to add:
 - **What is in the tree.** Uncommitted and staged changes. Some of it may be
   another session's work, and none of it is yours to fold in.
 - **What constrains today.** The decisions and measurements that bear on the
-  area the request touches, from the repository's own records (the cards are
-  the reviewer's, at step 2). Read the *why*, not just the rule — you will be tempted to re-open it in
+  area the request touches, from the repository's own records (the cards come
+  at step 2). Read the *why*, not just the rule — you will be tempted to re-open it in
   about an hour.
 - **What is stale.** Anything that must be re-checked before it can be trusted:
   a number from a version ago, a research entry whose upstream may have shipped,
@@ -473,11 +477,11 @@ session.
 ### 2. Ask the few decisions, all at once, before writing
 
 Principle 15 has the protocol. Before a design decision on a change that touches
-state, a contract, data, security or verification, **send the plan to the
-reviewer** (*The review, in a fresh context*, step 4) and decide with its
-findings in hand: it reads the cards, you read its verdict. Where no reviewer can
-run, consult `.agents/knowledge/INDEX.md` yourself and open only the cards it
-links; a card's *Not when* is the part to read. When this repository states an
+state, a contract, data, security or verification, **look the change up in
+`.agents/knowledge/INDEX.md` and open only the cards it links**: decide whether
+each applies from its *Applies if* (look where it says the fact is found) and its
+*Not when*, which is the part to read. Open a full note only when a card's
+boundary is unclear here. When this repository states an
 invariant that contradicts a note, the repository wins, and the report says which
 note gave way. A typo, a text or a local rename consults nothing. The step that comes before asking is
 evaluating, and it has a shape worth following:
@@ -532,9 +536,8 @@ Two habits that carry the reasoning forward:
 
 ### 4. Verify — run the invariant test when you *claim* it, not when you think you touched it
 
-The checks of the cards this change relied on are the reviewer's (below); where
-no reviewer can run, run each one yourself before claiming done (its *Check*
-line, in `.agents/knowledge/cards/`).
+Before claiming done, run the check of every card this change relied on (its
+*Check* line, in `.agents/knowledge/cards/`), and say in the report which ran.
 
 **A document that tells an agent what to run is verified by running it.** When
 the change is to a procedure, a runbook, an invocation or a checklist, follow it
@@ -545,18 +548,19 @@ change.
 
 #### The review, in a fresh context
 
-On a change that touches state, a contract, data, security or verification, the
+**On request only.** When the user asks for a review in a fresh context, the
 last thing before claiming done is a review by the reviewer subagent, installed
 from `.agents/agents/knowledge-reviewer.md` (in Claude Code,
 `.claude/agents/knowledge-reviewer.md`). Give it the diff and one line of intent,
-nothing else; at step 2, before a design decision, give it the plan and one line
-of intent instead. It reads the cards, cites evidence from the repository for
-each, runs their checks (a check that needs a planted test runs in a scratch
-copy, or comes back as the test you must write), and returns findings; its
-reading never enters your context.
+nothing else, and wait for its answer. It reads the cards, cites evidence from
+the repository for each, runs their checks (a check that needs a planted test
+runs in a scratch copy, or comes back as the test you must write), and returns
+findings; its reading never enters your context. When a change deletes or
+rewrites stored data, moves money or touches authentication and no review was
+asked for, the report offers one, in one line; it does not run it.
 
 - **Fix the findings and nothing else**, then send only what changed for a
-  second review. **At most two re-reviews** per review, plan or diff: what is still open after them goes
+  second review. **At most two re-reviews**: what is still open after them goes
   to the user as a decision, not into a third round.
 - A finding you reject is reported with the evidence that rejects it.
 - Where no subagent can run (another assistant, a restricted session), do the
@@ -823,10 +827,10 @@ environment is the most dangerous kind of correct.
 - [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`,
       and the outbox by `bundle.py outbox --reset`; the gate runs
       `bundle.py verify` and `bundle.py ids`, on Python 3.11 or newer.
-- [ ] The reviewer is installed from `.agents/agents/knowledge-reviewer.md` in the
-      assistant's agent folder, and the root file's map sends a change touching
-      state, a contract, data, security or verification to it, with
-      `.agents/knowledge/INDEX.md` as the fallback.
+- [ ] The root file's map sends a change touching state, a contract, data,
+      security or verification to `.agents/knowledge/INDEX.md` and the cards it
+      links, and a review on request to the reviewer, installed from
+      `.agents/agents/knowledge-reviewer.md` in the assistant's agent folder.
 - [ ] `docs/references.md`: only entries that changed or confirmed a decision,
       each stating what you do differently on purpose.
 - [ ] `docs/roadmap.md`: collisions, what must be decided first, closed-by-
@@ -868,10 +872,9 @@ The short one. Run it before you report, every time.
       undone. Every new record — entry, decision row, roadmap item — has an id
       from `bundle.py id`, not a number.
 - [ ] Where the change touched state, a contract, data, security or
-      verification, the reviewer saw the plan before the design decision and
-      the diff before claiming done, with at most two re-reviews each; or,
-      without one, the cards were applied, their checks ran, and the report
-      says the review was not isolated.
+      verification, the cards the index links were applied before the design
+      decision and their checks ran before claiming done; a review asked for
+      ran on the diff, with at most two re-reviews.
 - [ ] Any structural decision you declined to take is stated plainly in the
       report, where the human cannot miss it.
 - [ ] Nothing of somebody else's was swept into your change.
@@ -945,7 +948,7 @@ Reads:
 - method/prompt-context.md §Engineering standards §20. Nothing private travels, directly or by reconstruction
 
 and `knowledge/INDEX.md` only when the change touches state, a contract, data,
-security or verification and no reviewer can run.
+security or verification.
 
 **Open with step 0's six-line brief, and with any question you cannot answer by
 reading.** Ask those in the same message as the brief, each with the default you
@@ -959,11 +962,10 @@ would **not** take and why. Then ask me — before writing anything — only the
 decisions that are genuinely mine, all at once, each option priced in this
 repo's own units, with your recommendation first.
 
-When the change touches state, a contract, data, security or verification, the
-knowledge is read by the reviewer, not by you: send it the plan before a design
-decision and the diff before claiming done (*The review, in a fresh context*,
-step 4), fix only its findings, at most two re-reviews. Without a reviewer, look
-the change up in the knowledge index and open only the cards it links. When this
+When the change touches state, a contract, data, security or verification, look
+it up in the knowledge index before a design decision and open only the cards it
+links; run their checks before claiming done. A review by the reviewer subagent
+runs only when I ask for it (*The review, in a fresh context*, step 4). When this
 repository states an invariant that contradicts a note, follow the repository and
 say in the report which note gave way. A typo, a text or a local rename consults
 nothing.

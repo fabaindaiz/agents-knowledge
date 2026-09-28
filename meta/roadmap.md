@@ -106,7 +106,7 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
 - **`i-5ed7e8-715654` · Remove the one-time migration and the deprecated `digest` alias.** The migration
   (`meta/migrations/`) and its CI step are deleted in 0.0.23, the tag keeps them; `bundle.py digest
   --check` goes once every carrier's audit calls `verify`. *Collides with:* carriers' audits.
-- **`i-5ed7e8-863fb1` · Run the coding session in phases with subagents.** *Decided by pilot-6's registered rule (2026-09-28): the review in a subagent is the default path, not an option for large changes, because the other-task cost stayed above ×1.8.* Plan with a small context;
+- **`i-5ed7e8-863fb1` · Run the coding session in phases with subagents.** *Decided by pilot-6's registered rule (2026-09-28): the review in a subagent is the default path, not an option for large changes, because the other-task cost stayed above ×1.8.* *Reversed by pilot-7 the same day (`evals/REPORT.md` §4.9): by default the reviewer cost about ×8 against the unaided session, for the same discriminating passes as 0.0.22's wiring at a third of that; the user chose to keep it on request only, diff review only, and to re-measure (pilot-8) before tagging.* Plan with a small context;
   an optional design review of the plan by a subagent holding only the cards the plan touches; build
   with the full repository and no knowledge loaded; a review of the diff by principle, in a subagent
   that must cite evidence from the repository that a note's precondition holds before it reports a
