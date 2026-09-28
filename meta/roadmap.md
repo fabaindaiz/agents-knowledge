@@ -65,8 +65,15 @@ generated. Nothing leaves the candidate queue by age. The user is the sole autho
 
 ## Next
 
-Planned for 0.0.23. Its release reuses the build: what is derivable from a note's fields is generated.
+Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-1ac328` · Cut the main thread's cost of a consulting session below twice the unaided one.**
+  0.0.23 was tagged at ×2.34 on the non-trivial tasks (pilot-8, `evals/REPORT.md` §4.10), past its own line
+  of ×2.3, by the user's decision. The author now reads `knowledge/INDEX.md` whole (about 22 thousand
+  characters, carried in every later turn) to reach one or two cards, and takes about half as many calls
+  again as without the bundle. Candidates, each with a prediction before measuring: an entry file that
+  holds only the *about to do* lookup, the phase guide moved out; the card's check run once, not re-read.
+  Measured with the same six tasks. *Collides with:* the INDEX template, `render_index`, the coding budget.
 - **`i-5ed7e8-1a57cc` · One lookup reaches one note's summary, without loading a whole area index.** Measured by pilot-6
   (`evals/REPORT.md` §4.8): with the card first, most normal trials opened an area index of tens of
   thousands of characters to read one row, and the cost rose above the v21 wiring's. The build can write
@@ -98,7 +105,8 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
   banner goes in as a heading in a `.md` whose first line is a thematic break with no closing `---`, and
   shifts a Python encoding line after a shebang; `note-state` moves the file before the principle check
   refuses, so a refused move is left half done; the steps 3 and 4 of the session loop still cite full notes
-  as background. *Collides with:* `bundle.py`, `release.py`, their tests.
+  as background; the working invocation's `Reads:` does not reach the *Done* checklist it asks to be run
+  before every report (older than 0.0.23; adding it costs the coding session more than its budget allows). *Collides with:* `bundle.py`, `release.py`, their tests.
 - **`i-5ed7e8-0ae753` · Trim the update and bootstrap sessions.** The update's `Reads:` names
   `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700
   estimated tokens); the bootstrap states the minting instructions twice; `knowledge/OPEN.md` is about

@@ -326,3 +326,7 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   ×2.3); the three discriminating tasks passed at least 4 of 6 times (refuted at half or fewer); at most
   one of the 12 `bundle_v23b` trials calls the reviewer. *Decision:* holding, 0.0.23 is tagged; refuted,
   it is not, and the result goes to the user before anything else changes.
+- **2026-09-28, pilot-8 as decided.** The cost prediction was refuted (×2.34 against a line at ×2.3), the
+  other three held. The result went to the user, who decided to tag 0.0.23 anyway, with the refutation
+  stated in its changelog: a deviation from the registered decision, taken explicitly. The tagged release
+  adds unmeasured wording fixes (`REPORT.md` §4.10).

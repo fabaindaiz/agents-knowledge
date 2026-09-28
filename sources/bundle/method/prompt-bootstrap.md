@@ -289,11 +289,14 @@ wins and the area file is wrong.
 instruction file's map gets one line, in the repository's own words: *when a
 change touches state, a contract, data, security or verification, look it up in
 `.agents/knowledge/INDEX.md` before a design decision and open only the cards it
-links; apply each (its Applies if, Not when and check), and open a full note only
-when a card's boundary is unclear here; where this repository states an
-invariant that contradicts a note, follow the repository and say so. When asked
-for a review in a fresh context, give the diff to the `knowledge-reviewer`
-subagent and wait for its answer.* **Install the reviewer**: copy
+links; decide each from its Applies if and Not when, run its check before
+claiming done, and open a full note only when a card's boundary is unclear here;
+where this repository states an invariant that contradicts a note, follow the
+repository and say so. Only when the user asks for a review in a fresh context or
+names the reviewer, give the diff to the `knowledge-reviewer` subagent and wait
+for its answer; when a change deletes or rewrites stored data, moves money or
+touches authentication and none was asked for, offer one in the report, in one
+line.* **Install the reviewer**: copy
 `.agents/agents/knowledge-reviewer.md` into the assistant's agent folder (Claude
 Code: `.claude/agents/`); every release regenerates it, and the update copies it
 again. Without the line the knowledge
@@ -540,7 +543,8 @@ Before claiming done, run the check of every card this change relied on (its
 *Check* line, in `.agents/knowledge/cards/`), and say in the report which ran.
 
 **A document that tells an agent what to run is verified by running it.** When
-the change is to a procedure, a runbook, an invocation or a checklist, follow it
+the change alters what a procedure, a runbook, an invocation or a checklist tells
+its reader to run, follow it
 command by command in a scratch copy, as its reader would, before calling it
 done: reading it again finds what the author meant, running it finds what it
 says. An instruction that cannot be followed as written is a defect of the
@@ -548,7 +552,8 @@ change.
 
 #### The review, in a fresh context
 
-**On request only.** When the user asks for a review in a fresh context, the
+**On request only.** When the user asks for a review in a fresh context or names
+the reviewer, the
 last thing before claiming done is a review by the reviewer subagent, installed
 from `.agents/agents/knowledge-reviewer.md` (in Claude Code,
 `.claude/agents/knowledge-reviewer.md`). Give it the diff and one line of intent,
@@ -561,7 +566,8 @@ asked for, the report offers one, in one line; it does not run it.
 
 - **Fix the findings and nothing else**, then send only what changed for a
   second review. **At most two re-reviews**: what is still open after them goes
-  to the user as a decision, not into a third round.
+  to the user as a decision, not into a third round. The re-reviews belong to
+  the review that was asked for; none runs without one.
 - A finding you reject is reported with the evidence that rejects it.
 - Where no subagent can run (another assistant, a restricted session), do the
   same here, in order: the card, the evidence, the check; and say in the report
@@ -874,7 +880,9 @@ The short one. Run it before you report, every time.
 - [ ] Where the change touched state, a contract, data, security or
       verification, the cards the index links were applied before the design
       decision and their checks ran before claiming done; a review asked for
-      ran on the diff, with at most two re-reviews.
+      ran on the diff, with at most two re-reviews; and none asked for, a change
+      that deletes or rewrites stored data, moves money or touches
+      authentication offered one in its report.
 - [ ] Any structural decision you declined to take is stated plainly in the
       report, where the human cannot miss it.
 - [ ] Nothing of somebody else's was swept into your change.
@@ -964,8 +972,11 @@ repo's own units, with your recommendation first.
 
 When the change touches state, a contract, data, security or verification, look
 it up in the knowledge index before a design decision and open only the cards it
-links; run their checks before claiming done. A review by the reviewer subagent
-runs only when I ask for it (*The review, in a fresh context*, step 4). When this
+links; run their checks before claiming done. The reviewer subagent runs only
+when I ask for a review in a fresh context or name it (*The review, in a fresh
+context*, step 4); when a change deletes or rewrites stored data, moves money or
+touches authentication and I did not ask, offer one in the report, in one line.
+When this
 repository states an invariant that contradicts a note, follow the repository and
 say in the report which note gave way. A typo, a text or a local rename consults
 nothing.

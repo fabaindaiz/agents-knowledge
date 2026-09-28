@@ -420,6 +420,30 @@ a trial whose bundle differs from the plan's.
 **What it decides**, by the rule registered before the run: the candidate is not tagged until the cause is
 found and fixed. The cause is found; the fix is a design decision recorded in `meta/roadmap.md`.
 
+### 4.10 The 0.0.23 candidate as tagged: cards by the author, the reviewer on request (pilot-8, 2026-09-28)
+
+Registered in `PROTOCOL.md` before any trial, on pilot-7's six tasks, model, repetitions, isolation and
+tools, with a new seed: 24 trials, all valid, all on the frozen candidate (the harness now checks each
+trial's bundle). `bundle_v23b` has the author look the change up in the index and open only the cards it
+links; the reviewer subagent is installed and runs only when asked, and no task prompt asks.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | `bundle_v23b` / `minimal` | Prediction |
+|---|---:|---|
+| trivial tasks (2) | ×0.95 [0.86, 1.04] | at most ×1.2: **holds** |
+| other tasks (4) | ×2.34 [1.85, 2.79] | at most ×2, refuted above ×2.3: **refuted**, by a small margin |
+
+Per task, the other tasks cost ×1.6 to ×3.0. **The rest holds:** the three discriminating tasks passed every
+time with the bundle and never without it; no trial called the reviewer; no trial opened an area index or a
+full note, against 6 of 8 area indexes under 0.0.22's wiring; half of the reports named a check. Against the
+released 0.0.22 on the same tasks (pilot-6, ×2.78), the candidate costs less and passes at least as often.
+
+**What it decided.** The registered rule was not to tag a refuted candidate. The user decided to tag it,
+with the refutation stated in its changelog and the cost below ×2 left as work (`meta/roadmap.md`): a
+deviation from the rule, taken explicitly and recorded in `PROTOCOL.md`. The tagged release also carries
+wording fixes from a second adversarial review made after this run (the root file's line says to run each
+card's check and to offer a review for irreversible changes; one trigger phrase for the reviewer); they
+were not measured.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -512,6 +536,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-09-28** — pilot-8 (§4.10): the changed candidate misses its cost line by a small margin and holds the other three predictions; tagged by the user's explicit decision, recorded as a deviation.
 - **2026-09-28** — pilot-7 (§4.9): the 0.0.23 candidate's reviewer subagent refutes its cost prediction; the cards reach one card per lookup; a mid-run rebuild is reported as a deviation, with figures first drafted by repetition and recomputed by the bundle each trial received.
 - **2026-09-25** — scope stated at the top: this study measures instruction transfer, because its tasks are written from the notes; the general-performance question moved to Study 2 (`PROTOCOL-general.md`, `i-5ed7e8-bf5663`).
 - **2026-09-24** — session closed: the per-note evidence is recorded in `.agents/tracking/experiments.md` and the follow-up work in `.agents/roadmap.md` (the confirmatory run under `i-5ed7e8-0d9b6a`; overlapping notes under `i-5ed7e8-d4f710`; per-note summaries under `i-5ed7e8-a89859`; skills packaging under `i-5ed7e8-8623a8`).

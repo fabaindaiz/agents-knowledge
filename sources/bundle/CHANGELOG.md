@@ -66,6 +66,12 @@ with the review by default, refuted the second at about 8 times; the same three 
 again on this one, with a fourth: no session calls the reviewer without being asked (refuted if more
 than one in the run does).
 
+**Measured** on this release before it was tagged, in the home's experiments: trivial tasks cost about
+the same as without the bundle (holds); the others about 2.3 times, just past the line (**refuted**, by a
+small margin, and tagged anyway by decision, as it costs less than 0.0.22 and passes at least as often);
+the discriminating tasks passed every time (holds); no session called the reviewer unasked (holds). The
+wording of the root file's line was tightened after the measurement and is not measured.
+
 ## [0.0.22] - 2026-09-25
 
 The first release under Semantic Versioning. Releases before it were numbered `v20`, `v21`; the home

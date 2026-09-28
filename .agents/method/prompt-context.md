@@ -1037,10 +1037,13 @@ Language conventions for code and for docs.
 A table. Questions in the words someone would actually ask. One row is always:
 when a change touches state, a contract, data, security or verification, look it
 up in `.agents/knowledge/INDEX.md` before a design decision and open only the
-cards it links; apply each (claim, where it stops applying, check), open a full
-note only when its boundary is unclear here, and where this repository states an
-invariant that contradicts a note, follow the repository and say so. A review in
-a fresh context, on request, goes to the `knowledge-reviewer` subagent.
+cards it links; decide each from its claim and where it stops applying, run its
+check before claiming done, open a full note only when its boundary is unclear
+here, and where this repository states an invariant that contradicts a note,
+follow the repository and say so. Only when the user asks for a review in a fresh
+context or names the reviewer does the diff go to the `knowledge-reviewer`
+subagent; a change that deletes or rewrites stored data, moves money or touches
+authentication offers one in its report when none was asked for.
 ```
 
 **What does not go here:** any number that has an owner document, anything the
