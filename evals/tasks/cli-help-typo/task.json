@@ -1,0 +1,9 @@
+{
+  "id": "cli-help-typo",
+  "family": "trivial",
+  "notes": [],
+  "visible_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+  "hidden_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "_hidden_eval_tests", "-t", "."],
+  "fairness": "The request names the word and where it is: every place it appears in the command's help. It touches no state, contract, data, security or verification, and no note bears on it.",
+  "naive": "Fixes the first occurrence and leaves the second option's help misspelt."
+}

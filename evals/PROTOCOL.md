@@ -284,3 +284,20 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   column, the trigger wording in the invocation, and retired notes and the home's records (roadmap,
   tracking, literature) no longer shipped. A run from now on measures 0.0.22, not the v0.0.21 the pilots
   carried. The hypotheses, arms and analysis are unchanged.
+- **2026-09-28, exploratory — pilot-6, the cost smoke test of 0.0.22.** Registered before any trial. It
+  measures cost, turns and output tokens only, and claims nothing about efficacy (roadmap
+  `i-5ed7e8-c4b9c7`). *Arms:* `minimal`; `bundle` (0.0.22 with the v21 wiring paragraph, `ROUTING`); and a
+  new arm, `bundle_v22`, the same bundle with the 0.0.22 wiring (`ROUTING_V22`: consult only when a change
+  touches state, a contract, data, security or verification; the card before the note; the repository
+  before the note). Both texts are frozen in the plan. *Tasks:* the three that discriminated in pilot-5
+  (`contacts-second-source-l1`, `contacts-second-source-l2`, `refund-webhook-l2`), the neutral
+  `inventory-csv-export`, and two tasks of a new family, `trivial`, where the 0.0.22 wiring says to
+  consult nothing (`cli-help-typo`, `report-label-rename`; both graders seen to fail and pass). The
+  pilots' model, two repetitions, the pilots' configuration isolation (`--config-dir default`, degraded,
+  as in the first deviation above). *Predictions* (`.agents/CHANGELOG.md` [0.0.22]): `bundle_v22` /
+  `minimal` cost at most ×1.2 on trivial tasks (refuted above ×1.4), at most ×1.5 on the others (refuted
+  above ×1.8), and the three discriminating tasks still passed under `bundle_v22`. *Decision rule for
+  0.0.23:* at most ×1.5 on the others, and the phased session is designed for adherence and verification,
+  its review optional on small changes; above ×1.8, and the review in a subagent becomes the default path.
+  *Directive adherence* (`i-5ed7e8-a2f016`) is counted on the same transcripts: bundle reads per arm and
+  task group, and whether the final report mentions a check. Analysis: `evals/cost_smoke.py`.

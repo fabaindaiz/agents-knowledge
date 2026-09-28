@@ -48,11 +48,14 @@ SOURCES = ROOT / "sources" / "notes"
 HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
-CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo"]
+CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22"],
+    # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
+    # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
+    "trivial": ["none", "minimal", "bundle", "bundle_v22"],
 }
 
 ROUTING = """
@@ -62,6 +65,20 @@ ROUTING = """
 is wrong. Before a design decision, and before claiming the work is done, look up what you are about
 to do in the index and read only the notes it points to.
 """
+
+# The wiring a carrier's root file carries from release 0.0.22 (the bootstrap's phase 4), in the words of the
+# bootstrap: consult only when the change can be affected, the card before the note, the repository before the
+# note. `bundle_v22` is `bundle` with this paragraph instead of ROUTING; the plan freezes both texts.
+ROUTING_V22 = """
+## Engineering knowledge
+
+When a change touches state, a contract, data, security or verification, consult
+`.agents/knowledge/INDEX.md` before a design decision and before claiming done; apply each card it
+routes to (claim, where it stops applying, check), open a full note only when its boundary is unclear
+here, and where this repository states an invariant that contradicts a note, follow the repository and
+say so.
+"""
+ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22}
 
 ORACLE_HEADER = """
 ## Engineering note
@@ -217,8 +234,8 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated"):
-        agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTING
+    elif condition in ("bundle", "ablated", "bundle_v22"):
+        agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws)
         if condition == "ablated":
             info["ablation"] = ablate(ws / ".agents", task["notes"])
@@ -544,6 +561,7 @@ def cmd_plan(args) -> int:
         "workspace_base": args.workspace_base,
         "max_turns": args.max_turns, "timeout_s": args.timeout, "seed": args.seed, "reps": args.reps,
         "bundle_digest": digest[0] if digest else None, "bundle_version": bundle_version, "repo_head": head, "repo_dirty": dirty,
+        "routing": ROUTINGS,
         "tasks": {t["id"]: {"family": t["family"], "level": t.get("level", "L0"), "trap": t.get("trap", t["id"]),
                             "notes": t.get("notes", []),
                             "placebo_note": t.get("placebo_note"), "hash": tree_hash(Path(t["dir"])),

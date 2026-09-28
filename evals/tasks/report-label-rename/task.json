@@ -1,0 +1,9 @@
+{
+  "id": "report-label-rename",
+  "family": "trivial",
+  "notes": [],
+  "visible_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+  "hidden_test_cmd": ["python3", "-m", "unittest", "discover", "-s", "_hidden_eval_tests", "-t", "."],
+  "fairness": "The request names the label and both outputs that show it. It touches no state, contract, data, security or verification, and no note bears on it.",
+  "naive": "Renames the label in the table header and leaves the summary line on the old label."
+}
