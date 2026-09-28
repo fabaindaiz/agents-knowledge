@@ -26,9 +26,12 @@ from analyze import cost_of, geo_ratio, is_infra_failure, load  # noqa: E402
 
 DISCRIMINATING = ("contacts-second-source-l1", "contacts-second-source-l2", "refund-webhook-l2")
 # Written before the run, from `.agents/CHANGELOG.md` [0.0.22] and `meta/roadmap.md` (i-5ed7e8-c4b9c7).
-PREDICTIONS = {"trivial": (1.2, 1.4), "normal": (1.5, 1.8)}
+PREDICTIONS = {
+    "bundle_v22": {"trivial": (1.2, 1.4), "normal": (1.5, 1.8)},   # .agents/CHANGELOG.md [0.0.22], pilot-6
+    "bundle_v23": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},   # .agents/CHANGELOG.md [0.0.23], pilot-7
+}
 METRICS = ("cost", "turns", "out_tokens")
-ARMS = ("minimal", "bundle", "bundle_v22")
+ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23")
 CHECK_MENTION = re.compile(r"(?i)\b(verify by|the check|its check|card)\b")
 
 
@@ -83,18 +86,20 @@ def main(argv: list[str] | None = None) -> int:
          "| Group | Contrast | Metric | Ratio | 95% CI | Tasks | Prediction | Verdict |",
          "|---|---|---|---:|---|---:|---|---|"]
     for group, tasks in groups.items():
-        for a_arm, b_arm in (("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
+        for a_arm, b_arm in (("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
             for metric in METRICS:
                 cell: dict = {}
                 for r in valid:
                     cell.setdefault((r["task"], r["condition"]), []).append(cost_of(r)[metric])
                 g = geo_ratio(cell, a_arm, b_arm, tasks)
                 pred, verdict = "", ""
-                if (a_arm, b_arm, metric) == ("bundle_v22", "minimal", "cost") and group in PREDICTIONS and g:
-                    at_most, refuted_above = PREDICTIONS[group]
+                if b_arm == "minimal" and metric == "cost" and group in PREDICTIONS.get(a_arm, {}) and g:
+                    at_most, refuted_above = PREDICTIONS[a_arm][group]
                     pred = f"≤ ×{at_most} (refuted above ×{refuted_above})"
                     verdict = "holds" if g[0] <= at_most else ("refuted" if g[0] > refuted_above else "neither")
-                row = (f"×{g[0]:.2f}", f"[{g[1]:.2f}, {g[2]:.2f}]", str(g[3])) if g else ("—", "—", "0")
+                if g is None:
+                    continue
+                row = (f"×{g[0]:.2f}", f"[{g[1]:.2f}, {g[2]:.2f}]", str(g[3]))
                 L.append(f"| {group} | {a_arm} / {b_arm} | {metric} | {row[0]} | {row[1]} | {row[2]} | {pred} | {verdict} |")
     L += ["", "## Pass rates (hidden tests)\n", "| Task | " + " | ".join(ARMS) + " |", "|---|" + "---:|" * len(ARMS)]
     for task in sorted(plan["tasks"]):
@@ -109,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
           "| Group | Arm | Trials | Read the bundle | Index | Area index | Notes opened (mean) | Mentions a check |",
           "|---|---|---:|---:|---:|---:|---:|---:|"]
     for group, tasks in groups.items():
-        for arm in ("bundle", "bundle_v22"):
+        for arm in ("bundle", "bundle_v22", "bundle_v23"):
             rs = [adherence(run, r) for r in valid if r["task"] in tasks and r["condition"] == arm]
             if not rs:
                 continue

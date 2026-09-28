@@ -8,6 +8,49 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-09-28
+
+Measured before it was built: a cost smoke test of 0.0.22 (the home's `evals/REPORT.md`, pilot-6) found that
+reading a summary first sent sessions into whole area indexes, at about 2.8 times the cost of working without
+the bundle, while the knowledge still made the difference on the tasks where the unaided agent fails.
+
+### Changed
+
+- **The coding session runs in phases**: plan, build, verify, close. On a change that touches state, a
+  contract, data, security or verification, the knowledge is read by a **reviewer subagent in a context of
+  its own**, not by the author: the plan before a design decision and the diff before claiming done. It
+  cites evidence from the repository for each card and runs its check; the author fixes only its findings,
+  with at most two re-reviews. Without a subagent, the same steps run in one context and the report says so.
+- **One lookup reaches one card.** Each note has a card of a few hundred characters in `knowledge/cards/`,
+  linked from `knowledge/INDEX.md` by phase and by what you are about to do; the area indexes are for
+  browsing.
+- A card shows **Applies if** (the precondition, and where the fact that decides it is usually found) when
+  its note has one, and names the notes that **share its principle**; the area indexes list those groups.
+- The root file's knowledge line sends reviews to the reviewer; the bootstrap installs it and the update
+  refreshes it (`.agents/agents/knowledge-reviewer.md`, copied into the assistant's agent folder).
+- Every file of the release says in its first lines that it is generated, and is never edited here: an
+  improvement is a candidate in `tracking/`.
+- A document that tells an agent what to run is verified by running it (the session loop's verify step).
+- Two subsections the update never used left the section it reads.
+
+### Added
+
+- `.agents/agents/knowledge-reviewer.md`, the reviewer's definition, generated from the knowledge topics.
+- Budgets for the reviewer's load and for the largest card (`bundle.py report --check`).
+
+### Fixed
+
+- The privacy rule that fails a record id beside a domain noun read the bundle's word *card* as a payment
+  card.
+- A release as it arrives is refused when it carries anything in `incoming/`.
+
+### Predictions
+
+Written before measuring, to be tested on this release with the pilots' model (pilot-7 in the home's
+`evals/`), all arms with subagents available: on trivial tasks at most 1.2 times the cost of working without
+the bundle (refuted above 1.4); on the others at most 2 times (refuted above 2.3); the three tasks that
+discriminated in the pilots still passed with the bundle (refuted at 3 of 6 or fewer).
+
 ## [0.0.22] - 2026-09-25
 
 The first release under Semantic Versioning. Releases before it were numbered `v20`, `v21`; the home

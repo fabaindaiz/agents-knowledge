@@ -48,14 +48,14 @@ SOURCES = ROOT / "sources" / "notes"
 HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
-CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22"]
+CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23"],
 }
 
 ROUTING = """
@@ -78,7 +78,17 @@ routes to (claim, where it stops applying, check), open a full note only when it
 here, and where this repository states an invariant that contradicts a note, follow the repository and
 say so.
 """
-ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22}
+# From 0.0.23 the wiring sends reviews to a reviewer subagent, which the bootstrap installs in the carrier's
+# agent folder; `bundle_v23` installs it the same way (pilot-7).
+ROUTING_V23 = """
+## Engineering knowledge
+
+When a change touches state, a contract, data, security or verification, have the `knowledge-reviewer`
+subagent review the plan before a design decision and the diff before claiming done, and fix its
+findings; without it, consult `.agents/knowledge/INDEX.md` and apply only the cards it links; where this
+repository states an invariant that contradicts a note, follow the repository and say so.
+"""
+ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23}
 
 ORACLE_HEADER = """
 ## Engineering note
@@ -234,9 +244,13 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated", "bundle_v22"):
+    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23"):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws)
+        reviewer = ws / ".agents/agents/knowledge-reviewer.md"
+        if condition == "bundle_v23" and reviewer.is_file():
+            (ws / ".claude/agents").mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(reviewer, ws / ".claude/agents/knowledge-reviewer.md")
         if condition == "ablated":
             info["ablation"] = ablate(ws / ".agents", task["notes"])
     elif condition == "oracle":
@@ -439,7 +453,7 @@ def invoke(plan: dict, ws: Path, prompt: str, settings_path: Path, transcript: P
            "--strict-mcp-config",
            "--disable-slash-commands",
            "--no-session-persistence",
-           "--tools", *(TOOLS if tools is None else (tools or [""]))]
+           "--tools", *(plan.get("tools", TOOLS) if tools is None else (tools or [""]))]
     if plan.get("effort"):
         cmd += ["--effort", plan["effort"]]
     if plan["config_dir"] == DEFAULT_CONFIG:
@@ -562,6 +576,7 @@ def cmd_plan(args) -> int:
         "max_turns": args.max_turns, "timeout_s": args.timeout, "seed": args.seed, "reps": args.reps,
         "bundle_digest": digest[0] if digest else None, "bundle_version": bundle_version, "repo_head": head, "repo_dirty": dirty,
         "routing": ROUTINGS,
+        "tools": TOOLS + (["Agent"] if args.subagents else []),
         "tasks": {t["id"]: {"family": t["family"], "level": t.get("level", "L0"), "trap": t.get("trap", t["id"]),
                             "notes": t.get("notes", []),
                             "placebo_note": t.get("placebo_note"), "hash": tree_hash(Path(t["dir"])),
@@ -728,6 +743,7 @@ def main(argv=None) -> int:
     p.add_argument("--config-dir", default="~/.config/agent-guides/eval-claude")
     p.add_argument("--workspace-base")
     p.add_argument("--claude")
+    p.add_argument("--subagents", action="store_true", help="give every arm the subagent tool, as a carrier has it (pilot-7)")
     for name in ("run", "probe", "status"):
         s = sub.add_parser(name)
         s.add_argument("run")

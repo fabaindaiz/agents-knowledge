@@ -301,3 +301,13 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   its review optional on small changes; above ×1.8, and the review in a subagent becomes the default path.
   *Directive adherence* (`i-5ed7e8-a2f016`) is counted on the same transcripts: bundle reads per arm and
   task group, and whether the final report mentions a check. Analysis: `evals/cost_smoke.py`.
+- **2026-09-28, exploratory — pilot-7, the cost of the 0.0.23 candidate.** Registered before any trial, as
+  pilot-6 was, on the same six tasks, model, repetitions and isolation. *Arms:* `minimal` and a new arm,
+  `bundle_v23`: the release candidate with the 0.0.23 wiring (`ROUTING_V23`: reviews go to the
+  `knowledge-reviewer` subagent, installed in the workspace's `.claude/agents/` as the bootstrap installs it).
+  **Every arm has the subagent tool**, as a carrier's session has it, so the tool alone does not separate the
+  arms; the tool list is frozen in the plan. *Predictions* (`.agents/CHANGELOG.md` [0.0.23]): `bundle_v23` /
+  `minimal` cost at most ×1.2 on trivial tasks (refuted above ×1.4), at most ×2 on the others (refuted
+  above ×2.3), and the three discriminating tasks passed at least 4 of 6 times (refuted at 3 of 6 or fewer).
+  *Decision:* refuted, and the candidate is not tagged until the cause is found and fixed; holding, it is
+  tagged after the adversarial review. Analysis: `evals/cost_smoke.py`.
