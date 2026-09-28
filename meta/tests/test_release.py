@@ -453,8 +453,10 @@ class Carry(Base):
 
     def test_a_carrier_on_the_old_layout_is_converted_and_keeps_its_own_fields(self) -> None:
         repo = make_legacy(self.root, "old")
+        with self.assertRaisesRegex(self.R.RefusedError, "after `release.py gather`"):
+            self.splice(repo)
 
-        actions = self.splice(repo)
+        actions = self.splice(repo, taken=[])
 
         agents = repo / ".agents"
         own = B.read_carrier(agents)

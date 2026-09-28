@@ -1578,7 +1578,7 @@ elsewhere is another repository's; it is cleared, not believed.) Rebuilding on t
 - one changelog entry, naming what was skipped and why
 - the artifacts' *guarantees*, in whatever shapes this repo uses for them
 
-### Adopting into a repository that already works
+## Adopting into a repository that already works
 
 This is the common case and the one that goes wrong. Before writing anything,
 produce this table and **show it**. It is the entire negotiation:
@@ -1608,7 +1608,7 @@ you are replacing, and you should stop and re-read principle 19.
   next update reads both in `../carrier.toml` (`../README.md`, *The fields that are
   this repository's*).
 
-### Reordering without breaking
+## Reordering without breaking
 
 Sometimes the host repository really is disordered, and the honest move is to
 say so. Even then:

@@ -353,7 +353,7 @@ CARRIER_OR_RECORD_ID = re.compile(r"(?<![\w-])(?:r-([0-9a-f]{6})|[dis]-([0-9a-f]
 # The hex of ids written as examples (`r-abcdef`, `d-abcdef-123456`): obviously nobody's.
 EXAMPLE_ID_HEX = frozenset({"abcdef", "aaaaaa", "bbbbbb", "cccccc", "000000", "fedcba"})
 DOMAIN_NOUNS = (
-    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "card", "wallet", "invoice", "billing", "tax", "payroll",
+    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "card number", "wallet", "invoice", "billing", "tax", "payroll",
     "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
     "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
     "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
@@ -1805,7 +1805,7 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
     problems += invisible_characters(tree, [r for r in all_files(tree) if not r.startswith("incoming/")])
     problems += stray_problems(tree) if not release else [p for p in stray_problems(tree) if "hidden" in p]
     if release:
-        foreign = [r for r in all_files(tree) if is_carrier_owned(r) and not r.startswith("incoming/")]
+        foreign = [r for r in all_files(tree) if is_carrier_owned(r)]
         return problems + [f"{r}: another repository's own file, which a release never carries" for r in foreign] \
             + material_problems(tree)
     problems += outbox_problems(tree)

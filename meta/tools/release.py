@@ -1072,6 +1072,11 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, t
     if write and not allow_dirty and (dirty := _dirty(repo)):
         raise B.DirtyTreeError(f"{repo}: uncommitted bundle files {dirty}; commit them or pass allow_dirty")
     legacy = B.is_legacy(target)
+    if legacy and taken is None:
+        # Converting resets the old tracking/ into an empty outbox: rows gather found there and intake did not
+        # take would be lost. Offered by a carrier's harvest, 0.0.23.
+        raise RefusedError(f"{repo}: a carrier on the layout before 0.0.22 is converted only after `release.py gather` and "
+                           "`intake`, with `--taken` naming that gather: its old tracking rows would be lost otherwise")
     own = legacy_own_fields(target) if legacy else None
     ships, present = set(B.shipped(source)) | {B.CHECKSUMS}, set(B.all_files(target))
     keep = {r for r in present if B.is_carrier_owned(r) and not (legacy and r.startswith("tracking/"))}
@@ -1311,7 +1316,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             for line in B._scope_report(scope, "written"):
                 print(line)
             for repo in scope:
-                actions = splice(repo, args.write, backup, taken=taken.get(repo.name), allow_dirty=args.allow_dirty, scope=scope.repos)
+                actions = splice(repo, args.write, backup, taken=taken.get(repo.name, [] if args.taken else None), allow_dirty=args.allow_dirty, scope=scope.repos)
                 if not actions:
                     print(f"{repo.name}: the home itself, left alone")
                     continue

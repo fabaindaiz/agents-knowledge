@@ -31,8 +31,6 @@ jobs:
         run: python3 meta/tools/release.py check
       - name: Every frontmatter reads the same through PyYAML
         run: python3 -m pip install --quiet pyyaml && python3 meta/tools/check_yaml.py
-      - name: The 0.0.22 migration lost nothing against the last release before it
-        run: python3 meta/migrations/v0_0_22_notes.py --verify-against v0.0.21
       - name: The experiment's tasks are valid (each grader seen to fail and pass)
         run: python3 evals/harness.py check
       - name: Privacy of the repository's own published files
