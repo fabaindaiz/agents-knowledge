@@ -519,8 +519,15 @@ Two habits that carry the reasoning forward:
 
 ### 4. Verify — run the invariant test when you *claim* it, not when you think you touched it
 
-Before claiming done, run the check of every card this change relied on (the
-*Verify by* column of `.agents/knowledge/areas/`).
+Before claiming done, run the check of every card this change relied on (its
+*Check* line, in `.agents/knowledge/cards/`).
+
+**A document that tells an agent what to run is verified by running it.** When
+the change is to a procedure, a runbook, an invocation or a checklist, follow it
+command by command in a scratch copy, as its reader would, before calling it
+done: reading it again finds what the author meant, running it finds what it
+says. An instruction that cannot be followed as written is a defect of the
+change.
 
 The gate is the floor. The core invariant's own test — the seek comparison, the
 replay, the round trip, the wheel installed clean — is cheap relative to a
