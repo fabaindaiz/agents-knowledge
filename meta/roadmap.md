@@ -53,6 +53,12 @@ is a build rule over the original. Industry formats over home-grown ones. Everyt
 generated. Nothing leaves the candidate queue by age. The user is the sole author of commits and tags. A
 prediction is written before a measurement, and a refuted one is stated, not moved.
 
+**This machine's record of its carriers.** From 2026-09-28 the local manifest
+(`~/.config/agent-guides/carriers.toml`) holds, beside its list of paths, one record per carrier with its
+id, name, path and version, written by `release.py register` and `release.py carriers`; the tool refuses
+to write it inside a repository, and the names of private carriers are in the local private-terms list,
+so a leak of one fails the privacy check. Nothing of it is committed.
+
 **Waiting on the user:**
 
 1. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
@@ -191,10 +197,16 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 ## Blocked outside
 
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** Every carrier
-  registered in `meta/tracking/carriers.md` below 0.0.22, and the older ones listed there without ids.
-  Each receives 0.0.22 from a meta-session that has it open: `release.py splice` converts the layout
-  before 0.0.22 and keeps its own fields (checked on a scratch copy of one of them: nothing lost, its
-  own fields intact, `verify` green). *Blocked on:* a session with those repositories open.
+  registered in `meta/tracking/carriers.md` below 0.0.23, and the older ones listed there without ids.
+  Each receives the current release from a meta-session that has it open. First `release.py carriers`
+  shows, on this machine only, which repository each id is. A carrier on the layout before 0.0.22 is
+  converted only after `release.py gather` and `intake`, with `splice --taken` naming that gather (the
+  guard now also refuses a carrier the gather did not reach); its `check-local` reports no `SHA256SUMS`,
+  which that layout never had, until the splice writes one. A carrier on 0.0.22 whose outbox rows were
+  already taken in at 0.0.23's intake keeps them when spliced without that gather: its next harvest
+  offers them again, and intake lists them under *Offered again*, not twice in the queue. Both then
+  install the reviewer and rewrite the root file's knowledge line (0.0.23's changelog says how, since
+  their live update procedure predates it). *Blocked on:* a session with those repositories open.
 
 ## Closed by measurement
 
