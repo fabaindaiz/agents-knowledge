@@ -311,3 +311,8 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   above ×2.3), and the three discriminating tasks passed at least 4 of 6 times (refuted at 3 of 6 or fewer).
   *Decision:* refuted, and the candidate is not tagged until the cause is found and fixed; holding, it is
   tagged after the adversarial review. Analysis: `evals/cost_smoke.py`.
+- **2026-09-28, pilot-7 as run.** Two rounds of fixes were built into `.agents/` during the run, and the
+  harness copied the live bundle into each workspace: six of the eight `bundle_v23` trials on the
+  non-trivial tasks ran on the frozen candidate (`420ac5200289`), two on a later build. Reported apart in
+  `REPORT.md` §4.9; the verdict is the same over both. From this date the harness records each trial's
+  bundle digest and refuses a trial whose bundle is not the plan's.

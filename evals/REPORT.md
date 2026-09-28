@@ -380,6 +380,46 @@ in a subagent the default path, so the knowledge a review reads never enters the
 must be reachable without loading a whole area index. Both go to the roadmap; the full tables are
 `evals/cost_smoke.py` over the run.
 
+### 4.9 The cost of the 0.0.23 candidate: the reviewer in a subagent (pilot-7, 2026-09-28)
+
+Registered in `PROTOCOL.md` (Deviations) before any trial, on pilot-6's six tasks, model, repetitions and
+isolation: 24 trials, all valid. `bundle_v23` is the release candidate with the 0.0.23 wiring: a change that
+touches state, a contract, data, security or verification goes to the `knowledge-reviewer` subagent, the
+plan before a design decision and the diff before claiming done. Every arm has the subagent tool.
+Exploratory, as pilot-6.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | `bundle_v23` / `minimal` | Prediction |
+|---|---:|---|
+| trivial tasks (2) | ×0.99 [0.98, 1.00] | at most ×1.2: **holds** |
+| other tasks (4) | ×8.15 [6.77, 10.06] | at most ×2, refuted above ×2.3: **refuted** |
+
+**The trigger and the cards work; the reviewer is what costs.** No trivial trial opened the bundle (0 of 4)
+and none called the reviewer. On the others every trial called it, about twice (plan and diff), and only 1
+of 8 opened an area index (6 of 8 in pilot-6): one lookup now reaches one card. Counted from the
+transcripts, a trial with the bundle processed about seven times the context tokens of one without it,
+and those tokens split nearly evenly: **the reviewer, 45%** (a session of its own per review; the reviews of one
+trial took 7 to 35 calls between them, mostly reading the repository and running commands), and **the main thread, 55%**,
+about four times `minimal`'s own, from twice the calls (about 15 against 7: the plan written out for
+review, the findings fixed, the tests run again) at a larger context per call. Of the main thread's
+share, the author reading the index and cards itself, against the wiring, explains about a seventh, and
+calls made only to wait for the subagent about a twelfth.
+
+**The content effect holds, and the reviewer does not add to it here.** On the three discriminating tasks
+`minimal` passed 0 of 6 and `bundle_v23` 5 of 6, the same count as `bundle_v22` in pilot-6 at about a
+third of this cost. Six trials cannot show a difference in either direction; they show that the review,
+as designed, is not what makes these tasks pass.
+
+**Deviation.** Two rounds of fixes from the adversarial review were built into `.agents/` while the run
+was in progress, and the harness copies the live bundle into each workspace: of the eight `bundle_v23`
+trials on the other tasks, six ran on the frozen candidate and two on the candidate with the documents
+review applied (the reviewer's wording on checks that need a planted test, and the plan review's input).
+The ratio is ×8.4 over the six and ×7.2 over the two (per trial, ×4.6 and ×11.1); the verdict does not
+depend on it. The harness now records each trial's bundle digest and refuses
+a trial whose bundle differs from the plan's.
+
+**What it decides**, by the rule registered before the run: the candidate is not tagged until the cause is
+found and fixed. The cause is found; the fix is a design decision recorded in `meta/roadmap.md`.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -472,6 +512,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-09-28** — pilot-7 (§4.9): the 0.0.23 candidate's reviewer subagent refutes its cost prediction; the cards reach one card per lookup; a mid-run rebuild is reported as a deviation, with figures first drafted by repetition and recomputed by the bundle each trial received.
 - **2026-09-25** — scope stated at the top: this study measures instruction transfer, because its tasks are written from the notes; the general-performance question moved to Study 2 (`PROTOCOL-general.md`, `i-5ed7e8-bf5663`).
 - **2026-09-24** — session closed: the per-note evidence is recorded in `.agents/tracking/experiments.md` and the follow-up work in `.agents/roadmap.md` (the confirmatory run under `i-5ed7e8-0d9b6a`; overlapping notes under `i-5ed7e8-d4f710`; per-note summaries under `i-5ed7e8-a89859`; skills packaging under `i-5ed7e8-8623a8`).
 - **2026-09-24** — first version: pilots 1 and 2, the instrument defect, pilots 3 and 4 started.

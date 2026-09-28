@@ -612,6 +612,13 @@ def run_trial(plan: dict, tr: dict, run: Path, dry: bool) -> dict:
     tdir.mkdir()
     ws = tdir / "ws"
     info = prepare(task, tr["condition"], ws)
+    # The workspace copies the live `.agents/`, so a rebuild during a run would change the arm mid-run
+    # (pilot-7, 2026-09-28): each trial records the digest it got, and one that differs is not run.
+    if (ws / ".agents/SHA256SUMS").exists():
+        info["bundle_digest"] = hashlib.sha256((ws / ".agents/SHA256SUMS").read_bytes()).hexdigest()[:12]
+        if plan.get("bundle_digest") and info["bundle_digest"] != plan["bundle_digest"]:
+            raise RuntimeError(f"the bundle is {info['bundle_digest']}, the plan froze {plan['bundle_digest']}; "
+                               "restore it or write a new plan")
     settings_path = tdir / "settings.json"
     settings_path.write_text(json.dumps(trial_settings(ws), indent=1))
     rec = {**tr, "started": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "prepared": info}
