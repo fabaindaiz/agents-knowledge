@@ -20,48 +20,44 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
-**State on 2026-09-28.** Release 0.0.22 is on `main` with its tags (`v0.0.20` to `v0.0.22`); CI passed.
-Two carriers hold 0.0.22 (this one and one converted on 2026-09-25); one is still on the layout before
-0.0.22, and the others are registered below it (*Blocked outside*). The history was rewritten so that the
-user is the sole author of every commit and tag (`AGENTS.md`). The history before `v0.0.20` exists only on
-the local branch `backup/pre-flatten`, never tagged or pushed.
+**State on 2026-09-28, at the close of 0.0.23.** Release 0.0.23 is tagged (`v0.0.23`) and this
+repository is aligned on it, with the reviewer installed in `.claude/agents/`. The other carriers were not
+open in this session and stay on their versions (*Blocked outside*); one of them already had its outbox
+rows taken in at 0.0.23's intake, so its next splice passes `--taken` with that gather. The history before
+`v0.0.20` exists only on the local branch `backup/pre-flatten`, never tagged or pushed.
 
-**The research route, revised on 2026-09-28** against the release's own lessons and the literature added
-to `sources/references.md`, *Evidence on context files, skills and sessions*:
+**What 0.0.23 measured** (`evals/REPORT.md` §4.8–4.10, all exploratory, same six tasks and model):
 
-1. **Done on 2026-09-28:** the cost smoke test (pilot-6, `evals/REPORT.md` §4.8). The trigger holds on
-   trivial tasks (×1.0 of `minimal`, nothing read); on the others the cost is ×2.8, refuting 0.0.22's
-   prediction of ×1.5, because reading a summary first sends the agent into a whole area index. The content
-   effect holds (the three discriminating tasks: 0 of 6 without the bundle, 5 of 6 with it).
-2. **0.0.23, in this order:** the method's originals and its generated release, both marked
-   (`i-5ed7e8-c8b508`), as an identity transform; one lookup per note summary instead of a whole area
-   index (`i-5ed7e8-1a57cc`); the phased session, **with the review in a subagent as the default path**
-   (pilot-6's registered rule), a reviewer in a fresh context that runs the notes' checks
-   (`i-5ed7e8-863fb1`, `i-5ed7e8-89124e`) and whose definition is generated (`i-5ed7e8-290fce`); merging
-   overlapping notes by principle (`i-5ed7e8-d4f710`, `i-5ed7e8-95ac76`); `applies_if`
-   (`i-5ed7e8-d65a4c`); the cleanups (`i-5ed7e8-715654`, `i-5ed7e8-d3ee51`, `i-5ed7e8-0ae753`). A rerun of
-   pilot-6 on the release candidate tests the new cost predictions before the tag.
-3. **0.0.24:** compressing the method's release by build rules over the full originals
+| Run | Wiring | Non-trivial tasks, cost against unaided | Discriminating tasks passed |
+|---|---|---:|---|
+| pilot-6 | 0.0.22 (summary first) | ×2.78 | 5 of 6 |
+| pilot-7 | reviewer subagent by default | ×8.15 | 5 of 6 |
+| pilot-8 | cards by the author, reviewer on request (tagged) | ×2.34 | 6 of 6 |
+
+Trivial tasks cost the same as without the bundle in all three. pilot-8 missed its cost line (×2.3) by a
+small margin; the user decided to tag, and the changelog says so. Cutting the main thread's cost below ×2
+is `i-5ed7e8-1ac328`, the first item of *Next*.
+
+**The route from here:**
+
+1. **Next release:** `i-5ed7e8-1ac328` (cost), measured with a pilot on the same tasks, a prediction written
+   first; the harness now refuses a trial whose bundle is not the plan's.
+2. **0.0.24:** compressing the method's release by build rules over the full originals
    (`i-5ed7e8-16b90a`).
-4. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`; Study 2 would reuse
-   a paired design like SWE-Skills-Bench's when resumed); skills per area; the read log
-   (`i-5ed7e8-6c2aff`); rules re-stated at phase boundaries (`i-5ed7e8-bc5867`).
+3. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`); skills per area;
+   the read log (`i-5ed7e8-6c2aff`); rules re-stated at phase boundaries (`i-5ed7e8-bc5867`).
 
 **Rules the user set, which every step keeps:** content has at least two forms, marked in every file:
 the full original, edited here, and the release, generated from it by code and never edited; compression
 is a build rule over the original. Industry formats over home-grown ones. Everything derivable is
-generated. Nothing leaves the candidate queue by age. The user is the sole author of commits and tags.
+generated. Nothing leaves the candidate queue by age. The user is the sole author of commits and tags. A
+prediction is written before a measurement, and a refuted one is stated, not moved.
 
 **Waiting on the user:**
 
 1. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
-2. `i-5ed7e8-543516`: the release page for `v0.0.22`.
+2. `i-5ed7e8-543516`: the release pages for `v0.0.22` and `v0.0.23`.
 3. A session with the other carriers open, for `i-5ed7e8-b83f16`.
-
-**To resume on any machine:** `git pull --tags`; `git config core.hooksPath .githooks`; the machine's
-`~/.config/agent-guides/private-terms.txt` and `carriers.toml`; a Python 3.11+ interpreter. Then
-`python3 -m unittest discover -s meta/tests -t .`, `python3 .agents/tools/bundle.py verify` and
-`python3 meta/tools/release.py check` must pass before anything else.
 
 ## Next
 
@@ -74,21 +70,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   again as without the bundle. Candidates, each with a prediction before measuring: an entry file that
   holds only the *about to do* lookup, the phase guide moved out; the card's check run once, not re-read.
   Measured with the same six tasks. *Collides with:* the INDEX template, `render_index`, the coding budget.
-- **`i-5ed7e8-1a57cc` · One lookup reaches one note's summary, without loading a whole area index.** Measured by pilot-6
-  (`evals/REPORT.md` §4.8): with the card first, most normal trials opened an area index of tens of
-  thousands of characters to read one row, and the cost rose above the v21 wiring's. The build can write
-  cards where one lookup reaches one card: a file per topic, or a compact file of cards by what one is about
-  to do, with the area index kept for browsing. *Prediction:* the other-task cost falls toward the ×1.5 of
-  0.0.22's refuted prediction; *refuted if* it stays above ×2 in a rerun of pilot-6. For 0.0.23, before the
-  phased session. *Collides with:* the templates, `render_area`, the coding session's `Reads:`, the budgets.
-- **`i-5ed7e8-c8b508` · The method's originals in `sources/method/`, its release generated by the build,
-  and every file marked as original or release.** The notes already have two forms; the method does not:
-  `.agents/method/*.md` is edited by hand and is both. Content may exist in more forms (templates, the
-  ledger), but these two must be unmistakable: every generated release file carries the generated banner,
-  no original does, and `build --check` fails on either mistake. First step of 0.0.23, as an identity
-  transform proven against `v0.0.22`; every later change to the method is made in the original.
-  *Collides with:* every `Reads:` list (checked on the generated output), `bundle.py` exemptions for
-  `SHA256SUMS` and itself, `AGENTS.md`.
 - **`i-5ed7e8-ef066e` · Review the hand-written boundary of the twelve notes whose section is prose.**
   The card of 31 notes quotes their own bold lead-ins; twelve had none, so a `boundary:` was written for
   them, once, by the session that migrated them (listed by `grep -l '^boundary:' sources/notes/active/*`).
@@ -114,38 +95,12 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-715654` · Remove the one-time migration and the deprecated `digest` alias.** The migration
   (`meta/migrations/`) and its CI step are deleted in 0.0.23, the tag keeps them; `bundle.py digest
   --check` goes once every carrier's audit calls `verify`. *Collides with:* carriers' audits.
-- **`i-5ed7e8-863fb1` · Run the coding session in phases with subagents.** *Decided by pilot-6's registered rule (2026-09-28): the review in a subagent is the default path, not an option for large changes, because the other-task cost stayed above ×1.8.* *Reversed by pilot-7 the same day (`evals/REPORT.md` §4.9): by default the reviewer cost about ×8 against the unaided session, for the same discriminating passes as 0.0.22's wiring at a third of that; the user chose to keep it on request only, diff review only, and to re-measure (pilot-8) before tagging.* Plan with a small context;
-  an optional design review of the plan by a subagent holding only the cards the plan touches; build
-  with the full repository and no knowledge loaded; a review of the diff by principle, in a subagent
-  that must cite evidence from the repository that a note's precondition holds before it reports a
-  finding; fix only the findings; at most two re-reviews of what was fixed, then the user decides; a
-  short close that writes the outbox. What it is for: the pilots put the cost in reading notes into
-  the main context, which every later turn pays again, and a subagent reads them once and returns a
-  verdict. *Prediction:* a normal session at most 1.5 times a session without the bundle, one that
-  consults the knowledge at most twice, and the discriminating tasks still passed; *refuted if* the
-  review phases cost more than the reading they replace, or a finding without a cited precondition
-  appears. Assistants without subagents run the same phases in one context. *Collides with:* the session
-  loop and the working invocation, the evaluation protocols (they run with no subagents), and
-  `i-5ed7e8-290fce`.
-- **`i-5ed7e8-290fce` · Generate the reviewer subagent's definition from the notes' frontmatter.** The
-  reviewer of `i-5ed7e8-863fb1` is written by the build from fields every note already has (claim,
-  boundary, check, about) and a template in `sources/templates/`, and the bootstrap and the update
-  install it in the carrier's `.claude/agents/`. **Skills per area are deferred** (2026-09-28): public
-  software-engineering skills gave about one point on average and most gave nothing
-  (`sources/references.md`, SWE-Skills-Bench); they wait for a measurement of their own. Supersedes the
-  paste-in packaging of `i-5ed7e8-8623a8`. *Collides with:* the carrier's installed artifacts, and
-  `i-5ed7e8-08c9f7` (where agent files live).
-- **`i-5ed7e8-95ac76` · A principle field that groups overlapping notes, and index rows grouped by it.** The
-  pilots found the unit that carries is the principle, not the file (`i-5ed7e8-d4f710`). A `principle`
-  field lets the index show one card per principle, with its notes as cases, and lets the experiment
-  ablate by principle. Done together with `i-5ed7e8-d4f710`, on the full notes. *Collides with:* the
-  build, the templates, and the note shape in the home's `sources/README.md`.
 - **`i-5ed7e8-d65a4c` · An `applies_if` precondition per note, naming where its fact is usually
   found.** No pilot trial read the file that held the decisive fact; agents applied the principle by
   default, which is also how the one over-application happened. A precondition with where to look
   should turn applying by default into looking. *Prediction:* more trials read the decisive file, fewer
-  over-apply; *refuted if* the reading rate does not rise. *Collides with:* the card columns and the
-  reviewer of `i-5ed7e8-863fb1`.
+  over-apply; *refuted if* the reading rate does not rise. 0.0.23 shipped the field and the card's
+  *Applies if* line, filled for four notes; the others wait. *Collides with:* the card columns.
 - **`i-5ed7e8-8236cb` · Make `AGENTS.md` the root artifact of the method.** The artifact list in
   `method/prompt-context.md` names a root `CLAUDE.md` as the source, puts the per-change log under
   `.claude/logs/` and skills under `.claude/skills/`, while the layout survey, *Three agents, one
@@ -156,11 +111,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   removing one note did not remove its principle: agents used `merge-by-shared-fact-not-shared-shape`
   in place of `derived-over-chosen-identifiers`, and `order-writes-by-failure-residue` in place of
   `retry-over-irreversible-effect`. A verdict on every overlapping pair (merge, supersede, or keep both
-  with the mechanism that separates them), made in `sources/notes/`. *Collides with:* the index and
-  area tables, and the experiment's ablation, which should remove a principle, not a file.
-- **`i-5ed7e8-89124e` · A budget for the reviewer subagent's load.** `bundle.py report --check` holds
-  the coding session and the largest index row to a static budget; the reviewer of `i-5ed7e8-863fb1` needs
-  its own `Reads:` list and budget. *Waits on:* `i-5ed7e8-863fb1`.
+  with the mechanism that separates them), made in `sources/notes/`. 0.0.23 shipped the `principle`
+  field and named these two pairs' principles, keeping both notes of each; the verdict to merge or
+  supersede is still open. *Collides with:* the index and area tables, and the experiment's ablation,
+  which should remove a principle, not a file.
 - **`i-5ed7e8-08c9f7` · Update the layout survey for the shared `.agents/` namespace and the assistants
   it omits.** At least one assistant now scans `.agents/skills/` in every directory, and a dependency
   tool uses `.agents/` with a manifest and a lockfile; the survey (`sources/layout.md`) compares three
@@ -254,20 +208,16 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
-- **0.0.22, 2026-09-25: the bundle holds only what a carrier runs, and what it holds is generated.**
-  Decided in one session with the user, on the literature and the five pilots, without a new run.
-  `.agents/` keeps what a carrier runs; the full notes, templates and literature moved to `sources/`,
-  the roadmap, records and release procedures to `meta/`. Each note ships short and its index rows are
-  built from its own fields (the migration proved the old tables byte-identical); the area rows
-  gained a *Not when* column. Semantic Versioning, git tags, `SHA256SUMS`, Keep a Changelog, `carrier.toml`, an
-  outbox per carrier, a derived `Since` column and a generated ledger of every idea already met, an
-  `incoming/` check (`i-5ed7e8-c5f622`), Python 3.11. Closes `i-5ed7e8-a89859` (short notes and index rows)
-  and `i-5ed7e8-f71f36` (tags and a hashed file per release). The coding session consults the index only when a change touches state, a
-  contract, data, security or verification, applies the card first, and lets the repository win over a
-  note. Measured statically: `.agents/` from about 0.9 MB to about 0.55 MB; the notes about half; the
-  coding session's fixed load from about 12k to about 9k estimated tokens; a harvest from about 28k to
-  about 10k. *Predictions, to be measured by `i-5ed7e8-e8dc2c`:* trivial tasks at most 1.2 times the
-  cost of `minimal` (refuted above 1.4); the bundle at most 1.5 times on normal tasks and twice on
-  critical ones, with the discriminating tasks still passed (refuted above 1.8, or a lower pass rate);
-  the watchdog boundary task with the smaller model rising from none passed (refuted if it stays at
-  none).
+- **0.0.23, 2026-09-28: one lookup reaches one card, and both forms of the bundle are marked.** The
+  method, the READMEs and the tool are originals in `sources/bundle/`, and every release file carries a
+  generated banner that `build --check` enforces in both directions (`i-5ed7e8-c8b508`; the identity
+  build proved the ten moved files byte-identical to 0.0.22's). Each note ships a card, linked from the
+  index by phase and by what you are about to do (`i-5ed7e8-1a57cc`); notes may carry `principle`
+  (`i-5ed7e8-95ac76`) and `applies_if`. The coding session runs in phases; a reviewer subagent, generated
+  from a template (`i-5ed7e8-290fce`) with its own load budget (`i-5ed7e8-89124e`), reviews a diff in a
+  fresh context **on request only** (`i-5ed7e8-863fb1`). Measured before the tag (`evals/REPORT.md`
+  §4.8–4.10): pilot-6 refuted 0.0.22's cost; pilot-7 refuted the first candidate, which reviewed by
+  default, at about ×8; pilot-8 measured the tagged design at ×2.34 on the non-trivial tasks, past its
+  line of ×2.3, with the other three predictions holding, and the user decided to tag it
+  (`i-5ed7e8-1ac328` takes the cost on). Three adversarial review rounds; their residue is in
+  `i-5ed7e8-d3ee51`. The migration and its CI step were removed (`i-5ed7e8-715654`, alias kept).

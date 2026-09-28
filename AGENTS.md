@@ -48,7 +48,7 @@ not having loaded this file, is never a reason to skip it.
 
 | Job | What it means here | How |
 |---|---|---|
-| **Consult** | Answer a question from the bundle: which note applies, what a rule says, why | Start at [`knowledge/INDEX.md`](.agents/knowledge/INDEX.md) or [`method/prompt-context.md`](.agents/method/prompt-context.md); a note's full text is in `sources/notes/`. Quote the file, never paraphrase from memory |
+| **Consult** | Answer a question from the bundle: which note applies, what a rule says, why | Start at [`knowledge/INDEX.md`](.agents/knowledge/INDEX.md) or [`method/prompt-context.md`](.agents/method/prompt-context.md); a note's full text is in `sources/notes/`. Quote the file, never paraphrase from memory. A review of a diff in a fresh context, only when the user asks for one, goes to the `knowledge-reviewer` subagent (`.claude/agents/`, copied from `.agents/agents/` at every release) |
 | **Review** | Check the bundle against itself and its sources: dead pointers, stale claims, prompts that no longer match the tools | Read-only. Findings go to `meta/roadmap.md` or `meta/tracking/candidates.md`, never straight into the body |
 | **Manage** | Bring carriers onto one version and take in what they learned | A meta-session, `meta/method/prompt-sync.md`, run from here |
 | **Improve** | Change a note, a rule, the tools | Only as part of a release: edit the originals in `sources/`, then `release.py build`. Never a side effect |
