@@ -115,7 +115,7 @@ def form_problems(root: Path) -> list[str]:
                  if p.is_file() and p.suffix in (".md", ".py") and "__pycache__" not in p.parts
                  and _marked(p.read_text(encoding="utf-8", errors="replace"))]
     return problems
-GENERATED_MARKER = re.compile(r"^<!-- generated: (cards|about|founded) ?([\w-]*) -->$", re.MULTILINE)
+GENERATED_MARKER = re.compile(r"^<!-- generated: (cards|about|founded|principles) ?([\w-]*) -->$", re.MULTILINE)
 PHASE_TOKEN = re.compile(r"\{\{notes:([\w-]+)\}\}")
 # Anything that looks like a marker or a token must be one the build knows: a misspelt one would ship
 # literally, and its table would be silently missing.
@@ -209,9 +209,22 @@ def load_notes(sources: Path, strict_cards: bool = True) -> list[Note]:
             notes.append(note)
     slugs = [n.slug for n in notes]
     problems += [f"note {s!r} is in more than one state folder" for s in sorted({s for s in slugs if slugs.count(s) > 1})]
+    # A principle names what several notes carry between them; one note alone is just the note.
+    groups = principles(notes)
+    problems += [f"principle {p!r} is carried by one note only ({ns[0].slug}); drop the field or name the others"
+                 for p, ns in groups.items() if len(ns) < 2]
     if problems:
         raise BuildError("\n".join(problems))
     return notes
+
+
+def principles(notes: list[Note]) -> dict[str, list[Note]]:
+    """{principle: the shipped notes that carry it}, from the optional `principle` field."""
+    out: dict[str, list[Note]] = {}
+    for n in notes:
+        if n.state in SHIPPED_STATES and n.meta.get("principle"):
+            out.setdefault(n.meta["principle"], []).append(n)
+    return out
 
 
 def _note_problems(note: Note) -> list[str]:
@@ -222,6 +235,8 @@ def _note_problems(note: Note) -> list[str]:
     problems += [f"{note.where}: missing `{k}`" for k in missing]
     if meta.get("slug") and meta["slug"] != note.slug:
         problems.append(f"{note.where}: `slug: {meta['slug']}` is not the file name")
+    if meta.get("principle") and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", meta["principle"]):
+        problems.append(f"{note.where}: `principle` is a kebab-case name")
     if meta.get("confidence") and meta["confidence"] not in CONFIDENCE:
         problems.append(f"{note.where}: `confidence` is one of {', '.join(CONFIDENCE)}")
     unknown = [p for p in meta.get("phases") or [] if p not in PHASES]
@@ -304,17 +319,24 @@ def render_area(template: str, area: str, notes: list[Note], topics: list[str], 
                 else sorted(items, key=lambda it: (rank[it[0].topic], it[0].slug, it[1]))
             head = ["…do this", "Card" if cards else "Read", "Because the default answer is wrong when"]
             body = [_row([r["do"], _link(n, "../"), r["wrong_when"]]) for n, _, r in items]
+        elif kind == "principles":
+            groups = {p: ns for p, ns in principles(here).items()}
+            head = ["Principle", "Notes that carry it"]
+            body = [_row([f"`{p}`", " · ".join(_link(n, "../") for n in sorted(ns, key=lambda n: n.slug))])
+                    for p, ns in sorted(groups.items())]
         else:
             rows = _ordered(here, lambda n: n.slug, order.founded.get(area)) if order.founded.get(area) \
                 else sorted(here, key=lambda n: (rank[n.topic], n.slug))
             head = ["Note", "Claim rests on", "Our evidence"]
             body = [_row([n.slug, _rests_on(n.meta), n.meta.get("our_evidence", "")]) for n in rows]
+        if not body and kind == "principles":
+            return "No note in this area shares its principle with another yet."
         return "\n".join([_row(head), "|" + "---|" * len(head), *body])
 
     return GENERATED_MARKER.sub(lambda m: table(m.group(1), m.group(2)), template)
 
 
-def render_card(note: Note) -> str:
+def render_card(note: Note, siblings: list[Note] | None = None) -> str:
     """`knowledge/cards/<slug>.md`: what a session applies, in one small file, one lookup from the index.
 
     Pilot-6 measured the cost of reaching a summary through an area index of tens of thousands of
@@ -329,6 +351,9 @@ def render_card(note: Note) -> str:
         "",
         f"**Check.** {note.meta['check']}",
         "",
+        *([f"**Shares its principle** (`{note.meta['principle']}`) with "
+           + ", ".join(f"[{s.slug}]({s.slug}.md)" for s in siblings)
+           + ": removing or ignoring this note does not remove the principle.", ""] if siblings else []),
         f"*{note.meta['confidence']}.* Open the full note only when you cannot tell whether its boundary holds here: "
         f"[{note.slug}](../notes/{note.state}/{note.slug}.md).",
     ]) + "\n"
@@ -497,7 +522,9 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
             path.read_text(encoding="utf-8"), path.stem, notes, topics_by_area[path.stem], order, cards)
     out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order,
                                                      link=_card_link if banner else None)
-    out.update({f"knowledge/cards/{n.slug}.md": render_card(n) for n in notes if n.state in SHIPPED_STATES})
+    groups = principles(notes)
+    out.update({f"knowledge/cards/{n.slug}.md": render_card(n, [s for s in groups.get(n.meta.get("principle"), []) if s is not n])
+                for n in notes if n.state in SHIPPED_STATES})
     reviewer = templates / "knowledge-reviewer.md"
     if reviewer.is_file():
         # The reviewer subagent of the phased session: one template, the topics filled in from the areas.

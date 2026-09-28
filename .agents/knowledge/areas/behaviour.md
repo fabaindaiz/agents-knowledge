@@ -136,3 +136,12 @@ The claim and our application are two different questions — see `../INDEX.md`,
 | untrusted-package-is-parsed-never-loaded | OWASP File Upload Cheat Sheet; Fifield 2019; Zip Slip 2018 — **established practice** | measured in one repository, one reader |
 | derived-over-chosen-identifiers | reverse-DNS convention — **settled practice** | one drift caught; the collision claim unobserved |
 | secrets-survive-rotation | none known | design decisions; no rotation run |
+
+## Notes that share a principle
+
+Removing or ignoring one of these notes does not remove its principle: the others carry it too. Review and ablate them together.
+
+| Principle | Notes that carry it |
+|---|---|
+| `a-failure-between-two-steps-is-certain` | [order-writes-by-failure-residue](../notes/active/order-writes-by-failure-residue.md) · [retry-over-irreversible-effect](../notes/active/retry-over-irreversible-effect.md) |
+| `same-only-by-a-shared-fact` | [derived-over-chosen-identifiers](../notes/active/derived-over-chosen-identifiers.md) · [merge-by-shared-fact-not-shared-shape](../notes/active/merge-by-shared-fact-not-shared-shape.md) |

@@ -89,3 +89,9 @@ The claim and our application are two different questions — see `../INDEX.md`,
 | test-double-fidelity | *Software Engineering at Google* ch. 13; Fowler's ContractTest — **practice** | occurrences; no rate |
 | unrunnable-system-moves-the-gate | hardware-in-the-loop practice; Xu et al. 2016 on latent configuration errors — **practice and one empirical study** | reasoned; two repositories arriving at one arrangement |
 | validate-each-transformation-run | Pnueli et al. 1998, translation validation — **established** | reasoned; one caught loss, planted losses rejected |
+
+## Notes that share a principle
+
+Removing or ignoring one of these notes does not remove its principle: the others carry it too. Review and ablate them together.
+
+No note in this area shares its principle with another yet.

@@ -7,4 +7,6 @@
 
 **Check.** for each non-atomic pair, the residue of a crash between them is written down and recoverable
 
+**Shares its principle** (`a-failure-between-two-steps-is-certain`) with [retry-over-irreversible-effect](retry-over-irreversible-effect.md): removing or ignoring this note does not remove the principle.
+
 *reasoned.* Open the full note only when you cannot tell whether its boundary holds here: [order-writes-by-failure-residue](../notes/active/order-writes-by-failure-residue.md).

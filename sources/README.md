@@ -11,6 +11,7 @@ A frontmatter block in YAML (strings double-quoted; `meta/tools/check_yaml.py` p
 | `slug` | the file name without `.md` |
 | `topic` | one topic, which must have a `cards` marker in one area template |
 | `claim` | the heuristic in one sentence; its only wording, quoted by every table |
+| `principle` | optional: a kebab-case name for what this note carries together with other notes (at least two); the cards and area indexes name the group, and a review or an ablation takes the group together |
 | `confidence` | `measured`, `reasoned` or `inherited`: **our** evidence, never the literature's |
 | `phases` | where the phase guide lists it: any of `plan`, `dataset`, `implement`, `tests`, `review`, `verify`, `debug` |
 | `check` | what shows it holds in the change at hand; the card's *Verify by* |

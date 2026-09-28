@@ -7,4 +7,6 @@
 
 **Check.** every irreversible call has a caller-chosen key stored with the effect; a replay test returns the first outcome
 
+**Shares its principle** (`a-failure-between-two-steps-is-certain`) with [order-writes-by-failure-residue](order-writes-by-failure-residue.md): removing or ignoring this note does not remove the principle.
+
 *reasoned.* Open the full note only when you cannot tell whether its boundary holds here: [retry-over-irreversible-effect](../notes/active/retry-over-irreversible-effect.md).

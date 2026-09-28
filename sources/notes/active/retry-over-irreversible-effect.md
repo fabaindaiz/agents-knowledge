@@ -3,6 +3,7 @@ slug: "retry-over-irreversible-effect"
 topic: "distributed-correctness"
 claim: "Any transport that retries will eventually re-execute an irreversible effect; idempotency is a property you build, not one you configure."
 confidence: "reasoned"
+principle: "a-failure-between-two-steps-is-certain"
 phases: ["plan"]
 check: "every irreversible call has a caller-chosen key stored with the effect; a replay test returns the first outcome"
 about:

@@ -7,4 +7,6 @@
 
 **Check.** every kept duplicate has a recorded reason; every merged one has a test that fails if a caller diverges
 
+**Shares its principle** (`same-only-by-a-shared-fact`) with [derived-over-chosen-identifiers](derived-over-chosen-identifiers.md): removing or ignoring this note does not remove the principle.
+
 *reasoned.* Open the full note only when you cannot tell whether its boundary holds here: [merge-by-shared-fact-not-shared-shape](../notes/active/merge-by-shared-fact-not-shared-shape.md).

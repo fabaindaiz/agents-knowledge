@@ -3,6 +3,7 @@ slug: "order-writes-by-failure-residue"
 topic: "distributed-correctness"
 claim: "When two writes cannot be atomic, order them so a crash between them leaves the state you can recover from; acknowledge an at-least-once delivery right after its one non-idempotent step, never after slow side work."
 confidence: "reasoned"
+principle: "a-failure-between-two-steps-is-certain"
 phases: ["plan"]
 check: "for each non-atomic pair, the residue of a crash between them is written down and recoverable"
 about:

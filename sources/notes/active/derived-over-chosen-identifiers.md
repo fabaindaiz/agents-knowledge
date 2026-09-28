@@ -3,6 +3,7 @@ slug: "derived-over-chosen-identifiers"
 topic: "identity-and-naming"
 claim: "An identifier that must be unique across boundaries is derived from something already unique, never chosen by whoever creates it."
 confidence: "reasoned"
+principle: "same-only-by-a-shared-fact"
 phases: ["plan"]
 check: "a check fails when a derived identifier drifts from its source"
 about:

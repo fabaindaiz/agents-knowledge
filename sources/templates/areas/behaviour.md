@@ -48,3 +48,9 @@ How things are named so they stay distinguishable across boundaries.
 The claim and our application are two different questions — see `../INDEX.md`, *How well founded is any of this*.
 
 <!-- generated: founded -->
+
+## Notes that share a principle
+
+Removing or ignoring one of these notes does not remove its principle: the others carry it too. Review and ablate them together.
+
+<!-- generated: principles -->

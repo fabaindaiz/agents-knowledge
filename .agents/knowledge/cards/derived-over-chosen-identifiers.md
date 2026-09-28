@@ -7,4 +7,6 @@
 
 **Check.** a check fails when a derived identifier drifts from its source
 
+**Shares its principle** (`same-only-by-a-shared-fact`) with [merge-by-shared-fact-not-shared-shape](merge-by-shared-fact-not-shared-shape.md): removing or ignoring this note does not remove the principle.
+
 *reasoned.* Open the full note only when you cannot tell whether its boundary holds here: [derived-over-chosen-identifiers](../notes/active/derived-over-chosen-identifiers.md).

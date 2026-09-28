@@ -3,6 +3,7 @@ slug: "merge-by-shared-fact-not-shared-shape"
 topic: "evolving-contracts"
 claim: "Merge copies that must agree by contract and whose divergence would be invisible; keep copies that only look alike, especially where merging would hide an error from a symmetric test, and write down why they stay."
 confidence: "reasoned"
+principle: "same-only-by-a-shared-fact"
 phases: ["plan", "review"]
 check: "every kept duplicate has a recorded reason; every merged one has a test that fails if a caller diverges"
 about:
