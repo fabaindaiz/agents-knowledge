@@ -9,7 +9,7 @@ your first change.
 
 | You want to add or change | It goes in |
 |---|---|
-| How reviewing, committing, verifying or documenting is done | `.agents/method/` |
+| How reviewing, committing, verifying or documenting is done | `sources/bundle/method/` (the original; the build writes `.agents/method/`) |
 | A claim about building software: retries, concurrency, defaults, naming, data shape | a full note in `sources/notes/active/` |
 | How the index around the notes reads | `sources/templates/` |
 | An idea for a note that is not ready yet | a row in `meta/tracking/candidates.md` |
@@ -82,7 +82,8 @@ Commit messages follow [Conventional Commits](https://www.conventionalcommits.or
 breaking change). Every commit and tag has the maintainer as its sole author: no `Co-Authored-By:`
 trailer or other attribution line, including from tools that add one by default.
 
-A change under `sources/` or `.agents/method/` changes the bundle, so it reaches carriers only in a
+A change under `sources/` changes the bundle, so it reaches carriers only in a
 release. **Releases are cut by a meta-session** (`meta/method/prompt-sync.md`): the version, the dated
 `CHANGELOG.md` section and the tag. A pull request leaves the version alone and adds its entry under
-`## [Unreleased]` in `.agents/CHANGELOG.md`.
+`## [Unreleased]` in `sources/bundle/CHANGELOG.md`. Nothing in `.agents/` is edited by hand: every file
+there says it is generated.

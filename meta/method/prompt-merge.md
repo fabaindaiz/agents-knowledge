@@ -181,7 +181,7 @@ rule the knowledge notes do not: **numbers are never reused and never
 renumbered.** So a merge that takes their principle 20 when we already have a
 different principle 20 does not renumber either — it appends theirs at the next
 free number and records the mapping (their number → ours) in the release's
-section of `.agents/CHANGELOG.md`, because other repositories on both
+section of `sources/bundle/CHANGELOG.md`, because other repositories on both
 lines cite those numbers. `adapted` is not the place: it describes a
 repository, not a release.
 
@@ -204,7 +204,7 @@ After approval:
    method into `.agents/method/` or `meta/method/`.
 2. **Empty `incoming/`.** A bundle left there is a second bundle in the
    repository and the next session cannot tell which one is live.
-3. **Write the release's section in `.agents/CHANGELOG.md`** naming: the fork point, how many
+3. **Write the release's section in `sources/bundle/CHANGELOG.md`** naming: the fork point, how many
    items fell into each verdict, every *divergent* item and how it was reconciled, and every
    *undecidable* one left open. **The undecidable list is the most useful part of
    the entry** — it is the agenda for the next conversation with the other side.

@@ -46,7 +46,7 @@ candidate, through a harvest, never by overwriting a file.
 
 - **Versions are cut by a release in the home, never by a carrier.** One Semantic Versioning
   version for the whole bundle, set by `release.py release X.Y.Z` in the frontmatter of
-  `.agents/README.md`, a dated section in `.agents/CHANGELOG.md` saying what a reader *does
+  `.agents/README.md`, a dated section in `sources/bundle/CHANGELOG.md` saying what a reader *does
   differently* now, not what was edited, and a tag `vX.Y.Z`. While it is `0.0.z`, any release may
   break; moving to `0.1.0` or `1.0.0` is the user's decision.
 - **Never renumber the principles.** Append. A repository referring to
@@ -141,5 +141,5 @@ Substitute your own nouns:
 
 ## Method changelog
 
-From 0.0.22, each release is a section of `.agents/CHANGELOG.md`. The table of what each earlier
+From 0.0.22, each release is a section of `sources/bundle/CHANGELOG.md`. The table of what each earlier
 method version changed is frozen in [`method-changelog.md`](../archive/method-changelog.md).
