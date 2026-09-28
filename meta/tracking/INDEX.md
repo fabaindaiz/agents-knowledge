@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (73)
+## Candidates in the queue (76)
 
 - `one-rule-two-readers-agree-on-the-verdict-not-the-refusal` — K, since 0.0.20 · lacks a generality statement, and it may be an occurrence of `same-answer-or-refuse` or of `one-path-for-every-source` rather than a claim …
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
@@ -48,7 +48,6 @@ None.
 - `routine-tools-leave-the-tree-as-found` — M, since 0.0.20 · lacks a second repository; near the existing *Generated artefacts churn* bullet
 - `document-language-is-its-readers` — M, since 0.0.20 · lacks a second repository; sits against the pre-flight's default of the conversation's language
 - `changelog-ships-field` — M, since 0.0.20 · lacks evidence the field caught anything; the restated action went stale in the one repository that uses it
-- `execute-the-procedure-to-review-it` — M, since 0.0.20 · lacks a sharper statement; the two occurrences have different forms
 - `non-developer-guide-by-symptom` — M, since 0.0.20 · lacks a second guide
 - `parallel-agents-on-disjoint-files` — M, since 0.0.20 · lacks a second occurrence
 - `no-modification-time-no-window` — K, since 0.0.20 · lacks literature (CDC, change-data-capture); a second repository
@@ -90,13 +89,24 @@ None.
 - `ratchet-in-a-pinned-environment` — K, since 0.0.21 · lacks a release to apply it
 - `best-effort-side-channels` — K, since 0.0.21 · lacks a release to apply it
 - `nested-partial-update-replaces` — K, since 0.0.21 · lacks a release to apply it
+- `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks a second repository
+- `an-update-is-driven-by-the-new-side` — K, since 0.0.23 · lacks a second occurrence, and literature on self-updating clients
+- `a-repair-request-runs-once-per-load` — K, since 0.0.23 · lacks a second occurrence; it may be an occurrence of `retry-over-irreversible-effect`
+- `splicing-an-old-layout-carrier-keeps-what-gather-found` — M, since 0.0.23 · lacks a second occurrence
 
 ## Offered again, to merge (0)
 
 None.
 
-## Answered: admitted, folded, refused or dropped (11)
+## Answered: admitted, folded, refused or dropped (18)
 
+- `test-double-fidelity` — **extended**: two occurrences offered by two repositories (a fixture that lacked what the real input carries; a local host that differs …
+- `local-host-is-a-test-double-of-the-production-host` — **folded** into `test-double-fidelity` as an occurrence
+- `same-answer-or-refuse` — **extended**: the subset reader that refuses what the full parser types differently, measured, into its *Evidence*
+- `validate-each-transformation-run` — **extended**: the byte-for-byte proof of a table migration, into its *Evidence*
+- `follow-the-procedure-literally-to-review-it` — **admitted into the method**, with `execute-the-procedure-to-review-it`: two repositories; the session loop's verify step says to run a …
+- `execute-the-procedure-to-review-it` — **admitted into the method**, see the row above
+- `privileged-call-inside-the-host-gesture` — offered again by the same kind of repository with nothing new; its queued row stands, still lacking a measurement on the target runtime
 - `parallel-session-id-allocation` — **answered by the method**: records written by parallel sessions (decisions, roadmap items, session entries) take …
 - `correction-lands-where-the-rule-is-enforced` — **admitted into the method**, principle 6: a retraction reaches the copy that is loaded and a superseded decision's own row. The second …
 - `incoming-cannot-be-checked-empty-while-the-bundle-ships-a-file-into-it` — **fixed**: the rule is now *empty except its own `README.md`*, in `incoming/README.md` and `prompt-update.md`

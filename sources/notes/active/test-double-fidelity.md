@@ -47,4 +47,6 @@ A transactional service, five occurrences: an in-memory store fake that ignored 
 
 ## Evidence
 
+**2026-09-28 — two more occurrences, in two repositories.** In the bundle's home, a check written for an input that arrives from elsewhere passed its test against a hand-built fixture and failed on every real instance of that input: the fixture lacked a list the real input carries, and an adversarial review found it before the release was tagged. In an interactive client, the local server a build was tested against differed from the production host in what it did to every response and in what the platform granted each origin. One mechanism: a double holds what its author thought of. Still no rate.
+
 **Reasoned: the occurrences are counted, the rate is not.** What would measure it: run each fake's test cases against the real dependency in an emulator and count the disagreements.

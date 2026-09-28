@@ -6,6 +6,18 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue by the release 0.0.23
+
+| Candidate | Where it went |
+|---|---|
+| `test-double-fidelity` | **extended**: two occurrences offered by two repositories (a fixture that lacked what the real input carries; a local host that differs from production) went into its *Evidence* |
+| `local-host-is-a-test-double-of-the-production-host` | **folded** into `test-double-fidelity` as an occurrence |
+| `same-answer-or-refuse` | **extended**: the subset reader that refuses what the full parser types differently, measured, into its *Evidence* |
+| `validate-each-transformation-run` | **extended**: the byte-for-byte proof of a table migration, into its *Evidence* |
+| `follow-the-procedure-literally-to-review-it` | **admitted into the method**, with `execute-the-procedure-to-review-it`: two repositories; the session loop's verify step says to run a changed procedure literally |
+| `execute-the-procedure-to-review-it` | **admitted into the method**, see the row above |
+| `privileged-call-inside-the-host-gesture` | offered again by the same kind of repository with nothing new; its queued row stands, still lacking a measurement on the target runtime |
+
 ## Refused by four carriers' harvests of 2026-09-22, recorded by the release of 2026-09-24
 
 Offered by those carriers' records and not written as candidates, with the reason, so the next
