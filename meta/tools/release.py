@@ -1124,10 +1124,17 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, t
     return actions
 
 
-def register(repos: list[Path], date: str | None = None, root: Path = ROOT) -> None:
-    """One row per carrier in `meta/tracking/carriers.md`, at the version it holds, by its stored id."""
+def register(repos: list[Path], date: str | None = None, root: Path = ROOT, manifest: Path | None = None) -> None:
+    """One row per carrier in `meta/tracking/carriers.md`, at the version it holds, by its stored id.
+
+    With `manifest`, the same carriers are also remembered there by name and path (`remember`): the
+    registry in the repository names them only by id, and this machine's manifest is where an id meets
+    the repository it belongs to.
+    """
     date = date or datetime.date.today().isoformat()
     ids = B.carrier_ids(repos)
+    if manifest is not None:
+        remember([local_record(repo, date) for repo in repos], manifest)
     path = root / "meta/tracking/carriers.md"
     text = path.read_text(encoding="utf-8")
     for repo in repos:
@@ -1140,6 +1147,59 @@ def register(repos: list[Path], date: str | None = None, root: Path = ROOT) -> N
             at = text.index(separator) + len(separator)
             text = text[:at] + row + "\n" + text[at:]
     path.write_text(text, encoding="utf-8")
+
+
+# --- this machine's record of its carriers -------------------------------------------------------------
+# The repository's registry names a carrier only by a random id, so nothing in it identifies a repository.
+# Which id is which repository, and where it lives, is this machine's knowledge: it is kept in the local
+# manifest, outside every repository, and never written anywhere that travels.
+
+
+def local_record(repo: Path, date: str | None = None) -> dict:
+    """What this machine knows of one carrier: its id, name, path, version and when it was last seen."""
+    tree = repo / ".agents"
+    carrier = B.stored_carrier_id(repo)
+    legacy = B.is_legacy(tree)
+    if carrier is None and legacy:
+        try:
+            carrier = legacy_own_fields(tree).get("carrier")
+        except RefusedError:
+            carrier = None
+    return {"carrier": carrier or "", "name": repo.name, "path": str(repo),
+            "version": B.bundle_version(tree) or ("the layout before 0.0.22" if legacy else ""),
+            "seen": date or datetime.date.today().isoformat()}
+
+
+def remember(records: list[dict], manifest: Path) -> None:
+    """Write `records` into this machine's manifest, keeping its `carriers` list and every other record.
+
+    Refused when the manifest would sit inside a repository: the names it holds must never travel.
+    """
+    resolved = manifest.expanduser().resolve()
+    for parent in resolved.parents:
+        if (parent / ".git").exists():
+            raise RefusedError(f"{manifest}: inside the repository {parent}; this machine's record of its carriers "
+                               "names repositories and is kept outside every one")
+    import tomllib
+
+    data = tomllib.loads(resolved.read_text(encoding="utf-8")) if resolved.is_file() else {}
+    listed = [str(p) for p in data.get("carriers", [])]
+    known = {r["path"]: r for r in data.get("carrier", [])}
+    for record in records:
+        known[record["path"]] = record
+        if record["path"] not in listed:
+            listed.append(record["path"])
+    lines = ["# This machine's carriers of the agent-guides bundle. Never committed anywhere.",
+             "# `carriers` is the list of carriers; each [[carrier]] record below is rewritten by",
+             "# `release.py register` and `release.py carriers`, and names the repository behind each id.",
+             "carriers = [", *[f"  {B._toml_str(p)}," for p in listed], "]"]
+    for path in listed:
+        if path in known:
+            r = known[path]
+            lines += ["", "[[carrier]]", *[f"{k} = {B._toml_str(str(r.get(k, '')))}" for k in
+                                             ("carrier", "name", "path", "version", "seen")]]
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def align(repos: list[Path], root: Path = ROOT) -> list[str]:
@@ -1263,6 +1323,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--allow-dirty", action="store_true")
     p = sub.add_parser("register", help="the carriers table, by stored carrier id")
     p.add_argument("repos", nargs="*")
+    sub.add_parser("carriers", help="this machine's carriers by id, name, path and version; remembered in the manifest only")
     p = sub.add_parser("align", help="phase 3: every carrier on the home's release")
     p.add_argument("repos", nargs="*")
     p = sub.add_parser("note-state", help="move a full note between states, links rewritten, then build")
@@ -1336,8 +1397,20 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             return 0
         if args.command == "register":
             scope = B.workspace(args.repos, writing=True)
-            register(scope.repos)
-            print(f"registered {len(scope)} carriers in meta/tracking/carriers.md")
+            register(scope.repos, manifest=B.MANIFEST)
+            print(f"registered {len(scope)} carriers in meta/tracking/carriers.md; names and paths in {B.MANIFEST} only")
+            return 0
+        if args.command == "carriers":
+            # Reads each carrier, writes nothing in any repository: only this machine's manifest.
+            if not B.MANIFEST.is_file():
+                print(f"no manifest at {B.MANIFEST}")
+                return 1
+            records = [local_record(Path(p).expanduser().resolve()) for p in B.manifest_carriers(B.MANIFEST)
+                       if (Path(p).expanduser() / ".agents").is_dir()]
+            remember(records, B.MANIFEST)
+            for r in records:
+                print(f"{r['carrier'] or '(no id)':10} {r['version'] or '?':26} {r['name']}  {r['path']}")
+            print(f"remembered in {B.MANIFEST}, outside every repository")
             return 0
         if args.command == "align":
             scope = B.workspace(args.repos)

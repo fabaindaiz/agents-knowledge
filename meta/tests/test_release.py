@@ -451,6 +451,31 @@ class Carry(Base):
         self.R.register([repo], "2026-01-07", self.home)
         self.assertEqual(self.R.align([repo], self.home), [])
 
+    def test_register_remembers_names_and_paths_only_in_the_local_manifest(self) -> None:
+        import tomllib
+
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        manifest = self.root / "config/agent-guides/carriers.toml"
+        manifest.parent.mkdir(parents=True)
+        other = str(self.root / "elsewhere")
+        manifest.write_text(f'carriers = ["{other}"]\n')
+        registry = (self.home / "meta/tracking/carriers.md")
+
+        self.R.register([repo], "2026-01-07", self.home, manifest=manifest)
+
+        data = tomllib.loads(manifest.read_text())
+        self.assertEqual(data["carriers"], [other, str(repo)])
+        self.assertEqual([(r["name"], r["version"], r["seen"]) for r in data["carrier"]], [("one", "0.0.1", "2026-01-07")])
+        self.assertEqual(data["carrier"][0]["carrier"], B.stored_carrier_id(repo))
+        self.assertNotIn(str(repo), registry.read_text())
+        self.assertNotIn("| one |", registry.read_text())
+
+    def test_the_local_manifest_is_never_written_inside_a_repository(self) -> None:
+        with self.assertRaisesRegex(self.R.RefusedError, "outside every one"):
+            self.R.remember([], self.home / "meta/carriers.toml")
+
     def test_a_fork_with_rewritten_checksums_is_still_named_by_gather(self) -> None:
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo)

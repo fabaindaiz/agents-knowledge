@@ -5,7 +5,8 @@ writes the rows and `release.py align` refuses to close a meta-session while a r
 missing here or registered at another version. The id is random, minted once by `bundle.py carrier-id
 --mint` and stored in the carrier's own `.agents/carrier.toml`; it is not derived from anything about
 the repository, so it cannot be reversed. Nothing describing a carrier
-is ever written next to its id, here or anywhere in the bundle. **Paths are never written here**: they are per machine, in the local manifest.
+is ever written next to its id, here or anywhere in the bundle. **Paths and names are never written here**: they are per machine, in the local manifest, where
+`release.py carriers` shows which repository each id is.
 
 | Carrier | Version | Aligned on |
 |---|---|---|

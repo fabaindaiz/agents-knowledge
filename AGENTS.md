@@ -87,7 +87,11 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
   when `python3` is older.
 - **Paths never travel.** Each machine lists its carriers in `~/.config/agent-guides/carriers.toml`
   (`carriers = ["/path/to/repo", ...]`). The bundle names carriers only by random id, in
-  `meta/tracking/carriers.md`.
+  `meta/tracking/carriers.md`; which id is which repository, its name, path and version, is kept only in
+  that manifest, as `[[carrier]]` records written by `release.py register` and `release.py carriers`
+  (which reads every listed carrier and writes nothing in any of them). The tool refuses to write the
+  manifest inside a repository. Add each private carrier's name to the private-terms list, so a leak of
+  it fails the privacy check.
 - **A carrier not open on this machine is not reached.** It gets the release from a meta-session where
   it is open, or through its own `.agents/incoming/`. Never write into it from here.
 
