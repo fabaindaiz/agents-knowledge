@@ -1035,11 +1035,12 @@ Language conventions for code and for docs.
 ## The documents, and which one answers what
 | Question | Document |
 A table. Questions in the words someone would actually ask. One row is always:
-when a change touches state, a contract, data, security or verification, consult
-`.agents/knowledge/INDEX.md` before a design decision and before claiming done;
-apply each card it routes to (claim, where it stops applying, check), open a full
-note only when its boundary is unclear here, and where this repository states an
-invariant that contradicts a note, follow the repository and say so.
+when a change touches state, a contract, data, security or verification, have the
+`knowledge-reviewer` subagent review the plan before a design decision and the
+diff before claiming done, and fix its findings; without it, consult
+`.agents/knowledge/INDEX.md` and apply only the cards it links; where this
+repository states an invariant that contradicts a note, follow the repository and
+say so.
 ```
 
 **What does not go here:** any number that has an owner document, anything the
@@ -1436,6 +1437,7 @@ what you could not confirm `ASSUMPTION`.**
 | Root `CLAUDE.md` | **every request** | the only always-on surface, so anything that must ALWAYS hold goes here — and it is paid for every time, hence the budget |
 | `<area>/CLAUDE.md` | **on demand**, when files in that directory are read | area depth belongs next to what it describes, and costs nothing until someone works there |
 | `.claude/skills/<name>/SKILL.md` | **on demand**, chosen from its `description` | the description is a trigger, not a title: write the phrasings that should reach for it |
+| `.claude/agents/<name>.md` subagents | **on demand**, chosen from its `description` or named by the author; it runs in a context of its own, limited to its `tools:` | work whose reading must not enter the author's context, such as the knowledge review, goes here; only its answer comes back |
 | Hooks in `.claude/settings.json` | **deterministically**, on lifecycle events | the one mechanism that does not depend on the agent's judgement |
 | `.claude/rules/*.md` with `paths:` | **on demand**, when a file matching the glob is read | per-area targeting without a nested file; it mirrors Cursor's and Copilot's globs, so one source serves all three |
 | `@path` imports inside an instruction file | **at launch**, and they spend context | importing a docs tree into the root file defeats the budget — **prefer nesting over importing**; the one import worth its cost is `@AGENTS.md` as the root file's first line, the documented bridge that keeps one source |

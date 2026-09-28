@@ -23,7 +23,8 @@ them here: an improvement is a candidate in `tracking/`.
 | `CHANGELOG.md` | every release, newest first ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)) | the release |
 | `SHA256SUMS` | the checksum of every file the release ships | the release |
 | `method/` | the executable prompts (`prompt-evaluate.md`, `prompt-bootstrap.md`, `prompt-update.md`, `prompt-harvest.md`) and their shared reference, `prompt-context.md` | the release |
-| `knowledge/` | `INDEX.md` and `areas/` (the cards), `notes/active/` and `notes/review/` (one heuristic each), `OPEN.md` (what the home is still waiting for), `README.md` | the release, generated: never edited here |
+| `knowledge/` | `INDEX.md`, `cards/` (one per note, what a review reads), `areas/` (for browsing), `notes/active/` and `notes/review/` (one heuristic each), `OPEN.md` (what the home is still waiting for), `README.md` | the release, generated: never edited here |
+| `agents/knowledge-reviewer.md` | the reviewer subagent, copied into the assistant's agent folder (Claude Code: `.claude/agents/`) | the release |
 | `tools/bundle.py` | the carrier's tool: one file, standard library, Python 3.11 or newer | the release |
 | `carrier.toml` | this repository's own fields (below) | this repository |
 | `tracking/` | the outbox: `candidates.md` and `experiments.md`, what this repository's harvest learned since the last release | this repository |

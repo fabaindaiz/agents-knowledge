@@ -6,7 +6,7 @@
 
 Every note in `notes/active/` and `notes/review/` is reachable from here and every listed note exists — checked by the build, because a dead pointer in an index is worse than an index nobody wrote.
 
-This file is the entry point: the phase guide for every note, and a route to the area index that holds each note's check. There is no cap on notes; what is bounded is attention.
+This file is the entry point: the phase guide for every note, and a link to each note's card, which holds its check; the area indexes repeat the checks per topic, for browsing. There is no cap on notes; what is bounded is attention.
 
 **A note marked ⚠ review** sits in `notes/review/`: its evidence or its admission is disputed and a verdict is pending. Use it, and say in the report that it is under review. The folder a note sits in is its state — `README.md`, *The state of a note*.
 
@@ -81,9 +81,9 @@ This file is the entry point: the phase guide for every note, and a route to the
 | Verify a change in a system that cannot be booted where you write it | [unrunnable-system-moves-the-gate](cards/unrunnable-system-moves-the-gate.md) | more tests of what already runs does not touch composition, which is the class that bites at startup |
 | Run a formatter, generator, translator or bulk refactor over files | [validate-each-transformation-run](cards/validate-each-transformation-run.md) | the tool is trusted because it usually works, and the run that loses a comment or a number is never looked at |
 
-## The areas, and where each check lives
+## The areas, for browsing
 
-Each note is under exactly one topic, and each topic in one area. The area index holds the topic tables with their *Verify by* checks, the *about to do* rows, and how well founded each note is.
+Each note is under exactly one topic, and each topic in one area. The area index holds the topic tables with each card's claim, boundary and check, the *about to do* rows, and how well founded each note is.
 
 | Area | Index | Topics |
 |---|---|---|

@@ -311,7 +311,7 @@ def render_area(template: str, area: str, notes: list[Note], topics: list[str], 
     def table(kind: str, topic: str) -> str:
         if kind == "cards":
             rows = _ordered([n for n in here if n.topic == topic], lambda n: n.slug, order.cards.get(topic))
-            head = ["Note", "Claim", "Not when", "Verify by"] if cards else ["Note", "Claim", "Verify by"]
+            head = ["Note", "Claim", "Not when", "Check"] if cards else ["Note", "Claim", "Check"]
             body = [_row([_link(n, "../"), n.meta["claim"], *([n.boundary] if cards else []), n.meta["check"]]) for n in rows]
         elif kind == "about":
             items = [(n, i, r) for n in here for i, r in enumerate(n.meta.get("about") or [])]

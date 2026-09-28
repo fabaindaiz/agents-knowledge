@@ -15,7 +15,7 @@ A frontmatter block in YAML (strings double-quoted; `meta/tools/check_yaml.py` p
 | `principle` | optional: a kebab-case name for what this note carries together with other notes (at least two); the cards and area indexes name the group, and a review or an ablation takes the group together |
 | `confidence` | `measured`, `reasoned` or `inherited`: **our** evidence, never the literature's |
 | `phases` | where the phase guide lists it: any of `plan`, `dataset`, `implement`, `tests`, `review`, `verify`, `debug` |
-| `check` | what shows it holds in the change at hand; the card's *Verify by* |
+| `check` | what shows it holds in the change at hand; the card's *Check* |
 | `about` | the *about to do* rows: a list of `{do, wrong_when}` |
 | `rests_on`, `strength` | what the claim rests on, and (optional) how well that is established |
 | `our_evidence` | what we demonstrated, in a few words |

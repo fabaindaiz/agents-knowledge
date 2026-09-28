@@ -201,7 +201,7 @@ the stranger.
 After approval:
 
 1. **Write the merged result into the home**: notes in full into `sources/notes/`, the
-   method into `.agents/method/` or `meta/method/`.
+   method into `sources/bundle/method/` or `meta/method/`; then `release.py build`.
 2. **Empty `incoming/`.** A bundle left there is a second bundle in the
    repository and the next session cannot tell which one is live.
 3. **Write the release's section in `sources/bundle/CHANGELOG.md`** naming: the fork point, how many

@@ -10,7 +10,7 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [0.0.23] - 2026-09-28
 
-Measured before it was built: a cost smoke test of 0.0.22 (the home's `evals/REPORT.md`, pilot-6) found that
+Measured before it was built: a cost smoke test of 0.0.22 found that
 reading a summary first sent sessions into whole area indexes, at about 2.8 times the cost of working without
 the bundle, while the knowledge still made the difference on the tasks where the unaided agent fails.
 
@@ -27,11 +27,15 @@ the bundle, while the knowledge still made the difference on the tasks where the
 - A card shows **Applies if** (the precondition, and where the fact that decides it is usually found) when
   its note has one, and names the notes that **share its principle**; the area indexes list those groups.
 - The root file's knowledge line sends reviews to the reviewer; the bootstrap installs it and the update
-  refreshes it (`.agents/agents/knowledge-reviewer.md`, copied into the assistant's agent folder).
+  refreshes it. **A carrier updating from 0.0.22 installs it on this update**, since its live update
+  procedure has no such step: copy `.agents/agents/knowledge-reviewer.md` into the assistant's agent folder
+  (Claude Code: `.claude/agents/`), and rewrite the root file's knowledge line as `prompt-bootstrap.md`
+  Phase 4 words it.
 - Every file of the release says in its first lines that it is generated, and is never edited here: an
   improvement is a candidate in `tracking/`.
 - A document that tells an agent what to run is verified by running it (the session loop's verify step).
-- Two subsections the update never used left the section it reads.
+- *Adopting into a repository that already works* and *Reordering without breaking*, which the update
+  never used, left the section of `prompt-context.md` it reads.
 
 ### Added
 
@@ -46,10 +50,10 @@ the bundle, while the knowledge still made the difference on the tasks where the
 
 ### Predictions
 
-Written before measuring, to be tested on this release with the pilots' model (pilot-7 in the home's
-`evals/`), all arms with subagents available: on trivial tasks at most 1.2 times the cost of working without
+Written before measuring, to be tested on this release in the home's experiments with the pilots' model,
+all arms with subagents available: on trivial tasks at most 1.2 times the cost of working without
 the bundle (refuted above 1.4); on the others at most 2 times (refuted above 2.3); the three tasks that
-discriminated in the pilots still passed with the bundle (refuted at 3 of 6 or fewer).
+discriminated in the pilots still passed with the bundle (refuted at half or fewer).
 
 ## [0.0.22] - 2026-09-25
 

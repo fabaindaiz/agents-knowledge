@@ -436,6 +436,14 @@ class Privacy(Base):
         self.assertEqual(sorted(self.rules(report, "WARN")), ["exact-count", "n-of-m", "quote"])
         self.assertEqual(report.failures, [])
 
+    def test_a_standards_number_is_not_a_count(self) -> None:
+        agents = make_bundle(self.root)
+        plant(agents / "knowledge/notes/active/absence.md", "Unlike RFC 7396 / 6902 and ISO 8601, it read 7" + ",396 rows.")
+
+        report = B.privacy_check(agents)
+
+        self.assertEqual([f.rule for f in report.findings], ["exact-count"])
+
     def test_a_private_term_fails_and_is_not_repeated(self) -> None:
         terms = self.root / "config/agent-guides/private-terms.txt"
         terms.parent.mkdir(parents=True)

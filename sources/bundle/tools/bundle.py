@@ -388,6 +388,8 @@ BLOCKQUOTE = re.compile(r"^\s*>\s+(.*\S)")
 # A large number, with or without thousands separators; years, dates, ids and decimals are not read.
 LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
 N_OF_M = re.compile(r"\b\d+\s+(?:of|out of)\s+(?:the\s+)?\d+\b")
+# A number that names a standard ("RFC 7396", "RFC 7396 / 6902") is not a count.
+STANDARD_NUMBER = re.compile(r"\b(?:RFC|ISO|IEC|IEEE|PEP)[\s-]*(?:\d+\s*/\s*)*$")
 # The waiver. Assembled, so that this file's own source does not read as a waiver of this line.
 PRIVACY_ALLOW = re.compile("privacy-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
 # A waiver written as documentation (`<reason>`) is an example of the syntax, not a waiver.
@@ -495,6 +497,8 @@ def _large_counts(text: str) -> list[str]:
             continue  # a year
         if len(digits.rstrip("0")) < 2:
             continue  # one significant figure: an order of magnitude, which is what the rule asks for
+        if STANDARD_NUMBER.search(text[:m.start(1)]):
+            continue  # a standard's number
         found.append(m.group(1))
     return found
 

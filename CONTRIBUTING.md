@@ -17,8 +17,8 @@ your first change.
 | Work on the bundle itself | `meta/roadmap.md` |
 | A fact about one particular repository | **nowhere here.** It goes in that repository's own `docs/decisions.md` |
 
-**Never edit the generated files** (`.agents/knowledge/notes/**`, `INDEX.md`, `areas/*.md`, `OPEN.md`,
-`SHA256SUMS`). They are written by `python3 meta/tools/release.py build` from `sources/`.
+**Never edit a generated file**: nothing in `.agents/` but `carrier.toml` and `tracking/` is edited by hand.
+The rest is written by `python3 meta/tools/release.py build` from `sources/`.
 
 ## Proposing a knowledge note
 
