@@ -314,11 +314,43 @@ def render_area(template: str, area: str, notes: list[Note], topics: list[str], 
     return GENERATED_MARKER.sub(lambda m: table(m.group(1), m.group(2)), template)
 
 
-def render_index(template: str, notes: list[Note], topics: list[str], order: Order | None = None) -> str:
-    """`INDEX.md` from its template: every `{{notes:PHASE}}` replaced by that phase's notes."""
+def render_card(note: Note) -> str:
+    """`knowledge/cards/<slug>.md`: what a session applies, in one small file, one lookup from the index.
+
+    Pilot-6 measured the cost of reaching a summary through an area index of tens of thousands of
+    characters; a card is a few hundred, and the full note stays one link away.
+    """
+    return BANNER + "\n".join([
+        f"# {note.slug}" + (REVIEW_MARK if note.state == "review" else ""),
+        "",
+        f"**Claim.** {note.meta['claim']}",
+        "",
+        f"**Not when.** {note.boundary}",
+        "",
+        f"**Check.** {note.meta['check']}",
+        "",
+        f"*{note.meta['confidence']}.* Open the full note only when you cannot tell whether its boundary holds here: "
+        f"[{note.slug}](../notes/{note.state}/{note.slug}.md).",
+    ]) + "\n"
+
+
+def _card_link(note: Note) -> str:
+    return f"[{note.slug}](cards/{note.slug}.md)" + (REVIEW_MARK if note.state == "review" else "")
+
+
+def render_index(template: str, notes: list[Note], topics: list[str], order: Order | None = None,
+                 link=None) -> str:  # noqa: ANN001 -- (Note) -> str
+    """`INDEX.md` from its template: every `{{notes:PHASE}}` replaced by that phase's notes, and an
+    `<!-- generated: about -->` marker by the *about to do* rows of every area, each linking a card."""
     order = order or Order()
     rank = {t: i for i, t in enumerate(topics)}
     shipped = [n for n in notes if n.state in SHIPPED_STATES]
+    link = link or (lambda n: _link(n, ""))
+    items = sorted(((n, i, r) for n in shipped for i, r in enumerate(n.meta.get("about") or [])),
+                   key=lambda it: (rank.get(it[0].topic, len(rank)), it[0].slug, it[1]))
+    about = "\n".join([_row(["…do this", "Card", "Because the default answer is wrong when"]), "|---|---|---|",
+                       *[_row([r["do"], link(n), r["wrong_when"]]) for n, _, r in items]])
+    template = re.sub(r"^<!-- generated: about -->$", lambda _: about, template, flags=re.MULTILINE)
 
     def cell(m: re.Match) -> str:
         phase = m.group(1)
@@ -327,7 +359,7 @@ def render_index(template: str, notes: list[Note], topics: list[str], order: Ord
         members = [n for n in shipped if phase in n.meta.get("phases", [])]
         members = _ordered(members, lambda n: n.slug, order.phases.get(phase)) if order.phases.get(phase) \
             else sorted(members, key=lambda n: (rank.get(n.topic, len(rank)), n.slug))
-        return " · ".join(_link(n, "") for n in members)
+        return " · ".join(link(n) for n in members)
 
     return PHASE_TOKEN.sub(cell, template)
 
@@ -449,6 +481,7 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
         # have a meaning in INDEX, markers only in the area templates.
         if path.name == "INDEX.md" and path.parent == templates:
             known = {m.start() for m in PHASE_TOKEN.finditer(text) if m.group(1) in PHASES}
+            known |= {m.start() for m in re.finditer(r"^<!-- generated: about -->$", text, re.MULTILINE)}
         else:
             known = {m.start() for m in GENERATED_MARKER.finditer(text)}
         problems += [f"{path.relative_to(root).as_posix()}: {m.group(0)!r} is not a marker the build knows"
@@ -462,7 +495,9 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
     for path in areas:
         out[f"knowledge/areas/{path.name}"] = head + render_area(
             path.read_text(encoding="utf-8"), path.stem, notes, topics_by_area[path.stem], order, cards)
-    out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order)
+    out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order,
+                                                     link=_card_link if banner else None)
+    out.update({f"knowledge/cards/{n.slug}.md": render_card(n) for n in notes if n.state in SHIPPED_STATES})
     out["knowledge/OPEN.md"] = head + render_open(root / "meta")
     originals = root / ORIGINALS
     for path in sorted(originals.rglob("*"), key=lambda p: p.as_posix().encode()):

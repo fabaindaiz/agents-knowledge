@@ -462,8 +462,8 @@ session.
 
 Principle 15 has the protocol. Before a design decision on a change that touches
 state, a contract, data, security or verification, consult
-`.agents/knowledge/INDEX.md` for the phase you are in. Each note has a card in its
-area index: the claim, *Not when* (where it stops applying) and the check. The
+`.agents/knowledge/INDEX.md` for the phase you are in. Each note has a card, one
+small file the index links: the claim, *Not when* (where it stops applying) and the check. The
 *Not when* is the part to read; open the full note only when you cannot tell
 whether it holds here. When this repository states an invariant that contradicts
 a note, the repository wins, and the report says which note gave way. A typo, a
@@ -917,8 +917,8 @@ repo's own units, with your recommendation first.
 
 When the change touches state, a contract, data, security or verification:
 before a design decision and before claiming done, look it up in the knowledge
-index and its area index, apply each card that matches (claim, *Not when*,
-check) and run its check. Open a full note only when you cannot tell whether its
+index, open the card it links for each match (claim, *Not when*, check) and
+run its check. Open a full note only when you cannot tell whether its
 boundary holds here. When this repository states an invariant that contradicts a
 note, follow the repository and say in the report which note gave way. A typo, a
 text or a local rename consults nothing.

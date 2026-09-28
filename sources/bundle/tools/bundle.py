@@ -1844,17 +1844,14 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
 # crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
 # tenth.
-BUDGETS = {"coding": 9_900, "card": 240}
-CARD_ROW = re.compile(r"^\| \[[\w-]+\]\(\.\./notes/(?:active|review)/[\w-]+\.md\)")
-
-
+BUDGETS = {"coding": 9_900, "card": 320}
 def largest_card(tree: Path) -> tuple[str, int]:
-    """(note, estimated tokens) of the largest card row in the area indexes."""
+    """(note, estimated tokens) of the largest card: what one lookup from the index costs."""
     best = ("", 0)
-    for rel in _rels(tree, "knowledge/areas/*.md"):
-        for line in (tree / rel).read_text(encoding="utf-8").split("\n"):
-            if CARD_ROW.match(line) and len(line.split(" | ")) == 4 and _tokens(len(line)) > best[1]:
-                best = (line[3 : line.index("]")], _tokens(len(line)))
+    for rel in _rels(tree, "knowledge/cards/*.md"):
+        size = _tokens(len((tree / rel).read_text(encoding="utf-8")))
+        if size > best[1]:
+            best = (rel.rsplit("/", 1)[-1].removesuffix(".md"), size)
     return best
 
 

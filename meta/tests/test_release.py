@@ -243,8 +243,12 @@ class Build(Base):
         self.assertIn("| [beta](../notes/active/beta.md) | The claim of beta. | When it does not hold | a check for beta |", area)
         self.assertIn("| Do alpha | [alpha](../notes/active/alpha.md) | the obvious fails |", area)
         self.assertIn("| alpha | A paper — **well established** | reasoned |", area)
-        self.assertIn("| **Plan and design** | What will this touch? | [alpha](notes/active/alpha.md) · [beta](notes/active/beta.md) |", index)
-        self.assertIn("| **Review** | What could this remove? | [alpha](notes/active/alpha.md) |", index)
+        self.assertIn("| **Plan and design** | What will this touch? | [alpha](cards/alpha.md) · [beta](cards/beta.md) |", index)
+        self.assertIn("| **Review** | What could this remove? | [alpha](cards/alpha.md) |", index)
+        card = (self.agents / "knowledge/cards/alpha.md").read_text()
+        self.assertIn("**Not when.** When the first case holds · When the second case holds", card)
+        self.assertIn("(../notes/active/alpha.md)", card)
+        self.assertLess(len(card), 1200)
         self.assertIn("| alpha | run it | minutes |", (self.agents / "knowledge/OPEN.md").read_text())
 
     def test_a_hand_edit_and_a_stale_source_are_both_caught(self) -> None:
