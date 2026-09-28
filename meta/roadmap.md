@@ -93,7 +93,12 @@ Planned for 0.0.23. Its release reuses the build: what is derivable from a note'
   flagged by `verify --release` (it is never copied, so low); the list of refused configuration and
   instruction files can never be complete; the YAML subset agrees with PyYAML only as far as
   `check_yaml.py` in CI proves it; a carrier converted from the old layout may keep its own documents
-  pointing at files that moved (its own gate catches them). Also: the privacy rule that fails a record id beside a domain noun reads the bundle's own word *card* as a payment card, so every sentence naming a card and a roadmap item is reworded. *Collides with:* `bundle.py`, its tests.
+  pointing at files that moved (its own gate catches them). The *card* false positive was fixed in 0.0.23.
+  Left open by the adversarial review of 0.0.23, each reproduced and none reached by a current file: the
+  banner goes in as a heading in a `.md` whose first line is a thematic break with no closing `---`, and
+  shifts a Python encoding line after a shebang; `note-state` moves the file before the principle check
+  refuses, so a refused move is left half done; the steps 3 and 4 of the session loop still cite full notes
+  as background. *Collides with:* `bundle.py`, `release.py`, their tests.
 - **`i-5ed7e8-0ae753` · Trim the update and bootstrap sessions.** The update's `Reads:` names
   `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700
   estimated tokens); the bootstrap states the minting instructions twice; `knowledge/OPEN.md` is about

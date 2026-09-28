@@ -31,7 +31,7 @@ def _load(name: str, path: Path):  # noqa: ANN202 -- a module
     return module
 
 
-bundle = _load("bundle", ROOT / ".agents/tools/bundle.py")
+bundle = _load("bundle", ROOT / "sources/bundle/tools/bundle.py")  # the original; the build checks its release copy
 
 
 def release():  # noqa: ANN201 -- a module; loaded lazily, it does not exist before the home tool does

@@ -45,7 +45,11 @@ the bundle, while the knowledge still made the difference on the tasks where the
 ### Fixed
 
 - The privacy rule that fails a record id beside a domain noun read the bundle's word *card* as a payment
-  card.
+  card; it now names the payment-card wordings instead (issuing, prepaid, cardholder, card-present, the
+  hyphenated forms). A standard's number (*RFC 7396*) is not read as an exact count.
+- `verify` fails a card that `knowledge/INDEX.md` does not link to, and reads a file named `.DS_Store`
+  unless it is what a file browser writes.
+- The reviewer's load in `report` counts its own definition, which the subagent loads as its prompt.
 - A release as it arrives is refused when it carries anything in `incoming/`.
 
 ### Predictions

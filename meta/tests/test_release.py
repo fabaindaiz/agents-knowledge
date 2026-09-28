@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 from pathlib import Path
+from unittest import mock
 
 from meta.tests.support import BOOTSTRAP, CONTEXT, Base, bundle, commit, git, init_repo, release
 
@@ -134,7 +136,7 @@ def make_home(root: Path) -> Path:
     (sources / "templates/areas/one.md").write_text(AREA)
     (sources / "templates/INDEX.md").write_text(INDEX)
     (sources / "templates/knowledge-reviewer.md").write_text(
-        '---\nname: "knowledge-reviewer"\ndescription: "Reviews against {{topics}}."\n---\n\nReview.\n\nReads:\n- knowledge/INDEX.md\n')
+        '---\nname: "knowledge-reviewer"\ndescription: "Reviews against {{topics}}."\ntools: "Read"\n---\n\nReview.\n\nReads:\n- knowledge/INDEX.md\n')
     for state in ("active", "review", "retired"):
         (sources / "notes" / state).mkdir(parents=True)
     (sources / "notes/active/alpha.md").write_text(full_note("alpha", '"plan", "review"'))
@@ -314,6 +316,48 @@ class Build(Base):
         with self.assertRaisesRegex(self.R.BuildError, "carried by one note only"):
             self.R.build(self.home)
 
+    def test_a_principle_that_is_not_a_name_is_refused_not_a_crash(self) -> None:
+        path = self.home / "sources/notes/active/alpha.md"
+        path.write_text(path.read_text().replace('confidence: "reasoned"', 'confidence: "reasoned"\nprinciple: ["a", "b"]', 1))
+
+        with self.assertRaisesRegex(self.R.BuildError, "kebab-case"):
+            self.R.build(self.home)
+
+    def test_a_principle_shared_across_areas_is_listed_whole_in_each(self) -> None:
+        (self.home / "sources/templates/areas/two.md").write_text(AREA.replace("One area", "Two area").replace("`t`", "`u`")
+                                                                  .replace("cards t", "cards u"))
+        for slug, topic in (("alpha", "t"), ("gamma", "u")):
+            path = self.home / f"sources/notes/active/{slug}.md"
+            if not path.exists():
+                path.write_text(full_note(slug).replace('topic: "t"', f'topic: "{topic}"'))
+            path.write_text(path.read_text().replace('confidence: "reasoned"', 'confidence: "reasoned"\nprinciple: "cross"', 1))
+        self.R.build(self.home)
+
+        for area in ("one", "two"):
+            row = [l for l in (self.agents / f"knowledge/areas/{area}.md").read_text().split("\n") if l.startswith("| `cross`")]
+            self.assertEqual(len(row), 1, area)
+            self.assertIn("alpha", row[0])
+            self.assertIn("gamma", row[0])
+
+    def test_a_release_file_with_other_line_endings_is_not_up_to_date(self) -> None:
+        path = self.agents / "method/prompt-update.md"
+        path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+        B.write_checksums(self.agents)
+
+        self.assertIn("method/prompt-update.md", "\n".join(self.R.build(self.home, check=True)))
+        self.R.build(self.home)
+        self.assertNotIn(b"\r\n", path.read_bytes())
+
+    def test_the_reviewer_definition_needs_its_frontmatter(self) -> None:
+        template = self.home / "sources/templates/knowledge-reviewer.md"
+        good = template.read_text()
+        for bad, error in ((good.split("---\n", 2)[2], "opens with its frontmatter"),
+                           (good.replace("tools: \"Read\"\n", ""), "lacks tools"),
+                           (good.replace('"Reviews against', '"Reviews "only" against'), "after a value")):
+            template.write_text(bad)
+            with self.assertRaisesRegex(self.R.BuildError, error):
+                self.R.build(self.home)
+
     def test_a_card_needs_exactly_one_boundary(self) -> None:
         both = self.home / "sources/notes/active/gamma.md"
         both.write_text(full_note("gamma", extra='boundary: "twice"\n'))
@@ -450,6 +494,18 @@ class Carry(Base):
         gathered = self.R.gather([repo], self.root / "out", self.home)
 
         self.assertIn("knowledge/notes/active/alpha.md", " ".join(gathered["carriers"]["one"]["forked"]))
+
+    def test_a_carrier_the_gather_did_not_reach_is_not_one_that_took_nothing(self) -> None:
+        repo = make_legacy(self.root, "old")
+        gathered = self.root / "g"
+        gathered.mkdir()
+        (gathered / "intake.json").write_text(json.dumps({"taken": {"another": []}}))
+        seen = []
+        with mock.patch.object(self.R, "splice", side_effect=lambda *a, **k: seen.append(k["taken"]) or []), \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.R.main(["splice", str(repo), "--write", "--backup", str(self.root / "bk"), "--taken", str(gathered)])
+
+        self.assertEqual(seen, [None])
 
     def test_a_carrier_on_the_old_layout_is_converted_and_keeps_its_own_fields(self) -> None:
         repo = make_legacy(self.root, "old")

@@ -257,12 +257,17 @@ def reachability_problems(tree: Path) -> list[str]:
     """
     indexes = [rel for rel in ("knowledge/INDEX.md",) if (tree / rel).exists()] + sorted(_rels(tree, "knowledge/areas/*.md"))
     linked = {resolved for index in indexes for _, resolved in _links(tree, index)}
-    return [
+    problems = [
         f"{rel}: an {rel.split('/')[2]} note that no index links to (knowledge/INDEX.md or knowledge/areas/*.md)"
         for state in ("active", "review")
         for rel in sorted(_rels(tree, f"{NOTES}/{state}/**/*.md"), key=str.encode)
         if rel not in linked
     ]
+    # A card is one lookup from the index, or it is not the entry point it is meant to be (0.0.23).
+    from_index = {resolved for _, resolved in _links(tree, "knowledge/INDEX.md")} if (tree / "knowledge/INDEX.md").exists() else set()
+    problems += [f"{rel}: a card that knowledge/INDEX.md does not link to"
+                 for rel in sorted(_rels(tree, "knowledge/cards/*.md"), key=str.encode) if rel not in from_index]
+    return problems
 
 # --- privacy ---------------------------------------------------------------------------------------
 # Nothing in the bundle may let a reader identify, directly or by putting details together, a private
@@ -353,7 +358,8 @@ CARRIER_OR_RECORD_ID = re.compile(r"(?<![\w-])(?:r-([0-9a-f]{6})|[dis]-([0-9a-f]
 # The hex of ids written as examples (`r-abcdef`, `d-abcdef-123456`): obviously nobody's.
 EXAMPLE_ID_HEX = frozenset({"abcdef", "aaaaaa", "bbbbbb", "cccccc", "000000", "fedcba"})
 DOMAIN_NOUNS = (
-    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "card number", "wallet", "invoice", "billing", "tax", "payroll",
+    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "credit-card", "debit-card", "card number", "cardholder", "prepaid card",
+    "card issuing", "card issuer", "card present", "card-present", "card-not-present", "wallet", "invoice", "billing", "tax", "payroll",
     "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
     "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
     "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
@@ -631,9 +637,18 @@ def _never_travels(rel: str) -> bool:  # noqa: D103
 
 def all_files(tree: Path) -> list[str]:
     """Every file of a bundle, the carrier's own and hidden ones included: what privacy, invisible-text and
-    stray-file checks read. Only caches and a file browser's `.DS_Store` are left out."""
-    return sorted((rel for p in tree.rglob("*") if p.is_file() and "__pycache__" not in p.parts
-                   and (rel := p.relative_to(tree).as_posix()).rsplit("/", 1)[-1] != ".DS_Store"), key=str.encode)
+    stray-file checks read. Only caches and a file browser's `.DS_Store` are left out, and only when it is
+    one: a file of that name holding anything else is read like any other."""
+    return sorted((p.relative_to(tree).as_posix() for p in tree.rglob("*")
+                   if p.is_file() and "__pycache__" not in p.parts and not _finder_metadata(p)), key=str.encode)
+
+
+def _finder_metadata(path: Path) -> bool:
+    """A `.DS_Store` that is what macOS writes: the name, and the store's magic bytes."""
+    if path.name != ".DS_Store":
+        return False
+    with path.open("rb") as f:
+        return f.read(8) == b"\x00\x00\x00\x01Bud1"
 
 
 def stray_problems(tree: Path) -> list[str]:
@@ -792,7 +807,8 @@ def sessions_of(tree: Path) -> tuple[dict[str, list[tuple[str, str | None]]], li
         path = tree / rel
         found = reads_lists(path.read_text(encoding="utf-8")) if path.is_file() else []
         if index < len(found):
-            sessions[name] = found[index]
+            # A subagent's definition is its prompt: loaded whole, before anything its list names.
+            sessions[name] = ([(rel, None)] if rel.startswith("agents/") else []) + found[index]
         else:
             missing.append(f"session {name!r}: {rel} has no `Reads:` list number {index}")
     return sessions, missing

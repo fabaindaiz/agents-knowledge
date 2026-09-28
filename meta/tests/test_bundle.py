@@ -116,14 +116,16 @@ class Verify(Base):
         (agents / "method/.evil.md").write_text("hidden\n")
         (agents / "tracking/prompt-override.md").write_text("stray\n")
         (agents / "evaluation-x.py").write_text("stray\n")
-        (agents / ".DS_Store").write_text("a file browser's\n")
+        (agents / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1" + bytes(24))
+        (agents / "method/.DS_Store").write_text("anything but a file browser's\n")
 
         problems = "\n".join(B.verify_problems(agents))
 
         self.assertIn("method/.evil.md: a hidden file", problems)
         self.assertIn("tracking/prompt-override.md: not a file", problems)
         self.assertIn("evaluation-x.py: not a file", problems)
-        self.assertNotIn(".DS_Store", problems)
+        self.assertIn("method/.DS_Store: a hidden file", problems)
+        self.assertNotIn("\n.DS_Store", "\n" + problems)
 
     def test_a_carrier_file_without_an_id_or_with_an_unknown_key_fails(self) -> None:
         agents = make_bundle(self.root)
@@ -253,6 +255,21 @@ class Sessions(Base):
         code, out = run("report", str(agents), "--json")
         self.assertIn("folders", json.loads(out))
 
+    def test_the_reviewers_load_counts_its_own_definition(self) -> None:
+        agents = make_bundle(self.root)
+
+        parts = B.sessions_of(agents)[0]["review"]
+
+        self.assertEqual(parts[0], ("agents/knowledge-reviewer.md", None))
+        self.assertIn(("knowledge/INDEX.md", None), parts)
+
+    def test_a_card_the_index_does_not_link_is_unreachable(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "knowledge/cards").mkdir()
+        (agents / "knowledge/cards/orphan.md").write_text("# orphan\n")
+
+        self.assertIn("knowledge/cards/orphan.md: a card", "\n".join(B.reachability_problems(agents)))
+
     def test_a_coding_session_over_its_budget_fails_the_check(self) -> None:
         agents = make_bundle(self.root)
         (agents / "knowledge/INDEX.md").write_text("x" * 4 * (B.BUDGETS["coding"] + 1))
@@ -373,6 +390,17 @@ class Privacy(Base):
                 report = B.privacy_check(agents)
 
                 self.assertEqual(self.rules(report), [rule], report.findings)
+
+    def test_a_payment_card_beside_an_id_fails_and_the_bundles_card_does_not(self) -> None:
+        rid = "r-" + "4c1d2e"
+        for wording, rule in (("a card issuing platform", ["id-beside-domain"]), ("prepaid cards", ["id-beside-domain"]),
+                              ("debit-card settlement", ["id-beside-domain"]), ("card-present sales", ["id-beside-domain"]),
+                              ("its knowledge card", [])):
+            with self.subTest(wording=wording):
+                agents = make_bundle(self.root / wording.replace(" ", "-"))
+                plant(agents / "method/prompt-context.md", f"{rid} runs {wording}.")
+
+                self.assertEqual(self.rules(B.privacy_check(agents)), rule)
 
     def test_the_outbox_is_read_too(self) -> None:
         agents = make_bundle(self.root)
