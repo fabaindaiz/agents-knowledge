@@ -20,77 +20,68 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
-**State on 2026-09-28, at the close of 0.0.23; this section last rewritten at the close of the session that
-built proposals, the same day.** Release 0.0.23 is tagged (`v0.0.23`) and this
-repository is aligned on it, with the reviewer installed in `.claude/agents/`. The other carriers were not
-open in this session and stay on their versions (*Blocked outside*, `i-5ed7e8-b83f16`, which says what
-each needs). The history before
-`v0.0.20` exists only on the local branch `backup/pre-flatten`, never tagged or pushed.
+**State on 2026-09-29, at the close of 0.0.24.** Release 0.0.24 is tagged (`v0.0.24`): proposals replace
+the outbox, and the first round of them is taken in. The meta-session searched this machine for bundle
+folders and found nine carriers where the local manifest listed three; the manifest now lists all of
+them. **Six are aligned on 0.0.24** (`release.py align`: this repository, `r-419136`, `r-7c8794`,
+`r-cef56f`, `r-4ca43d`, `r-1a1516`), each spliced after a backup, its received proposals pruned, `verify`
+and its own gate run there, the reviewer installed and the root file's knowledge line rewritten, and one
+commit on its own branch, **not pushed**. Two carriers on the layout before 0.0.22 were converted this way
+(their old headers first brought to one `upstream`); their audit scripts were taught the new layout.
+Every reached carrier's `upstream` now names the home by its id.
 
-**Since the tag, unreleased on `main`:** proposals (`i-5ed7e8-13ff46`, the first item of *Next*) replace the
-outbox tables, with this repository's five outbox rows converted into its first five proposals and three
-more written at this session's close (a conversion must refuse to remove what it did not read; a
-content id covers every distinguishing field and nothing time-dependent; a procedure is dry-run by an
-agent before release).
-`.agents/` here is therefore a build ahead of `v0.0.23`, and `splice` refuses to carry it until the next
-release is tagged, which is as it should be: carriers are updated only when the user asks.
+**Three carriers found here are not reached**: their working copies on this machine are histories left
+behind by a rewrite, their remotes hold the record, and moving each working copy onto its remote was refused by the permission layer, so it waits for the user. Their content was
+still gathered from the remotes: one offered five rows already queued (all received), one added five
+rows over its untagged release that `lost` printed and this release took in, one added nothing.
 
-**Is it ready for a productive release?** Judged against the criteria written for it
-(`i-5ed7e8-3e6760`), on 2026-09-28:
+**What 0.0.24 took in:** twenty proposals from four carriers and five rows from one on an untagged old
+release. Four notes extended; fourteen rows added to the queue; `splicing-an-old-layout-carrier-keeps-what-gather-found`
+answered as fixed; two tool defects confirmed by the carriers went to *Next* (`i-5ed7e8-29e484`,
+`i-5ed7e8-87ffc2`). This repository wrote three proposals for the next release from this session
+(read the remote, not a stale checkout; find carriers by searching; the splice's dry run does not list
+what it removes), and one carrier offered a fourth on the same gap (minting does not register a carrier
+in the manifest).
+
+**Is it ready for a productive release?** Against the criteria of `i-5ed7e8-3e6760`, on 2026-09-29:
 
 | | State |
 |---|---|
-| Proposals, as the next `0.0.z` | **Ready to cut.** The tools' tests; three paths end to end on scratch copies of real carriers; an agent's dry run of the harvest from the written method (its three guesses now answered in it); two adversarial rounds, thirteen defects reproduced and fixed with a test each, the last cycle clean |
-| The loop turned for real (criterion 1) | Not yet: needs two carriers through two real releases; it starts with this one |
-| An update run by an agent from the method (criterion 2) | Half: the harvest was run by an agent; the update through `incoming/` was run by the written steps, not by an agent |
+| The loop turned for real (criterion 1) | One of two: this release took in real proposals from three carriers besides the home and carried the result back to five of them; the next release, taking in what they write against 0.0.24, is the second |
+| An update run by an agent from the method (criterion 2) | Largely: each reached carrier's host adaptation, gate, changelog entry and commit were done by an agent from the written steps and the changelog; the splice itself was run by the home |
 | Cost known where it is paid (criterion 3) | Not yet: `i-5ed7e8-a437c6` first, then `i-5ed7e8-1ac328` |
-| The layout held one release (criterion 4) | Not yet: this release is the change |
+| The layout held one release (criterion 4) | Not yet: 0.0.24 is the change; it holds if 0.0.25 needs no layout change |
 | Nothing open that loses data (criterion 5) | Holds for the new code; `i-5ed7e8-d3ee51` still lists older residue, none of it a loss |
-
-So: cut proposals as the next `0.0.z` and use it; call a release productive, the first minor version,
-only when the table is all ticks.
-
-**What 0.0.23 measured** (`evals/REPORT.md` §4.8–4.10, all exploratory, same six tasks and model):
-
-| Run | Wiring | Non-trivial tasks, cost against unaided | Discriminating tasks passed |
-|---|---|---:|---|
-| pilot-6 | 0.0.22 (summary first) | ×2.78 | 5 of 6 |
-| pilot-7 | reviewer subagent by default | ×8.15 | 5 of 6 |
-| pilot-8 | cards by the author, reviewer on request (tagged) | ×2.34 | 6 of 6 |
-
-Trivial tasks cost the same as without the bundle in all three. pilot-8 missed its cost line (×2.3) by a
-small margin; the user decided to tag, and the changelog says so. Cutting the main thread's cost below ×2
-is `i-5ed7e8-1ac328`, the first item of *Next*.
 
 **The route from here:**
 
-1. **Next release:** `i-5ed7e8-13ff46` (proposals), built and reviewed; cut it in a meta-session.
-2. **Then cost:** `i-5ed7e8-a437c6` (what the bundle weighs in real sessions, cheap, first), then
-   `i-5ed7e8-1ac328` (triage, lookup by code and pilot-9, predictions already written); the harness
-   refuses a trial whose bundle is not the plan's.
-3. **After:** compressing the method's release by build rules over the full originals
-   (`i-5ed7e8-16b90a`).
-4. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`); skills per area;
+1. **Finish the three carriers not reached**, once the user has moved their working copies (see
+   *Blocked outside*).
+2. **Cost:** `i-5ed7e8-a437c6`, then `i-5ed7e8-1ac328`.
+3. **The next release:** the two tool defects (`i-5ed7e8-29e484`, `i-5ed7e8-87ffc2`) and the proposals
+   written against 0.0.24.
+4. **After:** compressing the method's release by build rules (`i-5ed7e8-16b90a`).
+5. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`); skills per area;
    the read log (`i-5ed7e8-6c2aff`); rules re-stated at phase boundaries (`i-5ed7e8-bc5867`).
 
 **Rules the user set, which every step keeps:** content has at least two forms, marked in every file:
 the full original, edited here, and the release, generated from it by code and never edited; compression
 is a build rule over the original. Industry formats over home-grown ones. Everything derivable is
 generated. Nothing leaves the candidate queue by age. The user is the sole author of commits and tags. A
-prediction is written before a measurement, and a refuted one is stated, not moved.
+prediction is written before a measurement, and a refuted one is stated, not moved. Where a local
+checkout and its remote disagree after a rewrite, the remote is the record.
 
-**This machine's record of its carriers.** From 2026-09-28 the local manifest
-(`~/.config/agent-guides/carriers.toml`) holds, beside its list of paths, one record per carrier with its
-id, name, path and version, written by `release.py register` and `release.py carriers`; the tool refuses
-to write it inside a repository, and the names of private carriers are in the local private-terms list,
-so a leak of one fails the privacy check. Nothing of it is committed.
+**This machine's record of its carriers** is the local manifest (`~/.config/agent-guides/carriers.toml`),
+never committed; the names of private carriers are in the local private-terms list. The history before
+`v0.0.20` exists only on a local backup branch, never tagged or pushed.
 
 **Waiting on the user:**
 
-1. The decision to run the meta-session that cuts proposals as the next release.
-2. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
-3. `i-5ed7e8-543516`: the release pages for `v0.0.22` and `v0.0.23`.
-4. A session with the other carriers open, for `i-5ed7e8-b83f16`, only when the user asks for it.
+1. Move the three stale working copies onto their remotes (each keeping its local branch under a backup name),
+   then a session with them open finishes `i-5ed7e8-b83f16`.
+2. Push the five carriers' commits and close or update their pull requests; nothing there was pushed.
+3. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
+4. `i-5ed7e8-543516`: the release pages for `v0.0.22`, `v0.0.23` and `v0.0.24`.
 
 ## Next
 
@@ -109,47 +100,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   in a roadmap written from the template passes. Change one of the two and test the other against it.
   *Collision:* roadmaps already written in one form or the other.
 
-- **`i-5ed7e8-13ff46` · Proposals: one file per learning in the carrier, integrated only by the home,
-  acknowledged by the release.** The user's decision of 2026-09-28: what a carrier learns stays in its own
-  repository, marked as a proposal to the bundle, inside `.agents/` in a folder of its own, and only the
-  home integrates it. **Built on `main`, unreleased** (`sources/bundle/CHANGELOG.md` *Unreleased*): one
-  file per proposal (`bundle.py propose`), a header with the carrier, `base` and `digest` of the release it
-  was written against; `gather` reads proposals and old outbox rows alike, with the same ids; `intake`
-  records each id in `meta/tracking/received.md`, never the carrier, and skips one already there; the build
-  publishes it as `proposals/RECEIVED.md`; the carrier prunes (`bundle.py proposals --prune`); `splice`
-  converts an old outbox and never removes a proposal, and `--taken` is gone; `--pack` and `gather --packs`
-  carry proposals from a machine where the carrier is not open. This repository's five outbox rows are its
-  first five proposals. **Tested:** the tools' tests (proposals written, refused, converted, pruned,
-  packed; gather, intake twice, splice, register and align in a round trip); and three paths end to end
-  on scratch clones of real carriers, never the carriers themselves: a carrier on 0.0.22 spliced (its five
-  outbox rows became five proposals with the ids gather gave them, all five listed as received by a trial
-  release and pruned, `verify` passing), a carrier on the layout before 0.0.22 converted, and a carrier
-  updated through `incoming/` by the written steps (`verify` failing until `--from-outbox`, then
-  passing). Real rows found one gap, a first-seen cell with words after its date, now kept in the
-  evidence. **An agent's dry run** of the harvest from the written method alone, on a scratch copy of a
-  real carrier (2026-09-28): every tool command worked the first time, `verify` and `privacy` passed, two
-  proposals written; it had to guess three times, and the method now answers each (uncommitted proposals
-  from an earlier harvest are committed, not redone; `harvested_through` is inclusive; a candidate
-  `OPEN.md` shows without a slug is extended by `overlaps`); the few queued candidates whose row had no
-  slug got one, and `release.py check` now refuses such a row. **The first adversarial round** reproduced
-  eight defects, four of which lost or duplicated a carrier's record: an old table read only when its
-  header matched to the space (a table with aligned columns, or rows after a blank line, was deleted
-  unread); an unescaped pipe dropping a run's verdict; two rows differing only in evidence or place
-  sharing an id; a proposal edited after it was written passing `verify` and being pruned. All are fixed
-  with a test each, three of them seen to fail with their fix removed: the id now seals everything a
-  proposal says, a conversion refuses rather than remove a line it did not read, every row shape becomes
-  a proposal that reads whole, and a row with no date is `unknown`, never the day of the conversion, so a
-  gather and a later conversion agree. The end-to-end cycle then ran clean on real copies (ten proposals
-  received, none malformed, all pruned by the next release, `verify` clean). **The second adversarial round**
-  confirmed the fixes and found five smaller defects, none losing a record silently: the dateless-row
-  id (already fixed as it ran), `lost` listing rows already taken in, a table not in UTF-8 converted with
-  its characters replaced, a claim that reads as a heading, and a table a formatter re-spaced blocking a
-  clean splice; each is fixed with a test. The final cycle on real copies: ten proposals received, none
-  malformed, every one pruned by the next release, a second gather offering nothing, `verify` clean.
-  *What remains:* the meta-session, which cuts it (it changes the layout a carrier holds; the changelog
-  tells a carrier on 0.0.22 or 0.0.23 what to run) and at its intake answers the queued
-  `splicing-an-old-layout-carrier-keeps-what-gather-found` as fixed by it. *Collides with:*
-  `i-5ed7e8-b83f16` (the carriers still to reach are converted by the new splice).
 - **`i-5ed7e8-3e6760` · What makes a release productive: the criteria for the first minor release.** How the bundle is
   used decides what "ready" means: every coding session in every carrier loads its root line and, on a
   change that touches state, a contract, data, security or verification, the index and its cards; each
@@ -341,18 +291,19 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
-- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** Every carrier
-  registered in `meta/tracking/carriers.md` below 0.0.23, and the older ones listed there without ids.
-  Each receives the current release from a meta-session that has it open. First `release.py carriers`
-  shows, on this machine only, which repository each id is. With `i-5ed7e8-13ff46` released, the splice
-  converts what each learned into proposals whether or not it was gathered: a carrier on the layout before
-  0.0.22 has the tracking rows it added over its release converted (refused when that release has no tag
-  here), and its `check-local` reports no `SHA256SUMS`, which that layout never had, until the splice
-  writes one; a carrier on 0.0.22 has its outbox rows converted with the ids a gather gives them, so rows
-  already taken in are not taken twice. In each, `bundle.py proposals --prune` then removes what the
-  release lists as received. Both then install the reviewer and rewrite the root file's knowledge line
-  (0.0.23's changelog says how, since their live update procedure predates it). Only when the user asks
-  for it. *Blocked on:* a session with those repositories open.
+- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.24:
+  three carriers found on this machine whose working copies are histories left behind by a rewrite, and three
+  registered carriers not on this machine (`r-a2f271` at 0.0.20, `r-882427` and `r-0fc418` at 0.0.21).
+  For the first three, once each working copy is on its remote: the one on 0.0.22 is spliced as it stands,
+  its five outbox rows becoming proposals the release already lists as received (a dry run on a copy of
+  its remote passed). The two without an id hold an untagged old release, so each is converted by hand
+  first, as 0.0.24's changelog says: its README and method headers brought to one `adapted`, `declined`
+  and `upstream` (they disagree on `adapted` today); `release.py lost` against its own commit that took
+  that release (0.0.24 took in all it printed; rerun it, since both may have moved); `tracking/` removed;
+  then the splice, `carrier-id --mint`, and `upstream` set to the home's id. Each then installs the
+  reviewer and rewrites its root file's knowledge line. The three not on this machine get the release
+  from a session where they are open, or through their own `incoming/`. *Blocked on:* the user moving the
+  working copies, and sessions with the other repositories open.
 
 ## Closed by measurement
 
@@ -366,16 +317,14 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
-- **0.0.23, 2026-09-28: one lookup reaches one card, and both forms of the bundle are marked.** The
-  method, the READMEs and the tool are originals in `sources/bundle/`, and every release file carries a
-  generated banner that `build --check` enforces in both directions (`i-5ed7e8-c8b508`; the identity
-  build proved the ten moved files byte-identical to 0.0.22's). Each note ships a card, linked from the
-  index by phase and by what you are about to do (`i-5ed7e8-1a57cc`); notes may carry `principle`
-  (`i-5ed7e8-95ac76`) and `applies_if`. The coding session runs in phases; a reviewer subagent, generated
-  from a template (`i-5ed7e8-290fce`) with its own load budget (`i-5ed7e8-89124e`), reviews a diff in a
-  fresh context **on request only** (`i-5ed7e8-863fb1`). Measured before the tag (`evals/REPORT.md`
-  §4.8–4.10): pilot-6 refuted 0.0.22's cost; pilot-7 refuted the first candidate, which reviewed by
-  default, at about ×8; pilot-8 measured the tagged design at ×2.34 on the non-trivial tasks, past its
-  line of ×2.3, with the other three predictions holding, and the user decided to tag it
-  (`i-5ed7e8-1ac328` takes the cost on). Three adversarial review rounds; their residue is in
-  `i-5ed7e8-d3ee51`. The migration and its CI step were removed (`i-5ed7e8-715654`, alias kept).
+- **0.0.24, 2026-09-29: what a carrier learns travels as proposals, and the first round is taken in.**
+  Proposals replace the outbox tables (`i-5ed7e8-13ff46`): one file per learning in the carrier, written by
+  `bundle.py propose`, integrated only by the home, listed by id in the release's `proposals/RECEIVED.md`
+  and pruned by the carrier. The meta-session gathered nine carriers found on this machine (the manifest
+  knew three): twenty proposals from four of them and five rows one carrier on an untagged old release had
+  added, each with a verdict. Four notes extended (`validate-each-transformation-run`,
+  `absence-is-a-third-value`, `copied-instruction-claims-its-origin`, `absent-constraint-widens`); fourteen
+  rows added to the queue (ten new candidates, four extensions of notes); one answered as fixed by this release
+  (`splicing-an-old-layout-carrier-keeps-what-gather-found`); two tool defects the carriers confirmed went to
+  *Next* (`i-5ed7e8-29e484`, `i-5ed7e8-87ffc2`).
+

@@ -10,13 +10,16 @@ is ever written next to its id, here or anywhere in the bundle. **Paths and name
 
 | Carrier | Version | Aligned on |
 |---|---|---|
+| r-cef56f | 0.0.24 | 2026-09-29 |
+| r-7c8794 | 0.0.24 | 2026-09-29 |
+| r-419136 | 0.0.24 | 2026-09-29 |
 | r-098980 | 0.0.22 | 2026-09-25 |
 | r-a2f271 | 0.0.20 | 2026-09-24 |
-| r-5ed7e8 | 0.0.23 | 2026-09-28 |
+| r-5ed7e8 | 0.0.24 | 2026-09-29 |
 | r-882427 | 0.0.21 | 2026-09-24 |
-| r-4ca43d | 0.0.21 | 2026-09-24 |
+| r-4ca43d | 0.0.24 | 2026-09-29 |
 | r-0fc418 | 0.0.21 | 2026-09-24 |
-| r-1a1516 | 0.0.21 | 2026-09-24 |
+| r-1a1516 | 0.0.24 | 2026-09-29 |
 
 **Every row is written by `release.py register`**, never by hand; a carrier that cannot run the
 tool reports that as a defect, in a proposal.
