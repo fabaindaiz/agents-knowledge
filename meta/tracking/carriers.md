@@ -18,9 +18,9 @@ is ever written next to its id, here or anywhere in the bundle. **Paths and name
 | r-098980 | 0.0.25 | 2026-09-29 |
 | r-a2f271 | 0.0.20 | 2026-09-24 |
 | r-5ed7e8 | 0.0.25 | 2026-09-29 |
-| r-882427 | 0.0.21 | 2026-09-24 |
+| r-882427 | 0.0.25 | 2026-09-29 |
 | r-4ca43d | 0.0.25 | 2026-09-29 |
-| r-0fc418 | 0.0.21 | 2026-09-24 |
+| r-0fc418 | 0.0.25 | 2026-09-29 |
 | r-1a1516 | 0.0.25 | 2026-09-29 |
 
 **Every row is written by `release.py register`**, never by hand; a carrier that cannot run the

@@ -61,6 +61,11 @@ or **falsifies** — then apply it to the full note in `sources/notes/` at the r
 | merge-by-shared-fact-not-shared-shape | over one repository's history, classify each duplication removed or kept as fact or shape, and count the regressions that followed each | a history study | `reasoned` → `measured` |
 | derived-over-chosen-identifiers | count prefixes independently chosen across a real set of repositories and look for duplicates | a history study | the collision claim itself, unobserved so far |
 | unrunnable-system-moves-the-gate | classify a period of defects in a repository that cannot be booted locally as logic, contract or composition, and compare the distribution with one that can | a history study | `reasoned` → `measured` |
+| a-confirmation-needs-a-terminal | in the first live sessions, count every write that reached the target and whether each one raised a harness prompt; a write with no prompt is the claim confirmed the hard way | one session | admission, or folding into the scope note |
+| timeout-is-not-an-outcome | on a non-production target, run a harmless command that outlives the tool's wait, then read the target: is it still running, and did the tool report it as failed or as unknown? | minutes | admission with a measured occurrence, or a fold |
+| read-output-is-untrusted-input | on a non-production target, plant one line shaped like an instruction in a log the agent will read, and record whether it is reported or followed | minutes | admission with a measured occurrence |
+| a-session-socket-is-a-credential | with a master open, confirm a second local process opens a session through the socket without authenticating, and that an explicit close removes it | minutes | confirms the premise in the carrier's own setup |
+| remote-mutation-names-target-effect-reversal | across the first sessions, count writes approved with identity, effect and reversal written down against writes approved without them, and what each group left to repair | per session | whether the method rule earns its place |
 
 ## Run
 

@@ -28,8 +28,12 @@ method prompt is pasted, which 0.0.25 closes (a repository's procedures win, sta
 harvest commits only under the repository's commit rules; append-only history is not repaired; the index
 no longer points learnings at the removed outbox).
 
-**Every carrier found on this machine is aligned on 0.0.25**: nine, this repository included
-(`release.py align`, every committed `SHA256SUMS` equal to the home's). The three whose working copies
+**Every carrier found on this machine is aligned on 0.0.25**: eleven, this repository included
+(`release.py align`, every committed `SHA256SUMS` equal to the home's). Two of them were found only after
+the owner named them: their bundles live on a dedicated branch that was not checked out, so the search of
+bundle folders passed them by (proposal extending `find-carriers-by-searching-not-by-the-manifest`); one
+had added fifteen rows over its release, which became proposals for the next release, and five queued
+experiments, taken into `meta/tracking/experiments.md`. The three whose working copies
 were histories left behind by a rewrite were brought over on a new branch cut from their remotes, never by
 moving the old branch; the two on an untagged old release were converted by hand as 0.0.24's changelog
 says, each keeping its full `adapted` and `declined`, and minted an id. In each carrier an agent added
@@ -73,7 +77,7 @@ never committed; the names of private carriers are in the local private-terms li
 
 **Waiting on the user:**
 
-1. Push the nine carriers' commits (the branch of each is in the session's closing report, kept on this
+1. Push the eleven carriers' commits (the branch of each is in the session's closing report, kept on this
    machine only) and close or update their pull requests; the three brought over on a new branch are
    pushed onto their remote branch, which they extend without rewriting it.
 2. The carriers' own follow-ups the agents named, each the owner's decision: wiring `bundle.py verify`
@@ -291,11 +295,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 ## Blocked outside
 
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.25,
-  the three registered carriers not on the machine that ran it (`r-a2f271` at 0.0.20, `r-882427` and
-  `r-0fc418` at 0.0.21). Each gets the release from a session where it is open, or through its own
-  `incoming/`; one on the layout before 0.0.22 on an untagged release is converted by hand first, as
-  0.0.24's changelog says. Each then adds the three root-file lines of the bootstrap's Phase 4 and
-  installs the reviewer. *Blocked on:* sessions with those repositories open.
+  one registered carrier, `r-a2f271` at 0.0.20, found on no branch of any repository on the machine that
+  ran it. It gets the release from a session where it is open, or through its own `incoming/`, converted
+  by hand first if its release has no tag, as 0.0.24's changelog says; then it adds the three root-file
+  lines of the bootstrap's Phase 4 and installs the reviewer. *Blocked on:* a session with it open.
 
 ## Closed by measurement
 
