@@ -262,6 +262,42 @@ shown and is paraphrased, not quoted; none of them was read in full.
   **Confirms:** changing the bundle only through releases, with generated files, rather than by
   accretion in place. *Checked 2026-09-28 against the abstract.*
 
+## Cost and scope
+
+Read for the cost of a consulting session (`i-5ed7e8-1ac328`) and for proposals (`i-5ed7e8-13ff46`).
+Each paper was checked against its abstract on the date shown and is paraphrased, not quoted; none was
+read in full.
+
+- **[How Do AI Agents Spend Your Money? Analyzing and Predicting Token Consumption in Agentic Coding Tasks](https://arxiv.org/abs/2604.22750)**
+  (arXiv 2604.22750). Trajectories of several frontier models on a public issue-resolution benchmark:
+  input tokens, not output, drive the cost even with caching; reading dominates what is spent; runs of
+  the same task differ by up to an order of magnitude and more; models predict their own consumption
+  poorly and underestimate it; spending more did not buy accuracy past a middle point.
+  **Changes:** `i-5ed7e8-1ac328` attacks what the bundle makes the author read, not what it writes;
+  the weight of a task is estimated as a class the transcript can check afterwards, never as a number
+  of tokens the model predicts. *Checked 2026-09-28 against the abstract.*
+
+- **[Do AI Agents Know When a Task Is Simple? Toward Complexity-Aware Reasoning and Execution](https://arxiv.org/abs/2607.13034)**
+  (arXiv 2607.13034). Agents read the maximum context first and turn a one-line edit into an audit; the
+  proposed pattern estimates the scope, executes the minimum path and widens it only when verification
+  fails, and reports a large cut in cost and files inspected at the same success, on deterministic
+  edits and on real libraries.
+  **Changes:** the triage line and the widen-on-failure rule of `i-5ed7e8-1ac328`. *Checked
+  2026-09-28 against the abstract.*
+
+- **[Can your AI agent be cheaper? Investigating the effects of task specifications on token spend in agentic coding tasks](https://arxiv.org/abs/2608.25399)**
+  (arXiv 2608.25399). Reducing a full specification to a bare user story raised token spend by about
+  three tenths, with a sensitivity that varied widely by task; run-to-run variance did not change.
+  **Supports:** the short plan as its own arm in `i-5ed7e8-1ac328`, which is an inference from this
+  result, not something the paper measured. *Checked 2026-09-28 against the abstract.*
+
+- **[towncrier](https://towncrier.readthedocs.io/)** and **[Changesets](https://www.npmjs.com/package/@changesets/cli)**,
+  with **[`git format-patch --base`](https://git-scm.com/docs/git-format-patch#_base_tree_information)**.
+  The established way to collect changes from many contributors for one release: one small file per
+  change, never edited, consumed only by whoever cuts the release; and a patch that names the tree it
+  was written against. **Changes:** proposals (`i-5ed7e8-13ff46`) are those fragments, with `base` and
+  `digest` in their header. *Checked 2026-09-28 against the documentation.*
+
 ## Privacy and re-identification
 
 - **[Sweeney, 2002, "k-anonymity: a model for protecting privacy"](https://doi.org/10.1142/S0218488502001648)**
