@@ -10,28 +10,28 @@ is ever written next to its id, here or anywhere in the bundle. **Paths and name
 
 | Carrier | Version | Aligned on |
 |---|---|---|
-| r-cef56f | 0.0.24 | 2026-09-29 |
-| r-7c8794 | 0.0.24 | 2026-09-29 |
-| r-419136 | 0.0.24 | 2026-09-29 |
-| r-098980 | 0.0.22 | 2026-09-25 |
+| r-81be2b | 0.0.25 | 2026-09-29 |
+| r-1190d3 | 0.0.25 | 2026-09-29 |
+| r-cef56f | 0.0.25 | 2026-09-29 |
+| r-7c8794 | 0.0.25 | 2026-09-29 |
+| r-419136 | 0.0.25 | 2026-09-29 |
+| r-098980 | 0.0.25 | 2026-09-29 |
 | r-a2f271 | 0.0.20 | 2026-09-24 |
-| r-5ed7e8 | 0.0.24 | 2026-09-29 |
+| r-5ed7e8 | 0.0.25 | 2026-09-29 |
 | r-882427 | 0.0.21 | 2026-09-24 |
-| r-4ca43d | 0.0.24 | 2026-09-29 |
+| r-4ca43d | 0.0.25 | 2026-09-29 |
 | r-0fc418 | 0.0.21 | 2026-09-24 |
-| r-1a1516 | 0.0.24 | 2026-09-29 |
+| r-1a1516 | 0.0.25 | 2026-09-29 |
 
 **Every row is written by `release.py register`**, never by hand; a carrier that cannot run the
 tool reports that as a defect, in a proposal.
 
 ## Not reached
 
-Carriers known to exist and not aligned by the last meta-session. They are described here without
-ids: the ids they were registered under were derived from their remotes and could be reversed by
-guessing, so they were withdrawn on 2026-09-24. Each mints a random id with
-`bundle.py carrier-id --mint` when a meta-session next reaches it, and receives the current release
-then, keeping its own fields (the splice moves them into its `carrier.toml`).
+Carriers known to exist and not aligned by the last meta-session. The meta-session of 2026-09-29
+searched its machine for bundle folders and reached every carrier it found there, the two that had
+no id included (each minted one on conversion). Those registered above at an older release were
+not on that machine; each receives the current release from a meta-session where it is open, or
+through its own `incoming/`.
 
-- **Several carriers aligned at an older release of this line.**
-- **Any other carrier of this bundle.** Four were reached by the meta-session of 2026-09-24 and
-  are registered above; none other is known on the machine that ran it.
+- **Any other carrier of this bundle** not on a machine a meta-session has searched.
