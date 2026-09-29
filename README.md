@@ -54,7 +54,7 @@ lifecycle is in [`sources/README.md`](sources/README.md).
 ## Using it in your repository
 
 1. **Copy a release.** Take the files a release's `.agents/SHA256SUMS` lists into your repository's
-   `.agents/`, and nothing else: no other repository's `carrier.toml`, `tracking/` rows or reports.
+   `.agents/`, and nothing else: no other repository's `carrier.toml`, proposals or reports.
 2. **Bootstrap.** Open your agent at the root of your repository and paste the *Paste this to start*
    block of [`method/prompt-bootstrap.md`](.agents/method/prompt-bootstrap.md). It mints your
    repository's random id (`bundle.py carrier-id --mint`) into `.agents/carrier.toml`, and wires your

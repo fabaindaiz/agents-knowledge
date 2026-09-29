@@ -16,7 +16,7 @@ This file is the entry point: the phase guide for every note, and a link to each
 2. **Before a design decision**, look up the action under *By what you are about to do*, below. The third column is the case where the default answer is wrong. If it matches, open the card it links: one small file with the claim, *Not when* (where it stops applying) and the check. **Open the full note only when you cannot tell whether its boundary holds here.** The area indexes are for browsing, not for this lookup.
 3. **When this repository states an invariant that contradicts a note, the repository wins.** Follow it, and say in the report which note gave way and why: that is evidence the note's boundary is incomplete.
 4. **Before claiming the work is done**, run the check of every card you relied on, and say in the report which ones ran and what they showed. A heuristic that was read but not checked is an opinion that happened to be nearby.
-5. **When the work contradicts a note** — a measurement, a test, an incident — do not quietly work around it. Say so in the changelog entry; the harvest records it in this repository's outbox, and the home reviews the note, revising or retiring it, never ignoring it.
+5. **When the work contradicts a note** — a measurement, a test, an incident — do not quietly work around it. Say so in the changelog entry; the harvest writes it as a proposal from this repository, and the home reviews the note, revising or retiring it, never ignoring it.
 
 ## By phase of work
 

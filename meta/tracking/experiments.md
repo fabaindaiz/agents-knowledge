@@ -64,7 +64,7 @@ or **falsifies** — then apply it to the full note in `sources/notes/` at the r
 
 ## Run
 
-Newest first; `release.py intake` adds the runs the carriers' outboxes offer. Numbers measured before this file existed are recorded in each note's *Evidence*.
+Newest first; `release.py intake` adds the runs the carriers' proposals offer. Numbers measured before this file existed are recorded in each note's *Evidence*.
 
 | Date | Note | Where | What was run | Result | Verdict |
 |---|---|---|---|---|---|

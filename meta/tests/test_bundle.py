@@ -11,9 +11,10 @@ import hashlib
 import io
 import json
 import math
+from unittest import mock
 from pathlib import Path
 
-from meta.tests.support import NOTE, Base, bundle, make_bundle
+from meta.tests.support import NOTE, Base, a_proposal, bundle, make_bundle, old_outbox
 
 B = bundle
 
@@ -42,7 +43,9 @@ class Verify(Base):
         cases = {
             "checksum": lambda a: plant(a / "method/prompt-context.md", "edited"),
             "link": lambda a: (plant(a / "method/prompt-context.md", "[gone](gone.md)"), B.write_checksums(a)),
-            "outbox": lambda a: (a / "tracking/candidates.md").write_text("no table\n"),
+            "proposal": lambda a: (a / "proposals/p-0123456789.md").write_text("no header\n"),
+            "old outbox": lambda a: old_outbox(a),
+            "foreign proposal": lambda a: (a_proposal(a), B.write_carrier(a, {"carrier": "r-bbbbbb"})),
             "carrier": lambda a: (a / "carrier.toml").unlink(),
             "invisible": lambda a: (plant(a / "method/prompt-context.md", "hidden \u202e text"), B.write_checksums(a)),
             "incoming": lambda a: (a / "incoming/settings.json").write_text("{}\n"),
@@ -67,16 +70,17 @@ class Verify(Base):
     def test_a_release_as_it_arrives_verifies_without_carrier_files(self) -> None:
         agents = make_bundle(self.root)
         (agents / "carrier.toml").unlink()
-        for rel in B.OUTBOX:
-            (agents / rel).unlink()
 
         self.assertEqual(B.verify_problems(agents, release=True), [])
         self.assertNotEqual(B.verify_problems(agents), [])
         B.write_carrier(agents, {"carrier": "r-bbbbbb"})
-        self.assertIn("another repository's own file", "\n".join(B.verify_problems(agents, release=True)))
+        a_proposal(agents)
+        problems = "\n".join(B.verify_problems(agents, release=True))
+        self.assertIn("carrier.toml: another repository's own file", problems)
+        self.assertIn("proposals/p-", problems)
 
     def test_the_real_bundle_exported_verifies_as_a_release(self) -> None:
-        """A release as it travels: the home's own bundle, exported, with no outbox and no carrier file."""
+        """A release as it travels: the home's own bundle, exported, with no proposals and no carrier file."""
         real = Path(__file__).resolve().parents[2] / ".agents"
         out = self.root / "release"
 
@@ -84,6 +88,7 @@ class Verify(Base):
 
         self.assertFalse((out / "carrier.toml").exists())
         self.assertFalse((out / "tracking").exists())
+        self.assertEqual(sorted(p.name for p in (out / "proposals").iterdir()), ["README.md", "RECEIVED.md"])
         self.assertEqual(B.verify_problems(out, release=True), [])
 
     def test_a_release_carrying_what_incoming_refuses_fails_even_with_its_own_checksums(self) -> None:
@@ -114,7 +119,12 @@ class Verify(Base):
     def test_hidden_and_stray_files_are_named(self) -> None:
         agents = make_bundle(self.root)
         (agents / "method/.evil.md").write_text("hidden\n")
-        (agents / "tracking/prompt-override.md").write_text("stray\n")
+        (agents / "proposals/prompt-override.md").write_text("stray\n")
+        (agents / "proposals/deeper").mkdir()
+        (agents / "proposals/deeper/p-0123456789.md").write_text("stray\n")
+        (agents / "proposals/.DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1" + bytes(24))
+        (agents / "tracking").mkdir()
+        (agents / "tracking/notes.md").write_text("stray\n")
         (agents / "evaluation-x.py").write_text("stray\n")
         (agents / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1" + bytes(24))
         (agents / "method/.DS_Store").write_text("anything but a file browser's\n")
@@ -122,7 +132,10 @@ class Verify(Base):
         problems = "\n".join(B.verify_problems(agents))
 
         self.assertIn("method/.evil.md: a hidden file", problems)
-        self.assertIn("tracking/prompt-override.md: not a file", problems)
+        self.assertIn("proposals/prompt-override.md: not a proposal file", problems)
+        self.assertIn("proposals/deeper/p-0123456789.md: not a proposal file", problems)
+        self.assertNotIn("proposals/.DS_Store", problems)
+        self.assertIn("tracking/notes.md: not a file", problems)
         self.assertIn("evaluation-x.py: not a file", problems)
         self.assertIn("method/.DS_Store: a hidden file", problems)
         self.assertNotIn("\n.DS_Store", "\n" + problems)
@@ -156,7 +169,7 @@ class LocalStep(Base):
     def test_only_the_carriers_own_files_changed_is_local(self) -> None:
         repo = self.root / "one"
         agents = make_bundle(repo)
-        plant(agents / "tracking/candidates.md", "| a-thing — a claim | K | a second occurrence | here | 2026-01-02 |")
+        a_proposal(agents)
 
         self.assertEqual(B.check_local(repo), [])
 
@@ -402,9 +415,9 @@ class Privacy(Base):
 
                 self.assertEqual(self.rules(B.privacy_check(agents)), rule)
 
-    def test_the_outbox_is_read_too(self) -> None:
+    def test_a_proposal_is_read_too(self) -> None:
         agents = make_bundle(self.root)
-        plant(agents / "tracking/candidates.md", self.PLANTED["email"])
+        a_proposal(agents, self.PLANTED["email"])
 
         self.assertEqual(self.rules(B.privacy_check(agents)), ["email"])
 
@@ -413,7 +426,7 @@ class Privacy(Base):
         name = "settle" + "Amount"
         plant(agents / "knowledge/notes/active/absence.md", f"## Why it works\n\nThe field `{name}` held it.\n\n## Evidence\n\n"
                                                             f"The field `{name}` held it.\n\n## Literature\n\nThe field `{name}` held it.")
-        plant(agents / "tracking/candidates.md", f"The field `{name}` held it.")
+        a_proposal(agents, f"The field `{name}` held it.")
 
         report = B.privacy_check(agents)
 
@@ -457,7 +470,8 @@ class Privacy(Base):
 
     def test_warnings_are_advisory(self) -> None:
         agents = make_bundle(self.root)
-        plant(agents / "tracking/candidates.md", "It failed 7 " + "of 12 runs over 12" + ',480 rows: "the queue was never drained at all".')
+        a_proposal(agents, "It failed 7 " + "of 12 runs over 12" + ',480 rows: "the queue was never drained at all".',
+                   lacks="refused: already the default behaviour here")
 
         report = B.privacy_check(agents)
 
@@ -559,11 +573,207 @@ class ChangelogCommand(Base):
         self.assertEqual(code, 0)
         self.assertIn("## [0.0.1]", out)
 
-    def test_the_outbox_is_reset_to_its_templates(self) -> None:
+    def test_a_proposal_is_written_listed_and_never_rewritten(self) -> None:
         agents = make_bundle(self.root)
-        plant(agents / "tracking/candidates.md", "| a | K | b | c | 2026-01-01 |")
 
-        code, out = run("outbox", "--reset", str(agents))
+        code, out = run("propose", "--tree", str(agents), "--kind", "knowledge", "--target", "a-thing", "--claim",
+                        "A claim.", "--evidence", "Seen once.", "--lacks", "a second occurrence", "--seen", "2026-01-02")
 
-        self.assertEqual(code, 0)
-        self.assertEqual((agents / "tracking/candidates.md").read_text(), B.OUTBOX_TEMPLATES["tracking/candidates.md"])
+        self.assertEqual(code, 0, out)
+        path = next((agents / "proposals").glob("p-*.md"))
+        text = path.read_text()
+        self.assertTrue(text.startswith("---\n# bundle-proposal:"))
+        meta, body = B.read_frontmatter(text)
+        self.assertEqual((meta["carrier"], meta["base"], meta["proposal"]), ("r-abcdef", "0.0.1", path.stem))
+        self.assertEqual(meta["digest"], hashlib.sha256((agents / "SHA256SUMS").read_bytes()).hexdigest()[:12])
+        self.assertIn("## Evidence\n\nSeen once.", body)
+        self.assertEqual(B.verify_problems(agents), [])
+        code, again = run("propose", "--tree", str(agents), "--kind", "knowledge", "--target", "a-thing", "--claim",
+                          "A claim.", "--evidence", "Seen once.", "--lacks", "a second occurrence", "--seen", "2026-01-02")
+        self.assertEqual(code, 2, again)
+        self.assertIn("already proposed", again)
+        code, listed = run("proposals", str(agents))
+        self.assertIn(f"{path.stem}  knowledge", listed)
+        self.assertIn("waiting for the home", listed)
+
+    def test_a_proposal_from_a_file_keeps_what_a_shell_would_rewrite(self) -> None:
+        agents = make_bundle(self.root)
+        draft = self.root / "draft.md"
+        draft.write_text("A default of `$(none)` widens the scope.\n\n## Evidence\n\nThe field `limit` was `None`, twice.\n")
+
+        code, out = run("propose", "--tree", str(agents), "--kind", "knowledge", "--target", "a-thing", "--from", str(draft))
+
+        self.assertEqual(code, 0, out)
+        (found,), _ = B.proposals_of(agents)
+        self.assertEqual((found.claim, found.evidence), ("A default of `$(none)` widens the scope.", "The field `limit` was `None`, twice."))
+        draft.write_text("No heading here.\n")
+        code, out = run("propose", "--tree", str(agents), "--kind", "knowledge", "--target", "other", "--from", str(draft))
+        self.assertEqual(code, 2, out)
+        self.assertIn("no `## Evidence` heading", out)
+
+    def test_an_incomplete_proposal_is_refused_before_it_is_written(self) -> None:
+        agents = make_bundle(self.root)
+
+        with self.assertRaisesRegex(B.RefusedError, "verdict"):
+            a_proposal(agents, kind="experiment", verdict="maybe", where="a service")
+        self.assertEqual(list((agents / "proposals").glob("p-*.md")), [])
+
+    def test_a_hand_edited_proposal_is_named(self) -> None:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents)
+        path.write_text(path.read_text().replace("lacks: a second occurrence", "lacks: \"\""))
+        (agents / "proposals/p-0000000000.md").write_text(path.read_text())
+
+        problems = "\n".join(B.verify_problems(agents))
+
+        self.assertIn("`lacks` is empty", problems)
+        self.assertIn("p-0000000000.md: its `proposal` field is", problems)
+
+    def test_the_old_outbox_becomes_one_proposal_per_row_and_nothing_is_lost(self) -> None:
+        agents = make_bundle(self.root)
+        old_outbox(agents, ["| extends absence — a new boundary | K | nothing | a service, twice | 2026-01-03 |",
+                            "| weak-idea — too narrow | M | refused: already the default | here | 2026-01-04 or earlier |"],
+                   ["| 2026-01-05 | a-check | a batch job | planted a fault | the check failed | confirms |"])
+        self.assertIn("convert its rows", "\n".join(B.verify_problems(agents)))
+
+        code, out = run("proposals", "--from-outbox", str(agents))
+
+        self.assertEqual(code, 0, out)
+        self.assertFalse((agents / "tracking").exists())
+        found, problems = B.proposals_of(agents)
+        self.assertEqual(problems, [])
+        by_target = {p.target: p for p in found}
+        self.assertEqual(set(by_target), {"absence", "weak-idea", "a-check"})
+        self.assertEqual((by_target["absence"].action, by_target["absence"].claim), ("extends", "a new boundary"))
+        self.assertEqual(by_target["weak-idea"].lacks, "refused: already the default")
+        self.assertEqual((by_target["weak-idea"].seen, by_target["weak-idea"].evidence),
+                         ("2026-01-04", "here (First seen: 2026-01-04 or earlier)"))
+        self.assertEqual((by_target["a-check"].kind, by_target["a-check"].verdict, by_target["a-check"].evidence),
+                         ("experiment", "confirms", "the check failed"))
+        self.assertEqual(B.verify_problems(agents), [])
+
+    def test_an_aligned_table_and_rows_after_a_blank_line_are_all_converted(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "tracking").mkdir()
+        (agents / "tracking/candidates.md").write_text(
+            "# Candidates this repository offers\n\n"
+            "| Candidate                  | Kind | Lacks   | Evidence | First seen |\n"
+            "| -------------------------- | ---- | ------- | -------- | ---------- |\n"
+            "| first-idea — one           | K    | nothing | here     | 2026-01-02 |\n\n"
+            "| second-idea — two          | M    | nothing | there    | 2026-01-03 |\n")
+
+        written = B.convert_outbox(agents)
+
+        self.assertEqual(len(written), 2)
+        self.assertEqual(sorted(p.target for p in B.proposals_of(agents)[0]), ["first-idea", "second-idea"])
+
+    def test_text_that_is_not_a_row_stops_the_conversion_before_anything_is_removed(self) -> None:
+        agents = make_bundle(self.root)
+        old_outbox(agents, ["| kept — a claim | K | nothing | here | 2026-01-02 |"])
+        plant(agents / "tracking/candidates.md", "A note the carrier wrote under the table.")
+
+        with self.assertRaisesRegex(B.RefusedError, "would be removed unread"):
+            B.convert_outbox(agents)
+
+        self.assertTrue((agents / "tracking/candidates.md").is_file())
+        self.assertEqual(list((agents / "proposals").glob("p-*.md")), [])
+
+    def test_every_row_shape_becomes_a_proposal_that_reads_whole(self) -> None:
+        agents = make_bundle(self.root)
+        old_outbox(agents, ["| **Extends** `absence` — a new boundary | k | nothing | a service | 2026-01-02 |",
+                            "| **A claim in bold, with no slug at all.** | K / M | a number | a tool | 2026-01-03 |",
+                            "| undated — a claim | K | nothing | somewhere | once, long ago |"],
+                   ["| 2026-01-05 | a-check | a batch job | planted a fault | ratio a|b held | confirms |",
+                    "| 2026-01-05 | a-check | a service with a queue | planted a fault | it failed | confirms |",
+                    "| 2026-01-05 | a-check | a command-line tool | planted a fault | it passed | falsifies |"])
+
+        B.convert_outbox(agents)
+
+        found, problems = B.proposals_of(agents)
+        self.assertEqual(problems, [])
+        self.assertEqual(len(found), 6)
+        by = {(p.target, p.where): p for p in found}
+        self.assertEqual(by[("absence", "")].action, "extends")
+        bold = next(p for p in found if p.target.startswith("a-claim-in-bold"))
+        self.assertEqual(bold.kind, "knowledge")
+        self.assertIn("Kind: K / M", bold.evidence)
+        undated = next(p for p in found if p.target == "undated")
+        self.assertEqual(undated.seen, "unknown")
+        self.assertIn("First seen: once, long ago", undated.evidence)
+        with mock.patch.object(B.datetime, "date", wraps=B.datetime.date) as later:
+            later.today.return_value = B.datetime.date(2030, 1, 1)
+            self.assertEqual(B.row_proposal("tracking/candidates.md", ["undated — a claim", "K", "nothing", "somewhere",
+                                                                      "once, long ago"], "r-abcdef").id, undated.id)
+        piped = by[("a-check", "a batch job")]
+        self.assertEqual((piped.evidence, piped.verdict), ("ratio a | b held", "confirms"))
+        self.assertEqual(by[("a-check", "a command-line tool")].verdict, "falsifies")
+        self.assertEqual(B.verify_problems(agents), [])
+
+    def test_a_table_that_is_not_utf8_or_holds_a_heading_is_never_converted_wrong(self) -> None:
+        agents = make_bundle(self.root)
+        old_outbox(agents, ["| x — ## Evidence | K | nothing | here | 2026-01-02 |"])
+        B.convert_outbox(agents)
+        found, problems = B.proposals_of(agents)
+        self.assertEqual((problems, found[0].claim), ([], "\\## Evidence"))
+
+        latin = make_bundle(self.root / "latin")
+        old_outbox(latin)
+        with (latin / "tracking/candidates.md").open("ab") as f:
+            f.write("| caf\u00e9 - a claim | K | nothing | here | 2026-01-02 |\n".encode("latin-1"))
+        with self.assertRaisesRegex(B.RefusedError, "not UTF-8"):
+            B.convert_outbox(latin)
+        self.assertTrue((latin / "tracking/candidates.md").is_file())
+
+    def test_a_proposal_edited_after_it_was_written_is_named_and_never_pruned(self) -> None:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents, "Seen once.")
+        path.write_text(path.read_text().replace("Seen once.", "Seen five times."))
+        (agents / "proposals/RECEIVED.md").write_text(
+            f"# Received\n\n{B.RECEIVED_HEADER}\n|---|---|---|\n| `{path.stem}` | 0.0.2 | queued as `a-thing` |\n")
+
+        self.assertIn("edited after it was written", "\n".join(B.verify_problems(agents)))
+        self.assertEqual(B.prune_proposals(agents), [])
+        self.assertTrue(path.exists())
+
+    def test_header_values_read_back_as_written(self) -> None:
+        for value in ("del \x7f here", "next \x85 line", "tag \U000e0041 char", "zero\u200bwidth", "refused: a reason"):
+            with self.subTest(value=ascii(value)):
+                block = B.dump_frontmatter({"where": value}, plain=True)
+                self.assertEqual(B.read_frontmatter(block + "\n")[0]["where"], value)
+                self.assertTrue(block.isascii() or "\u200b" not in block)
+
+    def test_prune_removes_only_what_the_release_lists_as_received(self) -> None:
+        agents = make_bundle(self.root)
+        heard, waiting = a_proposal(agents), a_proposal(agents, target="another")
+        (agents / "proposals/RECEIVED.md").write_text(
+            f"# Received\n\n{B.RECEIVED_HEADER}\n|---|---|---|\n| `{heard.stem}` | 0.0.2 | queued as `a-thing` |\n")
+
+        code, out = run("proposals", "--prune", str(agents))
+
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"{heard.stem}: queued as `a-thing`", out)
+        self.assertFalse(heard.exists())
+        self.assertTrue(waiting.exists())
+
+    def test_a_pack_carries_proposals_and_nothing_else(self) -> None:
+        import tarfile
+
+        agents = make_bundle(self.root)
+        path = a_proposal(agents)
+        pack = self.root / "pack.tar"
+
+        code, out = run("proposals", "--pack", str(pack), str(agents))
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(B.read_pack(pack), {path.name: path.read_text()})
+        evil = self.root / "evil.tar"
+        with tarfile.open(evil, "w") as archive:
+            archive.add(agents / "tools/bundle.py", arcname="proposals/../../tools/bundle.py")
+        with self.assertRaisesRegex(B.RefusedError, "not a proposal file"):
+            B.read_pack(evil)
+        twice = self.root / "twice.tar"
+        with tarfile.open(twice, "w") as archive:
+            archive.add(path, arcname=f"proposals/{path.name}")
+            archive.add(path, arcname=path.name)
+        with self.assertRaisesRegex(B.RefusedError, "twice"):
+            B.read_pack(twice)

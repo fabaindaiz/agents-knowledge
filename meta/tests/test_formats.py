@@ -95,7 +95,7 @@ class Checksums(Base):
 
     def test_the_carriers_own_files_may_change(self) -> None:
         agents = make_bundle(self.root)
-        (agents / "tracking/candidates.md").write_text("anything\n")
+        (agents / "proposals/p-0123456789.md").write_text("anything\n")
         (agents / "evaluation-2026-01-01-abcdef.md").write_text("report\n")
         bundle.write_carrier(agents, {"carrier": "r-bbbbbb"})
 
@@ -209,13 +209,3 @@ class Incoming(Base):
 
         self.assertEqual(len(found), 1)
         self.assertIn("U+202E", found[0])
-
-
-class Outbox(Base):
-    def test_a_fresh_outbox_passes_and_a_changed_header_is_named(self) -> None:
-        agents = make_bundle(self.root)
-        self.assertEqual(bundle.outbox_problems(agents), [])
-
-        (agents / "tracking/candidates.md").write_text("| Candidate | Lacks |\n|---|---|\n")
-
-        self.assertIn("tracking/candidates.md", "\n".join(bundle.outbox_problems(agents)))

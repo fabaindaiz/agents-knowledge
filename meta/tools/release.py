@@ -9,8 +9,8 @@ than copying from it, so every rule both need exists once.
     python3 meta/tools/release.py build [--check]         generated knowledge and SHA256SUMS, from sources/
     python3 meta/tools/release.py release X.Y.Z           version, date, build; prints the tag to create
     python3 meta/tools/release.py check                   the home's CI: verify, build --check, privacy, links
-    python3 meta/tools/release.py gather [REPO...] --out DIR    phase 1: each carrier against its release tag
-    python3 meta/tools/release.py intake DIR              the gathered outboxes into meta/tracking/
+    python3 meta/tools/release.py gather [REPO...] --out DIR [--packs FILE...]   phase 1: each carrier and its proposals
+    python3 meta/tools/release.py intake DIR              the gathered proposals into meta/tracking/, as received
     python3 meta/tools/release.py lost BASE SNAPSHOT...   lines a carrier added that the home does not hold
     python3 meta/tools/release.py splice [REPO...] [--write --backup DIR]   phase 2: the release into each carrier
     python3 meta/tools/release.py register [REPO...]      the carriers table, by stored carrier id
@@ -411,6 +411,36 @@ def _clip(text: str, limit: int = OPEN_CELL) -> str:
     return text if len(text) <= limit else text[: text.rfind(" ", 0, limit)].rstrip(",;:—- ") + " …"
 
 
+RECEIVED_LEDGER = "meta/tracking/received.md"
+RECORDS_BANNER = f"<!-- {RELEASE_MARK} from the home repository's {RECEIVED_LEDGER}; edit that, never this file. -->\n"
+
+
+def received_rows(meta_dir: Path) -> list[list[str]]:
+    return [r for r in read_table(meta_dir / "tracking/received.md", B.RECEIVED_HEADER) if len(r) >= 3]
+
+
+def render_received(meta_dir: Path) -> str:
+    """`proposals/RECEIVED.md`: every proposal the home took in, by id, with where it went.
+
+    A carrier removes the ones it finds here (`bundle.py proposals --prune`); ids only, so the list says
+    nothing of which carrier offered what.
+    """
+    rows = sorted(received_rows(meta_dir), key=lambda r: r[0])
+    lines = [
+        "# Received — the proposals the home repository took in",
+        "",
+        "Generated at each release from the home's records. Each row is a proposal some carrier wrote in its own "
+        "`proposals/`, and what the home did with it. A carrier that finds one of its own here removes it "
+        "with `python3 .agents/tools/bundle.py proposals --prune`; one not listed yet is still waiting, and "
+        "stays. Nothing here is guidance.",
+        "",
+        B.RECEIVED_HEADER,
+        "|---|---|---|",
+        *[_row(r[:3]) for r in rows],
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def answered(meta_dir: Path) -> list[str]:
     """The slugs the home's history says left the queue, from the first cell of its tables."""
     path = meta_dir / "tracking/history.md"
@@ -455,39 +485,9 @@ def render_open(meta_dir: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
-def split_row(line: str) -> list[str]:
-    """The cells of one markdown table row; `\\|` is a pipe inside a cell."""
-    cells, current, i, inner = [], [], 0, line.strip()[1:]
-    inner = inner[:-1] if inner.endswith("|") and not inner.endswith("\\|") else inner
-    while i < len(inner):
-        if inner[i] == "\\" and inner[i + 1 : i + 2] == "|":
-            current.append("|")
-            i += 2
-            continue
-        if inner[i] == "|":
-            cells.append("".join(current).strip())
-            current = []
-        else:
-            current.append(inner[i])
-        i += 1
-    cells.append("".join(current).strip())
-    return cells
-
-
-def read_table(path: Path, header: str, prefix: bool = False) -> list[list[str]]:
-    """The rows of the first table in `path` whose header row is (or, with `prefix`, starts with) `header`."""
-    if not path.is_file():
-        return []
-    lines = path.read_text(encoding="utf-8").split("\n")
-    for i, line in enumerate(lines):
-        if line == header or (prefix and line.startswith(header)):
-            rows = []
-            for row in lines[i + 2 :]:
-                if not row.startswith("|"):
-                    break
-                rows.append(split_row(row))
-            return rows
-    return []
+# The table readers live in the carrier tool, which needs them to convert the outbox of 0.0.23.
+split_row = B.split_row
+read_table = B.read_table
 
 
 def build_outputs(root: Path, order: Order | None = None, cards: bool = True, banner: bool = True) -> dict[str, str]:
@@ -546,6 +546,7 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
         banner = f"{RELEASE_MARK} from the home repository's sources/templates/knowledge-reviewer.md; edit that, never this file"
         out["agents/knowledge-reviewer.md"] = "---\n# " + banner + "\n" + text[4:]
     out["knowledge/OPEN.md"] = head + render_open(root / "meta")
+    out[B.RECEIVED] = (RECORDS_BANNER if banner else "") + render_received(root / "meta")
     originals = root / ORIGINALS
     for path in sorted(originals.rglob("*"), key=lambda p: p.as_posix().encode()):
         if path.is_file() and "__pycache__" not in path.parts and not path.name.startswith("."):
@@ -765,7 +766,18 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     problems += B.invisible_characters(root, [p.relative_to(root).as_posix() for p in home_files(root)])
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
+    problems += queue_problems(root)
     return problems, privacy.notes() + home.notes()
+
+
+QUEUE_ROW = re.compile(r"^(?:(?:extends|overlaps)\s+)?`?[a-z0-9][\w.-]*`?(?:\s*\+\s*`?[a-z0-9][\w.-]*`?)*\s+—\s")
+
+
+def queue_problems(root: Path = ROOT) -> list[str]:
+    """Every queued candidate whose row does not open with its slug: a harvest can only extend what it can name."""
+    rows = read_table(root / "meta/tracking/candidates.md", CANDIDATES_HEADER, prefix=True)
+    return [f"meta/tracking/candidates.md: {r[0][:50]!r}: does not open with its slug (`slug — claim`)"
+            for r in rows if not QUEUE_ROW.match(r[0].strip())]
 
 
 # --- carriers: gather, intake, lost, splice, register, align ------------------------------------------
@@ -847,27 +859,65 @@ def lost(base: Path, snapshots: dict[str, Path], root: Path = ROOT) -> list[tupl
     to the full notes or the release records is found where it went.
     """
     missing = []
+    frame = {B._cells_of(h)[0] for h in B.OUTBOX_COLUMNS.values()}
     for name, tree in snapshots.items():
         for rel in B.all_files(tree):
             if (B.is_carrier_owned(rel) and not rel.startswith("tracking/")) or rel == B.CHECKSUMS:
                 continue
             added = _lines(tree / rel) - _lines(base / rel)
+            if rel in B.OUTBOX:
+                # The rows of the old outbox tables travel as proposals, taken in and recorded by id: they are
+                # accounted for there, however intake rewrote them and however a formatter spaced them.
+                rows = {line for line, _ in B.outbox_table(tree / rel, rel)[0]}
+                added = {line for line in added if line.strip() not in rows and not B.TABLE_SEPARATOR.match(line.strip())
+                         and not (line.strip().startswith("|") and B._cells_of(line.strip())[:1]
+                                  and B._cells_of(line.strip())[0] in frame)}
             present = set().union(*(_lines(p) for p in home_counterparts(rel, root))) if added else set()
             missing += [(name, rel, line) for line in sorted(added - present)]
     return missing
 
 
-def _outbox_rows(tree: Path, base: Path | None) -> dict[str, list[list[str]]]:
-    """The rows a carrier offers: its outbox, or on the old layout, the tracking rows added over its release."""
-    rows = {"candidates": [], "experiments": []}
-    for key, rel, header in (("candidates", "tracking/candidates.md", CANDIDATES_HEADER),
-                             ("experiments", "tracking/experiments.md", EXPERIMENTS_RUN_HEADER)):
-        found = read_table(tree / rel, header, prefix=True)
-        if base is not None:
-            known = {tuple(r) for r in read_table(base / rel, header, prefix=True)}
-            found = [r for r in found if tuple(r) not in known]
-        rows[key] = found
-    return rows
+def _added_rows(tree: Path, base: Path) -> list[tuple[str, list[str]]]:
+    """The outbox rows of a bundle from before 0.0.22 that its release did not already hold: the carrier's own."""
+    known = {(rel, tuple(row)) for rel, row in B.outbox_rows(base)}
+    return [(rel, row) for rel, row in B.outbox_rows(tree) if (rel, tuple(row)) not in known]
+
+
+def _carrier_of(tree: Path) -> str:
+    """A carrier's id: its carrier file's, or on the old layout its headers', or one minted since into a carrier file."""
+    try:
+        own = legacy_own_fields(tree) if B.is_legacy(tree) else {}
+        return str(own.get("carrier") or (B.read_carrier(tree) or {}).get("carrier") or "")
+    except RefusedError:
+        return ""
+
+
+def _unconverted(tree: Path, base: Path, rows: list[tuple[str, list[str]]], name: str, root: Path) -> list[str]:
+    """Lines a carrier on the old layout added to its `tracking/` that are neither rows to convert nor held by
+    the home: what converting it would remove unread."""
+    return [f"{rel}: {line.strip()[:80]}" for _, rel, line in lost(base, {name: tree}, root) if rel.startswith("tracking/")]
+
+
+def _offered(tree: Path, base: Path | None) -> tuple[list[dict], list[str]]:
+    """What a carrier offers: its proposals, and each row of an outbox from before them as the proposal it
+    becomes when the carrier converts it (the same id), so nothing is taken in twice."""
+    from dataclasses import asdict
+
+    found, problems = B.proposals_of(tree)
+    offered = [{**asdict(p), "source": f"{B.PROPOSALS}/{p.id}.md"} for p in found]
+    legacy = B.is_legacy(tree)
+    rows = _added_rows(tree, base) if legacy and base is not None else [] if legacy else B.outbox_rows(tree)
+    if legacy and base is None and B.outbox_rows(tree):
+        problems.append("its tracking rows cannot be told from its release's without that release's tag; read them by hand")
+    if not legacy:
+        problems += [f"{rel}: not a row of its table, and a conversion would refuse to remove it: {line.strip()[:80]!r}"
+                     for rel in B.OUTBOX for line in B.outbox_table(tree / rel, rel)[1]]
+    carrier = _carrier_of(tree)
+    if rows and not B.CARRIER_ID.match(carrier):
+        problems.append(f"{len(rows)} outbox rows cannot become proposals: it has no carrier id")
+        rows = []
+    offered += [{**asdict(B.row_proposal(rel, row, carrier)), "source": f"{rel}, the row {row[0][:40]!r}"} for rel, row in rows]
+    return offered, problems
 
 
 def _forked_from(base: Path, tree: Path) -> list[str]:
@@ -880,8 +930,12 @@ def _forked_from(base: Path, tree: Path) -> list[str]:
     return out
 
 
-def gather(repos: list[Path], out: Path, root: Path = ROOT) -> dict:
-    """Phase 1, read-only: every carrier against the release it holds; its offered rows; what it forked."""
+def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | None = None) -> dict:
+    """Phase 1, read-only: every carrier against the release it holds; its proposals; what it forked.
+
+    `packs` are proposals a carrier sent as one file (`bundle.py proposals --pack`), from a machine where
+    this session cannot open it: read as they are, never extracted.
+    """
     import json
     import shutil
 
@@ -893,8 +947,8 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT) -> dict:
     out.mkdir(parents=True)
     (out / GATHER_MARKER).write_text("written by release.py gather; the whole folder is replaced by the next one\n")
     available = set(tags(root))
-    report: dict = {"carriers": {}}
-    lines = [f"# Gather — {len(repos)} carriers", ""]
+    report: dict = {"carriers": {}, "packs": {}}
+    lines = [f"# Gather — {len(repos)} carriers" + (f" and {len(packs)} packs" if packs else ""), ""]
     for repo, name in zip(repos, names):
         snapshot = out / "carriers" / name / ".agents"
         shutil.copytree(repo / ".agents", snapshot, ignore=shutil.ignore_patterns("__pycache__"))
@@ -905,16 +959,34 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT) -> dict:
             place = out / "base" / version
             base = place / ".agents" if place.exists() else extract(f"v{version}", place, root)
         entry = {"version": version, "legacy": legacy, "base": str(base) if base else None}
-        entry["forked"] = [] if legacy else B.check_local(repo) + (_forked_from(base, snapshot) if base else [])
+        # The home's own release files are the build's, ahead of its last tag while a release is being written.
+        home = repo.resolve() == root.resolve()
+        entry["forked"] = [] if legacy or home else B.check_local(repo) + (_forked_from(base, snapshot) if base else [])
         entry["lost"] = [f"{rel}: {line[:120]}" for _, rel, line in lost(base, {name: snapshot}, root)] if legacy and base else []
-        entry["rows"] = _outbox_rows(snapshot, base if legacy else None)
+        entry["proposals"], entry["problems"] = _offered(snapshot, base)
         report["carriers"][name] = entry
-        rows = entry["rows"]
+        offered = entry["proposals"]
+        old = sum(not o["source"].startswith(B.PROPOSALS) for o in offered)
         lines += [f"## {name} — holds {version or 'an unknown version'}" + (" (layout before 0.0.22)" if legacy else ""), "",
                   f"- base: {'tag v' + version if base else 'none: no release tag for this version; compare by hand'}",
-                  f"- offers {len(rows['candidates'])} candidates and {len(rows['experiments'])} experiment runs",
+                  f"- offers {len(offered)} proposals" + (f", {old} of them rows of its old outbox" if old else ""),
+                  *[f"- not readable as a proposal: {p}" for p in entry["problems"]],
                   *[f"- changed what only a release writes: {p}" for p in entry["forked"]],
                   *[f"- added over its release, and not in the home: {p}" for p in entry["lost"]], ""]
+    from dataclasses import asdict
+
+    for pack in packs or []:
+        found, problems = [], []
+        for name, text in sorted(B.read_pack(pack).items()):
+            proposal, issues = B.parse_proposal(text, f"{pack.name}:{name}")
+            if proposal is not None and proposal.id != name.removesuffix(".md"):
+                issues.append(f"{pack.name}:{name}: its `proposal` field is {proposal.id}, not its file name")
+            problems += issues
+            if proposal is not None and not issues:
+                found.append({**asdict(proposal), "source": f"{pack.name}:{name}"})
+        report["packs"][pack.name] = {"proposals": found, "problems": problems}
+        lines += [f"## pack {pack.name}", "", f"- offers {len(found)} proposals",
+                  *[f"- not readable as a proposal: {p}" for p in problems], ""]
     (out / "gather.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     (out / "gather.md").write_text("\n".join(lines), encoding="utf-8")
     return report
@@ -927,11 +999,49 @@ def slug_of(cell: str) -> str:
     return re.split(r"\s+[—-]\s+|\s", text, maxsplit=1)[0].strip(".,:;").lower()
 
 
+def candidate_cell(p: B.Proposal) -> str:
+    """The queue's first cell for a proposal: `slug — claim`, or `extends slug — …` for an extension."""
+    return (f"{p.action} " if p.action in ("extends", "overlaps") else "") + f"{p.target} — " + " ".join(p.claim.split())
+
+
+def _note_text(root: Path, rev: str | None, slug: str) -> str | None:
+    for state in NOTE_STATES:
+        rel = f"sources/notes/{state}/{slug}.md"
+        if rev is None:
+            if (root / rel).is_file():
+                return (root / rel).read_text(encoding="utf-8")
+        else:
+            try:
+                return str(git("show", f"{rev}:{rel}", repo=root))
+            except Exception:  # noqa: BLE001 -- not at that tag, in that state
+                continue
+    return None
+
+
+def base_moved(p: B.Proposal, root: Path, available: set[str]) -> bool:
+    """Whether the note a proposal concerns changed after the release it was written against."""
+    now = _note_text(root, None, p.target)
+    if now is None or not p.base or f"v{p.base}" not in available:
+        return False
+    return _note_text(root, f"v{p.base}", p.target) != now
+
+
+RECEIVED_INTRO = (
+    "# Proposals received\n\n"
+    "Every proposal a carrier offered that `release.py intake` took in, by its id, the release it was taken in at, "
+    "and where it went. `release.py build` publishes this table as `.agents/proposals/RECEIVED.md`, and each carrier "
+    "removes the proposals listed there with `bundle.py proposals --prune`. Ids only: which carrier offered a "
+    "proposal is never written here or anywhere in the home. Rows are appended by `intake`, never edited.\n\n"
+    + B.RECEIVED_HEADER + "\n|---|---|---|\n")
+
+
 def intake(out: Path, version: str, root: Path = ROOT) -> dict:
-    """The gathered rows into the home's records: new candidates queued, duplicates named, runs logged.
+    """The gathered proposals into the home's records: new candidates queued, duplicates named, runs logged.
 
     A candidate whose slug the queue, the history or a note already holds is not queued twice; it is
     listed so the release can add it to that row as another occurrence, which is what admission counts.
+    Every proposal taken in is written to `meta/tracking/received.md` with where it went; one already
+    there is skipped, so a carrier that has not pruned yet is never taken in twice.
     """
     import json
 
@@ -940,35 +1050,48 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
     queued = {slug_of(r[0]) for r in read_table(queue_path, CANDIDATES_HEADER, prefix=True)}
     history = (root / "meta/tracking/history.md").read_text(encoding="utf-8") if (root / "meta/tracking/history.md").is_file() else ""
     notes = {p.stem for p in (root / "sources/notes").rglob("*.md")}
-    result = {"queued": [], "duplicates": [], "refused": [], "runs": 0, "taken": {}}
-    new_rows, new_runs, refused, again = [], [], [], []
-    for name, entry in report["carriers"].items():
-        taken = result["taken"].setdefault(name, [])
-        for row in entry["rows"]["candidates"]:
-            slug = slug_of(row[0])
-            taken.append(_row(row))
-            if len(row) > 2 and row[2].lower().startswith("refused"):
-                # A learning the harvest refused: recorded where the next harvest looks, never queued.
-                refused.append(f"| `{slug}` | {row[2]} |")
-                result["refused"].append(slug)
+    heard = {r[0].strip("`") for r in received_rows(root / "meta")}
+    available = set(tags(root))
+    result: dict = {"queued": [], "duplicates": [], "refused": [], "runs": 0, "received": [], "skipped": 0,
+                    "moved": [], "malformed": []}
+    new_rows, new_runs, refused, again, ledger = [], [], [], [], []
+    sources = [*report["carriers"].items(), *[(f"pack {k}", v) for k, v in report.get("packs", {}).items()]]
+    for name, entry in sources:
+        result["malformed"] += [f"{name}: {p}" for p in entry.get("problems", [])]
+        for offered in entry.get("proposals", []):
+            p = B.Proposal(**{k: v for k, v in offered.items() if k != "source"})
+            if p.id in heard:
+                result["skipped"] += 1
                 continue
-            if sum(1 for c in row if c.strip()) < 3:
-                result.setdefault("malformed", []).append(f"{name}: {row[0][:60]!r} has too few cells to be a candidate")
+            _, issues = B.parse_proposal(B.render_proposal(p), offered["source"])
+            if issues:
+                result["malformed"] += [f"{name}: {i}" for i in issues]
                 continue
-            cells = (row + [""] * 5)[:5] if len(row) <= 5 else [*row[:3], "; ".join(row[3:-1]), row[-1]]
-            if slug in queued or slug in notes or f"`{slug}`" in history:
-                result["duplicates"].append(f"{name}: {slug} (already {'a note' if slug in notes else 'queued or answered'})")
-                again.append(_row([*cells, version]))
-                continue
-            queued.add(slug)
-            new_rows.append(_row([*cells, version]))
-            result["queued"].append(slug)
-        for row in entry["rows"]["experiments"]:
-            taken.append(_row(row))
-            if not re.match(r"\d{4}-\d{2}-\d{2}", row[0]) or len(row) < 6:
-                result.setdefault("malformed", []).append(f"{name}: experiment row {row[0][:40]!r} needs a date and six cells")
-                continue
-            new_runs.append(_row(row[:6]))
+            heard.add(p.id)
+            if p.kind == "experiment":
+                new_runs.append(_row([p.seen, p.target, p.where, " ".join(p.claim.split()), " ".join(p.evidence.split()), p.verdict]))
+                verdict = f"run logged against `{p.target}`"
+            else:
+                slug, kind = p.target, B.PROPOSAL_KINDS[p.kind]
+                cells = [candidate_cell(p), kind, p.lacks, " ".join(p.evidence.split()), p.seen]
+                if p.lacks.lower().startswith("refused"):
+                    # A learning the harvest refused: recorded where the next harvest looks, never queued.
+                    refused.append(f"| `{slug}` | {p.lacks} |")
+                    result["refused"].append(slug)
+                    verdict = "refused by its harvest; recorded in the history"
+                elif slug in queued or slug in notes or f"`{slug}`" in history:
+                    result["duplicates"].append(f"{name}: {slug} (already {'a note' if slug in notes else 'queued or answered'})")
+                    again.append(_row([*cells, version]))
+                    verdict = f"another occurrence of `{slug}`, to merge"
+                else:
+                    queued.add(slug)
+                    new_rows.append(_row([*cells, version]))
+                    result["queued"].append(slug)
+                    verdict = f"queued as `{slug}`"
+            if base_moved(p, root, available):
+                result["moved"].append(f"{p.id}: `{p.target}` changed after {p.base}, which it was written against; read it again before merging")
+            ledger.append(_row([f"`{p.id}`", version, verdict]))
+            result["received"].append(p.id)
     _insert_rows(queue_path, CANDIDATES_HEADER, new_rows, at_top=False)
     if again:
         # Another occurrence of something known is evidence: kept, for the release to add to its row or note.
@@ -977,13 +1100,17 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
             text += f"\n\n{AGAIN_HEADING}\n\n{AGAIN_INTRO}\n\n{CANDIDATES_HEADER} Since |\n|---|---|---|---|---|---|"
         queue_path.write_text(text + "\n" + "\n".join(again) + "\n", encoding="utf-8")
     if refused:
-        history = root / "meta/tracking/history.md"
-        text = history.read_text(encoding="utf-8")
+        history_path = root / "meta/tracking/history.md"
+        text = history_path.read_text(encoding="utf-8")
         head, _, rest = text.partition("\n## ")
         section = (f"## Refused by carriers' harvests, taken in at {version}\n\n| Candidate | Where it went |\n|---|---|\n"
                    + "\n".join(refused) + "\n\n")
-        history.write_text(head + "\n" + section + ("## " + rest if rest else ""), encoding="utf-8")
+        history_path.write_text(head + "\n" + section + ("## " + rest if rest else ""), encoding="utf-8")
     _insert_rows(runs_path, EXPERIMENTS_RUN_HEADER, new_runs, at_top=True)
+    if ledger:
+        path = root / RECEIVED_LEDGER
+        text = path.read_text(encoding="utf-8") if path.is_file() else RECEIVED_INTRO
+        path.write_text(text.rstrip("\n") + "\n" + "\n".join(ledger) + "\n", encoding="utf-8")
     result["runs"] = len(new_runs)
     (out / "intake.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result
@@ -1060,14 +1187,18 @@ def _dirty(repo: Path) -> list[str]:
     return paths
 
 
-def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, taken: list[str] | None = None,
-           allow_dirty: bool = False, scope: list[Path] | None = None) -> list[str]:
-    """Phase 2 for one carrier: the release's shipped files, its own files kept, the outbox emptied of what was taken.
+def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, allow_dirty: bool = False,
+           scope: list[Path] | None = None) -> list[str]:
+    """Phase 2 for one carrier: the release's shipped files, its own files kept, an old outbox turned into proposals.
 
     Refused unless the home's `.agents/` is the tagged release, byte for byte. A carrier on the layout
-    before 0.0.22 has its own fields moved into `carrier.toml`, and the files that moved out removed.
+    before 0.0.22 has its own fields moved into `carrier.toml`, and the files that moved out removed. The
+    rows of an outbox from 0.0.22 or 0.0.23 (on the old layout, the rows it added over its release) become
+    one proposal each before the tables go, so a row is never lost, whether or not it was gathered.
+    Nothing here removes a proposal: the carrier prunes what the release lists as received.
     """
     import shutil
+    import tempfile
 
     source, target = root / ".agents", repo / ".agents"
     if target.resolve() == source.resolve():
@@ -1083,16 +1214,36 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, t
     if write and not allow_dirty and (dirty := _dirty(repo)):
         raise B.DirtyTreeError(f"{repo}: uncommitted bundle files {dirty}; commit them or pass allow_dirty")
     legacy = B.is_legacy(target)
-    if legacy and taken is None:
-        # Converting resets the old tracking/ into an empty outbox: rows gather found there and intake did not
-        # take would be lost. Offered by a carrier's harvest, 0.0.23.
-        raise RefusedError(f"{repo}: a carrier on the layout before 0.0.22 is converted only after `release.py gather` and "
-                           "`intake`, with `--taken` naming that gather: its old tracking rows would be lost otherwise")
     own = legacy_own_fields(target) if legacy else None
+    if own is not None and not own.get("carrier") and _carrier_of(target):
+        own["carrier"] = _carrier_of(target)  # minted into a carrier file since its headers were written
+    held = legacy_version(target) if legacy else B.bundle_version(target)
+    rows = B.outbox_rows(target)
+    if legacy and any(r.startswith("tracking/") for r in B.all_files(target)):
+        if not held or f"v{held}" not in tags(root):
+            raise RefusedError(f"{repo}: the release it holds has no tag here, so what it added to tracking/ cannot "
+                               "be told from the release's; convert it by hand first")
+        with tempfile.TemporaryDirectory() as tmp:
+            base = extract(f"v{held}", Path(tmp), root)
+            rows = _added_rows(target, base)
+            unread = _unconverted(target, base, rows, repo.name, root)
+        if unread:
+            raise RefusedError(f"{repo}: {len(unread)} lines it added to tracking/ are neither rows to convert nor held by "
+                               f"the home, and converting would remove them; take them in first (`release.py lost`): "
+                               + "; ".join(unread[:3]))
+    elif not legacy:
+        leftover = [f"{rel}: {line.strip()[:60]!r}" for rel in B.OUTBOX for line in B.outbox_table(target / rel, rel)[1]]
+        if leftover:
+            raise RefusedError(f"{repo}: {len(leftover)} lines of its old outbox are not rows of its tables, and would be "
+                               "removed unread; the carrier moves them into a row first: " + "; ".join(leftover[:3]))
+    carrier = _carrier_of(target)
+    if rows and not B.CARRIER_ID.match(carrier):
+        raise RefusedError(f"{repo}: {len(rows)} outbox rows cannot become proposals without a carrier id; mint one first")
     ships, present = set(B.shipped(source)) | {B.CHECKSUMS}, set(B.all_files(target))
-    keep = {r for r in present if B.is_carrier_owned(r) and not (legacy and r.startswith("tracking/"))}
+    keep = {r for r in present if B.is_carrier_owned(r) and not (r.startswith("tracking/") and (legacy or r in B.OUTBOX))}
     actions = [f"write {r}" for r in sorted(ships, key=str.encode)]
     actions += [f"remove {r}" for r in sorted(present - ships - keep, key=str.encode)]
+    actions += [f"convert {len(rows)} outbox rows into {B.PROPOSALS}/"] if rows else []
     actions += [f"write {B.CARRIER_FILE} (own fields moved from the old headers)"] if legacy else []
     if not write:
         return actions
@@ -1101,23 +1252,15 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, t
         if destination.exists():
             shutil.rmtree(destination)
         shutil.copytree(target, destination)
+    if rows or any((target / rel).is_file() for rel in B.OUTBOX):
+        B.convert_outbox(target, rows, carrier=carrier, base=held or "")
     for rel in present - ships - keep:
-        (target / rel).unlink()
+        (target / rel).unlink(missing_ok=True)
     for rel in ships:
         (target / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source / rel, target / rel)
     if legacy:
         B.write_carrier(target, own)
-        B.reset_outbox(target)
-    for rel in B.OUTBOX:
-        if not (target / rel).is_file():
-            (target / rel).parent.mkdir(parents=True, exist_ok=True)
-            (target / rel).write_text(B.OUTBOX_TEMPLATES[rel], encoding="utf-8")
-    if taken and not legacy:
-        for rel in B.OUTBOX:
-            path = target / rel
-            if path.is_file():
-                path.write_text("\n".join(l for l in path.read_text(encoding="utf-8").split("\n") if l not in set(taken)), encoding="utf-8")
     for folder in sorted({p.parent for p in target.rglob("*")}, key=lambda p: len(p.parts), reverse=True):
         if folder != target and folder.is_dir() and not any(folder.iterdir()):
             folder.rmdir()
@@ -1306,10 +1449,11 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("release", help="version and date into the README, then build; prints the tag command")
     p.add_argument("version", metavar="X.Y.Z")
     sub.add_parser("check", help="the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets")
-    p = sub.add_parser("gather", help="phase 1: each carrier against its release tag (writes only --out)")
+    p = sub.add_parser("gather", help="phase 1: each carrier against its release tag, and its proposals (writes only --out)")
     p.add_argument("repos", nargs="*")
     p.add_argument("--out", required=True)
-    p = sub.add_parser("intake", help="a gather's offered rows into meta/tracking/")
+    p.add_argument("--packs", nargs="+", default=[], metavar="FILE", help="proposals a carrier sent as one file (`bundle.py proposals --pack`)")
+    p = sub.add_parser("intake", help="a gather's proposals into meta/tracking/, each recorded as received")
     p.add_argument("out")
     p.add_argument("--version", help="the release the new candidates enter the queue at (default: the home's)")
     p = sub.add_parser("lost", help="lines a carrier added over its release that the home does not hold")
@@ -1319,7 +1463,6 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("repos", nargs="*")
     p.add_argument("--write", action="store_true")
     p.add_argument("--backup")
-    p.add_argument("--taken", help="a gather folder whose intake.json names the outbox lines to remove")
     p.add_argument("--allow-dirty", action="store_true")
     p = sub.add_parser("register", help="the carriers table, by stored carrier id")
     p.add_argument("repos", nargs="*")
@@ -1362,16 +1505,19 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             scope = B.workspace(args.repos)
             for line in B._scope_report(scope, "gathered"):
                 print(line)
-            gather(scope.repos, Path(args.out))
+            gather(scope.repos, Path(args.out), packs=[Path(f) for f in args.packs])
             print(Path(args.out) / "gather.md")
             return 0
         if args.command == "intake":
             result = intake(Path(args.out), args.version or B.bundle_version(ROOT / ".agents"))
             for line in result["duplicates"]:
                 print(f"  ! already known: {line}")
-            for line in result.get("malformed", []):
+            for line in result["moved"]:
+                print(f"  ! written against an older release: {line}")
+            for line in result["malformed"]:
                 print(f"  x not taken in: {line}")
-            print(f"intake: {len(result['queued'])} candidates queued, {result['runs']} experiment runs logged")
+            print(f"intake: {len(result['received'])} proposals received ({len(result['queued'])} candidates queued, "
+                  f"{result['runs']} experiment runs logged), {result['skipped']} already received before")
             return 0
         if args.command == "lost":
             snapshots = [Path(s) for s in args.snapshots]
@@ -1384,11 +1530,10 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             scope = B.workspace(args.repos, writing=args.write)
             _names(scope.repos)
             backup = (Path(args.backup) if args.backup else Path(tempfile.mkdtemp(prefix="bundle-backup-"))) if args.write else None
-            taken = json.loads((Path(args.taken) / "intake.json").read_text())["taken"] if args.taken else {}
             for line in B._scope_report(scope, "written"):
                 print(line)
             for repo in scope:
-                actions = splice(repo, args.write, backup, taken=taken.get(repo.name), allow_dirty=args.allow_dirty, scope=scope.repos)
+                actions = splice(repo, args.write, backup, allow_dirty=args.allow_dirty, scope=scope.repos)
                 if not actions:
                     print(f"{repo.name}: the home itself, left alone")
                     continue

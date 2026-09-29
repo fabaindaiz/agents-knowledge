@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from unittest import mock
 
-from meta.tests.support import BOOTSTRAP, CONTEXT, Base, bundle, commit, git, init_repo, release
+from meta.tests.support import BOOTSTRAP, CONTEXT, Base, a_proposal, bundle, commit, git, init_repo, old_outbox, release
 
 B = bundle
 
@@ -113,10 +113,10 @@ def make_home(root: Path) -> Path:
     """A home repository: full notes, templates, records, a bundle built from them, released as 0.0.1."""
     home = init_repo(root / "home")
     agents = home / ".agents"
-    (agents / "tracking").mkdir(parents=True)
+    agents.mkdir(parents=True)
     # The hand-written files of the bundle are originals; the build writes their release copies.
     original = home / "sources/bundle"
-    for folder in ("method", "knowledge", "tools", "incoming"):
+    for folder in ("method", "knowledge", "tools", "incoming", "proposals"):
         (original / folder).mkdir(parents=True, exist_ok=True)
     (original / "README.md").write_text(B.dump_frontmatter({"bundle": "agent-guides", "version": "0.0.0", "released": "2026-01-01"})
                                       + "\n# Guides\n\n## The fields that are this repository's\n\nThey are in carrier.toml.\n\n"
@@ -128,9 +128,9 @@ def make_home(root: Path) -> Path:
         (original / f"method/prompt-{session}.md").write_text(f"# {session}\n\nReads:\n- method/prompt-{session}.md\n")
     (original / "knowledge/README.md").write_text("# Knowledge\n")
     (original / "incoming/README.md").write_text("# Incoming\n")
+    (original / "proposals/README.md").write_text("# Proposals\n")
     (original / "tools/bundle.py").write_text("print('the tool')\n")
     B.write_carrier(agents, {"carrier": "r-aaaaaa", "adopted": "2026-01-01", "upstream": "", "adapted": [], "declined": []})
-    B.reset_outbox(agents)
     sources = home / "sources"
     (sources / "templates/areas").mkdir(parents=True)
     (sources / "templates/areas/one.md").write_text(AREA)
@@ -427,28 +427,43 @@ class Carry(Base):
         with self.assertRaisesRegex(self.R.RefusedError, "not the tagged release"):
             self.splice(repo)
 
+    def release_again(self, version: str) -> None:
+        changelog = self.home / "sources/bundle/CHANGELOG.md"
+        changelog.write_text(changelog.read_text().replace("## [Unreleased]\n", f"## [Unreleased]\n\n## [{version}] - 2026-01-09\n\n### Added\n\n- More.\n"))
+        self.R.release(version, self.home)
+        commit(self.home, f"release {version}")
+        git(self.home, "tag", "-a", f"v{version}", "-m", version)
+
     def test_gather_intake_splice_register_align_round_trip(self) -> None:
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo)
         self.splice(repo)
-        outbox = repo / ".agents/tracking/candidates.md"
-        row = "| new-idea — learned in one | K | a second occurrence | a repository | 2026-01-06 |"
-        no = "| weak-idea — did not pass | K | refused: already the default behaviour | a repository | 2026-01-06 |"
-        outbox.write_text(outbox.read_text() + row + "\n" + no + "\n")
+        agents = repo / ".agents"
+        new = a_proposal(agents, "Seen in a repository of this kind.", target="new-idea")
+        weak = a_proposal(agents, "Seen once.", target="weak-idea", lacks="refused: already the default behaviour")
         commit(repo, "harvest")
 
         gathered = self.R.gather([repo], self.root / "out", self.home)
-        result = self.R.intake(self.root / "out", "0.0.1", self.home)
+        result = self.R.intake(self.root / "out", "0.0.2", self.home)
 
         self.assertEqual(gathered["carriers"]["one"]["forked"], [])
         self.assertEqual(result["queued"], ["new-idea"])
-        self.assertIn("new-idea", (self.home / "meta/tracking/candidates.md").read_text())
+        self.assertEqual(sorted(result["received"]), sorted([new.stem, weak.stem]))
+        self.assertIn("new-idea — A claim with no project noun.", (self.home / "meta/tracking/candidates.md").read_text())
         self.assertEqual(result["refused"], ["weak-idea"])
         self.assertNotIn("weak-idea", (self.home / "meta/tracking/candidates.md").read_text())
         self.assertIn("`weak-idea` | refused: already the default behaviour", (self.home / "meta/tracking/history.md").read_text())
-        self.splice(repo, taken=result["taken"]["one"])
-        self.assertNotIn("new-idea", outbox.read_text())
-        self.R.register([repo], "2026-01-07", self.home)
+        ledger = (self.home / "meta/tracking/received.md").read_text()
+        self.assertIn(f"| `{new.stem}` | 0.0.2 | queued as `new-idea` |", ledger)
+        self.assertNotIn(B.stored_carrier_id(repo), ledger)
+        self.assertEqual(self.R.intake(self.root / "out", "0.0.2", self.home)["skipped"], 2)
+        self.release_again("0.0.2")
+        self.splice(repo)
+        self.assertTrue(new.exists() and weak.exists())
+        self.assertEqual({pid for pid, _ in B.prune_proposals(agents)}, {new.stem, weak.stem})
+        self.assertEqual(list((agents / "proposals").glob("p-*.md")), [])
+        commit(repo, "prune")
+        self.R.register([repo], "2026-01-10", self.home)
         self.assertEqual(self.R.align([repo], self.home), [])
 
     def test_register_remembers_names_and_paths_only_in_the_local_manifest(self) -> None:
@@ -489,24 +504,38 @@ class Carry(Base):
 
         self.assertIn("knowledge/notes/active/alpha.md: differs from the tagged release", " ".join(gathered["carriers"]["one"]["forked"]))
 
-    def test_intake_keeps_another_occurrence_and_pads_short_rows(self) -> None:
+    def test_intake_keeps_another_occurrence_and_refuses_what_does_not_read_whole(self) -> None:
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo)
         self.splice(repo)
-        outbox = repo / ".agents/tracking/candidates.md"
-        outbox.write_text(outbox.read_text() + "| Extends old-idea — seen again here | K | nothing | a second repository | 2026-01-08 |\n"
-                          "| short | K |\n| padded — a claim | K | a number |\n")
+        agents = repo / ".agents"
+        a_proposal(agents, "A second repository.", target="old-idea", action="extends", claim="Seen again here.", lacks="nothing")
+        edited = a_proposal(agents, "Seen once.", target="edited-idea")
+        edited.write_text(edited.read_text().replace("Seen once.", "Seen twice."))
+        old_outbox(agents, ["| short | K |"])
         commit(repo, "harvest")
-        self.R.gather([repo], self.root / "out", self.home)
+        gathered = self.R.gather([repo], self.root / "out", self.home)
 
         result = self.R.intake(self.root / "out", "0.0.1", self.home)
 
         queue = (self.home / "meta/tracking/candidates.md").read_text()
-        self.assertEqual(result["queued"], ["padded"])
-        self.assertIn("short", " ".join(result["malformed"]))
-        self.assertIn("| padded — a claim | K | a number |  |  | 0.0.1 |", queue)
+        self.assertIn("edited after it was written", " ".join(gathered["carriers"]["one"]["problems"]))
+        self.assertIn("edited after it was written", " ".join(result["malformed"]))
+        self.assertEqual(result["queued"], ["short"])
+        self.assertIn("| short — short | K | not given in the row | (the row gives no evidence) (First seen: not given)", queue)
+        self.assertEqual(len(result["received"]), 2)
         self.assertIn("## Offered again, to merge", queue)
-        self.assertIn("Extends old-idea — seen again here", queue.split("## Offered again")[1])
+        self.assertIn("extends old-idea — Seen again here.", queue.split("## Offered again")[1])
+
+    def test_the_home_gathered_as_a_carrier_is_read_for_its_proposals_only(self) -> None:
+        a_proposal(self.home / ".agents", "Seen in the home.", target="home-idea")
+        (self.home / "sources/bundle/method/prompt-context.md").write_text(CONTEXT + "\nbeing written\n")
+        self.R.build(self.home)
+
+        gathered = self.R.gather([self.home], self.root / "out", self.home)
+
+        self.assertEqual(gathered["carriers"]["home"]["forked"], [])
+        self.assertEqual([p["target"] for p in gathered["carriers"]["home"]["proposals"]], ["home-idea"])
 
     def test_a_forked_carrier_is_named_by_gather(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -520,24 +549,31 @@ class Carry(Base):
 
         self.assertIn("knowledge/notes/active/alpha.md", " ".join(gathered["carriers"]["one"]["forked"]))
 
-    def test_a_carrier_the_gather_did_not_reach_is_not_one_that_took_nothing(self) -> None:
-        repo = make_legacy(self.root, "old")
-        gathered = self.root / "g"
-        gathered.mkdir()
-        (gathered / "intake.json").write_text(json.dumps({"taken": {"another": []}}))
-        seen = []
-        with mock.patch.object(self.R, "splice", side_effect=lambda *a, **k: seen.append(k["taken"]) or []), \
-                contextlib.redirect_stdout(io.StringIO()):
-            self.R.main(["splice", str(repo), "--write", "--backup", str(self.root / "bk"), "--taken", str(gathered)])
+    def test_an_old_outbox_becomes_proposals_with_the_ids_gather_gave_them(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        old_outbox(repo / ".agents", ["| kept-idea — never gathered | K | nothing | a repository | 2026-01-06 |"])
+        commit(repo, "harvest on 0.0.23")
+        gathered = self.R.gather([repo], self.root / "out", self.home)
+        offered = [p["id"] for p in gathered["carriers"]["one"]["proposals"]]
 
-        self.assertEqual(seen, [None])
+        actions = self.splice(repo)
+
+        agents = repo / ".agents"
+        self.assertIn("convert 1 outbox rows into proposals/", actions)
+        self.assertFalse((agents / "tracking").exists())
+        self.assertEqual([p.stem for p in (agents / "proposals").glob("p-*.md")], offered)
+        self.assertEqual(B.verify_problems(agents), [])
+
+    def test_splice_takes_no_list_of_rows_to_remove(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            self.R.main(["splice", "--taken", str(self.root)])
 
     def test_a_carrier_on_the_old_layout_is_converted_and_keeps_its_own_fields(self) -> None:
         repo = make_legacy(self.root, "old")
-        with self.assertRaisesRegex(self.R.RefusedError, "after `release.py gather`"):
-            self.splice(repo)
 
-        actions = self.splice(repo, taken=[])
+        actions = self.splice(repo)
 
         agents = repo / ".agents"
         own = B.read_carrier(agents)
@@ -549,7 +585,65 @@ class Carry(Base):
         self.assertFalse((agents / "roadmap.md").exists())
         self.assertFalse((agents / "method/prompt-sync.md").exists())
         self.assertIn("remove roadmap.md", actions)
+        self.assertIn("convert 1 outbox rows into proposals/", actions)
+        self.assertFalse((agents / "tracking").exists())
+        (converted,), _ = B.proposals_of(agents)
+        self.assertEqual((converted.target, converted.claim, converted.carrier, converted.base), ("mine", "learned here", "r-bbbbbb", "0.0.1"))
         self.assertEqual(B.verify_problems(agents), [])
+
+    def test_an_old_layout_carrier_with_an_id_minted_since_is_converted(self) -> None:
+        repo = make_legacy(self.root, "old")
+        for path in (repo / ".agents/README.md", repo / ".agents/method/prompt-context.md"):
+            path.write_text("\n".join(l for l in path.read_text().split("\n") if not l.startswith("carrier:")))
+        B.write_carrier(repo / ".agents", {"carrier": "r-cccccc"})
+        commit(repo, "id minted")
+
+        self.splice(repo)
+
+        self.assertEqual(B.read_carrier(repo / ".agents")["carrier"], "r-cccccc")
+        (converted,), _ = B.proposals_of(repo / ".agents")
+        self.assertEqual(converted.carrier, "r-cccccc")
+
+    def test_lost_does_not_list_outbox_rows_taken_in_or_a_table_a_formatter_respaced(self) -> None:
+        repo = make_legacy(self.root, "old")
+        base = self.root / "base"
+        base.mkdir()
+        (base / "tracking").mkdir()
+        (base / "tracking/candidates.md").write_text("| Candidate | Kind | Lacks | Evidence | First seen |\n|---|---|---|---|---|\n"
+                                                    "| theirs — the release's | K | nothing | there | 2026-01-01 |\n")
+        (repo / ".agents/tracking/candidates.md").write_text(
+            "| Candidate | Kind | Lacks | Evidence | First seen |\n| --- | --- | --- | --- | --- |\n"
+            "| theirs — the release's   | K    | nothing | there | 2026-01-01 |\n"
+            "| mine — learned here | K | a second occurrence | here | 2026-01-03 |\n")
+
+        found = self.R.lost(base, {"old": repo / ".agents"}, self.home)
+        self.assertEqual([line for _, rel, line in found if rel.startswith("tracking/")], [])
+
+    def test_what_an_old_layout_carrier_added_outside_its_rows_stops_the_conversion(self) -> None:
+        repo = make_legacy(self.root, "old")
+        (repo / ".agents/tracking/experiments.md").write_text("## Queued\n\n| Note | Experiment | Cost | Would change |\n"
+                                                              "|---|---|---|---|\n| alpha | a new experiment | hours | its boundary |\n")
+        commit(repo, "queued an experiment")
+
+        with self.assertRaisesRegex(self.R.RefusedError, "neither rows to convert nor held by the home"):
+            self.splice(repo)
+        self.assertTrue((repo / ".agents/tracking/experiments.md").is_file())
+
+    def test_a_pack_member_whose_id_is_not_its_name_is_not_taken_in(self) -> None:
+        import tarfile
+
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        path = a_proposal(repo / ".agents", "Seen once.")
+        pack = self.root / "pack.tar"
+        with tarfile.open(pack, "w") as archive:
+            archive.add(path, arcname="proposals/p-0000000000.md")
+
+        report = self.R.gather([repo], self.root / "out", self.home, packs=[pack])
+
+        self.assertEqual(report["packs"]["pack.tar"]["proposals"], [])
+        self.assertIn("not its file name", " ".join(report["packs"]["pack.tar"]["problems"]))
 
     def test_old_headers_that_disagree_are_refused(self) -> None:
         repo = make_legacy(self.root, "old")
@@ -564,6 +658,17 @@ class Carry(Base):
 
         with self.assertRaises(B.OutsideWorkspaceError):
             self.splice(outside, scope=[inside])
+
+
+class Queue(Base):
+    def test_a_queued_candidate_without_its_slug_fails_the_check(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        self.assertEqual(R.queue_problems(home), [])
+        queue = home / "meta/tracking/candidates.md"
+        queue.write_text(queue.read_text() + "| **A claim in bold, with no slug.** | K | nothing | here | 2026-01-01 | 0.0.1 |\n")
+
+        self.assertIn("does not open with its slug", "\n".join(R.queue_problems(home)))
 
 
 class Ledger(Base):

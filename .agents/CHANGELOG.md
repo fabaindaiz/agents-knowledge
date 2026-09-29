@@ -9,6 +9,43 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Changed
+
+- **What a carrier learns goes back as proposals, one file each.** The harvest writes every candidate,
+  extension and experiment run with `bundle.py propose` into `.agents/proposals/p-<hex>.md`, a file that is
+  never edited. Its header marks it as a proposal and says where it comes from, as a patch names its base:
+  the carrier's id, the release it held (`base`) and that release's `SHA256SUMS` digest. The home gathers
+  them, is the only one that integrates them, and lists every one it took in, by id, in the next release's
+  `proposals/RECEIVED.md`; the carrier removes those itself (`bundle.py proposals --prune`). Nothing the home
+  runs deletes a carrier's proposal. `proposals/README.md` has the fields and the whole path.
+- **The update settles the proposals** (`method/prompt-update.md`, step 3a): an old outbox is converted, and
+  what the home received is pruned. **A carrier updating from 0.0.22 or 0.0.23 runs
+  `python3 .agents/tools/bundle.py proposals --from-outbox` and then `--prune` after copying the release**,
+  since its live update procedure predates the step; `bundle.py verify` fails until the old outbox is
+  converted.
+
+### Added
+
+- `bundle.py propose` writes one proposal; `bundle.py proposals` lists them with what the home received,
+  and `--prune`, `--pack FILE` (one file, for a home that cannot open this repository) and `--from-outbox`.
+- `bundle.py verify` fails on a proposal that does not read back whole, on one edited after it was written
+  (its id seals everything it says), on one written under another carrier's id, on anything else in
+  `proposals/`, and on an outbox of 0.0.22 or 0.0.23 not yet converted.
+- Converting an old outbox keeps every row: a table with aligned columns or blank lines between rows is
+  read whole, a row whose cells do not fit becomes a proposal that says what was missing, and the
+  conversion refuses, removing nothing, when a table file holds text that is not a row.
+
+### Removed
+
+- **The outbox tables**, `tracking/candidates.md` and `tracking/experiments.md`, and `bundle.py outbox
+  --reset`. Their rows become proposals, each with the id the home already gave it if it gathered them.
+
+### Fixed
+
+- **Converting a carrier from the layout before 0.0.22 no longer depends on a gather to keep what it
+  learned**: the rows it added to its tracking tables become proposals before the tables go, and the
+  conversion is refused when the release it holds has no tag to tell its rows from the release's.
+
 ## [0.0.23] - 2026-09-28
 
 Measured before it was built: a cost smoke test of 0.0.22 found that

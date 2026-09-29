@@ -88,24 +88,25 @@ A retired note does not ship: the home keeps it, so a withdrawn idea is recognis
 
 ## What a candidate carries
 
-A learning that is not yet a note is a row in `../tracking/candidates.md`, written by
-`../method/prompt-harvest.md`. **Check `OPEN.md` first**: a candidate listed there waits for
-something, and a new occurrence of it is written as that, not offered again. A row carries what
-admission needs, or says what it lacks:
+A learning that is not yet a note is a proposal in `../proposals/`, one file, written by
+`../method/prompt-harvest.md` with `bundle.py propose`. **Check `OPEN.md` first**: a candidate listed
+there waits for something, and a new occurrence of it is written as that, not offered again. A
+proposal carries what admission needs, or says what it lacks:
 
-| Column | Holds |
+| Field | Holds |
 |---|---|
-| *Candidate* | `slug — claim`, the claim in one sentence **without a single project noun**, then where it stops applying and what it costs. An extension of an existing note names that note: `extends <slug> — the new boundary, number or occurrence`; a claim that overlaps one says `overlaps <slug>` |
-| *Kind* | **K** knowledge (true about building the software) or **M** method (how the work is done) |
-| *Lacks* | what admission still needs: a second occurrence, a number, the literature, a generality statement, or "nothing". A learning the harvest refused is written too, as `refused: <reason>`: the home records it where the next harvest looks, so it is not offered again with the same gap |
-| *Evidence* | the occurrence, generalised under principle 20 (`../method/prompt-context.md`): the repository by its kind, figures as ratios or orders of magnitude, quotes paraphrased, identifiers named by their role; plus the literature consulted and what it said |
-| *First seen* | the date this repository first saw it |
+| `target` and the claim | the slug, and the claim in one paragraph **without a single project noun**, then where it stops applying and what it costs. An extension of an existing note targets that note with `action: extends` and states the new boundary, number or occurrence; a claim that overlaps one says `action: overlaps` |
+| `kind` | `knowledge` (true about building the software) or `method` (how the work is done) |
+| `lacks` | what admission still needs: a second occurrence, a number, the literature, a generality statement, or `nothing`. A learning the harvest refused is written too, as `refused: <reason>`: the home records it where the next harvest looks, so it is not offered again with the same gap |
+| `## Evidence` | the occurrence, generalised under principle 20 (`../method/prompt-context.md`): the repository by its kind, figures as ratios or orders of magnitude, quotes paraphrased, identifiers named by their role; plus the literature consulted and what it said |
+| `seen` | the date this repository first saw it |
 
-An experiment run against a note is a row in `../tracking/experiments.md`, with its verdict —
-*confirms*, *moves the boundary* or *falsifies* — never an edit to the note.
+An experiment run against a note is a proposal of kind `experiment`, with its verdict — *confirms*,
+*moves the boundary* or *falsifies* — never an edit to the note. The header the tool writes around
+these (`carrier`, `base`, `digest`) is in `../proposals/README.md`.
 
 ## How it travels
 
 As part of the bundle, one release at a time: the home builds it and carries it, or a carrier
-updates from it through `../incoming/`. What a carrier learned returns as its outbox rows, which the
-home reads at its next release.
+updates from it through `../incoming/`. What a carrier learned returns as its proposals, which the
+home reads at its next release and lists as received in the release after.

@@ -113,7 +113,7 @@ Because.
 def make_bundle(root: Path, version: str = "0.0.1") -> Path:
     """A minimal bundle in the 0.0.22 layout, checksummed, with a carrier file of its own."""
     agents = root / ".agents"
-    for folder in ("method", "knowledge/notes/active", "tracking", "incoming", "tools"):
+    for folder in ("method", "knowledge/notes/active", "proposals", "incoming", "tools"):
         (agents / folder).mkdir(parents=True, exist_ok=True)
     (agents / "README.md").write_text(README.format(version=version))
     (agents / "CHANGELOG.md").write_text("# Changelog\n\n## [Unreleased]\n\n## [0.0.1] - 2026-01-01\n\n### Added\n\n- The start.\n")
@@ -127,13 +127,34 @@ def make_bundle(root: Path, version: str = "0.0.1") -> Path:
         "# Index\n\n- [a-check](notes/active/a-check.md)\n- [absence](notes/active/absence.md)\n")
     for slug in ("a-check", "absence"):
         (agents / f"knowledge/notes/active/{slug}.md").write_text(NOTE.format(slug=slug))
-    (agents / "tracking/candidates.md").write_text(bundle.OUTBOX_TEMPLATES["tracking/candidates.md"])
-    (agents / "tracking/experiments.md").write_text(bundle.OUTBOX_TEMPLATES["tracking/experiments.md"])
+    (agents / "proposals/README.md").write_text("# Proposals\n")
+    (agents / "proposals/RECEIVED.md").write_text(f"# Received\n\n{bundle.RECEIVED_HEADER}\n|---|---|---|\n")
     (agents / "incoming/README.md").write_text("# Incoming\n")
     (agents / "tools/bundle.py").write_text("print('same everywhere')\n")
     bundle.write_carrier(agents, {"carrier": "r-abcdef", "adopted": "2026-01-01", "upstream": "", "adapted": [], "declined": []})
     bundle.write_checksums(agents)
     return agents
+
+
+# The outbox of 0.0.22 and 0.0.23, as a carrier on those releases holds it: what conversion reads.
+OLD_OUTBOX = {
+    "tracking/candidates.md": "# Candidates this repository offers\n\n| Candidate | Kind | Lacks | Evidence | First seen |\n|---|---|---|---|---|\n",
+    "tracking/experiments.md": "# Experiments run in this repository\n\n| Date | Note | Where | What was run | Result | Verdict |\n|---|---|---|---|---|---|\n",
+}
+
+
+def old_outbox(agents: Path, candidates: list[str] = (), experiments: list[str] = ()) -> None:
+    """Writes the outbox of 0.0.23 into a bundle, with the given rows."""
+    (agents / "tracking").mkdir(parents=True, exist_ok=True)
+    for rel, rows in (("tracking/candidates.md", candidates), ("tracking/experiments.md", experiments)):
+        (agents / rel).write_text(OLD_OUTBOX[rel] + "".join(r + "\n" for r in rows))
+
+
+def a_proposal(agents: Path, evidence: str = "In one repository of this kind, once.", **fields: str) -> Path:
+    """One proposal written by the tool, under the fixture's carrier id."""
+    values = {"kind": "knowledge", "target": "a-thing", "claim": "A claim with no project noun.", "seen": "2026-01-02",
+              "lacks": "a second occurrence", **fields}
+    return bundle.write_proposal(agents, bundle.Proposal(evidence=evidence, **values))
 
 
 class Base(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 > **Legacy only.** This joins two copies that diverged **before 0.0.22**, in the home repository. From
 > 0.0.22 a carrier never edits a shipped file (`SHA256SUMS` catches it), so there is nothing to merge:
-> what it learned arrives as outbox rows, and `prompt-sync.md` gathers them. Its verdicts (Phase 2)
+> what it learned arrives as proposals, and `prompt-sync.md` gathers them. Its verdicts (Phase 2)
 > and its rule for two divergent notes are still what a release uses.
 
 ## ▶ Paste this to start

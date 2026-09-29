@@ -19,7 +19,7 @@ is ever written next to its id, here or anywhere in the bundle. **Paths and name
 | r-1a1516 | 0.0.21 | 2026-09-24 |
 
 **Every row is written by `release.py register`**, never by hand; a carrier that cannot run the
-tool reports that as a defect in its outbox.
+tool reports that as a defect, in a proposal.
 
 ## Not reached
 

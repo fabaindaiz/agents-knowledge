@@ -23,7 +23,7 @@
 | `prompt-evaluate.md` | assess a repository's AI instruction system | yes | one Markdown report |
 | `prompt-bootstrap.md` | build the instruction system into a repository | yes | the instruction system |
 | `prompt-update.md` | bring this copy up to a newer release | yes | edits, after approval |
-| `prompt-harvest.md` | the local step: what one repository learned, as candidates | yes | that repository's outbox, `tracking/`, only |
+| `prompt-harvest.md` | the local step: what one repository learned, as proposals to the bundle | yes | that repository's `proposals/`, one file per learning, only |
 
 Merging copies and bringing several carriers onto one release are the home
 repository's procedures, and are run there. The version history is `../CHANGELOG.md`.
@@ -100,8 +100,8 @@ claims.**
    `prompt-bootstrap.md` (its working invocation). The bootstrap is the cheap
    half; the loop is what the files were for.
 8. Keep the method moving. Sessions capture learnings at step 8;
-   `prompt-harvest.md` writes them as candidates in the outbox, `tracking/`; the
-   home repository gathers every outbox, applies the generality test and cuts
+   `prompt-harvest.md` writes them as proposals in `proposals/`; the home
+   repository gathers every carrier's proposals, applies the generality test and cuts
    the next release, which reaches your repositories by update. It is the only
    part that compounds across projects rather than within one.
 
@@ -820,7 +820,7 @@ scrub, and the release that does it says so. A deletion is recorded generically 
 what was removed.
 
 **It holds whether or not you remember loading it.** An agent writing into the
-outbox (`tracking/`), `carrier.toml`, a note, a method document or any other file
+`proposals/`, `carrier.toml`, a note, a method document or any other file
 that travels applies the rule even when this section is not in its context — and
 does not trust itself to have applied it. The carrier-owned files are checked like
 the released ones. `bundle.py privacy` checks the tree against generic
@@ -1559,7 +1559,7 @@ correct. Versions are compared by SemVer precedence (*Version numbers*).
 | No bundle, but the repo already has `CLAUDE.md`, `AGENTS.md`, `.cursorrules` or its own conventions | **bootstrap, in adopt mode** | Phase 1 classifies what exists and **nothing is discarded**; see principle 19 |
 | A release in `incoming/` newer than this copy's `version` | **update** | only the changes since this version, triaged against this repo |
 | An incoming release at the same `version` or older | nothing | there is nothing to take |
-| Same version, and the repo has learned something | **harvest** (`prompt-harvest.md`) | the repo is ahead of the method; it writes candidates to its outbox, the next release takes them |
+| Same version, and the repo has learned something | **harvest** (`prompt-harvest.md`) | the repo is ahead of the method; it writes proposals, the next release takes them |
 | One side on the layout before 0.0.22 (a README header with `lineage:`) | update **from a release, through the home repository** | the old layout is converted there; here, treat the other copy as data |
 | A bundle present but the artifacts it assumes do not exist | **bootstrap, in repair mode** | the files were copied without the work; list what is missing and build it |
 | Several carriers onto one release | **the home repository** | alignment and releases are run there, never from a carrier |
@@ -1905,8 +1905,8 @@ candidate for level 3.
 > at level 3.
 
 **The procedure is split in two, by who may write.** In a carrier,
-`prompt-harvest.md` writes candidates and evidence into its outbox, `../tracking/`,
-and nothing else; the home repository gathers every outbox at the next release,
+`prompt-harvest.md` writes candidates and evidence as proposals in `../proposals/`,
+and nothing else; the home repository gathers every carrier's proposals at the next release,
 applies the generality test and writes the notes and principles, once. A learning
 about building software rather than about working becomes a knowledge note
 (`../knowledge/README.md`) instead of a principle. What is still waiting is listed
@@ -1929,8 +1929,8 @@ newer than the version this repository holds, which is what an update triages.
 
 **A copy holds two kinds of file, and mixing them up is the most common way a distribution
 goes wrong.** The version, the changelog and every file listed in `../SHA256SUMS` are **the
-release**: they travel together and are replaced together. `../carrier.toml` and the outbox
-in `../tracking/` are **the repository's**: no release writes them and none lists them. The
+release**: they travel together and are replaced together. `../carrier.toml` and the proposals
+in `../proposals/` are **the repository's**: no release writes them and none lists them. The
 rule and its reasons have one home, `../README.md`, *The fields that are this repository's*.
 
 Integrity is checked as `../README.md`, *Verifying a copy*, says; a copy that fails is not

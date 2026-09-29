@@ -68,7 +68,7 @@ the artifact.
 
 **Up — harvesting from a repository.** Rarer and more valuable.
 `prompt-harvest.md` asks the repository *what have you learned that the method
-does not know?* and writes the answers as candidates in its outbox, `.agents/tracking/`.
+does not know?* and writes the answers as proposals, one file each in `.agents/proposals/`.
 The next release gathers them (`release.py gather`, `release.py intake`), applies the generality test, brutally, and takes the two that survive
 rather than the nine that were offered. The failure mode here is a method that
 accretes one repo's idiosyncrasies until it is portable to nowhere.
@@ -83,7 +83,7 @@ gets skipped and an event-driven one does not:
 | Every session close | step 8 — harvest to level 1 and 2 |
 | When a friction is hit a second time | promote it to the roadmap's process area |
 | When the local review skill runs (Phase 9) | ask which level-2 rules pass the generality test |
-| When you notice yourself explaining the same thing to a second repository | record it as a candidate for level 3 in the outbox, `.agents/tracking/candidates.md`; the next release decides |
+| When you notice yourself explaining the same thing to a second repository | record it as a candidate for level 3, a proposal (`bundle.py propose`); the next release decides |
 | At every release | read the ledger, `meta/tracking/INDEX.md`, before admitting or keeping anything: nothing met once is created again; nothing is dropped by age |
 | Before a round of harvests | align every carrier first (`prompt-sync.md` §*The cycle*): two commands when nothing diverged, and what makes every harvest read the same base |
 | Before a meta-session, in every carrier | run the local step, `prompt-harvest.md`: it is what the meta-session gathers |

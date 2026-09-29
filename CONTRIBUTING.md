@@ -12,7 +12,7 @@ your first change.
 | How reviewing, committing, verifying or documenting is done | `sources/bundle/method/` (the original; the build writes `.agents/method/`) |
 | A claim about building software: retries, concurrency, defaults, naming, data shape | a full note in `sources/notes/active/` |
 | How the index around the notes reads | `sources/templates/` |
-| An idea for a note that is not ready yet | a row in `meta/tracking/candidates.md` |
+| An idea for a note that is not ready yet | a row in `meta/tracking/candidates.md`; from another repository, a proposal in its `.agents/proposals/` (`bundle.py propose`), which the next release takes in |
 | An experiment that would confirm or refute a note | `meta/tracking/experiments.md` |
 | Work on the bundle itself | `meta/roadmap.md` |
 | A fact about one particular repository | **nowhere here.** It goes in that repository's own `docs/decisions.md` |

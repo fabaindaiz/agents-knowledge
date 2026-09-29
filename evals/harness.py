@@ -199,12 +199,14 @@ def copy_bundle(dst: Path) -> None:
         skip = {"__pycache__"}
         if Path(d).name == "incoming":
             skip |= {n for n in names if n != "README.md"}
+        if Path(d).name == "proposals":
+            skip |= {n for n in names if n.startswith("p-")}
+        skip |= {"tracking"} if Path(d) == BUNDLE else set()
         return skip & set(names) | {n for n in names if n.startswith("evaluation-")}
     shutil.copytree(BUNDLE, dst / ".agents", ignore=ignore)
     # A carrier holds its own carrier file; the workspace gets a neutral one, not the home's.
     _bundle_tool().write_carrier(dst / ".agents", {"carrier": "r-000000", "adopted": "2026-01-01", "upstream": "",
                                                   "adapted": [], "declined": []})
-    _bundle_tool().reset_outbox(dst / ".agents")
 
 
 def ablate(agents: Path, slugs: list[str]) -> dict:
