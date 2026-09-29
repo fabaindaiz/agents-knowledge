@@ -96,6 +96,19 @@ so a leak of one fails the privacy check. Nothing of it is committed.
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** Offered at 0.0.24 as
+  `verify-enforces-the-carrier-record`, and confirmed in that meta-session: three carriers reached there
+  held the empty `upstream` that means "this is the home", and the function that refuses a carrier id held
+  by two repositories in scope is defined and never called. Call it from `verify`, flag an empty `upstream`
+  outside the home, and have `carrier-id --mint` stop defaulting `upstream` to the home's value.
+  *Collision:* every carrier's gate runs `verify`, so a carrier with a copied identity turns red on update;
+  the changelog says how to fix one.
+- **`i-5ed7e8-87ffc2` · The roadmap template's ids are read by the id checker.** Offered at 0.0.24 as
+  `template-id-format-matches-the-checker`, measured by two carriers: the template writes
+  `### <id> · <idea>`, the checker counts a definition only with the id after the dot, so a duplicated id
+  in a roadmap written from the template passes. Change one of the two and test the other against it.
+  *Collision:* roadmaps already written in one form or the other.
+
 - **`i-5ed7e8-13ff46` · Proposals: one file per learning in the carrier, integrated only by the home,
   acknowledged by the release.** The user's decision of 2026-09-28: what a carrier learns stays in its own
   repository, marked as a proposal to the bundle, inside `.agents/` in a folder of its own, and only the

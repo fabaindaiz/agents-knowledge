@@ -9,6 +9,13 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-09-29
+
+What a carrier learns now travels as proposals, and this release is the first to take them in: twenty
+proposals from four carriers, and five rows that a carrier on the layout before 0.0.22 had added over its
+release, each with a verdict. Four notes grew; the rest wait in the queue (`knowledge/OPEN.md`) for what
+they lack.
+
 ### Changed
 
 - **What a carrier learns goes back as proposals, one file each.** The harvest writes every candidate,
@@ -23,6 +30,18 @@ version it holds with `bundle.py changelog --since <its version>`.
   `python3 .agents/tools/bundle.py proposals --from-outbox` and then `--prune` after copying the release**,
   since its live update procedure predates the step; `bundle.py verify` fails until the old outbox is
   converted.
+- **`upstream` in `carrier.toml` names where the carrier takes releases from; it is empty only in the
+  home.** A carrier whose `upstream` is empty, as a plain copy of the folder or `carrier-id --mint` leaves
+  it, sets it by hand: the carriers reached by this release name the home by its carrier id. A folder
+  copied from another repository also carries that repository's `carrier.toml` and proposals: delete
+  both and mint an id of your own before writing anything.
+- **Knowledge.** `validate-each-transformation-run`: the projection is taken at the level the consumer
+  reads, so a file checked by its checksum is compared in bytes, line endings included.
+  `absence-is-a-third-value`: a lookup that defaults a missing key to an empty list turns "not reached"
+  into "nothing found"; keep the two apart up to the guard. `copied-instruction-claims-its-origin`: a bundle
+  designed to travel is not exempt by design alone; its per-repository record copied whole was read as the
+  copy's own three times. `absent-constraint-widens`: an equivalence test is only as discriminating as the
+  cases its world holds.
 
 ### Added
 
@@ -44,7 +63,11 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 - **Converting a carrier from the layout before 0.0.22 no longer depends on a gather to keep what it
   learned**: the rows it added to its tracking tables become proposals before the tables go, and the
-  conversion is refused when the release it holds has no tag to tell its rows from the release's.
+  conversion is refused when the release it holds has no tag to tell its rows from the release's. **A
+  carrier on such an untagged release is converted by hand first**: its README and method headers are
+  brought to one set of `adopted`, `upstream`, `adapted` and `declined`, the home runs `release.py lost`
+  against the carrier's own commit that took its release and takes in every line it prints, and only then
+  is `tracking/` removed and the splice run.
 
 ## [0.0.23] - 2026-09-28
 

@@ -6,6 +6,26 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue by the release 0.0.24
+
+| Candidate | Where it went |
+|---|---|
+| `splicing-an-old-layout-carrier-keeps-what-gather-found` | **fixed** in 0.0.24: the splice turns the rows a carrier added over its release into proposals before the tables go, and refuses when that release has no tag. Seen again at 0.0.24: two carriers on an untagged release were converted by hand, their added rows accounted for by `lost` first |
+| `occurrence-of-documented-default-values-drift` | **merged** into `documented-defaults-drift-from-code` as a second occurrence, from a second repository |
+| `validate-each-transformation-run` | **extended**: an up-to-date check that compared text rather than bytes, into its *Evidence* |
+| `absence-is-a-third-value` | **extended**: a default of an empty list that turned "not reached" into "nothing found", into its *Where it came from* |
+| `copied-instruction-claims-its-origin` | **extended**: a bundle folder copied whole with its source's identity and records, into its *Evidence* |
+| `absent-constraint-widens` | **extended**: an equivalence suite whose world held no case that tells two designs apart, into its *Evidence* |
+| `an-update-is-driven-by-the-new-side` | offered again with nothing new; its queued row stands |
+| `a-repair-request-runs-once-per-load` | offered again with nothing new; its queued row stands |
+| `local-host-is-a-test-double-of-the-production-host` | offered again with nothing new; already folded into `test-double-fidelity` |
+
+## Refused by carriers' harvests, taken in at 0.0.24
+
+| Candidate | Where it went |
+|---|---|
+| `isolated-review-by-default` | refused: already in the method |
+
 ## Taken out of the queue by the release 0.0.23
 
 | Candidate | Where it went |

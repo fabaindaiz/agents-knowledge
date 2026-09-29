@@ -8,7 +8,7 @@ check: "every command in a copied file is run once and every path resolved; what
 about:
   - {do: "Copy an instruction, rule or config file from another repository", wrong_when: "the copy is made for its shape and read later for its content, and nothing marks which sentences were about somewhere else"}
 rests_on: "Aghajani et al. 2019; Lethbridge et al. 2003 — **drift research, a weaker claim**: none on copies"
-our_evidence: "two occurrences; no rate"
+our_evidence: "two occurrences, and three copies of one bundle; no rate"
 boundary: "A bundle designed to travel, its repository-specific fields enumerated and its content free of local nouns · even then, those fields are never taken from upstream"
 ---
 
@@ -49,4 +49,6 @@ The closest established work is on documentation drift, which is a weaker claim:
 
 ## Evidence
 
-**Reasoned: two occurrences in one workspace, no rate.** What would measure it: for each instruction file in a set of repositories, run every command it names and resolve every path, and count the assertions that fail per file — separating "was never true here" from "stopped being true".
+**2026-09-29 — the boundary's second half, broken three times.** Three repositories, over two consecutive releases, received a bundle designed to travel by a plain copy of its folder instead of its export command. Each copy carried the source's own record: its identity file (one with the empty upstream that means "this is the home") and between five and eight learnings written under the source's identity. The integrity check printed "verified" in all three; the copy was found only because the bootstrap asks the agent to read the identity file by hand first, and in one the agent's first plan was to keep the foreign identity and write its own records under it. So a travelling bundle is not exempt by design alone: the fields that describe a repository must be refused when copied, which is a check (an identity another repository in scope also holds), not a convention.
+
+**Reasoned: two occurrences in one workspace, and three copies of one bundle; no rate.** What would measure it: for each instruction file in a set of repositories, run every command it names and resolve every path, and count the assertions that fail per file — separating "was never true here" from "stopped being true".

@@ -9,7 +9,7 @@ about:
   - {do: "Read a boolean or optional field from a schemaless store or an API", wrong_when: "the code and the query engine each collapse \"missing\" into a different value"}
 rests_on: "SQL three-valued logic"
 strength: "settled"
-our_evidence: "occurrences in two repositories; no count"
+our_evidence: "occurrences in three repositories; no count"
 boundary: "Fields the schema requires at write time, where making absence impossible is the fix"
 ---
 
@@ -42,10 +42,12 @@ A transactional service: a client-reported flag kept three-valued on purpose, be
 
 A client application that keeps users' lists on the device met the reference form. An empty list and a list whose items the build no longer has are two different silences: a menu with no entries because content is missing cannot be told from a menu that failed to load, so the first says in words that it is empty and the second falls back to the whole library. An ordering that does not contain the current item is not an order, and falls back too. Later each list kept the last name seen for every id, so an item whose file was deleted still shows, dimmed, named and removable — checked with a probe: the missing row drawn dimmed, its name surviving a reload, the order holding the one item that remains.
 
+A release tool met it in a lookup, reproduced by an adversarial review on 2026-09-28: a table of what each repository offered defaulted a missing key to an empty list, so a repository a gathering step never reached read as one reached that offered nothing. The guard before a conversion tested only for the missing value, passed, and the conversion deleted that repository's unsent records, which survived only in a backup. The fix keeps "not reached" distinct from "nothing found" all the way to the guard.
+
 ## Literature
 
 SQL's `NULL` and three-valued logic are the standard statement that unknown is not false. No specific paper known on the query-engine / application disagreement. **Sibling in this base:** `absent-constraint-widens` — there absence widens a query; here absence changes a meaning.
 
 ## Evidence
 
-**Reasoned, from four occurrences in one repository and three in another** (the reference form, observed with a probe but not counted). What would measure it: for each boolean in a schemaless store, count documents where it is missing, and compare what the query layer and the application each conclude for them.
+**Reasoned, from four occurrences in one repository, three in another and one in a third** (the reference form, observed with a probe but not counted; the lookup form, reproduced and fixed with a test). What would measure it: for each boolean in a schemaless store, count documents where it is missing, and compare what the query layer and the application each conclude for them.

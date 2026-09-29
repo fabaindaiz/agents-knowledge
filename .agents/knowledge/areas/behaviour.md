@@ -114,7 +114,7 @@ The claim and our application are two different questions — see `../INDEX.md`,
 | order-writes-by-failure-residue | Sagas (1987), write-ahead logging (ARIES, 1992) — **well established** | occurrences in two repositories; no crash injected |
 | retry-over-irreversible-effect | Two Generals / FLP; Stripe and Brandur on keys in practice — **well established** | occurrences in one repository; no rate |
 | a-default-scope-is-the-widest-one | Saltzer & Schroeder 1975, fail-safe defaults — **fifty years old** | measured in one tool |
-| absence-is-a-third-value | SQL three-valued logic — **settled** | occurrences in two repositories; no count |
+| absence-is-a-third-value | SQL three-valued logic — **settled** | occurrences in three repositories; no count |
 | absent-constraint-widens | Saltzer & Schroeder on permission over exclusion — **fifty years old** | measured in one repository, plus one occurrence |
 | best-effort-side-channels | Nygard on integration points and cascading failure — **canonical** | occurrences; no ratio |
 | cleanup-belongs-to-the-supervisor | Candea & Fox 2003, crash-only software — **established** | measured in one repository |
@@ -125,7 +125,7 @@ The claim and our application are two different questions — see `../INDEX.md`,
 | nested-partial-update-replaces | RFC 7396 / 6902 as contrast — **standards, not a claim** | measured in one repository |
 | one-write-gate-makes-read-only-real | complete mediation (1975), reference monitor (1972) — **fifty years old** | measured in one repository, its boundary included |
 | sanitised-value-must-replace-the-raw | King 2019; LangSec shotgun parsing (2016) — **practice and a named weakness class** | one occurrence |
-| copied-instruction-claims-its-origin | Aghajani et al. 2019; Lethbridge et al. 2003 — **drift research, a weaker claim**: none on copies | two occurrences; no rate |
+| copied-instruction-claims-its-origin | Aghajani et al. 2019; Lethbridge et al. 2003 — **drift research, a weaker claim**: none on copies | two occurrences, and three copies of one bundle; no rate |
 | merge-by-shared-fact-not-shared-shape | DRY (Hunt & Thomas); Metz 2016 — **practice, and in tension** | occurrences in one repository; no regression rate |
 | no-simultaneous-deploy | Sato's ParallelChange (martinfowler.com) — **named practice since 2014** | reasoned; one design occurrence |
 | persist-inputs-derive-verdicts | Fowler's Event Sourcing; platform user-defaults design (registration domain) — **practice** | design occurrences in two repositories |

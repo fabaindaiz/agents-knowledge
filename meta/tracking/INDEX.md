@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (76)
+## Candidates in the queue (89)
 
 - `one-rule-two-readers-agree-on-the-verdict-not-the-refusal` — K, since 0.0.20 · lacks a generality statement, and it may be an occurrence of `same-answer-or-refuse` or of `one-path-for-every-source` rather than a claim …
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
@@ -92,14 +92,37 @@ None.
 - `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks a second repository
 - `an-update-is-driven-by-the-new-side` — K, since 0.0.23 · lacks a second occurrence, and literature on self-updating clients
 - `a-repair-request-runs-once-per-load` — K, since 0.0.23 · lacks a second occurrence; it may be an occurrence of `retry-over-irreversible-effect`
-- `splicing-an-old-layout-carrier-keeps-what-gather-found` — M, since 0.0.23 · lacks a second occurrence
+- `dry-run-a-procedure-by-an-agent-before-release` — M, since 0.0.24 · lacks a second occurrence
+- `pin-the-treatment-per-trial` — K, since 0.0.24 · lacks a second occurrence; overlaps reproduce-the-checkout-not-only-the-environment
+- `steps-readable-by-a-permission-layer` — M, since 0.0.24 · lacks a second occurrence of the same form
+- `verify-enforces-the-carrier-record` — M, since 0.0.24 · lacks nothing
+- `template-id-format-matches-the-checker` — M, since 0.0.24 · lacks nothing
+- `check-every-anchor-before-the-first-write` — M, since 0.0.24 · lacks a second occurrence; overlaps `order-writes-by-failure-residue` (the residue of a failure between writes), which is stated for …
+- `exact-sync-removes-the-project-under-development` — K, since 0.0.24 · lacks a second tool or a second repository; literature not consulted
+- `validate-each-transformation-run` — K, since 0.0.24 · lacks a second occurrence
+- `derived-over-chosen-identifiers` — K, since 0.0.24 · lacks a second occurrence
+- `derived-copy-goes-stale-silently` — K, since 0.0.24 · lacks a second occurrence
+- `fail-closed-defaults` — K, since 0.0.24 · lacks a second repository
+- `copied-code-carries-logic-not-the-values-it-compares` — K, since 0.0.24 · lacks a second occurrence; literature (a shared contract or single source for enumerations) not consulted
+- `a-cost-justified-by-an-unmeasured-constraint` — M, since 0.0.24 · lacks a second repository; overlaps `unrunnable-system-moves-the-gate` and principle 14
+- `interleave-versions-in-one-window` — K, since 0.0.24 · lacks literature (interleaved or randomized benchmarking) not consulted; extends `metric-against-trivial-predictor` (never read a delta …
 
 ## Offered again, to merge (0)
 
 None.
 
-## Answered: admitted, folded, refused or dropped (18)
+## Answered: admitted, folded, refused or dropped (28)
 
+- `splicing-an-old-layout-carrier-keeps-what-gather-found` — **fixed** in 0.0.24: the splice turns the rows a carrier added over its release into proposals before the tables go, and refuses when that …
+- `occurrence-of-documented-default-values-drift` — **merged** into `documented-defaults-drift-from-code` as a second occurrence, from a second repository
+- `validate-each-transformation-run` — **extended**: an up-to-date check that compared text rather than bytes, into its *Evidence*
+- `absence-is-a-third-value` — **extended**: a default of an empty list that turned "not reached" into "nothing found", into its *Where it came from*
+- `copied-instruction-claims-its-origin` — **extended**: a bundle folder copied whole with its source's identity and records, into its *Evidence*
+- `absent-constraint-widens` — **extended**: an equivalence suite whose world held no case that tells two designs apart, into its *Evidence*
+- `an-update-is-driven-by-the-new-side` — offered again with nothing new; its queued row stands
+- `a-repair-request-runs-once-per-load` — offered again with nothing new; its queued row stands
+- `local-host-is-a-test-double-of-the-production-host` — offered again with nothing new; already folded into `test-double-fidelity`
+- `isolated-review-by-default` — refused: already in the method
 - `test-double-fidelity` — **extended**: two occurrences offered by two repositories (a fixture that lacked what the real input carries; a local host that differs …
 - `local-host-is-a-test-double-of-the-production-host` — **folded** into `test-double-fidelity` as an occurrence
 - `same-answer-or-refuse` — **extended**: the subset reader that refuses what the full parser types differently, measured, into its *Evidence*
