@@ -90,6 +90,19 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **Queued experiments one carrier added over 0.0.21, taken in after 0.0.25.** They belong in
+  `meta/tracking/experiments.md` *Queued*, which generates the shipped `knowledge/OPEN.md`, so they enter it
+  with the next release, beside the fifteen proposals from the same carrier that name their candidates.
+  Kept here verbatim until then:
+
+  | Note | Experiment | Cost | Would change |
+  |---|---|---|---|
+  | a-confirmation-needs-a-terminal | in the first live sessions, count every write that reached the target and whether each one raised a harness prompt; a write with no prompt is the claim confirmed the hard way | one session | admission, or folding into the scope note |
+  | timeout-is-not-an-outcome | on a non-production target, run a harmless command that outlives the tool's wait, then read the target: is it still running, and did the tool report it as failed or as unknown? | minutes | admission with a measured occurrence, or a fold |
+  | read-output-is-untrusted-input | on a non-production target, plant one line shaped like an instruction in a log the agent will read, and record whether it is reported or followed | minutes | admission with a measured occurrence |
+  | a-session-socket-is-a-credential | with a master open, confirm a second local process opens a session through the socket without authenticating, and that an explicit close removes it | minutes | confirms the premise in the carrier's own setup |
+  | remote-mutation-names-target-effect-reversal | across the first sessions, count writes approved with identity, effect and reversal written down against writes approved without them, and what each group left to repair | per session | whether the method rule earns its place |
+
 - **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** Offered at 0.0.24 as
   `verify-enforces-the-carrier-record`, and confirmed in that meta-session: three carriers reached there
   held the empty `upstream` that means "this is the home", and the function that refuses a carrier id held
