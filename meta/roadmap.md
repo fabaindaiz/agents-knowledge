@@ -40,7 +40,7 @@ says, each keeping its full `adapted` and `declined`, and minted an id. In each 
 the precedence line in the repository's words, installed the reviewer where it was missing, adapted the
 repository's own audit where it enforced the old layout (seen to fail on planted violations), repointed
 dead pointers outside append-only history, ran the gate, wrote one changelog entry in the carrier's
-format and made one commit on its branch. **Nothing in the carriers is pushed.** A planted violation from
+format and made one commit on its branch (pushes: see below). A planted violation from
 one of those agents landed in this repository's release folder through a shared scratch directory; it
 was restored from the tag before anything was committed (proposal `parallel-agents-get-disjoint-scratch`).
 
@@ -75,14 +75,32 @@ checkout and its remote disagree after a rewrite, the remote is the record.
 never committed; the names of private carriers are in the local private-terms list. The history before
 `v0.0.20` exists only on a local backup branch, never tagged or pushed.
 
+**Pushed at the close:** six carriers' 0.0.25 commits are on their remotes, four of them pushed by the
+session at the owner's request onto their main branches as fast-forwards, and two found already pushed
+from this machine. **Not pushed:** four carriers' commits, each a fast-forward of its remote branch.
+
+**The session, evaluated** (the owner asked for it; its general lessons are this repository's proposals,
+thirteen waiting for the next release). What worked: the tools' refusals (an untagged release, headers
+that disagree, lines a conversion would remove unread) stopped every loss before it happened; one agent
+per carrier, briefed with that carrier's findings and a hard rule not to change its procedures, updated
+eleven carriers with each gate run there; a read-only review per carrier found what tests could not. What
+went wrong, each now a proposal: the release was called ready before any carrier's procedures were read
+in execution; the search for carriers read the manifest, then the disk, and only the owner's naming found
+two whose bundle lives on a branch; a stale working copy was read as current until compared with its
+remote; a reviewer's claim was relayed without being checked; parallel agents shared a scratch directory
+and one planted violation landed in the release folder; a gate piped through a filter let a stale release
+folder be committed and pushed; queued experiments taken into a build input changed a shipped page; a
+workflow of agents was launched without the owner opting in. Each was caught before anything wrong
+reached a carrier's remote, most by a check, two by the owner.
+
 **Waiting on the user:**
 
-1. Push the eleven carriers' commits (the branch of each is in the session's closing report, kept on this
-   machine only) and close or update their pull requests; the three brought over on a new branch are
-   pushed onto their remote branch, which they extend without rewriting it.
+1. Push the four carriers not yet pushed, each a fast-forward (the branch of each is in the session's
+   closing report, kept on this machine only), and close or update their pull requests. Where a carrier
+   was updated on a branch cut from its remote, move its old local branch onto the remote afterwards.
 2. The carriers' own follow-ups the agents named, each the owner's decision: wiring `bundle.py verify`
-   into a gate that does not call it yet; a stale lint baseline; a local environment with an outdated
-   private package; one uncommitted log entry left by another session.
+   into a gate that does not call it yet; stale lint and type baselines; a local environment with an
+   outdated private package; one uncommitted log entry left by another session.
 3. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
 4. `i-5ed7e8-543516`: the release pages from `v0.0.22` to `v0.0.25`.
 
@@ -90,6 +108,11 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the
+  privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
+  (and was pushed, because the check that failed was piped through a filter; proposal
+  `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
+  it refuse. *Collision:* every commit here gets slower by one build check.
 - **Queued experiments one carrier added over 0.0.21, taken in after 0.0.25.** They belong in
   `meta/tracking/experiments.md` *Queued*, which generates the shipped `knowledge/OPEN.md`, so they enter it
   with the next release, beside the fifteen proposals from the same carrier that name their candidates.
