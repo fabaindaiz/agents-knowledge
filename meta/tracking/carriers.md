@@ -10,6 +10,7 @@ is ever written next to its id, here or anywhere in the bundle. **Paths and name
 
 | Carrier | Version | Aligned on |
 |---|---|---|
+| r-7985ee | 0.0.25 | 2026-10-01 |
 | r-81be2b | 0.0.25 | 2026-09-29 |
 | r-1190d3 | 0.0.25 | 2026-09-29 |
 | r-cef56f | 0.0.25 | 2026-09-29 |
