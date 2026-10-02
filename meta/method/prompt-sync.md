@@ -114,6 +114,7 @@ A carrier writes only what it owns: `.agents/carrier.toml` and its proposals, on
 | a carrier's proposals | `bundle.py proposals [--prune \| --pack FILE \| --from-outbox]`, in the carrier | `--prune` and `--from-outbox`: its `proposals/`; `--pack`: `FILE` |
 | the carriers table | `release.py register [REPO...]` | `meta/tracking/carriers.md` |
 | phase 3 | `release.py align [REPO...]` | nothing |
+| the template's release | `bundle.py export DEST`, from the tagged home | only `DEST`, which must be empty |
 
 ## Phase 1 — Gather (read-only)
 
@@ -154,6 +155,7 @@ For each carrier, and **with that carrier as today's repository** (`prompt-conte
 3. **Empty every `incoming/`** this session triaged.
 4. **Name what was not reached**: every registered carrier with no path here goes into `meta/roadmap.md`, *Blocked outside*, by its id alone.
 5. **Close**: the home's own learnings as its proposals (`prompt-harvest.md`), the release under *Done* in `meta/roadmap.md`, *Where we are* rewritten there for the next session, and one commit in the home (Conventional Commits), pushed with the tag. The closing report gives, per carrier, its branch, its commit, the gate selection that ran and what it declined; the verdict counts; every *divergent* item and how it was reconciled; every *undecidable* one, which is the agenda for the next meta-session; and where the backups are.
+6. **Refresh the template repository**, the one a new project is started from, when its clone is open on this machine. It is not a carrier: it holds no `carrier.toml`, so every repository started from it mints its own id, and it is never registered or aligned. From the tagged home, `bundle.py export DIR/.agents` into an empty folder, then replace the template's `.agents/` with it (`rsync -a --delete DIR/.agents/ TEMPLATE/.agents/`) and copy `.agents/agents/knowledge-reviewer.md` over the template's `.claude/agents/` copy. In the template, `bundle.py verify --release` passes and `git status` shows changes under those two folders only; its other files (its read-me, its gate workflow, its commit hook) are its own and change only by hand. One commit, `chore: agent-guides X.Y.Z`, and the tag `vX.Y.Z` on it, pushed under the template's own rules. A template not open here is not refreshed: the closing report says so.
 
 ## What a meta-session must never do
 
