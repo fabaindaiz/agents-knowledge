@@ -111,6 +111,22 @@ reached a carrier's remote, most by a check, two by the owner.
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-ec8813` · One carrier's first harvest, and the method changes it asks for.** Fifty-three
+  proposals written against 0.0.25 wait in that carrier's `.agents/proposals/` for the next gather:
+  knowledge extensions with counts (`sweep-the-rendered-extremes`, `a-check-must-be-seen-to-fail`,
+  `test-double-fidelity`), a second repository for `a-cache-key-names-its-invalidators`, new evidence
+  against the answered `isolated-review-by-default` (whole-branch reviews at the end of each plan found
+  a defect the suite passed in every one of about a dozen runs), one experiment that confirms
+  `a-check-must-be-seen-to-fail`, ten refusals, and method changes: the changelog template's *Review*,
+  *Learned* and *Cards relied on*; frictions and hand-done procedures counted by searching the log;
+  the closing review routing what lives only in local memory or an ignored ledger; deny rules per
+  destructive subcommand, with the global-option bypass; the harvest reading every form of the
+  human's input (mid-turn messages and question answers carried most corrections). The source edits
+  for those method changes are drafted on the branch `wip/prompt-improvements-from-harvest`, not
+  merged: its `release.py check` is red by design until a release takes or drops them, and with them
+  the coding session measures about 10,037 of its 10,100-token budget. *Collision:* the next release's
+  intake, and the coding budget.
+
 - **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the
   privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
   (and was pushed, because the check that failed was piped through a filter; proposal
