@@ -8,6 +8,45 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Changed
+
+Pending admission at the next release: the evidence for every item below is one carrier's harvest,
+so none of it yet has the second occurrence admission asks for.
+
+- **The changelog entry has slots for what sessions were writing outside it.** Artifact 5 adds
+  *Cards relied on, and the checks that ran*, *Review* (who, isolated or not, findings by severity, what
+  was deferred) and *Learned* (general, for the harvest; local, with where each was routed; ending with
+  the closing review's `Captured: …` line). Where a host's plan template wins, the card lookup is mapped
+  into it in one line (bootstrap Phase 4, principle 19), or the step quietly stops.
+- **The boundary of "review on request" is stated.** It was measured for the knowledge reviewer on one
+  task's diff, not for a whole-branch review after a multi-task plan, nor against what a missed defect
+  costs; a host workflow that reviews by default stays, and its findings go in the entry's *Review*.
+- **The closing review counts by searching, not from memory.** Friction and procedures done by hand are
+  counted in the log and any ledger, and the count is written; a procedure an earlier session also did by
+  hand is proposed as a skill, with its cost. New rows: a fact living only in local memory, an ignored
+  ledger or a scratch file goes to the repository document that owns it (the handoff must work from
+  another machine), and a build that reached a device open questions wait for lists the questions it can
+  answer. Step 6 gains *a new dated record → its folder's index*, and artifact 9 names that index check
+  among the cheap ones.
+- **Deny rules, and red after the code.** Artifact 4: deny per destructive subcommand (a prefix also
+  refuses the read-only forms; a rule for one form misses its neighbours), and a command with one denied
+  part is refused whole, so an edit is never chained to it and the tree's status is read before tests
+  (also in *Working safely*). Principle 18: where the tree may not be stashed, see the red by moving the
+  implementation aside and back, or by mutating; undo by editing forward, proved with
+  `git diff --exit-code`.
+- **A delegated agent that downloads or writes gets a scratch directory outside the repository.**
+- **Hearing the request** (principle 15, and one line in step 7): every part of the message, mid-turn ones
+  included, is done or named as not done; free text overrides offered options; a light observation is
+  not a purge order; pause means pause, and closing never skips a review; no long blocking waits; a quick
+  deploy stays quick and ships only finished work; research before a sensitive creative choice, and offer
+  the middle ground; copy is measured and art drawn before approval.
+- **The harvest reads what was said, not only what was recorded**: the human's messages in the session
+  transcripts, mid-turn messages and question answers included, the assistant's local memory and ignored
+  ledgers, privacy-filtered; and it extracts what was asked to research, corrected, stressed, requested
+  again and got wrong again.
+- **The update keeps only the top-level `incoming/README.md`** when it empties `incoming/`; the release
+  copy holds many files of that name.
+
 ## [0.0.25] - 2026-09-29
 
 A review of every carrier's own procedures against 0.0.24, read by one agent per repository, found no

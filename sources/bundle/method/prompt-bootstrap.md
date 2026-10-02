@@ -311,7 +311,9 @@ repository's own: *a procedure in `.agents/method/` never overrides this
 repository's own; where it names a file, a format, a step, a work item or a
 commit rule this repository defines differently (its task tracker, its plans,
 its review, its logs, its numbering), this repository's wins, and
-`.agents/carrier.toml` `adapted` records the mapping* (principle 19). Mint the repository's carrier id once with
+`.agents/carrier.toml` `adapted` records the mapping* (principle 19). Where the
+host's plan or spec template wins, map the card lookup into it explicitly, one
+line in its header; otherwise the step has no slot and quietly stops. Mint the repository's carrier id once with
 `bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, and seed
 the decisions log, the roadmap and the changelog with ids from `bundle.py id
 d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
@@ -568,7 +570,11 @@ the repository for each, runs their checks (a check that needs a planted test
 runs in a scratch copy, or comes back as the test you must write), and returns
 findings; its reading never enters your context. When a change deletes or
 rewrites stored data, moves money or touches authentication and no review was
-asked for, the report offers one, in one line; it does not run it.
+asked for, the report offers one, in one line; it does not run it. The
+measurement behind *on request* was of this reviewer on one task's diff, in a
+few trials: not of a whole-branch review after a multi-task plan, and not of
+what a missed defect costs. A host workflow that reviews by default stays
+(principle 19); its findings go in the changelog's *Review*.
 
 - **Fix the findings and nothing else**, then send only what changed for a
   second review. **At most two re-reviews**: what is still open after them goes
@@ -628,6 +634,7 @@ Write this table once for your repo, in Phase 4, and follow it every session:
 | A file, a layer, a public name | the architecture document, and every map that names it |
 | Something the roadmap planned | that entry's **state**, and what is still missing |
 | A command, a flag, a task-runner entry | every document that quotes it — these go stale fastest |
+| A new dated record (research, a report, a plan) | its folder's index |
 | A user-visible behaviour | the guide written for the non-programmer, if the repo has one |
 | Anything at all | the changelog, including what went wrong on the way |
 
@@ -640,7 +647,9 @@ The report is not a victory lap. It says what was built, **what the first
 attempt got wrong and what caught it**, what was measured, what was left
 undone, and — separately and explicitly — **any structural decision you
 declined to make on your own**. Put that last one where it cannot be missed; it
-is the one part of the report the human must act on.
+is the one part of the report the human must act on. Re-read the human's whole
+message first, and any sent mid-turn: every part is done or named as not done
+(principle 15).
 
 Commits are split by *what changed and why*, and only the ones that pass the
 repo's stated bar are offered. A commit that needs an "and" in its subject is
@@ -709,6 +718,7 @@ things. Walk the list:
 | Did this make a rule checkable that was on rung 1? | write the check, or add it to the process area |
 | Did the outside change under a research entry you relied on? | update the entry with what you verified and when |
 | Did any document you did not open become false? | the *what changed → what must move* table, run properly |
+| Did a build reach a device that open device questions wait for? | list the ones it can answer, and ask which to measure |
 
 **B. Harvest the learnings, and route each one.** The question is not "did I
 learn something" — it is **"what does this session know that the repository does
@@ -722,8 +732,9 @@ that dies with the context window.
 | An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
 | A rule a script could check | the audit script, and note the rung it moved to |
 | A trap that will be hit again | root `CLAUDE.md` if it is always relevant, the area file if it is local |
-| A procedure you performed more than twice | a skill |
+| A procedure done by hand that an earlier session also did | a skill, proposed with its cost |
 | Friction, hit for the second time | the roadmap's process area, with the arithmetic |
+| A fact only in your local memory, an ignored ledger or a scratch file | the repository document that owns it |
 | A plan whose conditions changed | that roadmap entry's state |
 | Something true only of this change | the changelog entry — and that is a complete answer, not a failure |
 | Something about building software or about the method that holds with none of this repository's nouns | the changelog entry, marked as such; the harvest (`prompt-harvest.md`) writes it as a proposal in `.agents/proposals/`, for the next release. Never an edit to a note or a method document here |
@@ -743,18 +754,21 @@ things and conflating them is why process work is either absent or exhausting:
   process — but **no session is allowed to lose what it learned.**
 - **Surface a proposal only when it has earned it**: the friction has been hit a
   second time, or the human asked, or the recurring review is running. Otherwise
-  it stays recorded and silent.
+  it stays recorded and silent. **Count by searching**, never from memory: the
+  log and any ledger, for the symptom of each friction and for each procedure
+  done by hand; write the count found.
 - **In the report, the whole thing is one line.** `Captured: 3 learnings, 1
   friction (2nd hit — see roadmap). Nothing needs you.` Expand only if asked.
+  The changelog entry's *Learned* carries the same line.
 
 That last line is the whole discipline in practice: the human who wants to ship
 a feature is not interrupted, and the human who wants to improve the process
 finds a year of honest observations waiting when they go looking.
 
 **The closing question, asked plainly:** *if the next session is a different
-agent with no memory of this one, what would it have to re-derive?* Everything
-that answers that question is a gap you can close in the next two minutes, and
-will never close as cheaply again.
+agent, on another machine, with no memory of this one, what would it have to
+re-derive?* Everything that answers that question is a gap you can close in the
+next two minutes, and will never close as cheaply again.
 
 > **Example.** One session's harvest was four rows: two decisions with
 > enforcers, one number that moved into the document owning it, one roadmap
@@ -764,7 +778,7 @@ will never close as cheaply again.
 
 ### Working safely in a tree you do not own
 
-Five hazards, all of which have cost real time:
+Six hazards, all of which have cost real time:
 
 - **The uncommitted diff is the work, and it has no copy.** Never revert the
   working tree: no `git checkout` or `git restore` of a path, no `git stash`, no
@@ -803,6 +817,9 @@ Five hazards, all of which have cost real time:
   answer is that the file needs splitting, **say so and leave it**: that is a
   structural decision, and mid-feature is the worst possible moment to take it
   unasked.
+- **A command with one denied part is refused whole**, so an edit chained to it
+  never lands. Never chain an edit with anything a deny may catch, and read the
+  tree's status after an edit before running tests (artifact 4).
 
 ### Research does not end at Phase 2
 
@@ -815,7 +832,9 @@ forever out of habit.
 
 The same rule as Phase 2 applies: nothing enters the register unless it changed
 or confirmed a decision, and a recommendation written for a different
-environment is the most dangerous kind of correct.
+environment is the most dangerous kind of correct. A delegated agent that
+downloads or writes is given an explicit scratch directory outside the
+repository; otherwise it writes where you stand.
 
 ---
 
@@ -882,8 +901,11 @@ The short one. Run it before you report, every time.
       branch this change made reachable was exercised once.
 - [ ] Every document the change falsified is true again, in this change.
 - [ ] The changelog entry names what went wrong on the way and what was left
-      undone. Every new record — entry, decision row, roadmap item — has an id
-      from `bundle.py id`, not a number.
+      undone, and fills *Review*, *Learned* and *Cards relied on*. Every new
+      record — entry, decision row, roadmap item — has an id from
+      `bundle.py id`, not a number.
+- [ ] Every part of the human's message, those sent mid-turn included, is done
+      or named as not done.
 - [ ] Where the change touched state, a contract, data, security or
       verification, the cards the index links were applied before the design
       decision and their checks ran before claiming done; a review asked for
@@ -897,7 +919,8 @@ The short one. Run it before you report, every time.
       learnings were routed to their homes, and the answer to *"what would the
       next agent have to re-derive?"* is written down somewhere.
 - [ ] Friction hit twice is in the roadmap's process area, priced. Friction hit
-      once is in the changelog entry.
+      once is in the changelog entry. The count came from searching the log and
+      any ledger for the symptom, and is written down.
 - [ ] Process improvements were **proposed, not performed** — except a one-line
       reversible one, which is named in the report.
 - [ ] Learnings and friction were **captured in full**, regardless of whether

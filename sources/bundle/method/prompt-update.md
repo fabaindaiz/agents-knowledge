@@ -202,8 +202,10 @@ repository's own artifacts, which do not take the practice up.
    `prompt-bootstrap.md` Phase 4 words, in this repository's own words. The installed copy is never edited:
    every release regenerates it; adapt it through the root file, and record the adaptation in
    `adapted`.
-4. **Empty `incoming/`**, keeping its `README.md`. A copy left there is a second
-   bundle, and the next session cannot tell which one is live.
+4. **Empty `incoming/`**, keeping only the top-level `incoming/README.md`: the
+   release copy holds many `README.md` files, and a filter on the name keeps them
+   all. A copy left there is a second bundle, and the next session cannot tell
+   which one is live.
 5. **`python3 .agents/tools/bundle.py verify` must pass.** Without the tool,
    `sha256sum -c SHA256SUMS` (or `shasum -a 256 -c SHA256SUMS`) in `.agents/`
    checks the checksums alone.
