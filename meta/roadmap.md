@@ -71,6 +71,9 @@ generated. Nothing leaves the candidate queue by age. The user is the sole autho
 prediction is written before a measurement, and a refuted one is stated, not moved. Where a local
 checkout and its remote disagree after a rewrite, the remote is the record.
 
+**The template repository** a new project starts from holds 0.0.25, with no `carrier.toml`; from the next
+release on it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
+
 **This machine's record of its carriers** is the local manifest (`~/.config/agent-guides/carriers.toml`),
 never committed; the names of private carriers are in the local private-terms list. The history before
 `v0.0.20` exists only on a local backup branch, never tagged or pushed.
