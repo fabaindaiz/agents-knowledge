@@ -127,6 +127,55 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   the coding session measures about 10,037 of its 10,100-token budget. *Collision:* the next release's
   intake, and the coding budget.
 
+- **The adversarial review of initialisation, the method and the bundle's organisation (2026-10-02).**
+  `meta/reviews/2026-10-02-adversarial-review.md` holds the evidence, the findings and the settled
+  design answers. The redesign runs in phases, one release each at most, and a phase that its pilot
+  shows costs more than it saves stops there. Phase 0, a user-level profile of the maintainer's standing
+  rules, is done outside the bundle: it is personal, so it never enters `.agents/`. The phases and the
+  items beside them:
+
+- **`i-5ed7e8-2aabb5` · The bootstrap's opening questions ask the initialisation's objectives.** It contradicts
+  itself today (do not read before asking, and detect first), and across the initialisations reviewed
+  only one asked the purpose first. Settle the order by repository kind: ask first in an empty one; in
+  an existing one, a short read of at most about five minutes, then propose an objective to confirm. Ask
+  what the initialisation must deliver, how deep, and which questions its research must answer; write
+  research to the repository as it lands; accept by a first real task. *Collision:* the bootstrap's
+  budget, and phase 5.
+- **`i-5ed7e8-191d2a` · Redesign phase 1: install the method skills, and a close skill.** A command
+  copies the method's skills into the assistant's skill folder, outside `.agents/skills/`, each as a base
+  file plus a `LOCAL.md` the repository owns, so a repository's procedure wins without editing a release
+  file; the changelog entry's template is written by a command, and *close* (every part of the request,
+  documents true again, counted frictions, local memory compared, hand-off) ships as the first skill.
+  *Collision:* `bundle.py verify`, which must tell an installed copy from an edited one.
+- **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
+  library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
+  carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,
+  planted-failure coverage) become a small library a carrier's audit imports. *Collision:* phase 1's
+  install command; each carrier's audit.
+- **`i-5ed7e8-46b707` · Redesign phase 3: the router, brief and lookup, and budgets measured by a
+  pilot.** A generated block in the root file routes a request to a skill, a card or a document;
+  `bundle.py brief` and `bundle.py lookup` replace hand-run greps. The new budgets are set by a pilot's
+  measurements, not predicted. *Collision:* `i-5ed7e8-1ac328`, the main thread's cost.
+- **`i-5ed7e8-4a5e6d` · Redesign phase 4: the method jobs as skills, and the reference split.**
+  Harvest, update and bootstrap become skills that load only their own steps; the shared reference
+  splits so a session reads what its job needs. *Collision:* `i-5ed7e8-0ae753`, `i-5ed7e8-705aa8`.
+- **`i-5ed7e8-f542de` · Redesign phase 5: the bootstrap interview, optional skills and hooks.** The
+  interview of `i-5ed7e8-2aabb5` as a skill; optional skills named as seams a third-party skill
+  plugin fills only if installed, its version recorded in `carrier.toml`; hooks offered, never required.
+  Skill evals are allowed as a capped exception while the efficacy studies stay paused. *Collision:*
+  `i-5ed7e8-0d9b6a`.
+- **`i-5ed7e8-211d11` · A faster intake lane for proposals at the home**, in parallel with the phases.
+  The second-repository bar holds most proposals indefinitely; a lane for method changes and
+  extensions with counts, decided per release, keeps the queue moving without lowering the bar for new
+  notes. *Collision:* `i-5ed7e8-3e6760`.
+- **`i-5ed7e8-408166` · The privacy check sees an identifier beside a description.** It matches nouns
+  line by line, so a carrier id placed next to a description of that carrier's findings passed it in a
+  public file; the review caught it, and history was rewritten. Flag any carrier id within a few lines
+  of prose about a carrier, and plant that case in its tests. *Collision:* `i-5ed7e8-1e9567`.
+- **`i-5ed7e8-4fea65` · Register every carrier in the home's tracking.** One carrier on 0.0.25 is
+  missing from it, so its harvest and its version are invisible to the home's state review. *Collision:*
+  `i-5ed7e8-b83f16`.
+
 - **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the
   privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
   (and was pushed, because the check that failed was piped through a filter; proposal
