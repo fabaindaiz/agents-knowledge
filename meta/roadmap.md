@@ -20,6 +20,15 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**State on 2026-10-03, at the close of 0.0.26.** Release 0.0.26 is tagged. It took in one carrier's
+first harvest and the home's own proposals (sixty-six, every verdict in `meta/tracking/history.md`),
+the method changes that harvest asked for, published on one carrier's evidence and marked to be
+reviewed at the exit of the redesign's phase 1, and that phase itself: the method's skills, installed
+as a base plus the carrier's `LOCAL.md`, with `close` first, and the bookkeeping a close runs as
+commands. The verbatim evidence of the private carrier's proposals was rewritten before intake, so
+no product of it enters this repository. It reached the two carriers the owner named; the others stay
+on 0.0.25 (*Blocked outside*). The coding session measures 9,897 of its 10,100-token budget.
+
 **State on 2026-09-29, at the close of 0.0.25.** Releases 0.0.24 and 0.0.25 are tagged. 0.0.24 made
 proposals the way a carrier's learnings travel and took in the first round; a review of every carrier's
 own procedures against it, one read-only agent per repository, found no conflict in what an agent does by
@@ -111,23 +120,6 @@ reached a carrier's remote, most by a check, two by the owner.
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
-- **`i-5ed7e8-ec8813` · One carrier's first harvest, and the method changes it asks for.** Fifty-three
-  proposals written against 0.0.25 wait in that carrier's `.agents/proposals/` for the next gather:
-  knowledge extensions with counts (`sweep-the-rendered-extremes`, `a-check-must-be-seen-to-fail`,
-  `test-double-fidelity`), a second repository for `a-cache-key-names-its-invalidators`, new evidence
-  against the answered `isolated-review-by-default` (whole-branch reviews at the end of each plan found
-  a defect the suite passed in every one of about a dozen runs), one experiment that confirms
-  `a-check-must-be-seen-to-fail`, ten refusals, and method changes: the changelog template's *Review*,
-  *Learned* and *Cards relied on*; frictions and hand-done procedures counted by searching the log;
-  the closing review routing what lives only in local memory or an ignored ledger; deny rules per
-  destructive subcommand, with the global-option bypass; the harvest reading every form of the
-  human's input (mid-turn messages and question answers carried most corrections). **Taken in by
-  0.0.26** (2026-10-03), every proposal with its verdict in `meta/tracking/history.md`: the method
-  changes resting on this carrier's evidence alone are published and marked so, and are reviewed at
-  the exit of phase 1 (`i-5ed7e8-191d2a`); the six standing preferences went to the maintainer's
-  profile; three session-loop insertions moved out of it for its budget, which measures 9,897 of
-  10,100 after the release. *Collision:* that review.
-
 - **The adversarial review of initialisation, the method and the bundle's organisation (2026-10-02).**
   `meta/reviews/2026-10-02-adversarial-review.md` holds the evidence, the findings and the settled
   design answers. The redesign runs in phases, one release each at most, and a phase that its pilot
@@ -148,11 +140,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   file; the changelog entry's template is written by a command, and *close* (every part of the request,
   documents true again, counted frictions, local memory compared, hand-off) ships as the first skill.
   *Collision:* `bundle.py verify`, which must tell an installed copy from an edited one.
-  **Drafted, not released (2026-10-02):** on the branch `wip/phase-1-skills`, stacked on
-  `wip/prompt-improvements-from-harvest`: `install-skills` (with `--check`, and in `verify`), `new
+  **Released in 0.0.26 (2026-10-03):** `install-skills` (with `--check`, and in `verify`), `new
   entry`, `count`, `memory-diff`, the `close` base, the update's step 3c, and `evals/skills/trigger.py`.
   Piloted in one carrier, its old skill kept line by line as `LOCAL.md`; the trigger eval there fired on
-  every close request and on no near miss, one run each. **Released in 0.0.26.** Exit still open: entries
+  every close request and on no near miss, one run each. Exit still open: entries
   in two carriers that carry every field.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
@@ -184,10 +175,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   into one candidate per file (eight to `prompt-bootstrap` at 0.0.26), and a refused one is recorded under
   that name; 0.0.26 recorded them by id by hand. Give `propose` a topic slug beside the file, and have
   `intake` key on it. *Collision:* the proposal format, and every carrier's harvest.
-- **`i-5ed7e8-4fea65` · Register every carrier in the home's tracking.** One carrier on 0.0.25 is
-  missing from it, so its harvest and its version are invisible to the home's state review. *Collision:*
-  `i-5ed7e8-b83f16`.
-
 - **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the
   privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
   (and was pushed, because the check that failed was piped through a filter; proposal
@@ -397,7 +384,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
-- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.25,
+- **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.26,
+  every carrier but two stays on 0.0.25 (`meta/tracking/carriers.md`): the release reached only the
+  ones the owner named. At the close of 0.0.25,
   one registered carrier, `r-a2f271` at 0.0.20, found on no branch of any repository on the machine that
   ran it. It gets the release from a session where it is open, or through its own `incoming/`, converted
   by hand first if its release has no tag, as 0.0.24's changelog says; then it adds the three root-file
@@ -415,8 +404,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
-- **0.0.25, 2026-09-29: a repository's own procedures win, and every carrier here is on it.** Four
-  fixes from a read-only review of each carrier's procedures against 0.0.24 (see *Where we are*), carried
-  to the nine carriers on this machine, with the home's 0.0.24 before it: proposals replace the outbox
-  (`i-5ed7e8-13ff46`) and the first round was taken in (twenty proposals and five rows; four notes
-  extended; fourteen rows queued; two tool defects to *Next*). Both are described in `.agents/CHANGELOG.md`.
+- **0.0.26, 2026-10-03: the method's skills, and one carrier's first harvest taken in.** Phase 1 of
+  the redesign (`i-5ed7e8-191d2a`) and sixty-six proposals; the carrier tracking now holds every
+  carrier this machine runs (`i-5ed7e8-4fea65`). Described in `.agents/CHANGELOG.md`.
