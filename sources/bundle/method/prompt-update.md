@@ -202,6 +202,11 @@ repository's own artifacts, which do not take the practice up.
    `prompt-bootstrap.md` Phase 4 words, in this repository's own words. The installed copy is never edited:
    every release regenerates it; adapt it through the root file, and record the adaptation in
    `adapted`.
+
+   **3c. Install the skills again**: `python3 .agents/tools/bundle.py install-skills`, which merges
+   each base in `method/skills/` with the carrier's `LOCAL.md` (`method/skills/README.md`). A skill
+   the carrier wrote itself under the same name is refused, never overwritten: move its rules into
+   `LOCAL.md` first, every line kept or its removal named in the changelog entry.
 4. **Empty `incoming/`**, keeping only the top-level `incoming/README.md`: the
    release copy holds many `README.md` files, and a filter on the name keeps them
    all. A copy left there is a second bundle, and the next session cannot tell

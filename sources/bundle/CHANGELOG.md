@@ -8,6 +8,23 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Added
+
+Drafted on a branch for the next release, not yet admitted: the first phase of the redesign in
+`meta/reviews/2026-10-02-adversarial-review.md`, the method's procedures as skills.
+
+- **The method's skills, installed as a base plus the carrier's `LOCAL.md`.** `method/skills/<name>/SKILL.md`
+  ships the base; `bundle.py install-skills` writes `.claude/skills/<name>/SKILL.md` merged with the
+  carrier's `LOCAL.md` (frontmatter key by key; a `##` section replaces, removes or adds), and refuses
+  to overwrite a skill the carrier wrote. `install-skills --check`, and `verify`, fail on an installed
+  skill that is stale or edited by hand. The update installs them again (step 3c).
+- **`close`, the first skill**: every part of the request, the documents true again, the changelog
+  entry, frictions counted, local memory moved into the repository, the hand-off, then the gate.
+- **The bookkeeping a close runs, as commands.** `bundle.py new entry TITLE --write` writes the
+  changelog entry's skeleton with its minted id from the log's own format, or the method's; `bundle.py
+  count SYMPTOM FILE...` counts the entries that mention a friction; `bundle.py memory-diff` lists the
+  assistant's local memories the repository holds nowhere.
+
 ### Changed
 
 Pending admission at the next release: the evidence for every item below is one carrier's harvest,
