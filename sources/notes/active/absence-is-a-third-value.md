@@ -50,4 +50,6 @@ SQL's `NULL` and three-valued logic are the standard statement that unknown is n
 
 ## Evidence
 
+**2026-10-03 — a template's empty default, in the bundle's home.** Four carriers on an old layout held their own fields in several headers; one header kept the template's empty lists while the others held between seven and fourteen recorded decisions. Settling them as two peer values would have taken the empty lists and erased every decision; "never filled" was kept apart from "deliberately empty" up to the step that merged them, and the full lists were carried.
+
 **Reasoned, from four occurrences in one repository, three in another and one in a third** (the reference form, observed with a probe but not counted; the lookup form, reproduced and fixed with a test). What would measure it: for each boolean in a schemaless store, count documents where it is missing, and compare what the query layer and the application each conclude for them.

@@ -566,6 +566,27 @@ class Carry(Base):
         self.assertEqual([p.stem for p in (agents / "proposals").glob("p-*.md")], offered)
         self.assertEqual(B.verify_problems(agents), [])
 
+    def test_a_bundle_on_a_branch_not_checked_out_is_found(self) -> None:
+        repo = init_repo(self.root / "two")
+        commit(repo, "start")
+        start = git(repo, "branch", "--show-current").strip()
+        git(repo, "switch", "-q", "-c", "agents")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/README.md").write_text(B.dump_frontmatter({"bundle": "agent-guides", "version": "0.0.3"}) + "\n# Guides\n")
+        commit(repo, "the bundle")
+        git(repo, "switch", "-q", start)
+
+        self.assertFalse((repo / ".agents").exists())
+        self.assertEqual(self.R.bundle_branches(repo), [("agents", "0.0.3")])
+
+    def test_a_splice_report_names_every_path_it_removes(self) -> None:
+        actions = ["write README.md", "remove method/old.md", "remove tools/gone.py", "write SHA256SUMS"]
+
+        lines = self.R.splice_report("one", actions, write=False, backup=None)
+
+        self.assertEqual(lines[0], "one: would splice 2 files, remove 2")
+        self.assertEqual(lines[1:], ["  - method/old.md", "  - tools/gone.py"])
+
     def test_splice_takes_no_list_of_rows_to_remove(self) -> None:
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
             self.R.main(["splice", "--taken", str(self.root)])

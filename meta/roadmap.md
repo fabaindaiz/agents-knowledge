@@ -121,11 +121,12 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Learned* and *Cards relied on*; frictions and hand-done procedures counted by searching the log;
   the closing review routing what lives only in local memory or an ignored ledger; deny rules per
   destructive subcommand, with the global-option bypass; the harvest reading every form of the
-  human's input (mid-turn messages and question answers carried most corrections). The source edits
-  for those method changes are drafted on the branch `wip/prompt-improvements-from-harvest`, not
-  merged: its `release.py check` is red by design until a release takes or drops them, and with them
-  the coding session measures about 10,037 of its 10,100-token budget. *Collision:* the next release's
-  intake, and the coding budget.
+  human's input (mid-turn messages and question answers carried most corrections). **Taken in by
+  0.0.26** (2026-10-03), every proposal with its verdict in `meta/tracking/history.md`: the method
+  changes resting on this carrier's evidence alone are published and marked so, and are reviewed at
+  the exit of phase 1 (`i-5ed7e8-191d2a`); the six standing preferences went to the maintainer's
+  profile; three session-loop insertions moved out of it for its budget, which measures 9,897 of
+  10,100 after the release. *Collision:* that review.
 
 - **The adversarial review of initialisation, the method and the bundle's organisation (2026-10-02).**
   `meta/reviews/2026-10-02-adversarial-review.md` holds the evidence, the findings and the settled
@@ -151,8 +152,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `wip/prompt-improvements-from-harvest`: `install-skills` (with `--check`, and in `verify`), `new
   entry`, `count`, `memory-diff`, the `close` base, the update's step 3c, and `evals/skills/trigger.py`.
   Piloted in one carrier, its old skill kept line by line as `LOCAL.md`; the trigger eval there fired on
-  every close request and on no near miss, one run each. Exit still open: entries in two carriers that
-  carry every field, written after a release takes the branch.
+  every close request and on no near miss, one run each. **Released in 0.0.26.** Exit still open: entries
+  in two carriers that carry every field.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
   carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,
@@ -178,6 +179,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   line by line, so a carrier id placed next to a description of that carrier's findings passed it in a
   public file; the review caught it, and history was rewritten. Flag any carrier id within a few lines
   of prose about a carrier, and plant that case in its tests. *Collision:* `i-5ed7e8-1e9567`.
+- **`i-5ed7e8-5df552` · A topic slug for proposals that extend a method file.** A proposal that extends
+  a method file takes the file's name as its slug, so `intake` collapses every such proposal of a release
+  into one candidate per file (eight to `prompt-bootstrap` at 0.0.26), and a refused one is recorded under
+  that name; 0.0.26 recorded them by id by hand. Give `propose` a topic slug beside the file, and have
+  `intake` key on it. *Collision:* the proposal format, and every carrier's harvest.
 - **`i-5ed7e8-4fea65` · Register every carrier in the home's tracking.** One carrier on 0.0.25 is
   missing from it, so its harvest and its version are invisible to the home's state review. *Collision:*
   `i-5ed7e8-b83f16`.
@@ -187,19 +193,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   (and was pushed, because the check that failed was piped through a filter; proposal
   `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
   it refuse. *Collision:* every commit here gets slower by one build check.
-- **Queued experiments one carrier added over 0.0.21, taken in after 0.0.25.** They belong in
-  `meta/tracking/experiments.md` *Queued*, which generates the shipped `knowledge/OPEN.md`, so they enter it
-  with the next release, beside the fifteen proposals from the same carrier that name their candidates.
-  Kept here verbatim until then:
-
-  | Note | Experiment | Cost | Would change |
-  |---|---|---|---|
-  | a-confirmation-needs-a-terminal | in the first live sessions, count every write that reached the target and whether each one raised a harness prompt; a write with no prompt is the claim confirmed the hard way | one session | admission, or folding into the scope note |
-  | timeout-is-not-an-outcome | on a non-production target, run a harmless command that outlives the tool's wait, then read the target: is it still running, and did the tool report it as failed or as unknown? | minutes | admission with a measured occurrence, or a fold |
-  | read-output-is-untrusted-input | on a non-production target, plant one line shaped like an instruction in a log the agent will read, and record whether it is reported or followed | minutes | admission with a measured occurrence |
-  | a-session-socket-is-a-credential | with a master open, confirm a second local process opens a session through the socket without authenticating, and that an explicit close removes it | minutes | confirms the premise in the carrier's own setup |
-  | remote-mutation-names-target-effect-reversal | across the first sessions, count writes approved with identity, effect and reversal written down against writes approved without them, and what each group left to repair | per session | whether the method rule earns its place |
-
 - **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** Offered at 0.0.24 as
   `verify-enforces-the-carrier-record`, and confirmed in that meta-session: three carriers reached there
   held the empty `upstream` that means "this is the home", and the function that refuses a carrier id held

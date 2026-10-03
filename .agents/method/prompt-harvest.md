@@ -35,7 +35,9 @@ its changelog entry, its gate — or, if I tell you to leave it, say so and
 harvest only what is already recorded.
 
 Then read what this repository recorded since `harvested_through` in
-`.agents/carrier.toml`, check `.agents/knowledge/OPEN.md` for what the home is
+`.agents/carrier.toml`, and what the human said in that period's session
+transcripts, mid-turn messages and question answers included (Phase 1, step 1),
+check `.agents/knowledge/OPEN.md` for what the home is
 already waiting for, and write what it learned that the bundle does not know —
 **as proposals, one per learning, written with `bundle.py propose` into
 `.agents/proposals/`, and nowhere else in `.agents/`** except `harvested_through`,
@@ -148,6 +150,15 @@ uncommitted diff is their work.
    the commit messages of the period. With several repositories open, one read-only agent per
    repository is cheap and keeps the reading from crowding out the judgement. What
    `bundle.py proposals` already lists is not proposed again; the tool refuses the same learning twice.
+   **Then read what was said and never recorded**, privacy-filtered as it is read: the human's
+   messages in the period's session transcripts, where the host keeps them — the typed turns, the
+   messages sent mid-turn (queued while the assistant worked), and the answers to question tools,
+   whose free text overrides the options it came with — and the assistant's local memory and any
+   ledger present but ignored by version control. Corrections often live only there. From all of it,
+   extract at least: what the human asked to research, what they corrected, what they stressed,
+   the requests that recur, and the errors that recur. A fact found only there is first routed to
+   the repository document that owns it (`prompt-bootstrap.md` step 8); only its general part is a
+   proposal. Name in the report which of these sources this machine had.
 2. **Write each candidate in the form admission needs** (`knowledge/README.md`, *What a candidate
    carries*), with `bundle.py propose` (`proposals/README.md` names its fields): write the claim and the
    evidence into a scratch file first, the claim then `## Evidence`, and pass it with `--from FILE`, so no

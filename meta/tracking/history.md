@@ -6,6 +6,84 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue by the release 0.0.26
+
+Method changes resting on one carrier's evidence were published, marked so, and are reviewed at the exit of the redesign's phase 1. Proposals that extend a method file share its name as a slug, so each is recorded below by its id.
+
+| Candidate | Where it went |
+|---|---|
+| `splice-dry-run-lists-what-it-removes` | **fixed** in 0.0.26: the splice's report names every path it removes, dry run included, with a test |
+| `review-each-carrier-in-execution-before-propagating` | **applied to the home's procedure**: `prompt-sync.md` Phase 2 opens with one read-only agent per carrier when a release changes wording an agent follows or a path a carrier references. The same reading applied to a procedure is the queued `dry-run-a-procedure-by-an-agent-before-release` |
+| `taken-in-rows-wait-outside-build-inputs` | **applied to the home's procedure**: `prompt-sync.md`, building the release, step 5. At this release the five experiment rows parked in the roadmap went to `experiments.md` *Queued* |
+| `find-carriers-by-searching-not-by-the-manifest` | **applied to the home's procedure**, from two proposals (the search of the disk, and of every branch): `prompt-sync.md` Phase 1 step 1, and `release.py carriers` lists every branch that holds a bundle, with a test |
+| `gather-reads-the-remote-not-a-stale-checkout` | **applied to the home's procedure**, from two proposals: `prompt-sync.md` Phase 1 step 1 compares each carrier with its remote, takes the remote as the record, and works on a branch cut from it, never by a reset |
+| `parallel-agents-get-disjoint-scratch` | **admitted into the method** with `a-delegated-agent-writes-into-the-callers-tree`, two repositories: the bootstrap's *Research does not end at Phase 2* gives a delegated agent that writes its own scratch directory outside the repository, and a destructive step there checks its target resolves inside it. The home's own rule is in `prompt-sync.md` |
+| `a-delegated-agent-writes-into-the-callers-tree` | **admitted into the method**, see the row above |
+| `parallel-agents-on-disjoint-files` | **folded** into the scratch-directory rule above, as a third repository's occurrence (an interactive client) |
+| `a-filtered-gate-cannot-block` | **admitted into the method** with `chain-the-commit-on-the-gate`, two repositories: the close skill's step 9 runs the commit on the gate's own exit status, never through a filter or only under `pipefail`; the commit base follows in the redesign's phase 2 (`i-5ed7e8-3a8f87`). Kept apart from the queued `gate-sequence-stops-at-the-first-red-step` (*keep both*: a step never run, against a status ignored). The home's own enforcer is `i-5ed7e8-a4c2b2` |
+| `chain-the-commit-on-the-gate` | **admitted into the method**, see the row above |
+| `carrier-audits-delegate-bundle-shape-to-verify` | **admitted into the method**, evidence from several carriers: one sentence in artifact 9. Related: the redesign's audit library (`i-5ed7e8-3a8f87`) and the queued `a-shared-rule-has-one-enforcer-per-copy` |
+| `check-a-relayed-claim-before-reporting-it` | **admitted into the method**, two repositories (the home's two relayed claims; a carrier's recorded lesson found false): principle 6, *a relayed claim is checked before it is repeated*. The close skill's step 3 says it of lessons |
+| `tick-every-part-of-the-request` | **admitted into the method**: principle 15, the session loop's step 7, the *Done* checklist, the close skill's step 1. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `an-answers-free-text-overrides-its-options` | **admitted into the method**: one clause in principle 15, and the close skill's step 1. one carrier's evidence; reviewed at the exit of the redesign's phase 1. Undecidable for novelty (it may be default behaviour); the question goes to the skill evals of the redesign's phase 3 |
+| `a-local-memory-is-not-a-handoff` | **admitted into the method**: a step 8 row, the closing question, the close skill's step 5 and `bundle.py memory-diff`. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `count-a-friction-by-searching-the-log` | **admitted into the method**: step 8, the *Done* checklist, the close skill's step 4 and `bundle.py count`; its last clause feeds principle 6. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `pause-means-pause` | **resolved by the maintainer's profile**, a standing preference, not a method rule; taken out of principle 15. The close skill's step 0 keeps its own boundary between pause and close |
+| `art-goes-to-approval-as-drawn-proposals` | **resolved by the maintainer's profile**; taken out of principle 15. Its copy half is in `sweep-the-rendered-extremes` (measure before approval, waiting for a second repository) |
+| `a-quick-deploy-stays-quick` | **resolved by the maintainer's profile**; taken out of principle 15 |
+| `research-before-a-sensitive-choice-and-offer-the-middle` | **resolved by the maintainer's profile**; taken out of principle 15 |
+| `never-block-the-session-on-a-long-wait` | **resolved by the maintainer's profile**; taken out of principle 15 |
+| `a-light-observation-is-not-a-purge-order` | **resolved by the maintainer's profile**; taken out of principle 15 |
+| `split-a-checked-file-and-the-check-goes-blind` | **folded** into `a-check-must-be-seen-to-fail`: the home's audits that went green on zero subjects after a layout moved were its second repository |
+| `one-rule-two-readers-agree-on-the-verdict-not-the-refusal` | **folded** into `same-answer-or-refuse`, whose first remedy it is: a host tool that re-implemented an app's validation and diverged both ways was its second repository |
+| `suspect-the-harness-first` | **folded** into `test-double-fidelity` as a boundary: the harness is a double, and "it passes alone" does not convict it, since pollution and real races pass alone too. Its second repository arrived with about ten infrastructure incidents. Luo et al. 2014 and Gyori et al. 2015 cited, not checked against the source |
+| `a-check-must-be-seen-to-fail` | **extended**: zero subjects after a layout moved, zero tests run, a threshold's cut between a measured good and bad (its boundary sentence waits for a second repository), the idiomatic spelling of a plant; and the census run once, statically (*confirms*), into its *Evidence* |
+| `absence-is-a-third-value` | **extended**: a template's empty default is absence, not a decision, into its *Evidence* |
+| `a-default-scope-is-the-widest-one` | **extended**: a device task with no serial, the second tool the note lacked, into its *Evidence*. `bumping-a-monotone-counter-is-not-idempotent`, held for the same gap, was revisited: its queued row stands, lacking only its own second tool |
+| `sweep-the-rendered-extremes` | **extended**, a second repository: a display assertion is not a fit check, and count every misfit; *done includes the sweep* and *measure before approval* into its *Evidence*, each waiting for a second repository |
+| `test-double-fidelity` | **extended**: the surface a render draws on is a double (two occurrences), and the harness boundary folded above |
+| `derived-copy-goes-stale-silently` | **extended**: a results file at a fixed path survives a failed run, and its reverse, into its *Evidence*. Related, still queued: `gate-reads-untracked-derived-state` |
+| `derive-state-from-one-clock` | **extended**, a second repository and a new mechanism: under a user-settable clock, a counter that must not outrun real time needs an offset that only decreases; a rate limit only slows the leak. Literature: none consulted |
+| `same-answer-or-refuse` | **extended**: the folded row above, into its *Evidence* |
+| `a-cache-key-names-its-invalidators` | offered again with **the second repository it waited for** (a build stamp whose key left out the working tree's diff); the literature step was not run in this release, so its queued row stands, lacking the literature and a decision on whether it is the boundary of `derived-copy-goes-stale-silently` |
+| `steps-readable-by-a-permission-layer` | two new forms merged into its queued row (a global option before the subcommand passes a prefix deny; a compound command with one denied part is refused whole); both are written into artifact 4. The row stands, lacking a second occurrence of one form |
+| `isolated-review-by-default` | **reopened as a queued candidate**: the recorded answer rests on a card-driven review of one diff, and whole-branch reviews after a multi-task plan found a defect the suite passed in each of about a dozen runs. It lacks cost figures and a card-driven run on the same branches. The boundary of the measurement is stated in principle 19 |
+
+**Proposals to a method file, by id** (not slugs: the ledger lists none of them).
+
+| Proposal | Where it went |
+|---|---|
+| `p-10e696d3ae`, extends `prompt-bootstrap`: a detector for a procedure done twice | **admitted into the method**: step 8's row and the close skill's step 4 (`bundle.py count`). one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-1bf4aedf89`, extends `prompt-bootstrap`: a scratch directory for a delegated agent | **admitted into the method** with `parallel-agents-get-disjoint-scratch`, above |
+| `p-207be9eaf6`, extends `prompt-bootstrap`: count frictions by searching | **admitted into the method**: step 8, the *Done* checklist, the close skill's step 4. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-53b1e16730`, extends `prompt-bootstrap`: an index-completeness row and check | **admitted into the method**: step 6's table and artifact 9; the redesign's phase 2 audit library is to enforce it. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-5a33d7a5d9`, extends `prompt-bootstrap`: open device questions at close | **admitted into the close skill's step 6 only**; kept out of the session loop for its budget. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-b333c94ddc`, extends `prompt-bootstrap`: a route for what lives only in local memory | **admitted into the method**: step 8's row, the closing question, the close skill's step 5. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-f0576912a0`, extends `prompt-bootstrap`: the boundary of the review-on-request measurement | **admitted into principle 19 only**; kept out of the session loop for its budget. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-532edbd1fc`, extends `prompt-context`: *Review* and *Learned* in the changelog entry | **admitted into the method**: artifact 5, and the close skill's step 3 (`bundle.py new entry`). one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-94fc43c6d1`, extends `prompt-context`: see the red after the code exists | **admitted into the method**: principle 18. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-c8cc171d0c`, extends `prompt-context`: *Cards relied on*, and the card step mapped into a winning host template | **admitted into the method**: artifact 5, principle 19, the bootstrap's Phase 4. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-eaf9e35bde`, extends `prompt-context`: deny per destructive subcommand | **admitted into artifact 4 only**; kept out of the session loop's *Working safely* for its budget. Also an occurrence for `steps-readable-by-a-permission-layer`. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-a5a8909619`, extends `prompt-harvest`: read every form of the human's input | **admitted into the method**: the harvest's Phase 1 step 1 and its pre-flight, its privacy sentence kept. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+| `p-ed4b1f83fc`, extends `prompt-update`: keep only the top-level `incoming/README.md` | **admitted into the method** as a defect fix: the update's step 4. one carrier's evidence; reviewed at the exit of the redesign's phase 1 |
+
+**The closing review** (`sources/README.md` §4), over the notes this release touched. No note was admitted, so none is protected. *Keep both*: the method's gate rule and the queued `gate-sequence-stops-at-the-first-red-step` (a status ignored, against a step never run). *Folds*: three queued rows into `a-check-must-be-seen-to-fail`, `same-answer-or-refuse` and `test-double-fidelity`, each counted once, in that note. Every touched note's *Evidence* still names an experiment never run, and each stays *queued* in `experiments.md`; the census of `a-check-must-be-seen-to-fail` ran statically, and its executed run stays queued. No `confidence` changed.
+
+## Refused by carriers' harvests, taken in at 0.0.26
+
+| Candidate | Where it went |
+|---|---|
+| `a-red-from-a-build-failure-is-not-the-red` | refused: already in the method (principle 18, fail for the reason you expect) |
+| `fetched-content-carries-instructions` | refused: prompt injection, platform-level and already known |
+| `p-32fee93dc6`, an occurrence offered for the note `derive-state-from-one-clock`, which stands | refused: one occurrence, specific to one platform's aggregate API; at most a footnote |
+| `pixel-identical-capture-proves-no-change` | refused: already a method rule (a change meant to change nothing); an occurrence with no new boundary |
+| `p-9cb706ce2e`, an occurrence offered for the note `copied-instruction-claims-its-origin`, which stands | refused: the pre-flight caught it as designed, and the candidate is already answered |
+| `p-cacafbf6a4`, an occurrence offered for the note `unrunnable-system-moves-the-gate`, which stands | refused: narrow and platform-specific; already implied by the note |
+| `p-cb1ba3bc96`, extends `prompt-bootstrap` | refused: repository-specific; the method's own example names no device, the foreign name was added in this repository's skill |
+| `expected-value-copied-from-a-wrong-comment` | refused: the test-oracle problem is textbook; a single occurrence |
+| `verify-an-api-against-the-compiled-artefact` | refused: already the primary-sources rule; nothing new |
+| `apply-mutations-one-at-a-time` | refused: textbook mutation-testing practice |
+
 ## Taken out of the queue by the release 0.0.24
 
 | Candidate | Where it went |

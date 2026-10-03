@@ -336,6 +336,12 @@ reversed, the reversed row says so in place, with a pointer to what replaced
 it, and keeps its measurement. A superseding row that cites the old one is not
 enough: readers arrive at the old row from the index, and it still reads as live.
 
+**A relayed claim is checked before it is repeated.** What a delegated agent
+reported, what a record or a recorded lesson says, or what an incomplete search
+did not find, is read first-hand — a status line, a listing, the file — before it
+goes to the human or into another agent's brief. Repeated unchecked, it sends
+the next reader to act on something that is not there.
+
 > **Example.** One repository corrected a shipping fact in a new section of the
 > document where it was found; the loaded guardrail and the other statements of
 > the rule stayed wrong for most of a week, and the changelog entries written
@@ -591,17 +597,7 @@ effect.
 **Hearing the request is part of the protocol.** Read the human's whole message,
 and those sent mid-turn, and before reporting done name every part as done or
 not done: a skipped part is a request they must repeat. A free-text answer to a
-question overrides the options it came with, read literally. A light
-observation is not an order to purge: fix what was named, and ask before
-widening the fix. *Pause* means pause — no commit, no merge, no step recorded as
-skipped — until they resume, and closing a session never skips a review or
-merges unreviewed work. Do not block the session on a long wait: run it in the
-background and keep working, or report. A quick deploy stays quick — the build
-and the deploy, no ceremony — and only finished work ships. Before a sensitive
-or creative choice, research how others settled it, and offer the middle ground
-between two absolutes. What the human approves is shown as it will ship — copy
-measured against its real constraint, art drawn — so the approval still matches
-what ships.
+question overrides the options it came with, read literally.
 
 **Prevents:** confident work on the wrong product, and a human doing the
 agent's thinking.
@@ -1161,9 +1157,12 @@ is the exact shape of a rule that reads as rung 3 and behaves as rung 0.
 catches every form of its subcommand, the read-only ones too: a deny on a stash
 prefix also refuses listing the stashes. A rule for one form misses its
 neighbours: a deny on restoring paths does not stop checking out a commit, which
-detaches `HEAD`. And a command with one denied part is refused whole, so an edit
-chained to it silently never lands: never chain an edit with anything a deny may
-catch, and read the tree's status after an edit before running tests.
+detaches `HEAD`. A prefix rule is also passed by a global option written before
+the subcommand (`git -C <dir> checkout …`): name those forms too, or probe the
+rule against them, and where the layer cannot express them, say the rule is a
+reminder, not a barrier. And a command with one denied part is refused whole, so
+an edit chained to it silently never lands: never chain an edit with anything a
+deny may catch, and read the tree's status after an edit before running tests.
 
 Commit this file; keep `settings.local.json` out of git. The `.claude/`
 directory is how the repo explains itself — it belongs to the team.
@@ -1382,7 +1381,11 @@ appears in its index — a folder of dated records grows a file a session, and
 its index goes stale without a sound.
 
 In a carrier, the gate also runs the bundle's own checks: `bundle.py verify` (which runs
-privacy) and `bundle.py ids` over the files that hold record ids.
+privacy) and `bundle.py ids` over the files that hold record ids. The audit leaves
+the bundle's own shape (its headers, sections, index links and markers) to
+`verify`, which ships with each release, and checks only how this repository
+uses the bundle: an audit that re-implements a release's layout turns red, or
+silently vacuous, on the next one.
 
 ### 10. `README.md`, `docs/architecture.md`, `.editorconfig`
 

@@ -26,6 +26,12 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py proposals [--prune | --pack FILE | --from-outbox]
                                                                 list them and what the home received; remove
                                                                 the received; pack them; convert the old outbox
+    python3 .agents/tools/bundle.py install-skills [NAME...] [--check] [--force]
+                                                                the bundle's skills, each merged with the
+                                                                carrier's LOCAL.md, into .claude/skills/
+    python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
+    python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search
+    python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
     python3 .agents/tools/bundle.py digest [TREE] --check       deprecated alias of `verify` (0.0.x only)
 
 With no REPO, the repositories are this session's workspace: `AGENT_WORKSPACE` if it is set, else the
@@ -2274,7 +2280,7 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
         problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
                      if k in carrier and not isinstance(carrier[k], list)]
-    return problems + incoming_problems(tree)
+    return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
 
 
 def check_local(repo: Path) -> list[str]:
@@ -2343,6 +2349,232 @@ def export(tree: Path, dest: Path) -> list[str]:
     return rels
 
 
+# --- skills, and the bookkeeping a close runs -------------------------------------------------------
+# The method's procedures ship as skills: a base in `method/skills/<name>/SKILL.md`, installed into the
+# carrier's assistant folder merged with the carrier's own `LOCAL.md` beside it. The repository's
+# procedure wins (its sections replace the base's), and no release file is edited to get there. Never
+# shipped as `.agents/skills/`, which an assistant may load directly, past the carrier's override.
+
+SKILLS = "method/skills"
+SKILLS_INTO = ".claude/skills"
+SKILL_BANNER = ("Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; "
+                "edit LOCAL.md, never this file")
+
+
+def _sections(body: str) -> tuple[str, list[tuple[str, str]]]:
+    """(preamble, [(heading line, text after it)]): a body cut at its level-2 headings outside fences."""
+    lines = body.split("\n")
+    prose = _prose(lines)
+    cuts = [i for i, line in enumerate(lines) if prose[i] and line.startswith("## ")]
+    preamble = "\n".join(lines[: cuts[0]] if cuts else lines)
+    parts = [(lines[i].rstrip(), "\n".join(lines[i + 1: end])) for i, end in zip(cuts, [*cuts[1:], len(lines)])]
+    return preamble, parts
+
+
+def merge_skill(base: str, local: str | None, comment: str | None = None) -> str:
+    """A base skill with a carrier's `LOCAL.md` applied, frontmatter included; `comment` heads the frontmatter.
+
+    The local frontmatter wins key by key; its preamble follows the base's; a local section replaces the
+    base section with the same heading, an empty one drops it, and a new one is appended in its order.
+    """
+    meta, body = read_frontmatter(base, "the base skill")
+    local_meta, local_body = read_frontmatter(local, "LOCAL.md") if local and local.startswith("---\n") else ({}, local or "")
+    if "name" in local_meta and local_meta["name"] != meta.get("name"):
+        raise RefusedError(f"LOCAL.md names the skill {local_meta['name']!r}; the base is {meta.get('name')!r}")
+    preamble, parts = _sections(body)
+    local_preamble, local_parts = _sections(local_body)
+    replaced, ours = dict(local_parts), dict(parts)
+    out = "\n" + preamble.strip("\n") + "\n"
+    if local_preamble.strip():
+        out += "\n" + local_preamble.strip("\n") + "\n"
+    for heading, text in [*parts, *[p for p in local_parts if p[0] not in ours]]:
+        text = replaced.get(heading, text)
+        if text.strip():
+            out += "\n" + heading + "\n\n" + text.strip("\n") + "\n"
+    return dump_frontmatter({**meta, **local_meta}, comment=comment, plain=True) + out
+
+
+def base_skills(tree: Path) -> dict[str, str]:
+    """{name: base text} for every skill the bundle ships (a frontmatter comment, such as the release banner, is
+    not part of what is merged)."""
+    return {p.parent.name: p.read_text(encoding="utf-8") for p in sorted((tree / SKILLS).glob("*/SKILL.md"))}
+
+
+def _render_skill(repo: Path, name: str, base: str, into: str) -> str:
+    local = repo / into / name / "LOCAL.md"
+    return merge_skill(base, local.read_text(encoding="utf-8") if local.is_file() else None, SKILL_BANNER)
+
+
+def _installed(text: str) -> bool:
+    return text.startswith("---\n# " + SKILL_BANNER)
+
+
+def install_skills(repo: Path, tree: Path, names: list[str] | None = None, *, force: bool = False,
+                   into: str = SKILLS_INTO) -> list[str]:
+    """Writes each named base skill (all of them by default) merged with its `LOCAL.md`; returns the paths.
+
+    A `SKILL.md` the repository wrote itself is refused unless `force`: its rules belong in `LOCAL.md` first.
+    """
+    bases = base_skills(tree)
+    unknown = [n for n in names or [] if n not in bases]
+    if unknown:
+        raise RefusedError(f"no base skill named {', '.join(unknown)} in {tree / SKILLS} (it has: {', '.join(bases) or 'none'})")
+    written = []
+    for name in names or list(bases):
+        target = repo / into / name / "SKILL.md"
+        if target.is_file() and not _installed(target.read_text(encoding="utf-8")) and not force:
+            raise RefusedError(f"{target}: a skill this repository wrote; move what it says into LOCAL.md beside it, "
+                               "then install with --force")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(_render_skill(repo, name, bases[name], into), encoding="utf-8")
+        written.append(target.relative_to(repo).as_posix())
+    return written
+
+
+def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) -> list[str]:
+    """Every installed skill that is not what its base and `LOCAL.md` produce now; the repository's own are skipped."""
+    bases = base_skills(tree)
+    problems = []
+    for path in sorted((repo / into).glob("*/SKILL.md")):
+        text = path.read_text(encoding="utf-8")
+        if not _installed(text):
+            continue
+        rel, name = path.relative_to(repo).as_posix(), path.parent.name
+        if name not in bases:
+            problems.append(f"{rel}: installed from a base the bundle no longer ships; remove it, or keep it as the repository's own")
+        elif text != _render_skill(repo, name, bases[name], into):
+            problems.append(f"{rel}: not what its base and LOCAL.md produce (edited, or behind them); "
+                            "run `bundle.py install-skills`, and move any hand edit into LOCAL.md")
+    return problems
+
+
+ENTRY_HEADING = re.compile(r"^## \d{4}-\d{2}-\d{2}\b")
+FORMAT_HEADING = re.compile(r"^#{2,6} .*\bformat\b", re.IGNORECASE)
+CHANGELOG_ARTIFACT = "5. `.claude/logs/agent-changelog.md`"
+
+
+def _first_fence(text: str) -> str | None:
+    lines = text.split("\n")
+    prose = _prose(lines)
+    start = next((i for i, line in enumerate(lines) if not prose[i]), None)
+    if start is None:
+        return None
+    end = next((i for i in range(start + 1, len(lines)) if prose[i]), len(lines))
+    return "\n".join(lines[start + 1: end - 1]) + "\n"
+
+
+def entry_template_text(log: str) -> str | None:
+    """The entry format a log states for itself: the first fenced block under a heading that names a format."""
+    lines = log.split("\n")
+    prose = _prose(lines)
+    at = next((i for i, line in enumerate(lines) if prose[i] and FORMAT_HEADING.match(line)), None)
+    return None if at is None else _first_fence("\n".join(lines[at + 1:]))
+
+
+def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
+    """The log's own entry format, which wins; else the method's (`prompt-context.md`, its changelog artifact)."""
+    own = entry_template_text(log.read_text(encoding="utf-8")) if log.is_file() else None
+    if own:
+        return own
+    method = section(tree / "method/prompt-context.md", CHANGELOG_ARTIFACT)
+    template = _first_fence(method) if method else None
+    if not template:
+        raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
+    return template
+
+
+def new_entry(title: str, carrier: str, today: str, template: str) -> str:
+    """An entry skeleton: the heading with its minted id, then each field of the template with its description
+    in a comment, which the writer replaces."""
+    fields: list[list[str]] = []
+    for line in template.split("\n"):
+        if m := re.match(r"^\*\*(.+?)\*\*\s*(.*)$", line):
+            fields.append([m.group(1), m.group(2).strip()])
+        elif fields and line.strip() and not line.startswith("#"):
+            fields[-1][1] = (fields[-1][1] + " " + line.strip()).strip()
+    heading = f"## {today} · {record_id('s', title, carrier)} — {title}"
+    return heading + "\n\n" + "\n\n".join(f"**{label}** <!-- {text} -->" if text else f"**{label}**"
+                                          for label, text in fields) + "\n"
+
+
+def insert_entry(log: str, entry: str) -> str:
+    """The log with `entry` above its newest entry; with none yet, above its format; else at its end."""
+    lines = log.split("\n")
+    prose = _prose(lines)
+    at = next((i for i, line in enumerate(lines) if prose[i] and ENTRY_HEADING.match(line)), None)
+    if at is None:
+        at = next((i for i, line in enumerate(lines) if prose[i] and FORMAT_HEADING.match(line)), None)
+    if at is None:
+        return log.rstrip("\n") + "\n\n" + entry
+    return "\n".join(lines[:at]) + "\n" + entry + "\n" + "\n".join(lines[at:])
+
+
+@dataclass(frozen=True)
+class Mention:
+    file: str
+    line: int
+    where: str
+
+
+def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
+    """Where a symptom is mentioned, case-insensitively: once per entry of a log (a level-2 heading), once per
+    line of a file with no entries. The count a close writes for a friction, instead of one from memory."""
+    needle, hits = symptom.lower(), []
+    for path in files:
+        lines = path.read_text(encoding="utf-8").split("\n")
+        heading, seen = None, set()
+        for number, line in enumerate(lines, 1):
+            if line.startswith("## "):
+                heading = line[3:].strip()
+            if needle in line.lower():
+                where = heading or f"line {number}"
+                if (path, where) not in seen:
+                    seen.add((path, where))
+                    hits.append(Mention(str(path), number, where))
+    return hits
+
+
+@dataclass(frozen=True)
+class Memory:
+    name: str
+    description: str
+    found_in: list[str]
+    searched: bool
+
+
+def memory_dir(repo: Path, home: Path | None = None) -> Path:
+    """The assistant's local memory for a repository: its path with every other character a dash."""
+    return (home or Path.home()) / ".claude/projects" / re.sub(r"[^A-Za-z0-9]", "-", repo.as_posix()) / "memory"
+
+
+def memory_report(memory: Path, repo: Path) -> list[Memory]:
+    """Each local memory, and the tracked files of the repository that hold what it names in code spans.
+
+    None found means it lives only on this machine: another machine, or another assistant, never sees it.
+    A memory with no code span is not searched (`searched` false): only a reader can place it. The bundle
+    is not searched either: what it says is the method's, not what this repository recorded.
+    """
+    tracked = [repo / rel for rel in git(repo, "ls-files").split("\n") if rel and not rel.startswith(".agents/")]
+    texts = {}
+    for path in tracked:
+        try:
+            texts[path.relative_to(repo).as_posix()] = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+    found = []
+    for path in sorted(memory.glob("*.md")):
+        if path.name == "MEMORY.md":
+            continue
+        # Read loosely: the assistant writes this frontmatter, nested keys included, not the bundle.
+        front, body = split_frontmatter(path.read_text(encoding="utf-8"))
+        meta = {k: v.replace('\\"', '"') for k, v in
+                re.findall(r"^(name|description):[ \t]*\"?(.*?)\"?[ \t]*$", front or "", re.MULTILINE)}
+        spans = {s.strip() for s in re.findall(r"`([^`\n]{4,})`", body)}
+        where = sorted(rel for rel, content in texts.items() if any(s in content for s in spans))
+        found.append(Memory(meta.get("name") or path.stem, meta.get("description", ""), where, bool(spans)))
+    return found
+
+
 # Every refusal the tool raises on purpose. Caught in `main`, printed as one line, exit 2: a refusal
 # is an answer, not a crash.
 REFUSALS = (NotACarrierError, OutsideWorkspaceError, DirtyTreeError, UndeclaredScopeError, RefusedError, FrontmatterError)
@@ -2405,6 +2637,25 @@ def _parser() -> argparse.ArgumentParser:
     action.add_argument("--prune", action="store_true", help="remove the proposals the release lists as received")
     action.add_argument("--pack", metavar="FILE", help="write them into one tar file, for a home that cannot open this repository")
     action.add_argument("--from-outbox", action="store_true", help="convert the outbox of 0.0.22 and 0.0.23 into proposals, then remove it")
+    p = sub.add_parser("install-skills", help="the bundle's skills merged with each LOCAL.md into the assistant's skill folder; --check")
+    p.add_argument("names", nargs="*", metavar="NAME", help="the skills to install (default: every one the bundle ships)")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--bundle", default=str(OWN_BUNDLE))
+    p.add_argument("--check", action="store_true", help="install nothing; fail (exit 1) when an installed skill is stale or edited")
+    p.add_argument("--force", action="store_true", help="overwrite a SKILL.md the repository wrote, once its rules are in LOCAL.md")
+    p = sub.add_parser("new", help="a record skeleton with its minted id: `new entry TITLE...` for the changelog")
+    p.add_argument("kind", choices=["entry"])
+    p.add_argument("parts", nargs="+", metavar="TITLE")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins")
+    p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
+    p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
+    p = sub.add_parser("count", help="the entries of a log, and the lines of other files, that mention a symptom")
+    p.add_argument("symptom")
+    p.add_argument("files", nargs="*", metavar="FILE", help="default: this repository's .claude/logs/agent-changelog.md")
+    p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
     return parser
 
 
@@ -2530,6 +2781,45 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print("  x " + problem)
         print(f"{len(found)} proposals, {sum(p.id in heard for p in found)} already received (`--prune` removes them)")
         return 1 if problems else 0
+    if args.command == "install-skills":
+        repo, tree = Path(args.repo), Path(args.bundle)
+        if args.check:
+            problems = installed_skill_problems(repo, tree)
+            for problem in problems:
+                print("  x " + problem)
+            print("installed skills: " + (f"{len(problems)} problems" if problems else "current"))
+            return 1 if problems else 0
+        for rel in install_skills(repo, tree, args.names or None, force=args.force):
+            print(f"  + {rel}")
+        return 0
+    if args.command == "new":
+        repo = Path(args.repo)
+        log = Path(args.log) if args.log else repo / ".claude/logs/agent-changelog.md"
+        title = " ".join(args.parts)
+        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), entry_template(log))
+        if not args.write:
+            print(entry, end="")
+            return 0
+        log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
+        print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+        return 0
+    if args.command == "count":
+        files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]
+        hits = count_mentions(args.symptom, files)
+        for hit in hits:
+            print(f"  {hit.file}:{hit.line}  {hit.where}")
+        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}")
+        return 0
+    if args.command == "memory-diff":
+        repo = Path(args.repo).resolve()
+        memory = Path(args.memory) if args.memory else memory_dir(repo)
+        found = memory_report(memory, repo) if memory.is_dir() else []
+        for m in found:
+            state = "in the repository" if m.found_in else "only on this machine" if m.searched else "read it: no code span"
+            print(f"  {state:22} {m.name}: {m.description}" + (f"  ({', '.join(m.found_in[:3])})" if m.found_in else ""))
+        lone = sum(m.searched and not m.found_in for m in found)
+        print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(not m.searched for m in found)} to read")
+        return 0
     return 2
 
 

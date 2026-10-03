@@ -32,6 +32,8 @@ The companion rule is about the other direction of infidelity. When the test con
 
 Pure-function tests with no double. Doubles generated from the real implementation, or contract-tested against it on the same cases.
 
+**Blaming the harness on "it passes alone".** A harness is a double of the target too, and on a long-running one under load most surprises are the harness. But test pollution and real races also pass alone, so before convicting it: rerun the failure alone and again after the test that preceded it, look for state an earlier test left changed, and ask whether review can find an input that reaches the suspected race. On a fresh, idle harness the code is the first suspect.
+
 ## What it costs
 
 Contract tests that run fake and real on the same inputs — the real side needs an emulator or the network — or faithfully re-implementing semantics such as projections and merges in the fake, which is real work.
@@ -48,5 +50,7 @@ A transactional service, five occurrences: an in-memory store fake that ignored 
 ## Evidence
 
 **2026-09-28 — two more occurrences, in two repositories.** In the bundle's home, a check written for an input that arrives from elsewhere passed its test against a hand-built fixture and failed on every real instance of that input: the fixture lacked a list the real input carries, and an adversarial review found it before the release was tagged. In an interactive client, the local server a build was tested against differed from the production host in what it did to every response and in what the platform granted each origin. One mechanism: a double holds what its author thought of. Still no rate.
+
+**2026-10-03 — two more, in an app repository with an on-device test suite.** The surface a rendering test draws on is a double: a test for gaps in scaled artwork passed on the test's own background and missed hundreds of gap pixels the production background showed, and two brightness tests measured the test window's background instead of the app's. Both now draw on the production background. The boundary above comes from the same repository, folded from the queued `suspect-the-harness-first`: about ten infrastructure incidents across nine sessions each first looked like a code failure (a graphics stall, a device-not-found that was a timeout, zero tests run, capture and suite timeouts that passed alone), four first readings of an observation were corrected by a system dump or a recording, and twice in the same period a failure that passed alone was not the harness: one test left a preference changed, and one race was real. The folded row held the first repository's occurrences: in an interactive client, several surprises in two days traced to the harness rather than the code — its clock state, the timing of injected input, what a capture included, a first measurement taken while still warming up. Luo et al., FSE 2014, on flaky tests, and Gyori et al., ISSTA 2015, on state-polluting tests, are cited from the proposal and *not checked against the source*.
 
 **Reasoned: the occurrences are counted, the rate is not.** What would measure it: run each fake's test cases against the real dependency in an emulator and count the disagreements.

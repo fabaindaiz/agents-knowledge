@@ -1345,6 +1345,44 @@ def remember(records: list[dict], manifest: Path) -> None:
     resolved.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def bundle_branches(repo: Path) -> list[tuple[str, str]]:
+    """(branch, version) for every local and remote branch of `repo` whose tree holds a bundle.
+
+    A carrier may keep its bundle on a branch that is not checked out, and then has no bundle folder on
+    disk: a search of the filesystem passes it by, and reading every branch is what finds it.
+    """
+    refs = str(git("for-each-ref", "--format=%(refname:short) %(symref)", "refs/heads", "refs/remotes", repo=repo)).split("\n")
+    found = []
+    for line in refs:
+        name, _, symref = line.partition(" ")
+        if not name or symref.strip():
+            continue
+        try:
+            text = str(git("show", f"{name}:.agents/README.md", repo=repo))
+        except Exception:  # noqa: BLE001 -- no bundle on that branch
+            continue
+        try:
+            data, _ = B.read_frontmatter(text, f"{name}:.agents/README.md")
+            version = data.get("version")
+        except B.FrontmatterError:
+            version = None
+        found.append((name, version if isinstance(version, str) and B.SEMVER.match(version)
+                       else "the layout before 0.0.22"))
+    return sorted(found, key=lambda pair: pair[0].encode())
+
+
+def splice_report(name: str, actions: list[str], write: bool, backup: Path | None) -> list[str]:
+    """What a splice did, or would do, to one carrier: the counts, then every path it removes.
+
+    The paths are what the carrier's own step that repoints links needs; counts alone sent it back to
+    comparing file lists by hand.
+    """
+    removed = [a.removeprefix("remove ") for a in actions if a.startswith("remove ")]
+    head = (f"{name}: {'spliced' if write else 'would splice'} {sum(a.startswith('write') for a in actions)} files, "
+            f"remove {len(removed)}" + (f" (backup {backup})" if write else ""))
+    return [head, *(f"  - {rel}" for rel in removed)]
+
+
 def align(repos: list[Path], root: Path = ROOT) -> list[str]:
     """Phase 3: every carrier verifies, holds the home's release byte for byte, and is registered at it."""
     problems = []
@@ -1537,8 +1575,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
                 if not actions:
                     print(f"{repo.name}: the home itself, left alone")
                     continue
-                print(f"{repo.name}: {'spliced' if args.write else 'would splice'} {sum(a.startswith('write') for a in actions)} files, "
-                      f"remove {sum(a.startswith('remove') for a in actions)}" + (f" (backup {backup})" if args.write else ""))
+                for line in splice_report(repo.name, actions, args.write, backup):
+                    print(line)
             return 0
         if args.command == "register":
             scope = B.workspace(args.repos, writing=True)
@@ -1550,11 +1588,16 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             if not B.MANIFEST.is_file():
                 print(f"no manifest at {B.MANIFEST}")
                 return 1
-            records = [local_record(Path(p).expanduser().resolve()) for p in B.manifest_carriers(B.MANIFEST)
-                       if (Path(p).expanduser() / ".agents").is_dir()]
+            paths = [Path(p).expanduser().resolve() for p in B.manifest_carriers(B.MANIFEST)]
+            records = [local_record(p) for p in paths if (p / ".agents").is_dir()]
             remember(records, B.MANIFEST)
             for r in records:
                 print(f"{r['carrier'] or '(no id)':10} {r['version'] or '?':26} {r['name']}  {r['path']}")
+            for path in paths:
+                # The working tree is one branch: a bundle kept on another is found only by reading them all.
+                branches = bundle_branches(path) if (path / ".git").exists() else []
+                if branches:
+                    print(f"  {path.name}: a bundle on " + ", ".join(f"{b} ({v})" for b, v in branches))
             print(f"remembered in {B.MANIFEST}, outside every repository")
             return 0
         if args.command == "align":

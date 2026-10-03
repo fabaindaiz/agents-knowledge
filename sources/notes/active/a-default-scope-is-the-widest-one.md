@@ -9,7 +9,7 @@ about:
   - {do: "Let a command that writes, deletes or deploys work out its own targets when none are given", wrong_when: "the only list it can infer from is the full one, and the report of what was left out is derived from that same list"}
 rests_on: "Saltzer & Schroeder 1975, fail-safe defaults"
 strength: "fifty years old"
-our_evidence: "measured in one tool"
+our_evidence: "measured in one tool, seen in a second"
 ---
 
 # A default scope is the widest one
@@ -48,4 +48,6 @@ One tool — a standard-library script that carries a shared set of documents ac
 
 **Measured in one tool, two mechanisms:** a writing command that acts on 3 of 3 targets and names 0 as outside when its scope is omitted, against 2 of 3 named when it is declared; and an ancestor rule under which 7 additions of one copy became invisible to both the report and the loss check. Both were found by using the tool for the job it was written for, not by reading it.
 
-**Not measured, and it is the note's real gap:** whether this shape appears outside that one tool. Two mechanisms in one codebase is a claim about a habit of thought, not yet about software in general. The experiment, cheap in any repository: for every command that writes, deletes or deploys over a set of targets, run it with no scope argument in whatever dry-run mode it has, record how many targets it would touch, and check whether its "not reached" report is empty. Each empty report over a full target list is an occurrence.
+**2026-10-03 — the second tool, in an app repository with an on-device test suite.** A build tool's instrumented-test task given no device serial ran on every device its debug bridge saw, a personal device that had joined mid-session included; only that library's own test package was installed and removed, so nothing was lost, by luck. The same task family uninstalls the app after a run, and once wiped state built by hand on an emulator. The repository now pins every device task with a serial and its tools refuse any device that is not an emulator unless told otherwise. This closes the gap the note carried: the shape appears outside the tool it was found in.
+
+**Not measured:** how often. Three mechanisms in two tools show a habit of software, not yet a rate. The experiment, cheap in any repository: for every command that writes, deletes or deploys over a set of targets, run it with no scope argument in whatever dry-run mode it has, record how many targets it would touch, and check whether its "not reached" report is empty. Each empty report over a full target list is an occurrence.

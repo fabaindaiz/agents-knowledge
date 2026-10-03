@@ -24,3 +24,69 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-6dabc6b60b` | 0.0.24 | another occurrence of `documented-defaults-drift-from-code`, merged |
 | `p-fafd1e6405` | 0.0.24 | queued as `check-every-anchor-before-the-first-write` |
 | `p-5db9d3ed20` | 0.0.24 | queued as `exact-sync-removes-the-project-under-development` |
+| `p-4a2be00ec2` | 0.0.26 | queued as `splice-dry-run-lists-what-it-removes` |
+| `p-67b5b69aef` | 0.0.26 | queued as `review-each-carrier-in-execution-before-propagating` |
+| `p-7ef07de020` | 0.0.26 | queued as `taken-in-rows-wait-outside-build-inputs` |
+| `p-822de2ac26` | 0.0.26 | queued as `find-carriers-by-searching-not-by-the-manifest` |
+| `p-823b7ee2d0` | 0.0.26 | queued as `gather-reads-the-remote-not-a-stale-checkout` |
+| `p-b19ea8150f` | 0.0.26 | queued as `parallel-agents-get-disjoint-scratch` |
+| `p-b4281c9b5c` | 0.0.26 | another occurrence of `find-carriers-by-searching-not-by-the-manifest`, to merge |
+| `p-c22bb27256` | 0.0.26 | queued as `a-filtered-gate-cannot-block` |
+| `p-c2c2e25846` | 0.0.26 | queued as `carrier-audits-delegate-bundle-shape-to-verify` |
+| `p-c3e1633d33` | 0.0.26 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-ef63f3ce60` | 0.0.26 | queued as `check-a-relayed-claim-before-reporting-it` |
+| `p-f5e5eef0cf` | 0.0.26 | another occurrence of `absence-is-a-third-value`, to merge |
+| `p-f99c1f6cc1` | 0.0.26 | another occurrence of `gather-reads-the-remote-not-a-stale-checkout`, to merge |
+| `p-00c0b433e4` | 0.0.26 | another occurrence of `a-default-scope-is-the-widest-one`, to merge |
+| `p-0ab0598a86` | 0.0.26 | queued as `pause-means-pause` |
+| `p-0c854a71cf` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-10331493b3` | 0.0.26 | queued as `art-goes-to-approval-as-drawn-proposals` |
+| `p-10e696d3ae` | 0.0.26 | queued as `prompt-bootstrap` |
+| `p-127099fa7f` | 0.0.26 | another occurrence of `a-cache-key-names-its-invalidators`, to merge |
+| `p-1316b0ef30` | 0.0.26 | another occurrence of `steps-readable-by-a-permission-layer`, to merge |
+| `p-1545f8de70` | 0.0.26 | queued as `a-quick-deploy-stays-quick` |
+| `p-1bf4aedf89` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-207be9eaf6` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-225ce26a20` | 0.0.26 | another occurrence of `one-rule-two-readers-agree-on-the-verdict-not-the-refusal`, to merge |
+| `p-244063a772` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-32fee93dc6` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-35d9df2709` | 0.0.26 | queued as `research-before-a-sensitive-choice-and-offer-the-middle` |
+| `p-38d4f4f130` | 0.0.26 | queued as `tick-every-part-of-the-request` |
+| `p-42cc550005` | 0.0.26 | queued as `an-answers-free-text-overrides-its-options` |
+| `p-512ee889f6` | 0.0.26 | run logged against `a-check-must-be-seen-to-fail` |
+| `p-532edbd1fc` | 0.0.26 | queued as `prompt-context` |
+| `p-53b1e16730` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-5a33d7a5d9` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-67f46a97cb` | 0.0.26 | queued as `a-delegated-agent-writes-into-the-callers-tree` |
+| `p-72375210fa` | 0.0.26 | another occurrence of `suspect-the-harness-first`, to merge |
+| `p-77bea5ac3d` | 0.0.26 | queued as `never-block-the-session-on-a-long-wait` |
+| `p-7816fd2b2d` | 0.0.26 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-8296bd59a7` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-83b4ad875e` | 0.0.26 | queued as `chain-the-commit-on-the-gate` |
+| `p-852b0866fb` | 0.0.26 | another occurrence of `steps-readable-by-a-permission-layer`, to merge |
+| `p-862b7f9f7d` | 0.0.26 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-94fc43c6d1` | 0.0.26 | another occurrence of `prompt-context`, to merge |
+| `p-95873d5caf` | 0.0.26 | another occurrence of `sweep-the-rendered-extremes`, to merge |
+| `p-9cb706ce2e` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-9f3e748afb` | 0.0.26 | another occurrence of `test-double-fidelity`, to merge |
+| `p-a5a8909619` | 0.0.26 | queued as `prompt-harvest` |
+| `p-b333c94ddc` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-b34da1e240` | 0.0.26 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-bbe2b55729` | 0.0.26 | another occurrence of `derived-copy-goes-stale-silently`, to merge |
+| `p-c2ed95b9a3` | 0.0.26 | queued as `a-light-observation-is-not-a-purge-order` |
+| `p-c8cc171d0c` | 0.0.26 | another occurrence of `prompt-context`, to merge |
+| `p-cabae99b5e` | 0.0.26 | queued as `a-local-memory-is-not-a-handoff` |
+| `p-cacafbf6a4` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-cb1ba3bc96` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-d5b044935c` | 0.0.26 | queued as `count-a-friction-by-searching-the-log` |
+| `p-d8ec6a1d1c` | 0.0.26 | another occurrence of `derive-state-from-one-clock`, to merge |
+| `p-dcc52047a5` | 0.0.26 | queued as `one-adversarial-generator-per-promise` |
+| `p-dfd72fb9b6` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-e7988eb53a` | 0.0.26 | queued as `review-copy-in-its-rendered-company` |
+| `p-eaf9e35bde` | 0.0.26 | another occurrence of `prompt-context`, to merge |
+| `p-eb3da07c0f` | 0.0.26 | another occurrence of `isolated-review-by-default`, to merge |
+| `p-ed4b1f83fc` | 0.0.26 | queued as `prompt-update` |
+| `p-f0576912a0` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-f9a5484ffc` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-f9ca8f11f7` | 0.0.26 | queued as `a-surviving-guard-mutation-means-a-missing-input` |
+| `p-fd9bbde5f8` | 0.0.26 | refused by its harvest; recorded in the history |

@@ -113,7 +113,7 @@ The claim and our application are two different questions — see `../INDEX.md`,
 | in-process-guarantees | Kleppmann on efficiency vs correctness locks — **well established** | reasoned; the premise has never been broken |
 | order-writes-by-failure-residue | Sagas (1987), write-ahead logging (ARIES, 1992) — **well established** | occurrences in two repositories; no crash injected |
 | retry-over-irreversible-effect | Two Generals / FLP; Stripe and Brandur on keys in practice — **well established** | occurrences in one repository; no rate |
-| a-default-scope-is-the-widest-one | Saltzer & Schroeder 1975, fail-safe defaults — **fifty years old** | measured in one tool |
+| a-default-scope-is-the-widest-one | Saltzer & Schroeder 1975, fail-safe defaults — **fifty years old** | measured in one tool, seen in a second |
 | absence-is-a-third-value | SQL three-valued logic — **settled** | occurrences in three repositories; no count |
 | absent-constraint-widens | Saltzer & Schroeder on permission over exclusion — **fifty years old** | measured in one repository, plus one occurrence |
 | best-effort-side-channels | Nygard on integration points and cascading failure — **canonical** | occurrences; no ratio |

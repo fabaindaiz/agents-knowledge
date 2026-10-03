@@ -570,11 +570,7 @@ the repository for each, runs their checks (a check that needs a planted test
 runs in a scratch copy, or comes back as the test you must write), and returns
 findings; its reading never enters your context. When a change deletes or
 rewrites stored data, moves money or touches authentication and no review was
-asked for, the report offers one, in one line; it does not run it. The
-measurement behind *on request* was of this reviewer on one task's diff, in a
-few trials: not of a whole-branch review after a multi-task plan, and not of
-what a missed defect costs. A host workflow that reviews by default stays
-(principle 19); its findings go in the changelog's *Review*.
+asked for, the report offers one, in one line; it does not run it.
 
 - **Fix the findings and nothing else**, then send only what changed for a
   second review. **At most two re-reviews**: what is still open after them goes
@@ -718,7 +714,6 @@ things. Walk the list:
 | Did this make a rule checkable that was on rung 1? | write the check, or add it to the process area |
 | Did the outside change under a research entry you relied on? | update the entry with what you verified and when |
 | Did any document you did not open become false? | the *what changed → what must move* table, run properly |
-| Did a build reach a device that open device questions wait for? | list the ones it can answer, and ask which to measure |
 
 **B. Harvest the learnings, and route each one.** The question is not "did I
 learn something" — it is **"what does this session know that the repository does
@@ -778,7 +773,7 @@ next two minutes, and will never close as cheaply again.
 
 ### Working safely in a tree you do not own
 
-Six hazards, all of which have cost real time:
+Five hazards, all of which have cost real time:
 
 - **The uncommitted diff is the work, and it has no copy.** Never revert the
   working tree: no `git checkout` or `git restore` of a path, no `git stash`, no
@@ -817,9 +812,6 @@ Six hazards, all of which have cost real time:
   answer is that the file needs splitting, **say so and leave it**: that is a
   structural decision, and mid-feature is the worst possible moment to take it
   unasked.
-- **A command with one denied part is refused whole**, so an edit chained to it
-  never lands. Never chain an edit with anything a deny may catch, and read the
-  tree's status after an edit before running tests (artifact 4).
 
 ### Research does not end at Phase 2
 
@@ -833,8 +825,9 @@ forever out of habit.
 The same rule as Phase 2 applies: nothing enters the register unless it changed
 or confirmed a decision, and a recommendation written for a different
 environment is the most dangerous kind of correct. A delegated agent that
-downloads or writes is given an explicit scratch directory outside the
-repository; otherwise it writes where you stand.
+downloads or writes is given its own scratch directory outside the
+repository; otherwise it writes where you stand. A destructive step there
+first checks that its target resolves inside that directory.
 
 ---
 

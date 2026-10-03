@@ -27,6 +27,8 @@ The companion rule is about the other direction of infidelity. When the test con
 
 Pure-function tests with no double. Doubles generated from the real implementation, or contract-tested against it on the same cases.
 
+**Blaming the harness on "it passes alone".** A harness is a double of the target too, and on a long-running one under load most surprises are the harness. But test pollution and real races also pass alone, so before convicting it: rerun the failure alone and again after the test that preceded it, look for state an earlier test left changed, and ask whether review can find an input that reaches the suspected race. On a fresh, idle harness the code is the first suspect.
+
 ## What it costs
 
 Contract tests that run fake and real on the same inputs — the real side needs an emulator or the network — or faithfully re-implementing semantics such as projections and merges in the fake, which is real work.

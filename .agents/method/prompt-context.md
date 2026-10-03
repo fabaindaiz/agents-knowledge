@@ -337,6 +337,12 @@ reversed, the reversed row says so in place, with a pointer to what replaced
 it, and keeps its measurement. A superseding row that cites the old one is not
 enough: readers arrive at the old row from the index, and it still reads as live.
 
+**A relayed claim is checked before it is repeated.** What a delegated agent
+reported, what a record or a recorded lesson says, or what an incomplete search
+did not find, is read first-hand — a status line, a listing, the file — before it
+goes to the human or into another agent's brief. Repeated unchecked, it sends
+the next reader to act on something that is not there.
+
 > **Example.** One repository corrected a shipping fact in a new section of the
 > document where it was found; the loaded guardrail and the other statements of
 > the rule stayed wrong for most of a week, and the changelog entries written
@@ -589,6 +595,11 @@ reverted. A pick you had to make inside their content is labelled
 leave alone is reported under its own heading with the reason, never as a side
 effect.
 
+**Hearing the request is part of the protocol.** Read the human's whole message,
+and those sent mid-turn, and before reporting done name every part as done or
+not done: a skipped part is a request they must repeat. A free-text answer to a
+question overrides the options it came with, read literally.
+
 **Prevents:** confident work on the wrong product, and a human doing the
 agent's thinking.
 
@@ -716,7 +727,10 @@ changing it: a formatter that rewrote the line turns the mutation into a no-op,
 and a no-op mutation "survives" for the wrong reason. This is cheap, it is the
 same evidence the red step would have given, and it catches the stub that is
 never consulted and the test that asserts the absence of the behaviour it is
-named for.
+named for. Where the tree may not be stashed or reverted (`prompt-bootstrap.md`,
+*Working safely*), see the red after the code exists by moving the
+implementation file to a scratch directory and back, or by mutating; undo by
+editing forward, and prove the file is back with `git diff --exit-code <path>`.
 
 **Assert the reason, not only the outcome.** A test that pins *which* item a
 check reported lets a whole class of mutation survive: with the check deleted,
@@ -768,6 +782,16 @@ Three rules that keep this from becoming drift:
    unreviewable.
 3. **Record every substitution in `carrier.toml`.** An adaptation that is not
    written down will be re-proposed by the next update, and re-declined, forever.
+
+Two consequences that are easy to miss. **When the host's plan or spec template
+wins, map the card lookup into it explicitly** — one line in its header — or the
+step has no slot in what sessions actually write, and stops without anything
+saying it did. **A host workflow that already reviews by default** (a
+whole-branch review at the end of a plan) **is left in place**, though the
+method's own review runs on request: that default was measured for the
+knowledge reviewer on one task's diff, not for a whole-branch review, and not
+against what a missed defect costs. Its findings go in the changelog's *Review*,
+where the harvest reads them.
 
 And the direction that is easy to forget: **the host repo usually knows
 something the method does not.** A convention you would not have chosen, which
@@ -1130,6 +1154,17 @@ nothing while looking like it does. Use `Edit(path)` where you mean "do not
 change this file" and `Read(path)` where you mean "do not even look at it". This
 is the exact shape of a rule that reads as rung 3 and behaves as rung 0.
 
+**Deny per destructive subcommand, and know what a deny refuses.** A prefix rule
+catches every form of its subcommand, the read-only ones too: a deny on a stash
+prefix also refuses listing the stashes. A rule for one form misses its
+neighbours: a deny on restoring paths does not stop checking out a commit, which
+detaches `HEAD`. A prefix rule is also passed by a global option written before
+the subcommand (`git -C <dir> checkout …`): name those forms too, or probe the
+rule against them, and where the layer cannot express them, say the rule is a
+reminder, not a barrier. And a command with one denied part is refused whole, so
+an edit chained to it silently never lands: never chain an edit with anything a
+deny may catch, and read the tree's status after an edit before running tests.
+
 Commit this file; keep `settings.local.json` out of git. The `.claude/`
 directory is how the repo explains itself — it belongs to the team.
 
@@ -1141,6 +1176,10 @@ directory is how the repo explains itself — it belongs to the team.
 **Areas.** Files or folders.
 **Why.** The reason, including the request that prompted it.
 **Architecture.** ✅ Complies · ⚠️ Deviation · REVIEW — and why.
+**Cards relied on, and the checks that ran.** Each card the change applied, and
+its check's result; `none` when the change touched nothing that consults them.
+**Review.** Who reviewed, isolated or not; the findings by severity, and what
+was deferred. `none` when no review ran.
 **What went wrong on the way.** What the first attempt got wrong, and what
 caught it. Omit only if nothing did.
 **What was left undone.** Debt this change created or walked past, named, so the
@@ -1150,6 +1189,9 @@ approved, and the measurement that decided it. Omit when there is none.
 **Not verified.** What could not be checked in this environment, and where the
 question now waits. Omit when everything was.
 **Measured.** The number, if a claim was made.
+**Learned.** General: what holds with none of this repository's nouns, for the
+harvest. Local: each learning, and where it was routed. Ends with the closing
+review's line: `Captured: N learnings, M frictions (…). Nothing needs you.`
 ```
 
 Newest on top. The header of the file states the obligation and the incident
@@ -1170,7 +1212,8 @@ shape applies to any document agents edit by insertion: **the insertion point
 has to be unambiguous by structure, because the instruction will be read
 quickly.**
 
-**The last three fields are the ones that pay for the file.** A log of successes
+**What went wrong, what was left undone and what was not verified are the
+fields that pay for the file.** A log of successes
 is bookkeeping; a log that says *"the dimming made the item transparent and only
 the rendered frame showed it"* or *"this file is now one function away from its line
 budget and splitting it is a structural call I did not make"* is the only
@@ -1333,8 +1376,17 @@ it forever is not.
 Keep the rule and the check pointing at each other. A check with no rule is a
 trap; a rule with no check is rung 1.
 
+Some checks are cheap in any repository and pay early: every path a document
+names exists (Phase 7 of the bootstrap), and every file in an indexed folder
+appears in its index — a folder of dated records grows a file a session, and
+its index goes stale without a sound.
+
 In a carrier, the gate also runs the bundle's own checks: `bundle.py verify` (which runs
-privacy) and `bundle.py ids` over the files that hold record ids.
+privacy) and `bundle.py ids` over the files that hold record ids. The audit leaves
+the bundle's own shape (its headers, sections, index links and markers) to
+`verify`, which ships with each release, and checks only how this repository
+uses the bundle: an audit that re-implements a release's layout turns red, or
+silently vacuous, on the next one.
 
 ### 10. `README.md`, `docs/architecture.md`, `.editorconfig`
 
