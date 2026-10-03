@@ -147,6 +147,12 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   file; the changelog entry's template is written by a command, and *close* (every part of the request,
   documents true again, counted frictions, local memory compared, hand-off) ships as the first skill.
   *Collision:* `bundle.py verify`, which must tell an installed copy from an edited one.
+  **Drafted, not released (2026-10-02):** on the branch `wip/phase-1-skills`, stacked on
+  `wip/prompt-improvements-from-harvest`: `install-skills` (with `--check`, and in `verify`), `new
+  entry`, `count`, `memory-diff`, the `close` base, the update's step 3c, and `evals/skills/trigger.py`.
+  Piloted in one carrier, its old skill kept line by line as `LOCAL.md`; the trigger eval there fired on
+  every close request and on no near miss, one run each. Exit still open: entries in two carriers that
+  carry every field, written after a release takes the branch.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
   carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,
