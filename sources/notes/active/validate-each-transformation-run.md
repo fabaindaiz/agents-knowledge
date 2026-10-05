@@ -9,7 +9,7 @@ about:
   - {do: "Run a formatter, generator, translator or bulk refactor over files", wrong_when: "the tool is trusted because it usually works, and the run that loses a comment or a number is never looked at"}
 rests_on: "Pnueli et al. 1998, translation validation"
 strength: "established"
-our_evidence: "reasoned; one caught loss, planted losses rejected"
+our_evidence: "reasoned; losses caught in three repositories, planted losses rejected"
 ---
 
 # Validate each transformation run
@@ -18,12 +18,14 @@ our_evidence: "reasoned; one caught loss, planted losses rejected"
 
 Proving a transformer correct in general is expensive or impossible: a formatter's grammar, a translation model, a generator with a hundred options. Checking one run is cheap, because the thing that must survive can usually be named and extracted mechanically — the token sequence once whitespace is ignored, the multiset of comments, every number and identifier in a translated document, the rendered pixels of a refactored view. Compare that projection before and after; accept the output only if it matches.
 
+An agent that condenses or rewrites a document is such a tool, and the guard is only as good as its projection: one that checks a single invariant passes a run that lost everything else.
+
 This turns an untrusted tool into a safe one without changing it, and it catches exactly the failures review misses: a dropped comment in a long diff, a number altered in a fluent translation, a changed string literal that looks like reformatting.
 
 ## When it does NOT apply
 
 - **Transformations meant to change the protected projection.** A real refactor changes tokens; then the projection is the behaviour (rendered output, test results), not the text.
-- **Where the invariant cannot be stated** — a free prose rewrite has nothing mechanical to preserve.
+- **Where the invariant cannot be stated** — a free prose rewrite has nothing mechanical to preserve. A condensation is not a free rewrite: list the kinds of content that must survive it (conditions, warnings, states, definitions, identifiers) in the plan's success criteria, and check each, mechanically where possible.
 - **Tools already verified at the level you need** (a certified compiler); even then, the wiring around them is not.
 
 ## What it costs
@@ -49,4 +51,8 @@ A generated layout file is where the projection needed a written exception: the 
 
 **2026-09-28 — the same repository, a check at the wrong level:** the build's up-to-date check read both the generated file and its expected form as text, so it compared them after the platform's newline translation. A release file rewritten with other line endings, and its checksums regenerated, passed the check and was never rewritten by the build. Fixed by comparing bytes. The projection has to be taken at the level the consumer reads: a file checked by its checksum is checked in bytes, so its line endings are part of what must be preserved.
 
-**Reasoned, from one repository** (downgraded from `measured` on 2026-09-24). One real loss was caught by a per-run check: an editor that writes files back re-sorted keys and stored one float with fewer digits than it held. The formatter guard was seen rejecting planted losses (a dropped comment, a changed token, a merged string literal), which shows the check can fail (`a-check-must-be-seen-to-fail`) but not how often it is needed. The runs that changed nothing — regenerated files, translated documents compared by projection, frames across refactors — show that no loss occurred in them, not that checking was necessary. One regeneration also showed why the projection needs written exceptions: a couple of hundred lines of freshly minted ids, and none left once the ids were normalised by rule. **Not measured:** how often the unguarded tool would actually have lost something. The experiment: run the formatter unguarded over a year of dirty trees in a scratch copy and count the runs the guard would have rejected.
+**2026-10-02 — an agent's condensation, in a repository of machine-configuration documents.** A plan cut the roadmap to under half its length, and its only "nothing lost" criterion was that every record id stays defined, compared before and after; it passed. A fresh-context review then found that the condensed summary had dropped the conditions under which two recommendations apply and a warning about another repository, and that a dozen or so ids were now defined twice, because detail copies kept their ids and their state. Each was fixed with a check seen to fail first. The guard existed; it measured one invariant.
+
+**2026-10-05 — line endings, in a code-generator repository.** Editing files through a text interface rewrote their line endings three times in three sessions, turning small changes into whole-file diffs; the second forced a rewrite of an unpushed branch's history. The guard that worked checks that each tracked file keeps the line-ending style it has in the last commit; it was seen red on a planted conversion and caught the third occurrence before the commit. A normalisation attribute in the version-control configuration was rejected as the guard, because applying it rewrites every such file at once — the diff it was meant to prevent.
+
+**Reasoned** (downgraded from `measured` on 2026-09-24, when it rested on one repository). In the first repository one real loss was caught by a per-run check: an editor that writes files back re-sorted keys and stored one float with fewer digits than it held. The formatter guard was seen rejecting planted losses (a dropped comment, a changed token, a merged string literal), which shows the check can fail (`a-check-must-be-seen-to-fail`) but not how often it is needed. The runs that changed nothing — regenerated files, translated documents compared by projection, frames across refactors — show that no loss occurred in them, not that checking was necessary. The 2026-10 occurrences above add caught losses in two more repositories, an agent's condensation and line endings rewritten by an editing interface: occurrences, not a rate. One regeneration also showed why the projection needs written exceptions: a couple of hundred lines of freshly minted ids, and none left once the ids were normalised by rule. **Not measured:** how often the unguarded tool would actually have lost something. The experiment: run the formatter unguarded over a year of dirty trees in a scratch copy and count the runs the guard would have rejected.

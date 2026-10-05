@@ -2,7 +2,7 @@
 slug: "derived-over-chosen-identifiers"
 topic: "identity-and-naming"
 claim: "An identifier that must be unique across boundaries is derived from something already unique, never chosen by whoever creates it."
-confidence: "reasoned"
+confidence: "measured"
 principle: "same-only-by-a-shared-fact"
 applies_if: "Two sources, teams or systems create identifiers in one space. Look where records enter from outside (imports, integrations, sample exports, their documentation) and whether their id ranges can meet."
 phases: ["plan"]
@@ -11,7 +11,7 @@ about:
   - {do: "Name something referenced from outside its own repo or service", wrong_when: "the obvious name is obvious to everyone, so collisions are selected for rather than unlikely"}
 rests_on: "reverse-DNS convention"
 strength: "settled practice"
-our_evidence: "one drift caught; the collision claim unobserved"
+our_evidence: "one drift caught; one probe: declared identifiers resolved under half the artefacts, a digest all of them"
 ---
 
 # Derived over chosen identifiers
@@ -22,17 +22,19 @@ A chosen identifier is chosen independently by each party, from the same small p
 
 Deriving it from something already globally unique — a remote URL, a UUID, a content hash — removes the choice and therefore the collision. It also survives renaming: the derived value tracks the identity, not the label someone typed.
 
+An artefact's own declared name and version are the extreme case. Each author chooses them in a namespace the registry does not own, so they collide across projects, their version strings follow per-project conventions the registry does not share, and one declared version can map to several published files, one per platform. An installed artefact is identified by a digest of its bytes, looked up in the registry it came from, never by what it says about itself.
+
 ## When it does NOT apply
 
 - **When humans type it.** A derived id nobody can read is a derived id that gets copied wrong, and readability is worth real money in anything people operate under pressure. Prefer chosen names for things humans address, derived ids for things systems match.
 - **When the source of derivation is not stable.** Deriving from a directory path or a branch name produces an identifier that changes when nothing important did — worse than a chosen one, because it changes *silently*.
 - **When the source of derivation is content that will be edited.** An identifier derived from a record's own text changes the moment the text is corrected, and every reference to it breaks — silently, which is the previous boundary again. Derive it **once, at creation, and freeze it**: later edits never recompute it, and a check verifies only its format, its prefix and its uniqueness, never that it still matches the content.
 - **When the source is private, guessable, and the identifier travels in public.** A short hash of something drawn from a small candidate space — a repository remote, an email address, a host name — is reversed by hashing the candidates, so a published identifier names what it was only meant to distinguish. Mint a random value once, store it with the thing it names, and check its presence and format rather than its derivation: it is still not *chosen*, which is what the claim is about.
-- **When the namespace is genuinely closed and small.** Three services owned by one team, with a list in one place, do not need this.
+- **When the namespace is genuinely closed and small.** Three services owned by one team, with a list in one place, do not need this. Nor does a registry that indexes the declared identifiers itself and guarantees their uniqueness: it owns the namespace.
 
 ## What it costs
 
-Readability, and it is not a small cost: `d-abcdef-123456` does not tell you which repository it belongs to or what it records, where a chosen word and a sequence number name their owner at a glance. Pay for it by making the derivation **checkable** — where the source is stable, have something re-derive the identifier from it on every run and fail if the stored value has drifted; where the source is content that will be edited, freeze the value at creation and check its format, prefix and uniqueness instead. A derived id that is verified is worth more than a legible one that silently goes stale; a derived id that is *not* verified is the worst of both.
+Readability, and it is not a small cost: `d-abcdef-123456` does not tell you which repository it belongs to or what it records, where a chosen word and a sequence number name their owner at a glance. Pay for it by making the derivation **checkable** — where the source is stable, have something re-derive the identifier from it on every run and fail if the stored value has drifted; where the source is content that will be edited, freeze the value at creation and check its format, prefix and uniqueness instead. A derived id that is verified is worth more than a legible one that silently goes stale; a derived id that is *not* verified is the worst of both. A digest of an artefact needs its whole content, which is a full download where the host exposes no checksum; caching the digest by path, size and modification time bounds that cost, and buys the blind spot of `derived-copy-goes-stale-silently`.
 
 ## Where it came from
 
@@ -42,7 +44,7 @@ The first scheme put a sequence number after that prefix — `d-abcdef-017`, the
 
 **A later turn, about what the source reveals (2026-09-24).** The repository part derived from the remote turned out to be reversible: anyone with a list of candidate remotes hashes each one and matches the prefix, so a published id named the private repository it was only meant to distinguish. That part is now a random value minted once and stored in the repository itself — the boundary *When the source is private, guessable, and the identifier travels in public* above.
 
-Judgement, unmeasured — though the check firing on day one is evidence the failure mode is real rather than theoretical.
+Judgement, unmeasured at first writing — though the check firing on day one is evidence the failure mode is real rather than theoretical.
 
 **A second occurrence, about build identity.** A client application's store-distributed build carried a *chosen* version number that never changed, so the device refused to install over what it already had; the web build stamped its identity after export and the desktop builds had none — three identities, none complete. It now derives one stamp before every export and embeds it: the store version is a count of seconds since a fixed recent epoch, in UTC so that a clock going back cannot give two builds the same number, and it stays under the store's version ceiling for decades. That count is the store version only; a single date-time build stamp derived alongside it is what busts the offline cache and is shown in the diagnostics readout, so what the device reports is what invalidated its cache.
 
@@ -54,10 +56,14 @@ Judgement, unmeasured — though the check firing on day one is evidence the fai
 
   **Where we differ:** reverse-DNS stays **readable** (`com.google.android` says who and what). A hash does not, and this note treats that as the cost to be paid for rather than a detail. When readability matters more than mechanical guarantee, reverse-DNS is the better trade and this note should not be used to argue otherwise.
 
+- **Content addressing in Git's object model** (*Pro Git*, "Git Objects"). *Cited from a carrier's proposal; not checked here.* An object's name is the hash of its content. **What we take:** the same principle, for identifiers that cross a boundary.
+
 ## Evidence
 
-**One occurrence, in-session and not a measurement.** After moving to derived prefixes, the check that re-derives the value from the git remote failed on its first real execution: a constant had been left at the old chosen value because the rename matched a pattern the constant did not fit. That is evidence the *drift* failure mode is real. It is **not** evidence that a chosen prefix would have collided, which is the note's actual claim and remains unobserved.
+**One occurrence, in-session and not a measurement.** After moving to derived prefixes, the check that re-derives the value from the git remote failed on its first real execution: a constant had been left at the old chosen value because the rename matched a pattern the constant did not fit. That is evidence the *drift* failure mode is real. It is **not** evidence that a chosen prefix would have collided.
 
 The second occurrence is an observed failure of a chosen identifier (an install refused), though of monotonicity rather than of collision.
 
-What *would* settle the claim: count prefixes independently chosen across a real set of repositories and look for duplicates. With two repositories, the sample cannot say anything.
+**2026-10 — chosen identifiers collide, measured in a web service.** A service that must tell which plugin packages a remote host has installed, where the host's file interface gives names, sizes and times but no checksums, probed nine real packages from one public registry. Looked up by the identifier and version each declares in its own manifest, four of nine resolved exactly: one declared name belonged to an unrelated project in the registry, one resolved to another platform's build with the same version string, and three were not found because the registry's version strings carry a different prefix or suffix. Looked up by a digest of the file bytes, nine of nine resolved. The open-source clients examined all identify by file digest. This is the first observed collision of chosen identifiers, and the note's `confidence` moves to measured on it.
+
+What *would* settle the claim further: count prefixes independently chosen across a real set of repositories and look for duplicates. With two repositories, the sample cannot say anything.

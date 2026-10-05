@@ -9,7 +9,7 @@ about:
   - {do: "Verify a change in a system that cannot be booted where you write it", wrong_when: "more tests of what already runs does not touch composition, which is the class that bites at startup"}
 rests_on: "hardware-in-the-loop practice; Xu et al. 2016 on latent configuration errors"
 strength: "practice and one empirical study"
-our_evidence: "reasoned; two repositories arriving at one arrangement"
+our_evidence: "reasoned; two repositories arriving at one arrangement, and the composition rig run once in a third"
 ---
 
 # An unrunnable system moves the gate
@@ -27,7 +27,7 @@ The mistake this note exists to prevent is treating an unrunnable system as a no
 ## When it does NOT apply
 
 - **When the system can be run and the obstacle is effort** — a docker-compose nobody wrote, a fixture nobody made. Then the correct move is to make it runnable, and this note is an excuse. The distinction is whether the obstacle is *physical* (hardware, a credential that must not exist in development) or merely unbuilt.
-- **When the environment can be simulated.** Hardware-in-the-loop practice exists to remove exactly this obstacle: the real controller runs against a simulated plant. The arrangement this note describes holds until such a rig exists, and a rig for composition alone is often cheap: resolve the whole dependency graph at startup with stand-ins for the hardware and credentials, and fail the gate if resolution fails — which turns the class this note says bites at startup into a check that runs before it.
+- **When the environment can be simulated.** Hardware-in-the-loop practice exists to remove exactly this obstacle: the real controller runs against a simulated plant. The arrangement this note describes holds until such a rig exists, and a rig for composition alone is often cheap: resolve the whole dependency graph at startup with stand-ins for the hardware and credentials, and fail the gate if resolution fails — which turns the class this note says bites at startup into a check that runs before it. A type checker does not replace it: in the one run below, it found the import-time failure and not the mis-wiring.
 
 ## What it costs
 
@@ -37,6 +37,8 @@ Reasoning about composition by reading is slower and less certain than running t
 
 A hardware-bound service states it directly in its own instructions: the type checker is the primary correctness gate because the suite is partial and the application needs real hardware and credentials to boot, and changes to its plugins most often break when the dependency container resolves them at startup, so the wiring is to be reasoned about by reading. A second repository in the same family reaches the same arrangement — typecheck plus lint as the real gate, tests explicitly non-blocking — from the same cause.
 
+A third repository, a web service whose document store, identity provider and control panel only the deployment host reaches, built the rig the boundary proposes, 2026-10-01: an import of the whole application under the minimum supported interpreter, with placeholder configuration and no network, then a check that every dependency-injection binding passes a constructor the types it declares. Run once, it caught two composition failures no existing check saw: an import-time name error from an annotation naming a class never imported, invisible on the newer interpreter on the developer's machine because it defers annotation evaluation, and fatal on the deployed one; and a service wired with the wrong repository class, which would have failed only when an endpoint was called. A type checker run at the same time found the first and not the second. Its obstacle is remote-only services, not hardware.
+
 ## Literature
 
 - **NI, ["What Is Hardware-in-the-Loop (HIL)?"](https://www.ni.com/en/solutions/transportation/hardware-in-the-loop/what-is-hardware-in-the-loop-.html).** "HIL is an embedded software test technique during which real signals from a controller are connected to a test system (plant). HIL simulates reality by using software models and simulation." *Verified 2026-09-24 against the page.* **What we take:** the boundary — an unrunnable system becomes runnable once its environment is simulated. **Where we go further:** what the gate and the bug class look like *before* that rig exists, which is where most small hardware-bound services live.
@@ -44,4 +46,4 @@ A hardware-bound service states it directly in its own instructions: the type ch
 
 ## Evidence
 
-**Reasoned: two repositories arriving at the same arrangement.** What would measure it: classify a period of defects in such a repository as logic, contract or composition, and compare the distribution against a service that can be run locally. The prediction is a composition share visibly higher. A cheaper experiment first: build a composition-only boot with stand-ins, and count how many past startup failures it would have caught.
+**Reasoned: two repositories arriving at the same arrangement.** **2026-10-01 — the cheap rig, built and run once in a third:** two composition failures caught that no check saw, one of them also missed by a type checker, in minutes. It counted latent failures present at that moment, not past startup failures it would have caught, so the distribution claim stays unmeasured. What would measure it: classify a period of defects in such a repository as logic, contract or composition, and compare the distribution against a service that can be run locally. The prediction is a composition share visibly higher. A cheaper experiment first: build a composition-only boot with stand-ins, and count how many past startup failures it would have caught.

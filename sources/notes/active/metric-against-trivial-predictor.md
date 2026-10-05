@@ -47,4 +47,6 @@ A family of models over rare failure events, measured on the same test blocks: t
 
 ## Evidence
 
+**2026-10-04 — a design occurrence beyond model metrics, in a real-time signal-processing repository.** The owner reported that the unprocessed input sometimes beat the repository's own multi-output algorithm. A review of the landscape found two free tools that already do the job installed on the machine, and widened a planned blind comparison to seven arms: the unprocessed input, the existing mode, the new mode, a never-worse-than-the-input variant, the two free tools and a source-separation pilot. The new mode stays off by default until it wins by a criterion written before measuring. Beyond models, the trivial arm is *doing nothing* and *the cheapest tool that already exists*. The comparison has not run, so the claim does not widen yet; listening-test standards with a hidden reference and anchors (ITU-R BS.1534) are cited from the proposal and *not checked against the source*.
+
 **Measured in one repository**, on one family of models and one dataset: the comparisons above. Not established: that the same metrics fail the same way on other label distributions; the check is to compute each metric for a constant predictor on a new dataset before choosing which to report.

@@ -11,7 +11,7 @@ about:
   - {do: "Design anything a caller can retry — a queue consumer, a webhook handler, an RPC with backoff", wrong_when: "the effect is physical, financial or externally visible, and the transport cannot tell a lost request from a lost response"}
 rests_on: "Two Generals / FLP; Stripe and Brandur on keys in practice"
 strength: "well established"
-our_evidence: "occurrences in one repository; no rate"
+our_evidence: "occurrences in three repositories; no rate"
 ---
 
 # Retry over an irreversible effect
@@ -34,7 +34,7 @@ The consumer needs a **stable identity for the logical operation**, chosen by wh
 
 Two sharper boundaries, from a second repository:
 
-- **Catch only the error that proves the effect did not happen.** A refusal the provider answered is safe to treat as "not applied"; a transport error is not — its outcome is unknown, and handling both the same way converts an unknown into a false negative.
+- **Catch only the error that proves the effect did not happen.** A refusal the provider answered is safe to treat as "not applied"; a transport error is not — its outcome is unknown, and handling both the same way converts an unknown into a false negative. Two more forms of the same mistake: a client that decodes a body from every response turns a bodyless success (`204 No Content`) into an error, and a retry over any exception sends the write again, so the effect happens twice and the caller is told it never happened; and a handler that fails the request because the bookkeeping write *after* the effect failed turns a possible duplicate into a certain one, because the caller's retry finds no marker. Read success from the status, treat an empty body as no data, and never report a failure after the effect as if the effect had not happened.
 - **Deterministic task ids deduplicate the wrong fork.** A queue that refuses a retry because its id already exists fails towards a retry nobody notices was refused. Bound retries by a budget re-read before every attempt, with one owner, rather than by id collisions.
 
 ## What it costs
@@ -46,6 +46,8 @@ A key on the contract, a write before the effect, storage that must outlive the 
 A cloud service and an edge service, each holding half of a guarantee: the cloud deduplicated by transaction status, the edge by an in-process lock. Each half was correct; **they did not compose into a distributed guarantee**, and nothing in either repository said so. The retry decorator sat on the call between them, with a window of tens of seconds.
 
 Judgement, unmeasured. The literature agrees on the shape (idempotency is semantic, exactly-once is a delivery claim, prefer at-least-once with an idempotent consumer); the specific gap was found by reading both sides at once, which is only possible from a workspace.
+
+Two more repositories met the boundary above. A cloud service wrote the marker that makes reprocessing a no-op after the irreversible effect, unguarded; a failed marker write was answered with a retryable server error, the caller re-sent, the guard found no marker, and the effect ran a second time — the case the guard existed to prevent. The failure is now logged and swallowed. A web service's client for a remote server-control panel, 2026-10-01, decoded a body from every response; its power, command and delete endpoints answer `204` with no body, so every real success raised a decode error, and the methods carried a retry decorator over any exception: a restart would have been sent twice and reported as failed. Nothing called those methods yet. Contract tests against a local server answering exactly as the specification says failed on all three; a double that returns a body for everything would not have (`test-double-fidelity`). The fix decodes only non-empty bodies, removes the retries, and makes a retried write an audit failure.
 
 ## Literature
 
@@ -61,6 +63,8 @@ Judgement, unmeasured. The literature agrees on the shape (idempotency is semant
 
   **What we take from it:** the third state. An idempotency implementation with two states is incomplete and fails precisely under the impatient-client retry it was built for.
 
+- **[RFC 9110, HTTP Semantics, §15.3.5 "204 No Content"](https://www.rfc-editor.org/rfc/rfc9110#name-204-no-content):** the server "has successfully fulfilled the request and … there is no additional content to send". *Verified 2026-10-05 against the RFC text.* **What we take:** an empty body is a success the client must not decode as a failure.
+
 ## Evidence
 
 **Before 2026-09-22 — none measured.** The gap was found by reading both halves of a cloud/edge pair at once and noticing that each deduplicated by a different mechanism and neither composed with the other. No duplicate physical effect was observed or reproduced.
@@ -68,5 +72,7 @@ Judgement, unmeasured. The literature agrees on the shape (idempotency is semant
 The literature above is well-established rather than novel, which raises this note's confidence in the *claim* but not in **our** application of it: we have not demonstrated that our retry window can actually produce a duplicate, only that nothing prevents it.
 
 **2026-09-22 — occurrences in a second repository, a transactional service.** Duplicates did happen there: operations applied several times, which produced an administrative per-operation reversal endpoint; duplicate stored credentials that made a retry loop apply the same effect repeatedly; a task-queue replay that double-counted an authorised response, with settlement still non-idempotent on replay and left open deliberately; and a replayed signup, written without merge, that was one repeated call away from erasing a restriction placed on the account. These are occurrences, not a measured rate, so the note stays `reasoned` — but the claim is no longer only an argument.
+
+**2026-10 — the error-after-the-effect boundary, from two more repositories:** a failed bookkeeping write answered as retryable, which ran an effect twice; and bodyless successes decoded as errors under a retry over any exception, caught by contract tests before any caller existed. Occurrences, not a rate.
 
 What *would* settle it: inject a lost response on the call between the two services and observe what the downstream does. Until that exists, this is a `reasoned` note resting on `measured` literature — which is a different and weaker thing than a measured note.

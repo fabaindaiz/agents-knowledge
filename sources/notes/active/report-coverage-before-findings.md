@@ -8,7 +8,7 @@ check: "the report's first line is \"evaluated N of M\"; a check whose subjects 
 about:
   - {do: "Write a scan, audit, reconciliation or data-quality report", wrong_when: "a misspelled field or an empty filter makes \"nothing found\" mean \"nothing looked at\""}
 rests_on: "none known"
-our_evidence: "measured in three repositories"
+our_evidence: "measured in three repositories; the list form met again since"
 boundary: "Reports whose input schema is enforced upstream, so every row is evaluable by construction"
 ---
 
@@ -20,7 +20,9 @@ A scan, an audit, a reconciliation or a data-quality report that finds nothing p
 
 Putting coverage first — *evaluated N of M; found K* — makes blindness visible in the same line as the result. A report with no coverage number cannot be distinguished from a broken one, so it should not be trusted as a clean one.
 
-The same blindness has a structural form: **a check whose inputs are a hand-written list covers the day the list was written.** Everything added afterwards is outside it, and the report still says "ok". Find the population from the tree — every file of the kind, every item that exists — and have the tool name what it could not evaluate rather than skip it.
+The same blindness has a structural form: **a check whose inputs are a hand-written list covers the day the list was written.** Everything added afterwards is outside it, and the report still says "ok". Find the population from the tree — every file of the kind, every item that exists — and have the tool name what it could not evaluate rather than skip it. A removal rule judged against a hand-written list of known-good items is the same trap: it reports that nothing good was lost for everything the list omits, so its coverage is the removed items read one by one, not a count against the list.
+
+**Finding the population from the code has its own blind spot.** When the defect a check exists for removes the subject from the found population — a guard deleted, so the route is no longer registered as guarded and no longer swept — the list shrinks with the defect and the check stays green; the same holds for a guard tested on a host the test builds itself, which passes when the line installing it in the real host is deleted. Then take the expected set from a source independent of the code under test (a table in a document the test parses), compare it with the found one **both ways**, and plant the defect itself: remove the guard from the real artefact (`a-check-must-be-seen-to-fail`).
 
 **The gate form: fail on zero.** A check whose subjects are found rather than listed can still go blind with no change to itself, because its subjects disappear. A folder it scans is legitimately retired and it returns early; a marker it searches for is translated or renamed; a pattern it matches is loose enough to match the artefact that means *not yet*. It keeps reporting success over nothing, and the edit that blinded it was a correct piece of maintenance, not a regression, so no review looks at the check. The guard is one line and belongs in every such check: **count the subjects, and fail on zero** unless zero is a legitimate state that the check names. It is the coverage line turned into a gate; whether the check could go red at all is `a-check-must-be-seen-to-fail`.
 
@@ -42,10 +44,14 @@ A second repository met the list form. Its determinism check named only the piec
 
 A third repository — an offline-search application with a packaging toolchain — met the zero form three times (moved 2026-09-24 from `a-check-must-be-seen-to-fail`). The enforcer of a method digest opened a folder and began with *return if the folder is absent*; retiring that folder for another would have left the audit at 0 failures over 65 unchecked files, and the same pass found it had been checking 4 files where 65 travel. Translating eight mirror-declaration markers took their check to 0 matches; it failed loudly only because an earlier session had written *fail if nothing was found*, without which the gate would have gone green over 8 unchecked mirror pairs.
 
+Another repository, an app with an on-device test suite, met the hand-kept list, 2026-10-03: a structural audit listed by hand the only entry points allowed into a pure core, and a new entry point went unchecked until the audit discovered entry points itself, with a planted test. The opposite side — a list derived from the code under test that cannot see the deletion it exists to catch, in a web service whose role sweep read the set its guard decorator fills — is counted in `a-check-must-be-seen-to-fail`; the boundary paragraph above is its consequence for this note.
+
+The removal-rule form, 2026-10-01, in a repository that curates third-party data: a rule that would have deleted the translations of two very common function words passed its comparison because the hand list lacked them. Printing which entries each rule removes found it, and the same reading killed two wider rules, each removing thousands of keys among which were real acronyms and real translations, and two more later that day. Earlier the same week, a rule keeping entries that "carry content" counted non-empty fields and kept entries whose only content was in a language the artefact does not declare; rendering real entries showed it, the counts did not.
+
 ## Literature
 
 None known. It is the empty-set mirror of `absent-constraint-widens`: there a lost constraint returns a superset that looks like success; here a lost field returns an empty set that looks like a clean bill of health.
 
 ## Evidence
 
-**Measured in three repositories:** in the first, no appearance of the field before the fix and about three quarters of rows after; in the second, a listed check covering under a third of its inputs, and about 1 % dead paths on the first run of a found one; in the third, an audit that would have passed over 65 unchecked files and a marker check at 0 matches over 8 pairs, each stopped only by a fail-on-zero guard or the lack of one. What would generalise it: add a coverage line to every existing report and count how many of them turn out, on first run, to have been evaluating less than they claimed.
+**Measured in three repositories:** in the first, no appearance of the field before the fix and about three quarters of rows after; in the second, a listed check covering under a third of its inputs, and about 1 % dead paths on the first run of a found one; in the third, an audit that would have passed over 65 unchecked files and a marker check at 0 matches over 8 pairs, each stopped only by a fail-on-zero guard or the lack of one. **2026-10 — the list form, again:** a hand-kept list that missed an entry point added later, in another repository, and a removal rule judged against a hand list, whose real coverage was found only by reading what it removed. Occurrences, not rates; the derived-list boundary is counted in `a-check-must-be-seen-to-fail`. What would generalise it: add a coverage line to every existing report and count how many of them turn out, on first run, to have been evaluating less than they claimed.

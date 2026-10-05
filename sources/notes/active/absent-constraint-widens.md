@@ -9,7 +9,7 @@ about:
   - {do: "Write or simplify a query or filter by tenant, owner, status, date or coverage bound", wrong_when: "losing the clause returns a superset, and a superset looks like success — or the bound is applied on one path and not another"}
 rests_on: "Saltzer & Schroeder on permission over exclusion"
 strength: "fifty years old"
-our_evidence: "measured in one repository, plus one occurrence"
+our_evidence: "measured in one repository; occurrences in three more"
 ---
 
 # An absent constraint widens
@@ -22,7 +22,7 @@ This makes the class invisible to the usual defences. A test asserting "the reco
 
 And an absence assertion needs something to be absent. **In a fixture world that holds one subject, the widened query returns exactly the rows it should**, so even that test passes: the clause is not unasserted, it is unobservable *in the rows*. A test that asserted on the query itself would still see it, and that is the one kind that does. The fidelity of the test double is not what hides it — a double that evaluates the filter correctly hides it just as well — the single-subject world is.
 
-The same shape appears wherever a narrowing clause can be omitted: a tenant filter, an `active` flag, a date range, a permission check, a `WHERE` on a soft-delete column, a role list that defaults to empty-means-all. In each case the bug produces a superset, and a superset looks like success.
+The same shape appears wherever a narrowing clause can be omitted: a tenant filter, an `active` flag, a date range, a permission check, a `WHERE` on a soft-delete column, a role list that defaults to empty-means-all, the scope of a scan that checks a thing exists somewhere in a repository. In each case the bug produces a superset, and a superset looks like success.
 
 ## When it does NOT apply
 
@@ -59,5 +59,7 @@ Judgement, unmeasured, at first writing: no incident was observed, and the scopi
 **2026-09-22 — measured, the detection half.** In the same analytics repository, on a clean export of `HEAD`, the per-subject equality filter was deleted from the read that fetches a subject's records. The whole suite was run against the mutated export and against a pristine one: **identical**, test for test, down to one unrelated failure present in both. One fixture row for a second subject was then added, and the mutated code failed at once. The double under test evaluated the filter correctly; what hid the constraint was the world it was given. **No assertion about returned rows can see a scoping clause in a world that holds one subject**, however faithful the double — so a single-subject fixture is not a cheap version of this test, it is no version of it. What remains available there is asserting on the query the code emits, which is a different and weaker test: it pins the clause, not its effect.
 
 **2026-09-23 — the detection half again, in an equivalence suite.** In the same analytics repository, a suite that compares a stored-data path with a live path passed both before and after a change to how records were attributed to their owner, because its synthetic world held no record whose owner differed from its parent's. The world lacked the one case that tells the two designs apart, so the suite could not see the change either way; a whole-answer comparison against the real store is what verified it. An equivalence test is only as discriminating as the cases its world holds.
+
+**2026-09-25 to 2026-10-02 — a scan with no scope, in a document repository and a repository building data artefacts.** A check that a cited file, function or constant exists somewhere in the repository is satisfied by things that are not its definition. In the document repository, the enforcer-existence check the method recommends was wrong twice before it held: a test's constant made a missing enforcer count as existing, because the scan read the tests folder; and a nested agent worktree, a full second checkout inside the repository, could satisfy a broken citation with a file only the copy had. Both were confirmed by breaking cited enforcers on purpose. The same nested copy made a single-source check fail on a tree with no defect, the loud direction of the same missing scope. In the other repository, an audit walking the tree reported a nested worktree's stale state as failures. The remedy is this note's: name the folders that define things, and write one negative test per excluded kind (test fixtures, nested checkouts, generated output, untracked sources). This folds the queued `recursive-scan-skips-nested-checkouts`.
 
 What *would* settle it further: seed two tenants, then delete the scoping clause from one repository method and run the existing test suite. If it stays green, that number — tests passing with a deliberately widened query — is the note's evidence, and it is cheap to obtain.

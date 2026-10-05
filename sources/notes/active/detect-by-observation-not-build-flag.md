@@ -9,7 +9,7 @@ about:
   - {do: "Branch on the platform, the device class or the build target", wrong_when: "the flag says how it was built, not where it runs, and the branch gates something load-bearing"}
 rests_on: "MDN on feature detection"
 strength: "settled practice"
-our_evidence: "design occurrences; never read on the target"
+our_evidence: "design occurrences; one flag read beside the observed geometry, on an emulator"
 ---
 
 # Detect by observation, not by build flag
@@ -43,4 +43,6 @@ One client application, shipped as a web build and used in the browser of a hand
 
 ## Evidence
 
-**Reasoned, from two design occurrences.** The flag's value on the target was stated, never read on the device itself. The only measurement was a desktop probe of the withholding plumbing: with the guess forced both ways, the withheld feature appeared or did not. **Not measured:** whether the touch-availability signal is trustworthy in the target browser — an open question on the device. The experiment: on the target, read each detection signal into a diagnostic readout and compare it with what the device actually has.
+**2026-09-28 — a flag read, in a second repository, on an emulator.** In a client app for a constrained device, the build property that names the device class was read beside the screen geometry the system reports, and both against the target's known geometry: on the default emulator image the property named the target's class while the observed geometry was about a fifth narrower than the target's, so the property that sounds decisive was not. The app now prints the observed geometry, with an explicit not-the-target flag, in its startup readout. This is the first time a flag was read rather than stated; it was read on an emulator, not on the target device.
+
+**Reasoned, from two design occurrences and that reading.** The flag's value on the target was stated, never read on the device itself. The only measurement was a desktop probe of the withholding plumbing: with the guess forced both ways, the withheld feature appeared or did not. **Not measured:** whether the touch-availability signal is trustworthy in the target browser — an open question on the device. The experiment: on the target, read each detection signal into a diagnostic readout and compare it with what the device actually has.
