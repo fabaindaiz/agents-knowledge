@@ -18,7 +18,7 @@ own tool, never by this one.
                                                                 and added lines: what a push publishes
     python3 .agents/tools/bundle.py trailers [RANGE] [--repo R] no commit message in the range credits an assistant
                                                                 (an attribution trailer, a "Generated with" line);
-                                                                default @{u}..HEAD, or the last 20 commits
+                                                                default @{u}..HEAD, else the commits on no remote
     python3 .agents/tools/bundle.py carrier-id [REPO] [--mint]  the carrier's stored random id; --mint writes one
     python3 .agents/tools/bundle.py id d|i|s TEXT... [--repo R] a record id: decision, roadmap item, session
     python3 .agents/tools/bundle.py ids [--carrier REPO] FILE... record ids in files: malformed, defined twice,
@@ -2485,19 +2485,24 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
 ASSISTANT_NAME = r"\b(?:claude|anthropic|copilot|chatgpt|openai|gpt|codex|gemini|cursor|devin|aider|windsurf|codeium|tabnine|codewhisperer)\b"
 ATTRIBUTION = (re.compile(r"^\s*co-authored-by:.*" + ASSISTANT_NAME, re.IGNORECASE),
                re.compile(r"^\W*generated (?:with|by)\b.*" + ASSISTANT_NAME, re.IGNORECASE))
-TRAILER_DEFAULT = 20  # commits read when the branch has no upstream
+TRAILER_DEFAULT = 20  # commits read when the repository has no remote at all
 
 
 def trailer_problems(repo: Path, rev_range: str | None = None) -> tuple[list[str], str, int]:
     """(problems, the range as read, commits read): each commit message line in the range that credits an
-    assistant, as `SHA SUBJECT: LINE`. With no range, `@{u}..HEAD`, or the last `TRAILER_DEFAULT` commits of
-    HEAD when the branch has no upstream."""
+    assistant, as `SHA SUBJECT: LINE`. With no range, `@{u}..HEAD`; with no upstream, the commits of HEAD on
+    no remote (`HEAD --not --remotes`), so a new branch is not charged with what was published before it;
+    only in a repository with no remote at all, the last `TRAILER_DEFAULT` commits, and the range says so."""
     if rev_range is None:
         try:
             git(repo, "rev-parse", "--verify", "--quiet", "@{u}")
             rev_range, args = "@{u}..HEAD", ["@{u}..HEAD"]
         except subprocess.CalledProcessError:
-            rev_range, args = f"no upstream: the last {TRAILER_DEFAULT} commits", ["-n", str(TRAILER_DEFAULT), "HEAD"]
+            if git(repo, "remote").strip():
+                rev_range, args = "no upstream: the commits on no remote", ["HEAD", "--not", "--remotes"]
+            else:
+                rev_range, args = (f"no upstream and no remote: a fixed window, the last {TRAILER_DEFAULT} commits, "
+                                   "pushed or not", ["-n", str(TRAILER_DEFAULT), "HEAD"])
     else:
         args = rev_range.split()
     try:
@@ -3194,7 +3199,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", default=str(OWN_REPO), help="with --commits: the repository (default: this tool's)")
     p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
     p.add_argument("range", nargs="?", metavar="RANGE", help="a git range, words separated by spaces "
-                   f"(default: @{{u}}..HEAD, or the last {TRAILER_DEFAULT} commits with no upstream)")
+                   f"(default: @{{u}}..HEAD; with no upstream, the commits on no remote; with no remote at all, "
+                   f"the last {TRAILER_DEFAULT} commits)")
     p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("report", help="files, bytes and estimated tokens per folder and per session type")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
@@ -3329,9 +3335,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         problems, read, count = trailer_problems(Path(args.repo), args.range)
         for problem in problems:
             print("  x " + problem)
-        print(f"trailers over {count} commits ({read}): " + (f"{len(problems)} attribution lines; the user is the sole author, "
-                                                            "so remove them (`git commit --amend`, or a rebase) before pushing"
-                                                            if problems else "no attribution line"))
+        print(f"trailers over {count} commits ({read}): " + (
+            f"{len(problems)} attribution lines; the user is the sole author. In a commit not yet pushed, remove them "
+            "(`git commit --amend`, or a rebase); a commit already published is its owner's decision: never rewrite "
+            "published history to remove one" if problems else "no attribution line"))
         return 1 if problems else 0
     if args.command == "report":
         tree = Path(args.tree)

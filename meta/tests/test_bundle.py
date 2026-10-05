@@ -1069,6 +1069,33 @@ class Trailers(Base):
         self.assertIn("the last 20 commits", out)
         self.assertEqual(older, 0)
 
+    def test_without_an_upstream_only_commits_on_no_remote_are_read_and_published_ones_are_not_advised_rewritten(self) -> None:
+        # A new branch with no upstream read the last twenty commits, published ones included, and advised
+        # amending or rebasing them.
+        repo = self.a_repo("chore: start", "feat: a\n\n" + self.ASSISTANT)
+        subprocess.run(["git", "init", "-q", "--bare", str(self.root / "remote.git")], check=True)
+        git(repo, "remote", "add", "origin", str(self.root / "remote.git"))
+        git(repo, "push", "-q", "origin", "HEAD:refs/heads/main")
+        git(repo, "fetch", "-q", "origin")
+        git(repo, "switch", "-q", "-c", "topic")
+        (repo / "topic.md").write_text("topic\n")
+        git_commit(repo, "feat: topic")
+
+        code, out = run("trailers", "--repo", str(repo))
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("1 commits", out)
+        self.assertIn("on no remote", out)
+
+        (repo / "late.md").write_text("late\n")
+        git_commit(repo, "feat: late\n\n" + self.ASSISTANT)
+        code, out = run("trailers", "--repo", str(repo))
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("not yet pushed", out)
+        self.assertIn("published", out)
+        self.assertNotIn("before pushing", out)
+
     def a_repo_with_more(self, repo: Path) -> Path:
         (repo / "more.md").write_text("more\n")
         git_commit(repo, "chore: one more")  # the attribution is now the 21st commit back
