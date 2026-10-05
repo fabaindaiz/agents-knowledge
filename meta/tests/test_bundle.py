@@ -925,3 +925,72 @@ class UserDenies(Base):
         with mock.patch.dict("os.environ", {"AGENT_GUIDES_USER_SETTINGS": str(self.root / "user-settings.json")}):
             self.assertEqual(len(B.user_deny_warnings(repo)), 1)
         self.assertEqual(B.user_deny_warnings(repo), [])  # the fixture's default: no user settings file
+
+
+def git_commit(repo: Path, message: str) -> None:
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "--no-verify", "-m", message)
+
+
+class PrivacyCommits(Base):
+    """A leak in a commit message, or in a line a commit adds, is published by the push, whatever the tree holds."""
+
+    def test_messages_and_added_lines_are_read_and_older_lines_are_not(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "notes.md").write_text("# Notes\n\n" + Privacy.PLANTED["currency"] + "\n")
+        git_commit(repo, "docs: start")
+        (repo / "notes.md").write_text((repo / "notes.md").read_text() + Privacy.PLANTED["home-path"] + "\n")
+        git_commit(repo, "docs: a line\n\n" + Privacy.PLANTED["email"])
+
+        code, out = run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))
+
+        failed = [line for line in out.split("\n") if line.startswith("  x FAIL ")]
+        self.assertEqual(code, 1, out)
+        self.assertEqual(len(failed), 2, out)
+        self.assertTrue(any("message:3 email" in line for line in failed), out)
+        self.assertTrue(any("notes.md:4 home-path" in line for line in failed), out)
+        self.assertIn("privacy over 1 commits", out)
+
+    def test_a_clean_range_passes_and_a_bad_range_is_refused(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "notes.md").write_text("# Notes\n\n" + Privacy.PLANTED["currency"] + "\n")
+        git_commit(repo, "docs: start")
+        (repo / "notes.md").write_text((repo / "notes.md").read_text() + "A plain line.\n")
+        git_commit(repo, "docs: a plain line")
+
+        self.assertEqual(run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))[0], 0)
+        self.assertEqual(run("privacy", "--commits", "HEAD", "--repo", str(repo))[0], 1)  # the root commit added the leak
+        self.assertEqual(run("privacy", "--commits", "nothing..HEAD", "--repo", str(repo))[0], 2)
+
+
+class PrePush(Base):
+    """The home's pre-push hook reads the commits being pushed, and blocks the push on a FAIL."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.repo = init_repo(self.root / "repo")
+        (self.repo / ".agents/tools").mkdir(parents=True)
+        shutil.copy(ROOT / "sources/bundle/tools/bundle.py", self.repo / ".agents/tools/bundle.py")
+        git_commit(self.repo, "chore: the tool")
+        subprocess.run(["git", "init", "-q", "--bare", str(self.root / "remote.git")], check=True)
+        git(self.repo, "remote", "add", "origin", str(self.root / "remote.git"))
+        git(self.repo, "push", "-q", "origin", "HEAD:refs/heads/main")
+        git(self.repo, "fetch", "-q", "origin")
+
+    def push(self, ref: str = "HEAD:refs/heads/main") -> subprocess.CompletedProcess:
+        return subprocess.run(["git", "-C", str(self.repo), "-c", f"core.hooksPath={ROOT / '.githooks'}", "push", "origin", ref],
+                              capture_output=True, text=True)
+
+    def test_a_leaking_commit_is_not_pushed_and_a_clean_one_is(self) -> None:
+        (self.repo / "a.md").write_text("A line.\n")
+        git_commit(self.repo, "docs: a line\n\n" + Privacy.PLANTED["email"])
+
+        blocked = self.push()
+        new_branch = self.push("HEAD:refs/heads/other")
+        git(self.repo, "commit", "-q", "--amend", "--no-verify", "-m", "docs: a line")
+        passed = self.push()
+
+        self.assertNotEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
+        self.assertIn("FAIL", blocked.stdout + blocked.stderr)
+        self.assertNotEqual(new_branch.returncode, 0, new_branch.stdout + new_branch.stderr)
+        self.assertEqual(passed.returncode, 0, passed.stdout + passed.stderr)

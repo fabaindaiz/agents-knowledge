@@ -1,0 +1,43 @@
+#!/bin/sh
+# Privacy gate for every push from this repository, by anyone: what a push publishes is the commit
+# messages and the lines each commit adds, history included, so they must pass
+# `bundle.py privacy --commits` (see AGENTS.md) as the tree passes `bundle.py privacy`. Enabled per clone with
+#   git config core.hooksPath .githooks
+# git gives the hook one line per ref on standard input: <local ref> <local sha> <remote ref> <remote sha>.
+# Overriding a finding needs the user's explicit instruction and a `privacy-allow: <reason>` marker.
+top=$(git rev-parse --show-toplevel) || exit 1
+tool="$top/.agents/tools/bundle.py"
+if [ ! -f "$tool" ]; then
+    echo "pre-push: $tool is missing, so nothing can be checked; refusing the push rather than letting it through unchecked" >&2
+    exit 1
+fi
+# The tools need Python 3.11 or newer; `python3` may be older, so look for one that is not.
+python=""
+for candidate in python3.20 python3.19 python3.18 python3.17 python3.16 python3.15 python3.14 python3.13 python3.12 \
+        python3.11 python3 /opt/homebrew/bin/python3 /usr/local/bin/python3; do
+    if command -v "$candidate" >/dev/null 2>&1 &&
+            "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' >/dev/null 2>&1; then
+        python=$candidate
+        break
+    fi
+done
+if [ -z "$python" ]; then
+    echo "pre-push: the tools need Python 3.11 or newer and none was found; refusing the push rather than letting it through unchecked" >&2
+    exit 1
+fi
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$local_sha" in *[!0]*) ;; *) continue ;; esac  # a deletion publishes no commit
+    # A ref the remote already has: what is new since it. A new ref, or a remote tip this clone does
+    # not hold (a force push): every commit no remote-tracking ref holds.
+    range="$local_sha --not --remotes"
+    case "$remote_sha" in
+        *[!0]*) git cat-file -e "$remote_sha^{commit}" 2>/dev/null && range="$remote_sha..$local_sha" ;;
+    esac
+    if ! "$python" "$tool" privacy --commits "$range" --repo "$top" </dev/null; then
+        echo "pre-push: $local_ref -> $remote_ref blocked: a commit message or an added line fails \`bundle.py privacy\`." \
+            "Fix the commit (reword or rewrite it); only on the user's explicit instruction add \`privacy-allow: <reason>\` on that line." >&2
+        status=1
+    fi
+done
+exit $status

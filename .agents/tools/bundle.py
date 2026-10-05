@@ -14,6 +14,9 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py privacy [TREE] [--paths FILE...] [--terms FILE]
                                                                 nothing that identifies a private repository,
                                                                 its people or its infrastructure
+    python3 .agents/tools/bundle.py privacy --commits RANGE [--repo R]
+                                                                the same rules over a range's commit messages
+                                                                and added lines: what a push publishes
     python3 .agents/tools/bundle.py carrier-id [REPO] [--mint]  the carrier's stored random id; --mint writes one
     python3 .agents/tools/bundle.py id d|i|s TEXT... [--repo R] a record id: decision, roadmap item, session
     python3 .agents/tools/bundle.py ids [--carrier REPO] FILE... record ids in files: malformed, defined twice,
@@ -615,6 +618,7 @@ class PrivacyReport:
     terms: str
     skipped: str = ""
     partial: bool = False  # no private-terms list on this machine: the generic rules ran, the private names did not
+    commits: int | None = None  # with `--commits`: how many commits; `files` is then their messages and changed files
 
     @property
     def failures(self) -> list[Finding]:
@@ -636,7 +640,9 @@ class PrivacyReport:
         for f in self.findings:
             counts[f"{f.level} {f.rule}"] = counts.get(f"{f.level} {f.rule}", 0) + 1
         per_rule = ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))
-        return (f"privacy over {self.files} files: {len(self.failures)} FAIL, {len(self.warnings) + self.partial} WARN, "
+        scope = (f"{self.commits} commits ({self.files} messages and changed files)" if self.commits is not None
+                 else f"{self.files} files")
+        return (f"privacy over {scope}: {len(self.failures)} FAIL, {len(self.warnings) + self.partial} WARN, "
                 f"{len(self.allowances)} allowed" + (f" ({per_rule})" if per_rule else "")
                 + ("; partial: no private-terms list, private names not checked" if self.partial else ""))
 
@@ -738,12 +744,16 @@ def _privacy_lines(path: Path, rel: str, shown: str) -> list[PrivacyLine]:
     return out
 
 
-def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, terms_file: Path | None = None) -> PrivacyReport:
+def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, terms_file: Path | None = None,
+                  commits: tuple[Path, str] | None = None) -> PrivacyReport:
     """Reads every travelling file of a bundle, or the given files, for what could identify somebody.
 
     Args:
         tree: The `.agents` folder whose travelling files are read. Ignored when `paths` is given.
         paths: Files to read instead, anywhere: a hook checks a repository's README with the same rules.
+        commits: (repository, range) to read instead: each commit's message, and the lines each commit adds
+            (`commit_targets`), which is what a push publishes. The range is what `git rev-list` takes,
+            words separated by spaces (`@{u}..HEAD`, `SHA --not --remotes`).
         terms_file: The private terms; default `default_terms_path()`. A default that is missing means
             no terms, said in the report; a file named here that is missing is refused, because a typo
             would otherwise check nothing and pass.
@@ -765,21 +775,109 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
     partial = not source.is_file()
     note = (f"partial: no private-terms list on this machine ({shown} does not exist), so no private name was checked"
             if partial else f"private terms: {len(normalised)} read from {shown}, list {fingerprint}")
+    if commits:
+        with tempfile.TemporaryDirectory() as scratch:
+            targets, count = commit_targets(commits[0], commits[1], Path(scratch).resolve())
+            report = _privacy_scan(targets, terms, note, partial)
+        report.commits = count
+        return report
     if paths:
-        targets = [(p, _bundle_rel(p), str(p)) for p in paths]
+        targets = [Target(p, _bundle_rel(p), str(p)) for p in paths]
     else:
         tree = _a_bundle(tree if tree is not None else OWN_BUNDLE)
-        targets = [(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
+        targets = [Target(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
+    return _privacy_scan(targets, terms, note, partial)
+
+
+@dataclass(frozen=True)
+class Target:
+    """One file the privacy check reads: where it is, its scope path, how it is shown, which of its lines are
+    read (None: all), and the folder whose repository it belongs to (None: the file's own)."""
+
+    path: Path
+    rel: str
+    shown: str
+    lines: frozenset[int] | None = None
+    home: Path | None = None
+
+
+def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Target], int]:
+    """Each commit of a range as privacy targets: its message, and every file it adds lines to, written
+    into `scratch` at its own path (so its scope reads as in the tree) with only the added lines read.
+
+    A merge's message is read but not its diff: what it brings in is in the commits it merges, or was
+    pushed before. A binary file, or one with no added line, is not read."""
+    try:
+        shas = git(repo, "rev-list", "--reverse", *rev_range.split()).split()
+    except subprocess.CalledProcessError as error:
+        said = (error.stderr or "").strip().splitlines()
+        raise RefusedError(f"--commits {rev_range}: not a range git reads here" + (f" ({said[-1]})" if said else "")) from None
+    targets = []
+    for sha in shas:
+        short = sha[:10]
+        message = scratch / short / "COMMIT_MESSAGE"
+        message.parent.mkdir(parents=True, exist_ok=True)
+        message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8")
+        targets.append(Target(message, message.name, f"{short} message", None, repo))
+        if len(git(repo, "rev-list", "--parents", "-n", "1", sha).split()) > 2:
+            continue
+        patch = git(repo, "-c", "core.quotePath=false", "diff-tree", "-r", "--root", "--no-commit-id", "-p", "-U0",
+                    "--no-color", "--no-ext-diff", "-M", "--diff-filter=AMRC", sha)
+        for rel, lines in added_lines(patch).items():
+            content = git(repo, "show", f"{sha}:{rel}", binary=True)
+            if not lines or b"\0" in content:
+                continue
+            copy = scratch / short / rel
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            copy.write_bytes(content)
+            targets.append(Target(copy, _bundle_rel(copy), f"{short}:{rel}", frozenset(lines), repo))
+    return targets, len(shas)
+
+
+HUNK = re.compile(r"^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+
+def added_lines(patch: str) -> dict[str, set[int]]:
+    """{path: the line numbers, in the new file, that a zero-context patch adds}. Hunk bodies are consumed by
+    their counts, so an added line that itself starts with `+++ ` is not read as a header."""
+    added: dict[str, set[int]] = {}
+    current, old_left, new_left, at = None, 0, 0, 0
+    for line in patch.split("\n"):
+        if old_left or new_left:
+            if line.startswith("-"):
+                old_left -= 1
+            elif line.startswith("+"):
+                if current is not None:
+                    added[current].add(at)
+                at, new_left = at + 1, new_left - 1
+            continue
+        if line.startswith("+++ "):
+            name = line[4:]
+            current = None if name == "/dev/null" else name.removeprefix("b/")
+            if current is not None:
+                added.setdefault(current, set())
+        elif m := HUNK.match(line):
+            old_left = int(m.group(1)) if m.group(1) is not None else 1
+            at, new_left = int(m.group(2)), int(m.group(3)) if m.group(3) is not None else 1
+    return added
+
+
+def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: bool) -> PrivacyReport:
+    """The rules and the private terms over every target; see `privacy_check`."""
     findings: list[Finding] = []
     allowances: list[tuple[str, str]] = []
     skipped: set[int] = set()
-    for path, rel, shown in targets:
+    for target in targets:
+        path, rel, shown = target.path, target.rel, target.shown
         # A private repository's name is a leak anywhere but inside that repository: there it is the
         # repository's own name. Its proposals still leave it (the home takes them in), so they keep
         # every term, and so does the home, whose files are what it publishes.
-        own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(path.parent if path.is_file() else path)
+        home = target.home or (path.parent if path.is_file() else path)
+        own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(home)
         exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
         for line in _privacy_lines(path, rel, shown):
+            if target.lines is not None and line.number not in target.lines:
+                continue
             where = f"{line.shown}:{line.number}"
             found: list[Finding] = []
             for name, rule in PRIVACY_RULES.items():
@@ -3030,6 +3128,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE), help="the bundle whose files are read")
     p.add_argument("--paths", nargs="+", metavar="FILE", help="read these files instead of the tree, anywhere (a repository's README, a staged file)")
     p.add_argument("--terms", metavar="FILE", help="the private terms file (default: $XDG_CONFIG_HOME or ~/.config, agent-guides/private-terms.txt)")
+    p.add_argument("--commits", metavar="RANGE", help="read the messages of a git range and the lines its commits add instead "
+                   "(`@{u}..HEAD`; words separated by spaces, as `git rev-list` takes them): what a push publishes")
+    p.add_argument("--repo", default=str(OWN_REPO), help="with --commits: the repository (default: this tool's)")
     p = sub.add_parser("report", help="files, bytes and estimated tokens per folder and per session type")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p.add_argument("--json", action="store_true", help="the report as JSON instead of markdown tables")
@@ -3151,7 +3252,8 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 1 if errors else 0
     if args.command == "privacy":
         result = privacy_check(Path(args.tree), [Path(f) for f in args.paths] if args.paths else None,
-                               Path(args.terms) if args.terms else None)
+                               Path(args.terms) if args.terms else None,
+                               (Path(args.repo), args.commits) if args.commits else None)
         for f in result.failures:
             print(f"  x FAIL {f.where} {f.rule}: {f.match}")
         for note in result.notes():
