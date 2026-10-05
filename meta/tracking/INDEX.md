@@ -15,20 +15,20 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (142)
+## Candidates in the queue (84)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
 - `split-by-time-neither-side-for-straddlers` — K, since 0.0.20 · lacks novelty (temporal splits are known); the "neither side" nuance could extend `population-by-outcome`
 - `distinct-event-kinds-stay-distinct` — K, since 0.0.20 · lacks generality statement; an incident with a number
-- `batch-get-is-unordered` — K, since 0.0.20 · lacks likely already known to an agent
+- `batch-get-is-unordered` — K, since 0.0.20 · lacks novelty (likely already known to an agent). The second repository arrived at 0.0.27; with it the claim could widen to pairing by key …
 - `cache-proven-by-equality` — K, since 0.0.20 · lacks fits `same-answer-or-refuse` as an occurrence
 - `numerator-needs-its-attempt-denominator` — K, since 0.0.20 · lacks novelty (analytics craft)
 - `effective-support-before-pruning` — K, since 0.0.20 · lacks generality (ML-narrow)
 - `write-audit-publish-by-pointer` — K, since 0.0.20 · lacks an occurrence against a real store (known pattern)
 - `shadow-mode-logs-the-counterfactual` — K, since 0.0.20 · lacks a second occurrence
 - `detect-only-control-is-its-queue` — K, since 0.0.20 · lacks a number; literature is SRE ch. 6
-- `committed-secret-is-not-a-gitignore-fix` — K, since 0.0.20 · lacks overlaps `secrets-survive-rotation`; could extend it
+- `committed-secret-is-not-a-gitignore-fix` — K, since 0.0.20 · lacks whether it extends `secrets-survive-rotation`. A second repository arrived at 0.0.27, counted only if private data and secrets are …
 - `parallel-reads-ordered-verdicts` — K, since 0.0.20 · lacks a measured latency number
 - `derive-dependent-config` — K, since 0.0.20 · lacks a boundary is already known (derivation couples controls)
 - `append-only-collides-with-erasure` — K, since 0.0.20 · lacks an incident; it is a recorded open collision
@@ -40,292 +40,237 @@ None.
 - `filter-noise-at-parse-in-a-distribution-gap` — K, since 0.0.20 · lacks a generality statement; natural-breaks literature not yet consulted
 - `probe-compressibility-before-effort` — K, since 0.0.20 · lacks novelty (close to textbook)
 - `anchor-to-the-frame-that-does-not-move` — K, since 0.0.20 · lacks a second domain
-- `readout-per-silent-outcome` — K, since 0.0.20 · lacks an answer from the target runtime; overlaps `fail-closed-defaults` (fail visible)
-- `one-field-one-decision` — K, since 0.0.20 · lacks novelty (orthogonality is textbook)
 - `gate-reads-untracked-derived-state` — M, since 0.0.20 · lacks overlaps `a-check-must-be-seen-to-fail` and `derived-copy-goes-stale-silently`; would be one bullet under step 0's staleness check
 - `routine-tools-leave-the-tree-as-found` — M, since 0.0.20 · lacks a second repository; near the existing *Generated artefacts churn* bullet
-- `document-language-is-its-readers` — M, since 0.0.20 · lacks a second repository; sits against the pre-flight's default of the conversation's language
 - `changelog-ships-field` — M, since 0.0.20 · lacks evidence the field caught anything; the restated action went stale in the one repository that uses it
 - `non-developer-guide-by-symptom` — M, since 0.0.20 · lacks a second guide
 - `no-modification-time-no-window` — K, since 0.0.20 · lacks literature (CDC, change-data-capture); a second repository
-- `identity-preserving-copy-is-a-no-op-mutation` — M, since 0.0.20 · lacks a second occurrence; it would extend principle 18's formatter example
-- `refusal-must-not-read-like-an-answer` — K, since 0.0.20 · lacks a second occurrence; overlaps `fail-closed-defaults` (fail visible) and could be one form of it
 - `bumping-a-monotone-counter-is-not-idempotent` — M, since 0.0.20 · lacks **the second occurrence arrived; what it still lacks is a second *tool***, which is the same gap `a-default-scope-is-the-widest-one` …
-- `an-append-only-log-cannot-be-grandfathered-by-line` — M, since 0.0.20 · lacks a second occurrence. It is a boundary on the existing grandfathering advice, not a new rule, so it may belong as one sentence there
 - `a-budgeted-root-file-needs-a-named-displacement-target` — M, since 0.0.20 · lacks a second repository; and whether it is a form of `a-second-source-of-truth-diverges-in-silence` rather than a claim of its own. …
 - `conformance-to-an-artefact-spec-is-swept-not-remembered` — M, since 0.0.20 · lacks a second repository, and a boundary on how much of the sweep belongs in the shared method versus in the carrier's own gate — a spec …
 - `edit-tools-for-unrebuildable-artefacts-default-to-reporting` — M, since 0.0.20 · lacks a second occurrence, and a boundary: for an artefact that IS cheaply rebuilt the default costs a step and buys nothing
 - `address-by-content-coordinates-not-by-artefact-id` — K, since 0.0.20 · lacks a second repository. It reads close to *natural keys over surrogate keys*, and the literature on that was not consulted; what may be …
 - `a-contentless-index-makes-row-identity-a-contract` — K, since 0.0.20 · lacks a second repository, and a check on whether this is specific to one engine's contentless mode or general to any positional index
 - `the-narrower-artefact-declares-its-absorber` — K, since 0.0.20 · lacks a second occurrence. The boundary is untested: it assumes containment is total, and a *mostly* narrower artefact would silently lose …
-- `a-version-bump-spends-the-forward-compatibility-it-was-protecting` — K, since 0.0.20 · lacks a second repository. The mechanism is textbook (must-ignore semantics); what may be new is the accounting — treating the version …
 - `one-field-two-bands-puts-the-cut-in-the-data` — K, since 0.0.20 · lacks a second occurrence, and an argument for why two fields were not simply used instead
-- `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check` — K, since 0.0.20 · lacks a second domain. Compression is the instance here; the claim is meant to cover any decoder with a shared side-channel (a dictionary …
-- `a-cache-key-names-its-invalidators` — K, since 0.0.20 · lacks the literature, checked against the source (build-system and cache-key literature; not run at 0.0.26); and whether it is the boundary …
+- `a-cache-key-names-its-invalidators` — K, since 0.0.20 · lacks the literature, checked against the source (build-system and cache-key literature); and whether it is the boundary of …
 - `an-artefact-the-runtime-maps-cannot-be-compressed` — K, since 0.0.20 · lacks generality beyond one platform's executable format, and it may be too platform-specific to be a claim at all
-- `documented-defaults-drift-from-code` — K, since 0.0.20 · lacks Plausible and well evidenced, but the remedy is the interesting part and it is unsettled: generate the reference, check it in the …
 - `class-level-state-is-not-shared-with-peers` — K, since 0.0.20 · lacks Language-specific in its current form. Either generalise it to "state whose scope is not where it is written" — which risks becoming …
 - `logging-context-owned-by-the-operation` — K, since 0.0.20 · lacks One occurrence, and it may be a special case of a wider claim about lifetimes crossing component boundaries. Worth a second …
 - `a-guardrail-states-its-real-status` — M, since 0.0.20 · lacks This is about how a *method artefact* is written, not about building software, so it belongs in `method/` if anywhere. Raised there …
 - `gate-sequence-stops-at-the-first-red-step` — K, since 0.0.21 · lacks whether it is its own note or a boundary of `a-check-must-be-seen-to-fail` (a check can be *un-run*, not only *un-failed*) …
 - `the-enforcer-is-exempt-from-nothing` — K / M, since 0.0.21 · lacks an occurrence outside a bundle adoption; the remedy (exclude the tool, or make it conform) is a repository choice and is not settled
-- `a-number-is-only-a-measurement-after-the-last-edit` — K / M, since 0.0.21 · lacks whether it belongs in `method/` (how a session reports) or in knowledge (how any benchmark is quoted); it may be a boundary of …
 - `fix-at-the-call-site-leaves-the-others` — K, since 0.0.21 · lacks a second occurrence outside one repository; overlaps `kill-switch-reaches-every-path` in shape (one predicate, every path)
-- `unconsulted-parameter-is-still-a-contract` — K, since 0.0.21 · lacks literature; and a boundary — when honouring the parameter is the right repair rather than deleting it
-- `tolerant-of-absent-is-not-tolerant-of-malformed` — K, since 0.0.21 · lacks it may be a boundary of `absence-is-a-third-value` rather than a note; literature
+- `unconsulted-parameter-is-still-a-contract` — K, since 0.0.21 · lacks literature; and a boundary — when honouring the parameter is the right repair rather than deleting it. The second repository arrived …
 - `configuration-read-at-import-is-an-environment-test` — K, since 0.0.21 · lacks a second occurrence; literature (the twelve-factor method states the principle, not this consequence)
-- `citation-checked-for-existence-is-not-checked-for-relevance` — K / M, since 0.0.21 · lacks a second occurrence; it is the limit an existing check already documents about itself, which may make it a method rule rather than …
-- `an-error-response-is-a-retry-instruction` — K, since 0.0.21 · lacks it may be the same claim as `order-writes-by-failure-residue` ("ack right after the one non-idempotent step") in another medium …
 - `a-projection-turns-not-requested-into-absent` — K, since 0.0.21 · lacks a second occurrence; overlaps `absence-is-a-third-value` strongly enough that it may be an extension
 - `a-shared-rule-has-one-enforcer-per-copy` — K / M, since 0.0.21 · lacks a second occurrence outside a bundle distribution; it is the dual of `copied-instruction-claims-its-origin` and may belong to it
 - `absence-is-a-third-value` — K, since 0.0.21 · lacks a release to apply it, after deciding `a-projection-turns-not-requested-into-absent` above, which may be the same evidence
-- `copied-instruction-claims-its-origin` — K, since 0.0.21 · lacks a release to apply it
 - `a-check-must-be-seen-to-fail` — K, since 0.0.21 · lacks a release to apply it
 - `absent-constraint-widens` — K, since 0.0.21 · lacks a release to apply it
 - `ratchet-in-a-pinned-environment` — K, since 0.0.21 · lacks a release to apply it
 - `best-effort-side-channels` — K, since 0.0.21 · lacks a release to apply it
 - `nested-partial-update-replaces` — K, since 0.0.21 · lacks a release to apply it
-- `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks a second repository
+- `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks cost figures; whether per-surface reviewers beat one reviewer reading everything. The second repository arrived at 0.0.27, and widens …
 - `an-update-is-driven-by-the-new-side` — K, since 0.0.23 · lacks a second occurrence, and literature on self-updating clients
 - `a-repair-request-runs-once-per-load` — K, since 0.0.23 · lacks a second occurrence; it may be an occurrence of `retry-over-irreversible-effect`
-- `dry-run-a-procedure-by-an-agent-before-release` — M, since 0.0.24 · lacks a second occurrence
 - `pin-the-treatment-per-trial` — K, since 0.0.24 · lacks a second occurrence; overlaps reproduce-the-checkout-not-only-the-environment
-- `steps-readable-by-a-permission-layer` — M, since 0.0.24 · lacks a second occurrence of the same form; two new forms arrived at 0.0.26 from one repository, each with one repository
+- `steps-readable-by-a-permission-layer` — M, since 0.0.24 · lacks a second repository for its other forms (a global option before the subcommand passes a prefix deny; the classifier's false …
 - `verify-enforces-the-carrier-record` — M, since 0.0.24 · lacks nothing
-- `template-id-format-matches-the-checker` — M, since 0.0.24 · lacks nothing
-- `check-every-anchor-before-the-first-write` — M, since 0.0.24 · lacks a second occurrence; overlaps `order-writes-by-failure-residue` (the residue of a failure between writes), which is stated for …
 - `exact-sync-removes-the-project-under-development` — K, since 0.0.24 · lacks a second tool or a second repository; literature not consulted
 - `validate-each-transformation-run` — K, since 0.0.24 · lacks a second occurrence
 - `derived-over-chosen-identifiers` — K, since 0.0.24 · lacks a second occurrence
-- `derived-copy-goes-stale-silently` — K, since 0.0.24 · lacks a second occurrence
-- `fail-closed-defaults` — K, since 0.0.24 · lacks a second repository
-- `copied-code-carries-logic-not-the-values-it-compares` — K, since 0.0.24 · lacks a second occurrence; literature (a shared contract or single source for enumerations) not consulted
-- `a-cost-justified-by-an-unmeasured-constraint` — M, since 0.0.24 · lacks a second repository; overlaps `unrunnable-system-moves-the-gate` and principle 14
 - `interleave-versions-in-one-window` — K, since 0.0.24 · lacks literature (interleaved or randomized benchmarking) not consulted; extends `metric-against-trivial-predictor` (never read a delta …
 - `one-adversarial-generator-per-promise` — K, since 0.0.26 · lacks a second repository; the property-testing literature checked against the source
 - `review-copy-in-its-rendered-company` — K, since 0.0.26 · lacks novelty (UX-writing craft may cover it); a second repository
-- `a-surviving-guard-mutation-means-a-missing-input` — K, since 0.0.26 · lacks a second occurrence; the equivalent-mutant literature
-- `isolated-review-by-default` — M, since 0.0.26 · lacks cost figures; a card-driven review of the same branches for comparison (a question for the carrier that can measure it); a second …
-- `a-request-accepted-is-not-an-effect` — K, since 0.0.27 · lacks the literature (reconciliation, read-after-write) checked; a second repository
-- `real-time-loop-work-is-bounded-by-the-block` — K, since 0.0.27 · lacks an incident where it was the confirmed cause; novelty (likely known)
+- `real-time-loop-work-is-bounded-by-the-block` — K, since 0.0.27 · lacks an incident where it was the confirmed cause; novelty (standard real-time audio guidance, to check against that literature and refuse …
 - `attribute-a-change-by-its-record-not-a-proxy` — K, since 0.0.27 · lacks a second repository; the literature on configuration-drift detection and package verification
-- `a-credential-pasted-into-the-conversation-is-spent` — M, since 0.0.27 · lacks a second repository; the literature checked against its source
-- `mint-registers-the-carrier` — M, since 0.0.27 · lacks nothing
-- `own-log-format-hides-new-method-fields` — M, since 0.0.27 · lacks a second carrier whose log states its own entry format; a decision whether the update should compare the two formats
-- `a-field-run-names-its-readout-first` — M, since 0.0.27 · lacks a second repository; novelty (observability practice may cover it)
-- `a-deny-rule-stops-at-the-agents-prompt` — M, since 0.0.27 · lacks a second repository; the host's permission documentation, not consulted (assumed: rules match the typed command only)
-- `a-session-ended-by-a-push-skips-the-close` — M, since 0.0.27 · lacks a second repository; a cost actually paid by a later session
-- `bundle-tool-refuses-an-old-interpreter-in-one-line` — M, since 0.0.27 · lacks nothing (a defect fix)
-- `per-build-retrained-inputs-defeat-delta-updates` — K, since 0.0.27 · lacks novelty (the reproducible-builds literature likely covers it, not consulted); a second repository
-- `a-precondition-check-lives-where-the-action-already-looks` — M, since 0.0.27 · lacks a second repository
-- `the-call-site-is-untested-when-the-function-is` — K, since 0.0.27 · lacks a second repository; the literature checked against its source; a decision whether this is method (how an agent writes tests) or …
-- `a-measurement-states-what-would-invalidate-it-before-it-is-read` — M, since 0.0.27 · lacks a second repository; the literature checked against its source
-- `remote-mutation-names-target-effect-reversal` — M, since 0.0.27 · lacks nothing; it is a data point for the queued experiment
-- `a-derived-artefact-copies-metadata-by-allowlist` — K, since 0.0.27 · lacks a second repository; provenance literature not consulted
-- `a-rule-cannot-name-its-subject-as-its-enforcer` — M, since 0.0.27 · lacks a second repository
-- `commit-granularity-by-context` — M, since 0.0.27 · lacks a second carrier
-- `clean-only-what-the-extraction-invented` — K, since 0.0.27 · lacks a second repository; data-quality literature
-- `reproducibility-runs-straddle-the-clock` — K, since 0.0.27 · lacks a second occurrence
-- `reread-the-source-case-before-recording-an-answer` — M, since 0.0.27 · lacks a second occurrence
-- `fix-stale-note-path-in-bootstrap` — M, since 0.0.27 · lacks a release: correct the path and the wording, and decide whether the link check should also resolve backticked paths
-- `recursive-scan-skips-nested-checkouts` — M, since 0.0.27 · lacks a second repository
-- `extend-reproduce-the-checkout-not-only` — K, since 0.0.27 · lacks not a new claim: an occurrence of the strict direction for an existing note, to fold in as evidence
-- `edit-deny-also-blocks-shell-writes` — M, since 0.0.27 · lacks a second occurrence
+- `a-credential-pasted-into-the-conversation-is-spent` — M, since 0.0.27 · lacks a second repository; least-privilege literature checked against a source
+- `per-build-retrained-inputs-defeat-delta-updates` — K, since 0.0.27 · lacks a second repository; novelty (reproducible builds, and the compressor's own guidance on reusing dictionaries, not consulted; probably …
+- `clean-only-what-the-extraction-invented` — K, since 0.0.27 · lacks a second repository; data-cleaning literature, checked against the source
 - `a-fact-base-is-the-invariant-test-without-code` — M, since 0.0.27 · lacks a second occurrence, and its boundary: a source that keeps changing moves the cited lines
-- `match-rendered-units-to-source-by-content` — K, since 0.0.27 · lacks a second occurrence; may fold into an existing note on validating each transformation
-- `harness-attribution-needs-a-root-rule` — M, since 0.0.27 · lacks a second occurrence
-- `measure-the-cost-not-the-proxy` — K, since 0.0.27 · lacks a second occurrence; literature; overlaps coverage-measures-execution
-- `progress-lines-on-a-long-run` — M, since 0.0.27 · lacks a second repository
-- `a-judgement-check-warns-a-mistake-check-fails` — K, since 0.0.27 · lacks a second occurrence; literature on advisory versus blocking checks; whether it is a boundary of ratchet-in-a-pinned-environment
-- `contract-checks-the-value-the-receiver-sees` — K, since 0.0.27 · lacks a second occurrence
-- `empty-success-retried-write` — K, since 0.0.27 · lacks a second occurrence
+- `measure-the-cost-not-the-proxy` — K, since 0.0.27 · lacks a second repository; the literature (surrogate measures, measurement validity; busy-waiting against sleeping), which may show it is …
+- `progress-lines-on-a-long-run` — M, since 0.0.27 · lacks a second repository; whether it is the maintainer's standing preference rather than a method rule
+- `contract-checks-the-value-the-receiver-sees` — K, since 0.0.27 · lacks a second repository; whether it is one claim with the form folded into `same-answer-or-refuse` at 0.0.27 (compare an identifier in …
 - `undo-availability-is-a-function-of-history` — K, since 0.0.27 · lacks a second occurrence; a measurement of how many sequence defects an enumerated table or a stateful test finds against hand-written …
-- `review-the-merged-change-after-the-task-reviews` — M, since 0.0.27 · lacks a second repository; it may belong beside adversarial-review-per-attack-surface-before-a-tag as one review schedule
 - `data-location-is-part-of-the-deploy` — K, since 0.0.27 · lacks a second occurrence
-- `a-fetched-specification-is-a-summary` — M, since 0.0.27 · lacks a second occurrence
-- `a-path-deny-covers-one-tool` — M, since 0.0.27 · lacks a second occurrence; the current permission documentation re-read
-- `stored-timestamp-key-never-matches` — K, since 0.0.27 · lacks a second occurrence
-- `roadmap-heading-id-position` — M, since 0.0.27 · lacks nothing: a reproducible defect between a template and the tool
-- `walk-the-rulings-before-the-plan-runs` — M, since 0.0.27 · lacks a second repository; whether part of it belongs in the maintainer's profile rather than principle 15
-- `expected-failure-names-its-exception` — K, since 0.0.27 · lacks a second occurrence
-- `a-deny-for-secrets-catches-their-template` — M, since 0.0.27 · lacks a second occurrence
-- `a-delegated-change-to-a-check-is-a-finding` — M, since 0.0.27 · lacks a second repository; the specification-gaming literature checked against a source
-- `a-new-case-must-reach-every-classifier` — K, since 0.0.27 · lacks a second repository; the literature (shotgun surgery, exhaustiveness checking) checked against sources; whether it is a form of …
-- `decide-which-side-is-wrong-from-a-trace` — M, since 0.0.27 · lacks a second repository; the test-oracle literature; whether it is one sentence under principle 18
+- `a-new-case-must-reach-every-classifier` — K, since 0.0.27 · lacks a second repository (a loud, weak occurrence from another carrier at 0.0.27 does not count); the literature (shotgun surgery …
+- `decide-which-side-is-wrong-from-a-trace` — M, since 0.0.27 · lacks a second repository, unless the refused `expected-value-copied-from-a-wrong-comment` came from another carrier; the test-oracle …
 - `index-unread-where-rules-absorbed-it` — M, since 0.0.27 · lacks an interpretation: whether this is step 0 of the index working as intended, or the trigger missing work that is mostly verification …
 - `conversation-language-drifts-after-compaction` — M, since 0.0.27 · lacks a second occurrence; whether it is specific to one host's context compaction
-- `known-defects-as-must-fail-checks` — M, since 0.0.27 · lacks a second repository; novelty (strict expected-failure markers exist in test frameworks)
-- `a-choice-in-a-composition-is-measured-in-it` — M, since 0.0.27 · lacks a second repository; the phase-ordering literature; whether principle 6 already covers it
-- `a-batch-child-gets-no-terminal` — K, since 0.0.27 · lacks novelty (known practice); a second occurrence; overlaps timeout-is-not-an-outcome
-- `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); whether it belongs in principle 7 as one sentence
-- `a-mutation-that-did-not-apply-reads-as-a-result` — M, since 0.0.27 · lacks the mutation-testing literature checked against a source (non-compiling mutants are a known category); a second repository; it may be …
+- `a-batch-child-gets-no-terminal` — K, since 0.0.27 · lacks a decision between a refusal as textbook and one *Working safely* sentence (a command an agent runs is non-interactive: standard …
+- `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); a second repository; one sentence in principle 7 or 18
+- `a-principle-can-have-no-subject-in-a-carrier` — M, since 0.0.27 · lacks a second carrier for the misfiling; a design: a trigger field on not-yet and declined entries that `check-local` or the update can …
 
-## Offered again, to merge (78)
+## Offered again, to merge (0)
 
-- `ratchet-in-a-pinned-environment` — another occurrence to merge
-- `isolated-review-by-default` — another occurrence to merge
-- `a-local-memory-is-not-a-handoff` — another occurrence to merge
-- `metric-against-trivial-predictor` — another occurrence to merge
-- `a-number-is-only-a-measurement-after-the-last-edit` — another occurrence to merge
-- `a-local-memory-is-not-a-handoff` — another occurrence to merge
-- `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check` — another occurrence to merge
-- `count-a-friction-by-searching-the-log` — another occurrence to merge
-- `nested-partial-update-replaces` — another occurrence to merge
-- `a-principle-can-have-no-subject-in-a-carrier` — another occurrence to merge
-- `refusal-must-not-read-like-an-answer` — another occurrence to merge
-- `close-the-loop-in-the-actuators-frame` — another occurrence to merge
-- `reproduce-the-checkout-not-only-the-environment` — another occurrence to merge
-- `committed-secret-is-not-a-gitignore-fix` — another occurrence to merge
-- `steps-readable-by-a-permission-layer` — another occurrence to merge
-- `validate-each-transformation-run` — another occurrence to merge
-- `document-language-is-its-readers` — another occurrence to merge
-- `dry-run-a-procedure-by-an-agent-before-release` — another occurrence to merge
-- `isolated-review-by-default` — another occurrence to merge
-- `a-check-must-be-seen-to-fail` — another occurrence to merge
-- `a-version-bump-spends-the-forward-compatibility-it-was-protecting` — another occurrence to merge
-- `prompt-bootstrap` — another occurrence to merge
-- `derive-state-from-one-clock` — another occurrence to merge
-- `persist-inputs-derive-verdicts` — another occurrence to merge
-- `persist-inputs-derive-verdicts` — another occurrence to merge
-- `isolated-review-by-default` — another occurrence to merge
-- `test-double-fidelity` — another occurrence to merge
-- `prompt-context` — another occurrence to merge
-- `derived-copy-goes-stale-silently` — another occurrence to merge
-- `refusal-must-not-read-like-an-answer` — another occurrence to merge
-- `reproduce-the-checkout-not-only-the-environment` — another occurrence to merge
-- `a-cost-justified-by-an-unmeasured-constraint` — another occurrence to merge
-- `report-coverage-before-findings` — another occurrence to merge
-- `same-answer-or-refuse` — another occurrence to merge
-- `readout-per-silent-outcome` — another occurrence to merge
-- `a-surviving-guard-mutation-means-a-missing-input` — another occurrence to merge
-- `test-double-fidelity` — another occurrence to merge
-- `absence-is-a-third-value` — another occurrence to merge
-- `check-every-anchor-before-the-first-write` — another occurrence to merge
-- `merge-by-shared-fact-not-shared-shape` — another occurrence to merge
-- `prompt-bootstrap` — another occurrence to merge
-- `gate-sequence-stops-at-the-first-red-step` — another occurrence to merge
-- `a-filtered-gate-cannot-block` — another occurrence to merge
-- `reread-the-source-case-before-recording-an-answer` — another occurrence to merge
-- `recursive-scan-skips-nested-checkouts` — another occurrence to merge
-- `recursive-scan-skips-nested-checkouts` — another occurrence to merge
-- `documented-defaults-drift-from-code` — another occurrence to merge
-- `derive-state-from-one-clock` — another occurrence to merge
-- `an-append-only-log-cannot-be-grandfathered-by-line` — another occurrence to merge
-- `sweep-the-rendered-extremes` — another occurrence to merge
-- `same-answer-or-refuse` — another occurrence to merge
-- `refusal-must-not-read-like-an-answer` — another occurrence to merge
-- `secrets-survive-rotation` — another occurrence to merge
-- `persist-inputs-derive-verdicts` — another occurrence to merge
-- `adversarial-review-per-attack-surface-before-a-tag` — another occurrence to merge
-- `dry-run-a-procedure-by-an-agent-before-release` — another occurrence to merge
-- `derive-state-from-one-clock` — another occurrence to merge
-- `test-double-fidelity` — another occurrence to merge
-- `derived-over-chosen-identifiers` — another occurrence to merge
-- `document-language-is-its-readers` — another occurrence to merge
-- `tolerant-of-absent-is-not-tolerant-of-malformed` — another occurrence to merge
-- `a-check-must-be-seen-to-fail` — another occurrence to merge
-- `absence-is-a-third-value` — another occurrence to merge
-- `documented-defaults-drift-from-code` — another occurrence to merge
-- `derived-copy-goes-stale-silently` — another occurrence to merge
-- `fail-closed-defaults` — another occurrence to merge
-- `one-field-one-decision` — another occurrence to merge
-- `fail-closed-defaults` — another occurrence to merge
-- `sweep-the-rendered-extremes` — another occurrence to merge
-- `isolated-review-by-default` — another occurrence to merge
-- `a-check-must-be-seen-to-fail` — another occurrence to merge
-- `template-id-format-matches-the-checker` — another occurrence to merge
-- `steps-readable-by-a-permission-layer` — another occurrence to merge
-- `reproduce-the-checkout-not-only-the-environment` — another occurrence to merge
-- `validate-each-transformation-run` — another occurrence to merge
-- `derived-copy-goes-stale-silently` — another occurrence to merge
-- `citation-checked-for-existence-is-not-checked-for-relevance` — another occurrence to merge
-- `a-check-must-be-seen-to-fail` — another occurrence to merge
+None.
 
-## Answered: admitted, folded, refused or dropped (153)
+## Answered: admitted, folded, refused or dropped (233)
 
-- `ask-the-target-experience-before-correcting` — refused: requirements elicitation; the brainstorming skill already asks purpose first; kept as working-style evidence
-- `harness-time-limit-stops-a-background-service` — refused: harness-specific
-- `status-command-that-installs` — refused: tool-specific; at most an occurrence for steps-readable-by-a-permission-layer
-- `probe-a-privilege-with-the-exact-operation` — refused: one-line instance of testing the real dependency; close to test-double-fidelity
-- `background-job-ignores-interrupt` — refused: POSIX textbook behaviour
-- `interactive-tool-without-subcommand-hangs` — refused: tool trivia; the remedy is the answered never-block-the-session-on-a-long-wait
-- `measure-delay-with-broadband-not-tones` — refused: domain textbook (time-delay estimation)
-- `browser-test-waits-for-first-paint` — refused: known; standard test-synchronisation practice
-- `parallel-agents-pick-the-same-number` — refused: already answered by parallel-session-id-allocation and derived-over-chosen-identifiers
-- `formatter-run-by-a-parallel-agent` — refused: already in the method: format only the files in the change; parallel agents on disjoint files
-- `two-readers-of-one-source-correct-each-other` — refused: already known; close to the answered verify-an-api-against-the-compiled-artefact and the queued adversarial-review candidate
-- `render-explanations-from-the-test-simulator` — refused: one occurrence; no claim stronger than look at your outputs
-- `scripts-run-under-an-older-system-shell` — refused: platform trivia; the bundle's hook already finds a new enough interpreter
-- `kernel-log-shows-the-current-boot` — refused: tool trivia, true of one logging system only
-- `write-permission-rules-match-nothing` — refused: the bundle's method already states it
-- `one-place-defines-a-record-id` — refused: single source of truth is already the method's rule, and the bundle's id checker caught it
-- `a-prose-rule-loses-to-a-tool-default` — refused: already admitted as correction-lands-where-the-rule-is-enforced; an occurrence only
-- `a-warning-is-accepted-an-allowlist-is-justified` — refused: already embodied in the bundle's override marker, which requires a reason and is listed on every run
-- `a-check-by-location-sweeps-in-new-kinds` — refused: repository-local, and nothing beyond a-check-must-be-seen-to-fail
-- `summaries-of-reference-pages-invent-syntax` — refused: already admitted as check-a-relayed-claim-before-reporting-it; an occurrence only
-- `same-answer-or-refuse` — refused: already folded from this repository
-- `a-skip-reported-as-a-failure` — refused: platform-specific; its green-that-measured-nothing half is already a-check-must-be-seen-to-fail and report-coverage-before-findings
-- `pull-a-database-and-its-log-in-one-read` — refused: the embedded database's own backup guidance
-- `multi-line-messages-break-line-counts` — refused: textbook log framing
-- `retry-budget-for-a-probabilistic-step` — refused: textbook binomial arithmetic
-- `sweep-the-rendered-extremes` — refused: an occurrence from the repository that already extended this note; nothing new
-- `golden-image-reads-the-real-clock` — refused: textbook: inject the clock into rendering tests
-- `device-suite-uninstalls-the-app` — refused: platform-specific
-- `only-grows-shrinks-under-late-delivery` — refused: covered by monotonic-logic work on reordering (the CALM line; cited from memory, not checked)
-- `steps-readable-by-a-permission-layer` — refused: same repository again, which cannot be the queued form's second occurrence; the form is already in artifact 4
-- `a-cache-key-names-its-invalidators` — refused: same repository as the candidate, no new boundary
-- `a-vendor-power-manager-freezes-a-foreground-process` — refused: platform-specific; reading the log first is textbook debugging
-- `line-breaking-strategy-pitfalls` — refused: specific to one UI toolkit
-- `assert-the-reason-not-only-the-outcome` — refused: already in the method: principle 18, assert the reason
-- `check-measured-decisions-against-the-domain-literature` — refused: covered by the method's section on the domain's own standards
-- `an-emulator-number-is-a-ceiling` — refused: covered by the answered `local-host-is-a-test-double-of-the-production-host` and the repository's own decision
-- `preview-the-build-on-real-records` — refused: covered by principle 14 and `validate-each-transformation-run`; an occurrence
-- `an-audit-walk-excludes-nested-checkouts` — refused: tool-specific; a single occurrence
-- `stale-roadmap-claims-cost-real-work` — refused: covered by principle 6 (a relayed claim is checked) and principle 16
-- `redundant-comments-are-worse-than-lost-ones` — refused: covered by principle 5 (each fact lives once)
-- `weight-a-defect-count-by-usage` — refused: analytics textbook
-- `a-filtered-gate-cannot-block` — refused: already admitted; occurrence only
-- `prose-language-rule-held-only-by-the-ratchet` — refused: covered by principle 2 (rules are checked, not remembered); an occurrence count with no new boundary
-- `identical-needs-a-negative-control-in-end-to-end-tests` — refused: covered by `a-check-must-be-seen-to-fail` (identical needs a negative control)
-- `a-red-from-a-build-failure-is-not-the-red` — refused: already answered: principle 18, fail for the reason you expect
-- `an-override-flag-must-not-satisfy-what-it-excuses` — refused: textbook argument parsing; a single occurrence
-- `undo-a-planted-violation-by-editing-forward` — refused: covered by principle 18 (undo by editing forward)
-- `audit-importable-under-main-guard` — refused: ordinary engineering practice
-- `host-shell-traps` — refused: host friction of one machine, kept in the repository's root file
-- `ids-written-before-minted` — refused: already covered, ids come from the minting command and a format check cannot check provenance
-- `one-owners-deliverable-preferences` — refused: preferences of one owner for one deliverable; the general part is proposed separately
-- `word-counter-counts-markup` — refused: one heuristic in one repository; checking a metric against what a person sees is not new
-- `typesetting-engine-quirks` — refused: mechanics of one tool, kept in the repository's own area rules
-- `release-the-handle-before-deleting` — refused: platform-specific
-- `platform-affordance-first-triage` — refused: a standard first triage step, one occurrence
-- `routine-tools-leave-the-tree-as-found` — refused: same carrier as the first occurrence, not the second repository it lacks
-- `commit-split-rule-against-an-explicit-request` — refused: repository-local, recorded in its roadmap
-- `prove-a-content-change-is-in-the-history-before-reverting` — refused: specific to one repository's edit mode
-- `profile-before-optimising-per-frame-work` — refused: textbook; not a second occurrence of interleave-versions-in-one-window
-- `every-request-has-a-timeout` — refused: textbook
-- `one-entry-point-for-a-state-change` — refused: novelty (single entry point is textbook); overlaps kill-switch-reaches-every-path in shape
-- `hidden-is-not-deferred` — refused: one front-end library's trigger semantics; the general form is ordinary practice an agent already knows
-- `nested-partial-update-replaces` — refused: the lost update of a read-modify-write is textbook (P4); the mask half is the existing note, tested by this harvest's experiment
-- `shared-pool-pressure-reads-as-test-failure` — refused: environment-specific; the general part is answered by a-red-from-a-build-failure-is-not-the-red
-- `shared-mutable-default-carries-credentials` — refused: the mechanism is a textbook language pitfall that an agent already knows; the credential-crossing consequence alone does not pass …
-- `scripts-committed-without-exec-bit` — refused: trivial and repository-local
-- `cache-the-absence-of-a-lookup` — refused: negative caching is textbook
-- `derived-copy-goes-stale-silently` — refused: one occurrence, and it is already the note's case (a set difference against a stale stored copy)
-- `wait-for-the-response-not-network-idle` — refused: textbook; the browser-automation tool's documentation already discourages the idle wait for tests
-- `measure-a-ui-change-as-a-task` — refused: textbook usability practice (task-based measures, cognitive walkthrough); the working-style part belongs to the maintainer's …
-- `error-message-names-the-right-remedy` — refused: textbook usability guidance on error recovery; the credential half is in the fail-closed-defaults extension
-- `paginate-by-timestamp-skips-ties` — refused: textbook (keyset pagination needs a unique tiebreaker); the store-precision corollary belongs to stored-timestamp-key-never-matches
-- `test-double-fidelity` — refused: the note's check already covers both directions, and a double that accepts less fails loudly, not silently
-- `a-non-portable-utility-option-garbles-a-comparison` — refused: tool-specific and textbook (portable shell options)
-- `a-binary-copied-over-a-run-binary-is-killed` — refused: platform-specific code-signing behaviour; it belongs in the repository's own troubleshooting notes, where it is
-- `one-concern-commits-from-hand-staged-blobs` — refused: textbook atomic-commit practice; a repository process item
-- `place-a-score-by-the-rankings-own-method` — refused: textbook (compare like with like; measure the noise floor before comparing)
-- `concurrent-build-tool-runs-corrupt-its-lock` — refused: tool-specific
-- `tool-specific-traps-of-one-toolchain` — refused: tool-specific
-- `patch-a-vendored-tool-at-build-from-its-pristine-source` — refused: established practice (patch series applied at build time)
-- `ids-typed-by-hand-before-minting` — refused: no harm shown: each was caught before commit, and a well-formed hand-typed id only risks a collision the duplicate check reports
-- `a-registry-filled-at-import-is-partial-during-import` — refused: too small and idiom-level
-- `attribution-and-unasked-pushes-and-partial-gate` — refused: occurrences of rules already in the user's instructions and of answered items (chain-the-commit-on-the-gate …
+- `refusal-must-not-read-like-an-answer` — **admitted** as a note, four repositories: the queued data-analysis occurrence and three offered at this release (a channel with no signal …
+- `readout-per-silent-outcome` — **admitted** as a note, two repositories: the second supplied the answer from the target runtime the row lacked (readouts read on the real …
+- `documented-defaults-drift-from-code` — **admitted** as a note, four repositories, with the remedy the row lacked: rewrite the reference from its reader, then hold every …
+- `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check` — **admitted** as a note, with the second domain and repository it lacked: estimators whose self-consistency passed on correlated errors …
+- `a-request-accepted-is-not-an-effect` — **admitted** as a note, two repositories: a session manager's policy that silently overrode accepted requests, and a deploy whose command …
+- `a-version-bump-spends-the-forward-compatibility-it-was-protecting` — **admitted** as a note, with the second repository it waited for: one version shared by every record kind made an older build refuse every …
+- `a-surviving-guard-mutation-means-a-missing-input` — **admitted, narrowed** by the literature step to four explanations of a surviving guard mutant (no test produces its input, no assertion …
+- `one-field-one-decision` — **folded** into `merge-by-shared-fact-not-shared-shape` as its dual, one sentence: the literature step found the core textbook …
+- `an-error-response-is-a-retry-instruction` — **folded** into `retry-over-irreversible-effect` as a boundary, two repositories: an error reported after the effect is a retry …
+- `empty-success-retried-write` — **folded** into `retry-over-irreversible-effect`, its second repository: a bodyless success decoded as an error, under a retry over any …
+- `copied-code-carries-logic-not-the-values-it-compares` — **folded** into `fail-closed-defaults` as a boundary, two repositories: where the refusing condition is a value another system owns …
+- `tolerant-of-absent-is-not-tolerant-of-malformed` — **folded** into `absence-is-a-third-value`, three repositories: the claim keeps absent distinct from false, from empty and from unreadable …
+- `recursive-scan-skips-nested-checkouts` — **folded** into `absent-constraint-widens`: an existence or uniqueness scan with no scope clause is satisfied by a superset (a nested …
+- `a-derived-artefact-copies-metadata-by-allowlist` — **extended** `copied-instruction-claims-its-origin`, applied with the queued 0.0.21 row on executable code: the claim widens from …
+- `a-judgement-check-warns-a-mistake-check-fails` — **extended** `ratchet-in-a-pinned-environment` as a boundary: a rule with no correct, portable zero (a judgement call, or a threshold that …
+- `extend-reproduce-the-checkout-not-only` — **extended** `reproduce-the-checkout-not-only-the-environment`: an audit whose path checks read an ignored local folder, green in the …
+- `reproducibility-runs-straddle-the-clock` — **folded** into `a-check-must-be-seen-to-fail`: two runs that share an uncontrolled variable cannot disagree on it, so the check could not …
+- `stored-timestamp-key-never-matches` — **folded** into `same-answer-or-refuse`: a cache key built from a fresh listing and from the stored copy is that note's round trip, and its …
+- `match-rendered-units-to-source-by-content` — **folded** into the queued `batch-get-is-unordered`, its second repository: two sequences paired by position when their orders differ. That …
+- `mint-registers-the-carrier` — **folded** into the queued `verify-enforces-the-carrier-record`, same tool area: minting should register the carrier in the machine's …
+- `a-field-run-names-its-readout-first` — **folded** into the principle 6 sentence of `a-measurement-states-what-would-invalidate-it-before-it-is-read`, its second repository …
+- `a-choice-in-a-composition-is-measured-in-it` — **folded** into the principle 6 sentence of `a-cost-justified-by-an-unmeasured-constraint`, as its qualifier: measured on the composed …
+- `a-number-is-only-a-measurement-after-the-last-edit` — **applied to the method**, three repositories, settling its placement question: principle 6, a number carries its date, its environment and …
+- `a-cost-justified-by-an-unmeasured-constraint` — **applied to the method**, three repositories: principle 6, a cost or constraint that justifies a decision is measured before deciding, and …
+- `a-measurement-states-what-would-invalidate-it-before-it-is-read` — **applied to the method**, two repositories: principle 6, write what would invalidate a measurement before reading the number. Its …
+- `identity-preserving-copy-is-a-no-op-mutation` — **applied to the method** with `a-mutation-that-did-not-apply-reads-as-a-result`, two repositories: principle 18's mutation paragraph …
+- `a-mutation-that-did-not-apply-reads-as-a-result` — **applied to the method**, see the row above
+- `the-call-site-is-untested-when-the-function-is` — **applied to the method**: principle 18, break the call site too (the argument replaced by a null, the call deleted, the assignment made a …
+- `expected-failure-names-its-exception` — **applied to the method** with `known-defects-as-must-fail-checks`, two carriers: principle 18, an expected-failure mark is strict and …
+- `known-defects-as-must-fail-checks` — **applied to the method**: principle 18, defects found at adoption are recorded as checks that must fail, and the gate fails when one …
+- `isolated-review-by-default` — **applied to the method**, answering its 0.0.26 reopening with five repositories, one of them not code, and the cost figures it lacked …
+- `review-the-merged-change-after-the-task-reviews` — **applied to the method** with `isolated-review-by-default`, see the row above
+- `a-precondition-check-lives-where-the-action-already-looks` — **applied to the method**, four repositories: one paragraph in §The enforcement ladder, a rule acts only in the output the action already …
+- `a-session-ended-by-a-push-skips-the-close` — **applied to the method**: `close` is offered in one question before a push or deploy that ends a plan when it has not run (the close …
+- `a-local-memory-is-not-a-handoff` — **extended in the method**, four carriers with `harness-attribution-needs-a-root-rule` and two refused harvests' occurrences (below): a …
+- `harness-attribution-needs-a-root-rule` — **folded** into the attribution change of `a-local-memory-is-not-a-handoff`, see the row above
+- `count-a-friction-by-searching-the-log` — **extended in the method**, two carriers: `bundle.py count` counts entries, not incidents, folds an event copied into several entries, and …
+- `a-deny-rule-stops-at-the-agents-prompt` — **applied to the method**, artifact 4, two carriers with `a-path-deny-covers-one-tool`: a deny stops the agent's typed spelling, not the …
+- `a-path-deny-covers-one-tool` — **applied to the method**, see the row above
+- `edit-deny-also-blocks-shell-writes` — **applied to the method**, artifact 4, two carriers with `a-deny-for-secrets-catches-their-template`: a deny reaches more than meant, so …
+- `a-deny-for-secrets-catches-their-template` — **applied to the method**, see the row above
+- `document-language-is-its-readers` — **applied to the method**, three repositories: a document follows its readers' language, and the headings and keywords a tool parses follow …
+- `dry-run-a-procedure-by-an-agent-before-release` — **applied to the method**, three repositories: bootstrap step 4 covers the worked examples a reader copies, and a guide a person runs with …
+- `citation-checked-for-existence-is-not-checked-for-relevance` — **applied to the method**, two repositories: bootstrap Phase 2, a reference that resolves is not thereby the right one; research becomes a …
+- `a-fetched-specification-is-a-summary` — **applied to the method**, two carriers with `summaries-of-reference-pages-invent-syntax` (below): bootstrap Phase 2, a fetch tool that …
+- `an-append-only-log-cannot-be-grandfathered-by-line` — **applied to the method**, two repositories (that the first occurrence is another carrier is an ASSUMPTION): principle 2, grandfathering …
+- `check-every-anchor-before-the-first-write` — **applied to the method**, two repositories: *Working safely in a tree you do not own*, a scripted edit across files asserts that every …
+- `a-rule-cannot-name-its-subject-as-its-enforcer` — **applied to the method**: principle 1, an enforcer is a check that runs and fails, not a name cited. one carrier's evidence; reviewed at …
+- `reread-the-source-case-before-recording-an-answer` — **applied to the method**, from two proposals of one repository: §15's fact interview asks one fact per question and never records a reason …
+- `commit-granularity-by-context` — **applied to the method**, two carriers with the refused `commit-split-rule-against-an-explicit-request` (below): bootstrap step 7 groups …
+- `a-delegated-change-to-a-check-is-a-finding` — **applied to the method**: the moment table's "the plan runs" row and the close skill's step 9, a delegate's change to a check (a filter on …
+- `walk-the-rulings-before-the-plan-runs` — **answered by the method** of this release: §15's decision-review mode and the `decision-review` skill, whose opening cites this …
+- `measure-a-ui-change-as-a-task` — refused as knowledge by its own harvest, rightly; **the home disagrees in part**: it is **fixed** in 0.0.27 as evidence behind the …
+- `a-prose-rule-loses-to-a-tool-default` — refused by its own harvest as an occurrence of an admitted note; **the home disagrees** with the target: **folded** into the attribution …
+- `summaries-of-reference-pages-invent-syntax` — refused by its own harvest as an occurrence of principle 6; **the home disagrees** in part: its automatic-summary half is **folded** into …
+- `template-id-format-matches-the-checker` — **fixed** in 0.0.27: the roadmap template puts an item's id after the middle dot, where the id checker reads it. Further carriers met it at …
+- `roadmap-heading-id-position` — **fixed** in 0.0.27, see the row above
+- `own-log-format-hides-new-method-fields` — **fixed** in 0.0.27: `bundle.py new entry` appends the method's fields a log's own format lacks, and names them
+- `bundle-tool-refuses-an-old-interpreter-in-one-line` — **fixed** in 0.0.27: the tools refuse an interpreter older than 3.11 in one line, before any import that needs it
+- `fix-stale-note-path-in-bootstrap` — refused: the path was corrected in 0.0.22, after the release the proposal was written against. Its second half, that the link check skips …
+- `a-principle-can-have-no-subject-in-a-carrier` — **reopened as a queued candidate**: the 0.0.23 answer (re-triage a not-applicable delta the day its subject appears) existed and did not …
+- `steps-readable-by-a-permission-layer` — the compound-command form met its second and third repositories (one from a harvest that refused its own repetition, below); that sentence …
+- `a-cache-key-names-its-invalidators` — offered again with a third repository (a privacy check scoped to changed files, whose terms list is an input missing from its key); its …
+- `batch-get-is-unordered` — offered again with its second repository, the fold above; the row stands, lacking novelty
+- `gate-sequence-stops-at-the-first-red-step` — offered again: a gate red for a known, unrelated reason masks every new failure, the same masking in a one-step gate. The row stands …
+- `committed-secret-is-not-a-gitignore-fix` — offered again with a second repository, if private data and secrets are one claim (read so here; the claim now says both): a check over …
+- `adversarial-review-per-attack-surface-before-a-tag` — offered again with the second repository it lacked, widening the moment to a periodic review by area and concern; queued, not applied: its …
+- `unconsulted-parameter-is-still-a-contract` — offered again with its second repository (a build option parsed and wired to nothing); the row stands, lacking the literature and its …
+- `verify-enforces-the-carrier-record` — offered again with the folded `mint-registers-the-carrier`; the row stands
+- `a-check-must-be-seen-to-fail` — **extended**: the executed census ran in two repositories (about two in three checks never observed to fail in one; every check seen red in …
+- `report-coverage-before-findings` — **extended**: a removal rule judged against a hand-written known-good list passes everything the list omits, so its coverage is the removed …
+- `absence-is-a-third-value` — **extended**, occurrences from three carriers: a per-reason counter that writes only the buckets that fired (declare every reason, write …
+- `absent-constraint-widens` — **extended** with the folded `recursive-scan-skips-nested-checkouts`, above
+- `close-the-loop-in-the-actuators-frame` — **extended**, a second repository and mechanism: a residual measured downstream of the applied correction is already in the corrected …
+- `copied-instruction-claims-its-origin` — **extended**: the claim widens to metadata copied from the artefact another was cut from, applying the queued 0.0.21 row; see …
+- `derive-state-from-one-clock` — **extended**: the 0.0.26 boundary rewritten (an offset monotone in one direction holds only where the other is harmless; where both gain …
+- `derived-copy-goes-stale-silently` — **extended**, its boundary moved by two repositories: an equality key on modification time and size notices an older-dated edit, and its …
+- `derived-over-chosen-identifiers` — **extended**, `confidence` reasoned → measured for the collision claim: over a handful of real packages, the self-declared name and version …
+- `detect-by-observation-not-build-flag` — **extended**: a flag read, not stated, and found false on an emulator (a device-class property naming the target's class on an image about …
+- `fail-closed-defaults` — **extended**, two boundaries from two repositories each: a boot check tests a value's shape, not its presence (applying the queued 0.0.24 …
+- `merge-by-shared-fact-not-shared-shape` — **extended**: a second repository (per-surface content rules replaced by one predicate with a test that the two consumers' answers are …
+- `metric-against-trivial-predictor` — **extended**, *Evidence* only: beyond models, the trivial arm is doing nothing and the cheapest existing tool; the claim widens only when …
+- `nested-partial-update-replaces` — **extended**: a third client measured, whose semantics are per call, not per client (the same mapper call replaces with a nested value and …
+- `persist-inputs-derive-verdicts` — **extended**: results users have already seen version the rule by an effective date, compared with the input's real time; persist at the …
+- `ratchet-in-a-pinned-environment` — **extended** with the folded `a-judgement-check-warns-a-mistake-check-fails` and a machine-dependent threshold: performance thresholds are …
+- `reproduce-the-checkout-not-only-the-environment` — **extended**: three more repositories for the permissive direction (audits that read an ignored folder or generated directories, green in …
+- `retry-over-irreversible-effect` — **extended** with the two folds above (`an-error-response-is-a-retry-instruction`, `empty-success-retried-write`)
+- `same-answer-or-refuse` — **extended**, two repositories: a measurement or a check that reimplements the rule is a second path, so measure and verify through the …
+- `secrets-survive-rotation` — **extended** with its first rotation incident, reproduced in two browser engines in a second repository: storage names derived from the key …
+- `sweep-the-rendered-extremes` — **extended**, two repositories: the matrix holds accessibility settings (reduced motion turned a pulse into an endless loop) and sequences …
+- `test-double-fidelity` — **extended**: the harness clock is checked against the host before a run whose readers filter by time; an interface method with a neutral …
+- `unrunnable-system-moves-the-gate` — **extended**: the composition-only boot rig, run once in a third repository, caught two composition failures no check saw, one of which a …
+- `validate-each-transformation-run` — **extended**: an agent condensing a document is a transformation run, which moves the free-rewrite boundary (list the kinds of content that …
+- `ask-the-target-experience-before-correcting` — refused (`p-1b8559b29c`): requirements elicitation, not knowledge; its substance is answered by §15 in 0.0.27 (what the user sees stays …
+- `harness-time-limit-stops-a-background-service` — refused (`p-486cadec03`): harness-specific
+- `status-command-that-installs` — refused (`p-5243221d44`): tool-specific; not a form of the queued `steps-readable-by-a-permission-layer` either (a side effect, not a …
+- `probe-a-privilege-with-the-exact-operation` — refused (`p-7653b5934e`): a stand-in narrower than the real operation, covered by `test-double-fidelity`; the failure was a loud false red
+- `background-job-ignores-interrupt` — refused (`p-940bf2c979`): shell textbook behaviour
+- `interactive-tool-without-subcommand-hangs` — refused (`p-9f1754a08c`): tool trivia; the remedy is the maintainer-profile item `never-block-the-session-on-a-long-wait`. It counts toward …
+- `measure-delay-with-broadband-not-tones` — refused (`p-a83f2dfa38`): domain textbook (time-delay estimation)
+- `browser-test-waits-for-first-paint` — refused (`p-b1d0825adf`): standard test synchronisation; a second repository met it at this release, and novelty fails either way
+- `parallel-agents-pick-the-same-number` — refused (`p-b42d2322a0`): answered by `parallel-session-id-allocation` and `derived-over-chosen-identifiers`
+- `formatter-run-by-a-parallel-agent` — refused (`p-d281eed90b`): answered by `parallel-agents-on-disjoint-files`, folded at 0.0.26 (format only the change)
+- `two-readers-of-one-source-correct-each-other` — refused (`p-e534c841e6`): its documentation-against-code half is the same event this carrier already gave …
+- `render-explanations-from-the-test-simulator` — refused (`p-e9ae388290`): one occurrence; nothing beyond principle 14
+- `a-skip-reported-as-a-failure` — refused (`p-25adfe5ab5`): platform-specific; its general half is `a-check-must-be-seen-to-fail` and `report-coverage-before-findings`
+- `pull-a-database-and-its-log-in-one-read` — refused (`p-2e724dea78`): the embedded database's own backup guidance
+- `multi-line-messages-break-line-counts` — refused (`p-8b9b70ed39`): textbook log framing
+- `retry-budget-for-a-probabilistic-step` — refused (`p-96bc2c9474`): textbook binomial arithmetic
+- `golden-image-reads-the-real-clock` — refused (`p-9e9ad8fdf2`): textbook: inject the clock into rendering tests
+- `device-suite-uninstalls-the-app` — refused (`p-bbd015e401`): platform-specific
+- `only-grows-shrinks-under-late-delivery` — refused (`p-c9c6fa4459`): one occurrence, recorded by its repository as its limit. The monotonic-logic literature its harvest cited is from …
+- `a-vendor-power-manager-freezes-a-foreground-process` — refused (`p-29be475822`): platform-specific; reading the log first is textbook debugging
+- `line-breaking-strategy-pitfalls` — refused (`p-36e0bf31bd`): specific to one UI toolkit
+- `check-measured-decisions-against-the-domain-literature` — refused (`p-43622a75fe`): covered by the method's section on the domain's own standards
+- `an-emulator-number-is-a-ceiling` — refused (`p-558d9bb6f6`): covered by `test-double-fidelity` (the local host as a double, folded) and the repository's own decision
+- `preview-the-build-on-real-records` — refused (`p-6f21be4805`): covered by principle 14 and `validate-each-transformation-run`; an occurrence
+- `an-audit-walk-excludes-nested-checkouts` — **the home disagrees** with its harvest's refusal as a single occurrence (`p-7361d45428`): another carrier offered the same mechanism, a …
+- `stale-roadmap-claims-cost-real-work` — refused (`p-77479dde43`): covered by principle 6 (a relayed claim is checked) and principle 16
+- `redundant-comments-are-worse-than-lost-ones` — refused (`p-9ce95c6cd8`): covered by principle 5 (each fact lives once)
+- `weight-a-defect-count-by-usage` — refused (`p-b4a2a380c8`): analytics textbook
+- `prose-language-rule-held-only-by-the-ratchet` — refused (`p-c8a0d1ee0b`): covered by principle 2 (rules are checked, not remembered); a count with no new boundary
+- `identical-needs-a-negative-control-in-end-to-end-tests` — refused (`p-eb559fe989`): covered by `a-check-must-be-seen-to-fail` (identical needs a negative control)
+- `a-red-from-a-build-failure-is-not-the-red` — refused again (`p-f43f143cdd`): refused at 0.0.26 under the same slug (principle 18, fail for the reason you expect)
+- `an-override-flag-must-not-satisfy-what-it-excuses` — refused (`p-f557e6fa1f`): textbook argument parsing; one occurrence
+- `undo-a-planted-violation-by-editing-forward` — refused (`p-f6cb6c9d22`): covered by principle 18 (undo by editing forward)
+- `audit-importable-under-main-guard` — refused (`p-0ebd0b0dbf`): ordinary engineering practice
+- `host-shell-traps` — refused (`p-1420579d20`): one machine's host friction, kept in the repository's root file; the same portability family as two other …
+- `ids-written-before-minted` — refused (`p-888bb155cc`): ids come from the minting command, and a format check cannot check provenance; the duplicate check is the backstop
+- `one-owners-deliverable-preferences` — refused (`p-aa28d761f6`): preferences of one owner for one deliverable; the general part was proposed separately
+- `word-counter-counts-markup` — refused (`p-c2c01db7f1`): one heuristic in one repository; checking a metric against what a person sees is principle 14
+- `typesetting-engine-quirks` — refused (`p-f63866a6a4`): mechanics of one tool, kept in the repository's own area rules
+- `release-the-handle-before-deleting` — refused (`p-0d91291209`): platform-specific
+- `platform-affordance-first-triage` — refused (`p-271241e4dc`): a standard first triage step, one occurrence
+- `commit-split-rule-against-an-explicit-request` — refused (`p-7e93ae63c6`): repository-local as a candidate; its occurrence still counts as the second carrier of the commit-grouping change …
+- `prove-a-content-change-is-in-the-history-before-reverting` — refused (`p-8d242646f4`): specific to one repository's edit mode
+- `profile-before-optimising-per-frame-work` — refused (`p-c8a732b813`): textbook; not a second occurrence of `interleave-versions-in-one-window`
+- `every-request-has-a-timeout` — refused (`p-e4de9e38bc`): textbook
+- `one-entry-point-for-a-state-change` — refused (`p-f069b1157f`): a single entry point is textbook; the same shape as `kill-switch-reaches-every-path`, not an occurrence of it (no …
+- `hidden-is-not-deferred` — refused (`p-0dbcddd68d`): one front-end library's trigger semantics; ordinary practice
+- `shared-pool-pressure-reads-as-test-failure` — refused (`p-2355909d87`): environment-specific; principle 18 (fail for the expected reason)
+- `shared-mutable-default-carries-credentials` — refused (`p-2d8db87a40`): a textbook language pitfall; the credential-crossing consequence alone has one occurrence
+- `scripts-committed-without-exec-bit` — refused (`p-42cd3ebe8d`): trivial and repository-local
+- `cache-the-absence-of-a-lookup` — refused (`p-4553abdc95`): negative caching is textbook
+- `wait-for-the-response-not-network-idle` — refused (`p-9974240ff8`): textbook; the automation tool's documentation discourages the idle wait. With another carrier's first-paint …
+- `error-message-names-the-right-remedy` — refused (`p-cd94f30172`): usability textbook; its credential half is in the `fail-closed-defaults` extension
+- `paginate-by-timestamp-skips-ties` — refused (`p-d939b1aadc`): keyset pagination needs a unique tiebreaker (textbook); the precision corollary went with …
+- `scripts-run-under-an-older-system-shell` — refused (`p-0724a44a03`): platform trivia; its interpreter half is the one-line refusal of an old interpreter, fixed in 0.0.27
+- `kernel-log-shows-the-current-boot` — refused (`p-370ca7c158`): one logging system's default
+- `write-permission-rules-match-nothing` — refused (`p-3ad6ecc680`): artifact 4 already says path rules for writes are accepted, never consulted, and warned about; an occurrence that …
+- `one-place-defines-a-record-id` — refused (`p-4fdfbfa55b`): the method's single-source rule, and the id checker caught it
+- `a-warning-is-accepted-an-allowlist-is-justified` — refused (`p-a3b4441308`): already embodied in the bundle's override marker, which needs a reason and is listed on every run
+- `a-check-by-location-sweeps-in-new-kinds` — refused (`p-c5401dbd7f`): repository-local, and the failure was loud; a weak occurrence noted under the queued …
+- `a-non-portable-utility-option-garbles-a-comparison` — refused (`p-11b5e09dda`): portable shell options are textbook
+- `a-binary-copied-over-a-run-binary-is-killed` — refused (`p-39841077c7`): platform code-signing behaviour, kept in the repository's own notes
+- `one-concern-commits-from-hand-staged-blobs` — refused (`p-428932cd54`): textbook atomic-commit practice
+- `place-a-score-by-the-rankings-own-method` — refused (`p-72d567bcea`): textbook (compare like with like; measure the noise floor first)
+- `concurrent-build-tool-runs-corrupt-its-lock` — refused (`p-85d5314336`): tool-specific
+- `tool-specific-traps-of-one-toolchain` — refused (`p-8f681c5178`): tool-specific
+- `patch-a-vendored-tool-at-build-from-its-pristine-source` — refused (`p-988df660e1`): established practice (a patch series applied at build time)
+- `ids-typed-by-hand-before-minting` — refused (`p-db9415fe19`): no harm shown; each was caught before commit, and the duplicate check is the backstop
+- `a-registry-filled-at-import-is-partial-during-import` — refused (`p-dcf54666cf`): idiom-level
+- `attribution-and-unasked-pushes-and-partial-gate` — refused (`p-f62a14e734`): occurrences of the maintainer's standing preferences and of `chain-the-commit-on-the-gate`; its attribution half …
 - `splice-dry-run-lists-what-it-removes` — **fixed** in 0.0.26: the splice's report names every path it removes, dry run included, with a test
 - `review-each-carrier-in-execution-before-propagating` — **applied to the home's procedure**: `prompt-sync.md` Phase 2 opens with one read-only agent per carrier when a release changes wording an …
 - `taken-in-rows-wait-outside-build-inputs` — **applied to the home's procedure**: `prompt-sync.md`, building the release, step 5. At this release the five experiment rows parked in the …
