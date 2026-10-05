@@ -2519,6 +2519,16 @@ def trailer_problems(repo: Path, rev_range: str | None = None) -> tuple[list[str
     return problems, rev_range, len(commits)
 
 
+def published_on(repo: Path, sha: str) -> list[str]:
+    """The remote-tracking branches that already hold a commit: where it is published, as far as this clone
+    knows (its last fetch)."""
+    try:
+        refs = git(repo, "for-each-ref", "--contains", sha, "--format=%(refname:short)", "refs/remotes").split()
+    except subprocess.CalledProcessError:
+        return []
+    return [ref for ref in refs if not ref.endswith("/HEAD")]
+
+
 # --- the user's own assistant settings ---------------------------------------------------------------
 
 # What is assumed about the host (Claude Code), read from its settings and permissions documentation:
@@ -3199,8 +3209,9 @@ def _parser() -> argparse.ArgumentParser:
                    "(`@{u}..HEAD`; words separated by spaces, as `git rev-list` takes them): what a push publishes")
     p.add_argument("--repo", default=str(OWN_REPO), help="with --commits: the repository (default: this tool's)")
     p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
-    p.add_argument("range", nargs="?", metavar="RANGE", help="a git range, words separated by spaces "
-                   f"(default: @{{u}}..HEAD; with no upstream, the commits on no remote; with no remote at all, "
+    p.add_argument("range", nargs="*", metavar="RANGE", help="a git range, as `git log` takes it, options included "
+                   "(`--all`, `main..feature`, `HEAD --not --remotes`), in one argument or several "
+                   f"(default:@{{u}}..HEAD; with no upstream, the commits on no remote; with no remote at all, "
                    f"the last {TRAILER_DEFAULT} commits)")
     p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("report", help="files, bytes and estimated tokens per folder and per session type")
@@ -3263,8 +3274,27 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _trailers_argv(argv: list[str]) -> list[str]:
+    """`trailers` arguments with every word but `--repo R` (and help) taken as the range, in order, so a
+    rev-list option (`--all`, `--not`, `--remotes=origin`) is part of it instead of refused as unknown."""
+    if not argv or argv[0] != "trailers" or {"-h", "--help"} & set(argv):
+        return argv
+    rest, repo, i = [], [], 1
+    while i < len(argv):
+        word = argv[i]
+        if word == "--repo" and i + 1 < len(argv):
+            repo, i = ["--repo", argv[i + 1]], i + 2
+            continue
+        if word.startswith("--repo="):
+            repo = ["--repo", word.split("=", 1)[1]]
+        elif word != "--":
+            rest.append(word)
+        i += 1
+    return ["trailers", *repo, *(["--", *rest] if rest else [])]
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = _parser().parse_args(argv)
+    args = _parser().parse_args(_trailers_argv(list(sys.argv[1:] if argv is None else argv)))
     try:
         return _run(args)
     except REFUSALS as refusal:
@@ -3333,13 +3363,24 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         print(result.summary())
         return 1 if result.failures else 0
     if args.command == "trailers":
-        problems, read, count = trailer_problems(Path(args.repo), args.range)
+        repo = Path(args.repo)
+        problems, read, count = trailer_problems(repo, " ".join(args.range) or None)
+        published = 0
         for problem in problems:
-            print("  x " + problem)
+            refs = published_on(repo, problem.split(" ", 1)[0])
+            published += bool(refs)
+            print("  x " + problem + (f"  (published: on {', '.join(refs[:3])})" if refs else ""))
+        advice = []
+        if len(problems) > published:
+            advice.append("in a commit not yet pushed, remove them (`git commit --amend`, or a rebase)")
+        if published:
+            advice.append(f"{published} already published (marked): rewriting published history is the owner's decision, "
+                          "so no amend or rebase is advised for it")
+        else:
+            advice.append("a commit already published is never rewritten on this tool's word")
         print(f"trailers over {count} commits ({read}): " + (
-            f"{len(problems)} attribution lines; the user is the sole author. In a commit not yet pushed, remove them "
-            "(`git commit --amend`, or a rebase); a commit already published is its owner's decision: never rewrite "
-            "published history to remove one" if problems else "no attribution line"))
+            f"{len(problems)} attribution lines; the user is the sole author. " + "; ".join(advice)
+            if problems else "no attribution line"))
         return 1 if problems else 0
     if args.command == "report":
         tree = Path(args.tree)

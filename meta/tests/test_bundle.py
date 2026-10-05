@@ -1096,6 +1096,33 @@ class Trailers(Base):
         self.assertIn("published", out)
         self.assertNotIn("before pushing", out)
 
+    def test_rev_list_options_are_a_range_and_a_published_commit_is_named_so(self) -> None:
+        # `trailers --all` was rejected by the argument parser; only `trailers -- --all` worked. A flagged
+        # commit already on a remote was advised amended like one not yet pushed.
+        repo = self.a_repo("chore: start", "feat: a\n\n" + self.ASSISTANT)
+        subprocess.run(["git", "init", "-q", "--bare", str(self.root / "remote.git")], check=True)
+        git(repo, "remote", "add", "origin", str(self.root / "remote.git"))
+        git(repo, "push", "-q", "origin", "HEAD:refs/heads/main")
+        git(repo, "fetch", "-q", "origin")
+        git(repo, "switch", "-q", "-c", "feature")
+        (repo / "late.md").write_text("late\n")
+        git_commit(repo, "feat: late\n\n" + self.ASSISTANT)
+
+        code, out = run("trailers", "--all", "--repo", str(repo))
+        between = run("trailers", "origin/main..feature", "--repo", str(repo))
+
+        self.assertEqual(code, 1, out)
+        published = [line for line in out.split("\n") if "feat: a:" in line]
+        unpushed = [line for line in out.split("\n") if "feat: late:" in line]
+        self.assertEqual(len(published), 1, out)
+        self.assertIn("published", published[0])
+        self.assertIn("origin/main", published[0])
+        self.assertNotIn("published", unpushed[0])
+        self.assertIn("1 already published", out)
+        self.assertIn("owner's decision", out)
+        self.assertEqual(between[0], 1, between[1])
+        self.assertNotIn("feat: a:", between[1])
+
     def a_repo_with_more(self, repo: Path) -> Path:
         (repo / "more.md").write_text("more\n")
         git_commit(repo, "chore: one more")  # the attribution is now the 21st commit back
