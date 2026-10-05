@@ -31,3 +31,22 @@ named), then install with `--force`.
 | Skill | When |
 |---|---|
 | `close` | closing a session, a phase, or a hand-off to another machine |
+| `decision-review` | before planning: every decision of a spec or design listed, then the human's walked one per turn, each shown by example (`prompt-context.md` §15) |
+| `user-walk` | before building a user-facing flow: the ideal path, then every delay, interruption, setback, failure and misuse, as failing tests; and a batch of observations from real use |
+
+## Skills from elsewhere, and the moment each fits
+
+A carrier may have general-purpose skills installed besides these. None ships with the bundle and none
+is required; where one is installed, this is the order the method expects, and the carrier writes in a
+`LOCAL.md` what its own rules override (a merge question its owner's rule already answers, a plan
+written in a language the tool cannot track):
+
+| Moment | Use |
+|---|---|
+| a new idea, nothing written yet | a brainstorming skill, to reach a first design |
+| a design or spec exists, decisions open | `decision-review`, before any plan |
+| the design has a user-facing flow | `user-walk`; its handling choices go back to `decision-review` |
+| the decisions are recorded | a planning skill, or the repository's plan format |
+| the plan runs | a plan-executing or subagent-driven skill; rulings taken there go in its ledger, never asked |
+| each piece of code | a test-first skill, or principle 18 |
+| the branch is done | a fresh-context review of the whole branch, then `close`; merging or pushing only when the human asks |

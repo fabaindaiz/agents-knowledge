@@ -561,21 +561,47 @@ charged them for the privilege. The line is not subtle:
   foreclosed.
 - **Yours** when there is a conventional default, when the repo already answered
   it somewhere, or when the choice is reversible in ten minutes. Pick, say which
-  you picked in one line, and keep going.
+  you picked in one line, and keep going. **Reversibility is not the only test:**
+  what the user sees, the stack and its languages, and content the owner
+  authored stay theirs even when cheap to undo. Every pick you made goes in the
+  report under *decided for you*, and a lasting one in the decisions log.
+- **Not a question at all** when reading, or trying something reversible, answers
+  it: an emulator, a probe or a spike counts as trying.
 
-The protocol:
+**Say which of four modes is running**, because each has its own shape:
 
-- **Ask before writing, and ask them together.** A question that arrives in the
-  middle of the work has already been answered by the code.
-- **Every option states its cost in the repo's own units.** Vertical units of a
-  screen, lines of a budgeted file, p99 milliseconds, bundle kilobytes, draw
-  calls, rows scanned. Never "more complex".
-- **Lead with a recommendation.** Four options and no opinion is not neutrality;
-  it is the work, undone.
-- **Say what each option forecloses**, because that is the part the human cannot
-  reconstruct from the code later.
-- **Cap it at three.** If you have seven questions you have not finished
-  thinking. Answer four of them yourself.
+| Mode | When | Shape |
+|---|---|---|
+| **Pre-flight** | before reading or writing, once | one message (§*The pre-flight*); at most five questions, aim for three, each with the default you will take; `defaults` accepts them all; one line on what you are not asking |
+| **Decision review** | the human asks for it, or more of the human's decisions remain after reading than one message holds | the `decision-review` skill: the inventory of every decision goes together, then the human's decisions go **one per turn** (a theme of up to four if asked), until none is left; recorded before any plan |
+| **Fact interview** | facts only the human holds | your reading stated, for them to confirm or correct; no recommendation, since the fact is theirs |
+| **Parked** | while working alone, or mid-work with no channel opened | decide what is yours; write the rest to the roadmap as questions with a recommendation; raise them all at the next report |
+
+Batch before writing, before an expensive or irreversible step, and before the
+human leaves you to work alone: a question that arrives in the middle of the work
+has usually been answered by the code. It has not when a measurement overturned
+the premise; then ask at once. A question is never buried inside a long report,
+and is asked in the human's language and plain words.
+
+**Every option is shown by example**, since that is how a human decides fast:
+
+- **A concrete case per option, at the same fidelity**: a sample, a sketch of the
+  screen, a before and after, a Given/When/Then, a draft with its length. A vivid
+  case for one option only is a nudge.
+- **Its cost in the repo's own units.** Vertical units of a screen, lines of a
+  budgeted file, p99 milliseconds, bundle kilobytes, draw calls, rows scanned.
+  Never "more complex". Pricing does not change what is chosen as much as it
+  removes the follow-up questions.
+- **What it forecloses**, because that is the part the human cannot reconstruct
+  from the code later.
+- **Two or three options, the recommendation first, with a reason for each.**
+  Four options and no opinion is not neutrality; it is the work, undone. A
+  recommendation listed first acts as a default, so every option says why it
+  exists, and a recommendation changes only for a new fact, never for a mood.
+- **A middle ground between two absolutes** when it is a real option, priced like
+  the others; humans often compose one from two offered options, so offer it.
+- **A mockup or a throwaway prototype only for a question about how it looks or
+  feels**; a scenario walked through each option for an irreversible one.
 
 > **Example.** Adding user-made lists to a small fixed-height screen came down to
 > three questions: whose the lists are, where the selector goes, and how one is
@@ -1586,6 +1612,9 @@ work you have not done yet.
   decided for them and can object.
 - **Ask conditionally.** A question that only matters in a monorepo is not asked
   in a repository with one package. Detect first, then ask what remains.
+- **It is one of four question modes** (§15). When the decisions that remain
+  after reading are more than this block holds, they are not squeezed into it:
+  say so, and propose a decision review.
 
 ### What the pre-flight is not
 
