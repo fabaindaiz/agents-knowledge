@@ -6,6 +6,94 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Refused by carriers' harvests, taken in at 0.0.27
+
+| Candidate | Where it went |
+|---|---|
+| `ask-the-target-experience-before-correcting` | refused: requirements elicitation; the brainstorming skill already asks purpose first; kept as working-style evidence |
+| `harness-time-limit-stops-a-background-service` | refused: harness-specific |
+| `status-command-that-installs` | refused: tool-specific; at most an occurrence for steps-readable-by-a-permission-layer |
+| `probe-a-privilege-with-the-exact-operation` | refused: one-line instance of testing the real dependency; close to test-double-fidelity |
+| `background-job-ignores-interrupt` | refused: POSIX textbook behaviour |
+| `interactive-tool-without-subcommand-hangs` | refused: tool trivia; the remedy is the answered never-block-the-session-on-a-long-wait |
+| `measure-delay-with-broadband-not-tones` | refused: domain textbook (time-delay estimation) |
+| `browser-test-waits-for-first-paint` | refused: known; standard test-synchronisation practice |
+| `parallel-agents-pick-the-same-number` | refused: already answered by parallel-session-id-allocation and derived-over-chosen-identifiers |
+| `formatter-run-by-a-parallel-agent` | refused: already in the method: format only the files in the change; parallel agents on disjoint files |
+| `two-readers-of-one-source-correct-each-other` | refused: already known; close to the answered verify-an-api-against-the-compiled-artefact and the queued adversarial-review candidate |
+| `render-explanations-from-the-test-simulator` | refused: one occurrence; no claim stronger than look at your outputs |
+| `scripts-run-under-an-older-system-shell` | refused: platform trivia; the bundle's hook already finds a new enough interpreter |
+| `kernel-log-shows-the-current-boot` | refused: tool trivia, true of one logging system only |
+| `write-permission-rules-match-nothing` | refused: the bundle's method already states it |
+| `one-place-defines-a-record-id` | refused: single source of truth is already the method's rule, and the bundle's id checker caught it |
+| `a-prose-rule-loses-to-a-tool-default` | refused: already admitted as correction-lands-where-the-rule-is-enforced; an occurrence only |
+| `a-warning-is-accepted-an-allowlist-is-justified` | refused: already embodied in the bundle's override marker, which requires a reason and is listed on every run |
+| `a-check-by-location-sweeps-in-new-kinds` | refused: repository-local, and nothing beyond a-check-must-be-seen-to-fail |
+| `summaries-of-reference-pages-invent-syntax` | refused: already admitted as check-a-relayed-claim-before-reporting-it; an occurrence only |
+| `same-answer-or-refuse` | refused: already folded from this repository |
+| `a-skip-reported-as-a-failure` | refused: platform-specific; its green-that-measured-nothing half is already a-check-must-be-seen-to-fail and report-coverage-before-findings |
+| `pull-a-database-and-its-log-in-one-read` | refused: the embedded database's own backup guidance |
+| `multi-line-messages-break-line-counts` | refused: textbook log framing |
+| `retry-budget-for-a-probabilistic-step` | refused: textbook binomial arithmetic |
+| `sweep-the-rendered-extremes` | refused: an occurrence from the repository that already extended this note; nothing new |
+| `golden-image-reads-the-real-clock` | refused: textbook: inject the clock into rendering tests |
+| `device-suite-uninstalls-the-app` | refused: platform-specific |
+| `only-grows-shrinks-under-late-delivery` | refused: covered by monotonic-logic work on reordering (the CALM line; cited from memory, not checked) |
+| `steps-readable-by-a-permission-layer` | refused: same repository again, which cannot be the queued form's second occurrence; the form is already in artifact 4 |
+| `a-cache-key-names-its-invalidators` | refused: same repository as the candidate, no new boundary |
+| `a-vendor-power-manager-freezes-a-foreground-process` | refused: platform-specific; reading the log first is textbook debugging |
+| `line-breaking-strategy-pitfalls` | refused: specific to one UI toolkit |
+| `assert-the-reason-not-only-the-outcome` | refused: already in the method: principle 18, assert the reason |
+| `check-measured-decisions-against-the-domain-literature` | refused: covered by the method's section on the domain's own standards |
+| `an-emulator-number-is-a-ceiling` | refused: covered by the answered `local-host-is-a-test-double-of-the-production-host` and the repository's own decision |
+| `preview-the-build-on-real-records` | refused: covered by principle 14 and `validate-each-transformation-run`; an occurrence |
+| `an-audit-walk-excludes-nested-checkouts` | refused: tool-specific; a single occurrence |
+| `stale-roadmap-claims-cost-real-work` | refused: covered by principle 6 (a relayed claim is checked) and principle 16 |
+| `redundant-comments-are-worse-than-lost-ones` | refused: covered by principle 5 (each fact lives once) |
+| `weight-a-defect-count-by-usage` | refused: analytics textbook |
+| `a-filtered-gate-cannot-block` | refused: already admitted; occurrence only |
+| `prose-language-rule-held-only-by-the-ratchet` | refused: covered by principle 2 (rules are checked, not remembered); an occurrence count with no new boundary |
+| `identical-needs-a-negative-control-in-end-to-end-tests` | refused: covered by `a-check-must-be-seen-to-fail` (identical needs a negative control) |
+| `a-red-from-a-build-failure-is-not-the-red` | refused: already answered: principle 18, fail for the reason you expect |
+| `an-override-flag-must-not-satisfy-what-it-excuses` | refused: textbook argument parsing; a single occurrence |
+| `undo-a-planted-violation-by-editing-forward` | refused: covered by principle 18 (undo by editing forward) |
+| `audit-importable-under-main-guard` | refused: ordinary engineering practice |
+| `host-shell-traps` | refused: host friction of one machine, kept in the repository's root file |
+| `ids-written-before-minted` | refused: already covered, ids come from the minting command and a format check cannot check provenance |
+| `one-owners-deliverable-preferences` | refused: preferences of one owner for one deliverable; the general part is proposed separately |
+| `word-counter-counts-markup` | refused: one heuristic in one repository; checking a metric against what a person sees is not new |
+| `typesetting-engine-quirks` | refused: mechanics of one tool, kept in the repository's own area rules |
+| `release-the-handle-before-deleting` | refused: platform-specific |
+| `platform-affordance-first-triage` | refused: a standard first triage step, one occurrence |
+| `routine-tools-leave-the-tree-as-found` | refused: same carrier as the first occurrence, not the second repository it lacks |
+| `commit-split-rule-against-an-explicit-request` | refused: repository-local, recorded in its roadmap |
+| `prove-a-content-change-is-in-the-history-before-reverting` | refused: specific to one repository's edit mode |
+| `profile-before-optimising-per-frame-work` | refused: textbook; not a second occurrence of interleave-versions-in-one-window |
+| `every-request-has-a-timeout` | refused: textbook |
+| `one-entry-point-for-a-state-change` | refused: novelty (single entry point is textbook); overlaps kill-switch-reaches-every-path in shape |
+| `hidden-is-not-deferred` | refused: one front-end library's trigger semantics; the general form is ordinary practice an agent already knows |
+| `nested-partial-update-replaces` | refused: the lost update of a read-modify-write is textbook (P4); the mask half is the existing note, tested by this harvest's experiment |
+| `shared-pool-pressure-reads-as-test-failure` | refused: environment-specific; the general part is answered by a-red-from-a-build-failure-is-not-the-red |
+| `shared-mutable-default-carries-credentials` | refused: the mechanism is a textbook language pitfall that an agent already knows; the credential-crossing consequence alone does not pass the generality test without a second occurrence |
+| `scripts-committed-without-exec-bit` | refused: trivial and repository-local |
+| `cache-the-absence-of-a-lookup` | refused: negative caching is textbook |
+| `derived-copy-goes-stale-silently` | refused: one occurrence, and it is already the note's case (a set difference against a stale stored copy) |
+| `wait-for-the-response-not-network-idle` | refused: textbook; the browser-automation tool's documentation already discourages the idle wait for tests |
+| `measure-a-ui-change-as-a-task` | refused: textbook usability practice (task-based measures, cognitive walkthrough); the working-style part belongs to the maintainer's profile |
+| `error-message-names-the-right-remedy` | refused: textbook usability guidance on error recovery; the credential half is in the fail-closed-defaults extension |
+| `paginate-by-timestamp-skips-ties` | refused: textbook (keyset pagination needs a unique tiebreaker); the store-precision corollary belongs to stored-timestamp-key-never-matches |
+| `test-double-fidelity` | refused: the note's check already covers both directions, and a double that accepts less fails loudly, not silently |
+| `a-non-portable-utility-option-garbles-a-comparison` | refused: tool-specific and textbook (portable shell options) |
+| `a-binary-copied-over-a-run-binary-is-killed` | refused: platform-specific code-signing behaviour; it belongs in the repository's own troubleshooting notes, where it is |
+| `one-concern-commits-from-hand-staged-blobs` | refused: textbook atomic-commit practice; a repository process item |
+| `place-a-score-by-the-rankings-own-method` | refused: textbook (compare like with like; measure the noise floor before comparing) |
+| `concurrent-build-tool-runs-corrupt-its-lock` | refused: tool-specific |
+| `tool-specific-traps-of-one-toolchain` | refused: tool-specific |
+| `patch-a-vendored-tool-at-build-from-its-pristine-source` | refused: established practice (patch series applied at build time) |
+| `ids-typed-by-hand-before-minting` | refused: no harm shown: each was caught before commit, and a well-formed hand-typed id only risks a collision the duplicate check reports |
+| `a-registry-filled-at-import-is-partial-during-import` | refused: too small and idiom-level |
+| `attribution-and-unasked-pushes-and-partial-gate` | refused: occurrences of rules already in the user's instructions and of answered items (chain-the-commit-on-the-gate, a-filtered-gate-cannot-block) |
+
 ## Taken out of the queue by the release 0.0.26
 
 Method changes resting on one carrier's evidence were published, marked so, and are reviewed at the exit of the redesign's phase 1. Proposals that extend a method file share its name as a slug, so each is recorded below by its id.
