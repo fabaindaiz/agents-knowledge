@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
+import re
 from pathlib import Path
 
 from meta.tests.support import Base, bundle, commit, init_repo, make_bundle
@@ -390,6 +392,98 @@ class MemoryDiff(Base):
 
     def test_the_memory_folder_is_named_after_the_repository_path(self) -> None:
         self.assertEqual(B.memory_dir(Path("/a/b.c/d_e"), Path("/h")), Path("/h/.claude/projects/-a-b-c-d-e/memory"))
+
+
+def _transcript(folder: Path, session: str, records: list[object]) -> None:
+    """A synthetic session transcript, one JSON record per line, as the assistant's host writes them."""
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{session}.jsonl").write_text("".join((r if isinstance(r, str) else json.dumps(r)) + "\n" for r in records))
+
+
+def _user(when: str, content: object, **extra: object) -> dict:
+    return {"type": "user", "timestamp": when, "message": {"role": "user", "content": content}, **extra}
+
+
+def _tool(when: str, name: str, payload: dict) -> dict:
+    return {"type": "assistant", "timestamp": when,
+            "message": {"content": [{"type": "text", "text": "Working."}, {"type": "tool_use", "id": "t", "name": name, "input": payload}]}}
+
+
+QUESTION = {"question": "Which way?", "options": [{"label": "Fast"}, {"label": "Safe"}], "multiSelect": False}
+
+
+class Turns(Base):
+    """What the human said, read from synthetic transcripts: never a real one, which carries identity."""
+
+    def sessions(self) -> Path:
+        folder = self.root / "projects/one"
+        _transcript(folder, "aaaaaaaa-1111", [
+            _user("2026-03-01T09:00:00.000Z", "an old request"),
+            _user("2026-03-02T10:00:00.000Z", "fix the gate, please"),
+            _user("2026-03-02T10:00:01.000Z", "<system-reminder>not the human</system-reminder>"),
+            _user("2026-03-02T10:00:02.000Z", "expanded skill text", isMeta=True),
+            _user("2026-03-02T10:00:03.000Z", "a delegated agent's prompt", isSidechain=True),
+            _user("2026-03-02T10:00:04.000Z", [{"type": "tool_result", "tool_use_id": "t", "content": "ok"}]),
+            _user("2026-03-02T10:00:05.000Z", "<task-notification>a background task ended</task-notification>",
+                  origin={"kind": "task-notification"}),
+            _user("2026-03-02T10:00:06.000Z", [{"type": "text", "text": "<ide_opened_file>the editor's file</ide_opened_file>"},
+                                               {"type": "text", "text": "look at this file"}], origin={"kind": "human"}),
+            "{not json",
+            {"type": "attachment", "timestamp": "2026-03-02T10:01:00.000Z", "attachment": {"type": "queued_command", "prompt": "and the docs too"}},
+            {"type": "attachment", "timestamp": "2026-03-02T10:01:01.000Z",
+             "attachment": {"type": "queued_command", "prompt": "<agent-message from=x>another agent</agent-message>", "commandMode": "prompt"}},
+            _tool("2026-03-02T10:02:00.000Z", "AskUserQuestion", {"questions": [QUESTION]}),
+            _user("2026-03-02T10:03:00.000Z", [{"type": "tool_result", "tool_use_id": "t", "content": "answered"}],
+                  toolUseResult={"questions": [QUESTION], "answers": {"Which way?": "neither: measure first"}}),
+            _user("2026-03-02T10:04:00.000Z", [{"type": "tool_result", "tool_use_id": "t", "content": "answered"}],
+                  toolUseResult={"questions": [QUESTION], "answers": {"Which way?": "Safe"}}),
+            _tool("2026-03-02T10:05:00.000Z", "Skill", {"skill": "close"}),
+        ])
+        _transcript(self.root / "projects/two", "bbbbbbbb-2222", [_user("2026-03-01T08:00:00.000Z", "the earlier session")])
+        return folder
+
+    def test_the_human_s_turns_newest_last_and_free_text_marked(self) -> None:
+        folder = self.sessions()
+
+        lines = B.turns_report([folder, self.root / "projects/two"], since="2026-03-02")
+        text = "\n".join(lines)
+
+        self.assertNotIn("an old request", text)
+        self.assertNotIn("the earlier session", text)
+        for absent in ("not the human", "expanded skill", "delegated agent", "answered", "Working.", "background task",
+                       "editor's file", "another agent"):
+            self.assertNotIn(absent, text)
+        order = ["human: fix the gate, please", "human: look at this file", "human, mid-turn: and the docs too", "Q: Which way? [Fast | Safe]",
+                 "A: neither: measure first  (free text)", "A: Safe", "skill: close"]
+        self.assertEqual([next(i for i, line in enumerate(lines) if s in line) for s in order],
+                         sorted(next(i for i, line in enumerate(lines) if s in line) for s in order))
+        self.assertNotIn("A: Safe  (free text)", text)
+
+        everything = B.turns_report([folder, self.root / "projects/two"])
+        self.assertLess(everything.index(next(x for x in everything if "the earlier session" in x)),
+                        everything.index(next(x for x in everything if "fix the gate" in x)))
+
+    def test_the_default_folders_are_the_repository_s_and_its_worktrees(self) -> None:
+        repo = init_repo(self.root / "my.repo")
+        commit(repo)
+        home = self.root / "home"
+        projects = home / ".claude/projects"
+        encoded = re.sub(r"[^A-Za-z0-9]", "-", repo.as_posix())
+        for name in (encoded, encoded + "--claude-worktrees-side", encoded + "-other", "-elsewhere"):
+            (projects / name).mkdir(parents=True)
+
+        found = B.transcript_dirs(repo, home)
+
+        self.assertEqual([p.name for p in found], [encoded, encoded + "--claude-worktrees-side"])
+
+    def test_the_command_prints_them(self) -> None:
+        folder = self.sessions()
+
+        code, out = run("turns", "--since", "2026-03-02", str(folder))
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("human: fix the gate, please", out)
+        self.assertIn("(free text)", out)
 
 
 class TriggerEval(Base):

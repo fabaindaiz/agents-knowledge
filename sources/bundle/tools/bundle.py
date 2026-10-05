@@ -31,6 +31,9 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
     python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search
     python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
+    python3 .agents/tools/bundle.py turns [--since DATE] [PROJECT_DIR...]
+                                                                what the human said in this repository's local
+                                                                session transcripts, oldest first; read-only
     python3 .agents/tools/bundle.py digest [TREE] --check       deprecated alias of `verify` (0.0.x only)
 
 With no REPO, the repositories are this session's workspace: `AGENT_WORKSPACE` if it is set, else the
@@ -2704,6 +2707,141 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
     return found
 
 
+# --- what the human said: the assistant's local session transcripts ------------------------------------
+# A harvest reads what was said and never recorded (`prompt-harvest.md`, Phase 1 step 1): the typed turns,
+# the messages sent while the assistant worked, and the answers to question tools, whose free text
+# overrides the options. Claude Code keeps each session as JSON lines under `~/.claude/projects/<the
+# repository's path, every other character a dash>/`. Read here, printed, never written anywhere: a
+# transcript carries the logged-in account's identity.
+
+# What the host writes into the human's side of a transcript: reminders, notifications, another agent's
+# messages, the editor's context. A part that starts with one of these is not the human's.
+TRANSCRIPT_NOISE = ("<system-reminder>", "<task-notification>", "<agent-message", "<local-command", "<ide_", "Caveat:",
+                    "Base directory for this skill")
+TURN_LIMIT = 4000  # characters of one message shown; a pasted log is not what the harvest reads for
+
+
+def _encoded(path: Path) -> str:
+    return re.sub(r"[^A-Za-z0-9]", "-", path.as_posix())
+
+
+def transcript_dirs(repo: Path, home: Path | None = None) -> list[Path]:
+    """The transcript folders of a repository: its own, the assistant's worktrees under it, and every git
+    worktree of it, those that exist, in that order."""
+    projects = (home or Path.home()) / ".claude/projects"
+    own = _encoded(repo)
+    found = [projects / own, *sorted(projects.glob(own + "--claude-worktrees-*"))]
+    try:
+        listed = git(repo, "worktree", "list", "--porcelain")
+    except (subprocess.CalledProcessError, OSError):
+        listed = ""
+    found += [projects / _encoded(Path(line[9:])) for line in listed.split("\n") if line.startswith("worktree ")]
+    return [p for i, p in enumerate(found) if p.is_dir() and p not in found[:i]]
+
+
+def _content_text(content: object) -> str:
+    """The text parts of a message that are not the host's (`TRANSCRIPT_NOISE`), joined."""
+    parts = [content] if isinstance(content, str) else [
+        c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text"] if isinstance(content, list) else []
+    return "\n".join(p for p in parts if p.strip() and not p.lstrip().startswith(TRANSCRIPT_NOISE))
+
+
+def _short(text: str, limit: int = TURN_LIMIT) -> str:
+    text = text.strip()
+    return text if len(text) <= limit else text[:limit] + f" [... {len(text) - limit} more characters]"
+
+
+def _answer_lines(result: dict) -> list[str]:
+    """A question tool's round: each question with its options, then each answer, free text marked."""
+    questions = [q for q in result.get("questions") or [] if isinstance(q, dict)]
+    labels = {q.get("question"): {o.get("label") for o in q.get("options") or [] if isinstance(o, dict)} for q in questions}
+    lines = [f"    Q: {q.get('question')} [{' | '.join(str(o.get('label')) for o in q.get('options') or [] if isinstance(o, dict))}]"
+             for q in questions]
+    for question, answer in (result.get("answers") or {}).items():
+        chosen = {part.strip() for part in str(answer).split(",")}
+        free = not (chosen <= labels.get(question, set()) or str(answer) in labels.get(question, set()))
+        lines.append(f"    A: {_short(str(answer))}" + ("  (free text)" if free else ""))
+    for question, note in (result.get("annotations") or {}).items():
+        if isinstance(note, dict) and note.get("notes"):
+            lines.append(f"    note on {str(question)[:80]!r}: {_short(str(note['notes']))}  (free text)")
+    return lines
+
+
+def read_turns(path: Path, since: str = "", context: bool = False) -> list[tuple[str, list[str]]]:
+    """What the human said in one transcript, in order, as (timestamp, lines): typed turns, messages sent
+    mid-turn, question rounds and the skills invoked. The assistant's own words, tool results, reminders
+    and a delegated agent's prompts are left out; with `context`, the assistant's last words before each
+    typed turn are kept, shortened."""
+    said: list[tuple[str, list[str]]] = []
+    last, when = "", ""
+    for raw in path.read_text(encoding="utf-8", errors="replace").split("\n"):
+        try:
+            record = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(record, dict) or record.get("isSidechain"):
+            continue
+        when = str(record.get("timestamp") or when)
+        stamp = when[:16].replace("T", " ")
+        message = record.get("message") if isinstance(record.get("message"), dict) else {}
+        kind = record.get("type")
+        found: list[str] = []
+        if kind == "assistant":
+            for part in message.get("content") or []:
+                if not isinstance(part, dict):
+                    continue
+                if part.get("type") == "text" and part.get("text", "").strip():
+                    last = part["text"].strip()
+                if part.get("type") == "tool_use" and part.get("name") == "Skill":
+                    found.append(f"- {stamp} skill: {(part.get('input') or {}).get('skill')}")
+        elif kind == "user" and not record.get("isMeta") and not (
+                isinstance(record.get("origin"), dict) and record["origin"].get("kind", "human") != "human"):
+            result = record.get("toolUseResult")
+            if isinstance(result, dict) and "answers" in result:
+                found = [f"- {stamp} questions:", *_answer_lines(result)]
+            elif isinstance(result, str) and "doesn't want to proceed" in result:
+                reason = result.partition("the user said:")[2].strip()
+                found.append(f"- {stamp} rejected a tool call" + (f": {_short(reason)}" if reason else ""))
+            elif result is None:
+                text = _content_text(message.get("content")).strip()
+                command = re.search(r"<command-name>(.*?)</command-name>", text)
+                if command:
+                    args = re.search(r"<command-args>(.*?)</command-args>", text, re.DOTALL)
+                    found.append(f"- {stamp} command: {command.group(1)}" + (f" {_short(args.group(1))}" if args and args.group(1).strip() else ""))
+                elif text.startswith("[Request interrupted"):
+                    found.append(f"- {stamp} interrupted the assistant")
+                elif text and not text.startswith(TRANSCRIPT_NOISE):
+                    if context and last:
+                        found.append(f"  (after the assistant said: {_short(last, 300)!r})")
+                    found.append(f"- {stamp} human: {_short(text)}")
+        elif kind == "attachment":
+            attachment = record.get("attachment") or {}
+            if isinstance(attachment, dict) and attachment.get("type") == "queued_command" \
+                    and attachment.get("commandMode") in (None, "prompt"):
+                text = _content_text(attachment.get("prompt")).strip()
+                if text and not text.startswith(TRANSCRIPT_NOISE):
+                    found.append(f"- {stamp} human, mid-turn: {_short(text)}")
+        if found and (not since or when[:10] >= since):
+            said.append((when, found))
+    return said
+
+
+def turns_report(dirs: list[Path], since: str = "", context: bool = False, labels: dict[Path, str] | None = None) -> list[str]:
+    """Every session of the given transcript folders with something the human said, the oldest first,
+    each under a heading with its first timestamp, its short id and its folder."""
+    sessions = []
+    for folder in dirs:
+        for path in folder.glob("*.jsonl"):
+            said = read_turns(path, since, context)
+            if said:
+                sessions.append((said[0][0], path.stem[:8], (labels or {}).get(folder, folder.name), said))
+    lines = []
+    for first, sid, where, said in sorted(sessions, key=lambda s: (s[0], s[1])):
+        lines += ["", f"## {first[:16].replace('T', ' ')} · session {sid} ({where})", ""]
+        lines += [line for _, found in said for line in found]
+    return lines
+
+
 # Every refusal the tool raises on purpose. Caught in `main`, printed as one line, exit 2: a refusal
 # is an answer, not a crash.
 REFUSALS = (NotACarrierError, OutsideWorkspaceError, DirtyTreeError, UndeclaredScopeError, RefusedError, FrontmatterError)
@@ -2787,6 +2925,12 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
+    p = sub.add_parser("turns", help="what the human said in the assistant's local session transcripts, oldest first; read-only")
+    p.add_argument("dirs", nargs="*", metavar="PROJECT_DIR",
+                   help="transcript folders (default: REPO's in ~/.claude/projects, and its worktrees')")
+    p.add_argument("--since", default="", metavar="DATE", help="YYYY-MM-DD, that day included (a harvest: harvested_through)")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--context", action="store_true", help="also the assistant's last words before each typed turn, shortened")
     return parser
 
 
@@ -2957,6 +3101,24 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         lone = sum(m.searched and not m.found_in and not m.partly for m in found)
         print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(bool(m.partly) for m in found)} partly held, "
               f"{sum(not m.searched for m in found)} to read")
+        return 0
+    if args.command == "turns":
+        if args.since and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.since):
+            raise RefusedError(f"--since {args.since}: not a date, YYYY-MM-DD")
+        repo = Path(args.repo).resolve()
+        dirs = [Path(d) for d in args.dirs] or transcript_dirs(repo)
+        # Named by role, not by path: the folder's name is the repository's path, home folder included.
+        labels = {} if args.dirs else {d: "this checkout" if d.name == _encoded(repo) else
+                                       "worktree " + d.name.rpartition("-worktrees-")[2] if "-worktrees-" in d.name else "another worktree"
+                                       for d in dirs}
+        if not dirs:
+            print(f"no transcripts for this repository under {Path('~/.claude/projects')}: give PROJECT_DIR")
+            return 0
+        lines = turns_report(dirs, args.since, args.context, labels)
+        for line in lines:
+            print(line)
+        print(f"\n{sum(line.startswith('## ') for line in lines)} sessions with something the human said, in {len(dirs)} folders"
+              + (f", since {args.since}" if args.since else ""))
         return 0
     return 2
 
