@@ -33,6 +33,12 @@ repositories the owner named have no bundle on any branch and wait for a bootstr
 the home with its tag; open the four pull requests; the bootstraps; the proposed rows each carrier's log now
 shows; installing the method's skills in those carriers, each with its `LOCAL.md`.
 
+**Later the same day:** the two repositories with no bundle were bootstrapped, each on a branch cut from an
+unmerged ticket branch that holds its gate, so their pull requests merge after it; both registered at 0.0.29
+(seven carriers on it from this machine, each equal to the tag file for file). `release.py align` no longer
+passes once the home builds anything unreleased, since it compares with the home's working release rather
+than the tag (a proposal of this repository); the alignment was checked by hand against the tag.
+
 **What went wrong this session:** the release was carried as "ready" before each carrier's own audit had run
 over it, and the review then found it would turn one carrier's gate red and leave three carriers' enforcer
 checks silently reading the wrong cell; the migration dated rows by committer date, which a history rewrite had
