@@ -12,7 +12,7 @@ This file is the entry point: the phase guide for every note, and a link to each
 ## How an agent uses this index during a task
 
 0. **Only when the change touches state, a contract, data, security or verification.** A typo, a text or a local rename consults nothing: the index costs a session only when it can change a decision.
-1. **At the start**, find the phase you are in under *By phase of work*: it names the notes that may apply, for browsing. The lookup that opens cards is step 2.
+1. **At the start**, find the phase you are in under *By phase of work*: it names, by slug, the notes that may apply, for browsing; a note's card is `cards/<slug>.md`. The lookup that opens cards is step 2.
 2. **Before a design decision**, look up the action under *By what you are about to do*, below. The third column is the case where the default answer is wrong. If it matches, open the card it links: one small file with the claim, *Not when* (where it stops applying) and the check. **Open the full note only when you cannot tell whether its boundary holds here.** The area indexes are for browsing, not for this lookup.
 3. **When this repository states an invariant that contradicts a note, the repository wins.** Follow it, and say in the report which note gave way and why: that is evidence the note's boundary is incomplete.
 4. **Before claiming the work is done**, run the check of every card you relied on, and say in the report which ones ran and what they showed. A heuristic that was read but not checked is an opinion that happened to be nearby.

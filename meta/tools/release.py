@@ -369,14 +369,23 @@ def _card_link(note: Note) -> str:
     return f"[{note.slug}](cards/{note.slug}.md)" + (REVIEW_MARK if note.state == "review" else "")
 
 
+def _card_name(note: Note) -> str:
+    """A note in a phase cell: its slug, which names its card (`cards/<slug>.md`). The card's one link from
+    the index is its *about to do* row, which every shipped note has; repeating it in every phase the note
+    is in cost the reviewer, who loads the index whole, about a tenth of its budget."""
+    return f"`{note.slug}`" + (REVIEW_MARK if note.state == "review" else "")
+
+
 def render_index(template: str, notes: list[Note], topics: list[str], order: Order | None = None,
-                 link=None) -> str:  # noqa: ANN001 -- (Note) -> str
-    """`INDEX.md` from its template: every `{{notes:PHASE}}` replaced by that phase's notes, and an
-    `<!-- generated: about -->` marker by the *about to do* rows of every area, each linking a card."""
+                 link=None, name=None) -> str:  # noqa: ANN001 -- (Note) -> str
+    """`INDEX.md` from its template: every `{{notes:PHASE}}` replaced by that phase's notes, each written
+    by `name`, and an `<!-- generated: about -->` marker by the *about to do* rows of every area, each
+    linking a card by `link`."""
     order = order or Order()
     rank = {t: i for i, t in enumerate(topics)}
     shipped = [n for n in notes if n.state in SHIPPED_STATES]
     link = link or (lambda n: _link(n, ""))
+    name = name or link
     items = sorted(((n, i, r) for n in shipped for i, r in enumerate(n.meta.get("about") or [])),
                    key=lambda it: (rank.get(it[0].topic, len(rank)), it[0].slug, it[1]))
     about = "\n".join([_row(["…do this", "Card", "Because the default answer is wrong when"]), "|---|---|---|",
@@ -390,7 +399,7 @@ def render_index(template: str, notes: list[Note], topics: list[str], order: Ord
         members = [n for n in shipped if phase in n.meta.get("phases", [])]
         members = _ordered(members, lambda n: n.slug, order.phases.get(phase)) if order.phases.get(phase) \
             else sorted(members, key=lambda n: (rank.get(n.topic, len(rank)), n.slug))
-        return " · ".join(link(n) for n in members)
+        return " · ".join(name(n) for n in members)
 
     return PHASE_TOKEN.sub(cell, template)
 
@@ -527,7 +536,8 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
         out[f"knowledge/areas/{path.name}"] = head + render_area(
             path.read_text(encoding="utf-8"), path.stem, notes, topics_by_area[path.stem], order, cards)
     out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order,
-                                                     link=_card_link if banner else None)
+                                                     link=_card_link if banner else None,
+                                                     name=_card_name if banner else None)
     groups = principles(notes)
     out.update({f"knowledge/cards/{n.slug}.md": render_card(n, [s for s in groups.get(n.meta.get("principle"), []) if s is not n])
                 for n in notes if n.state in SHIPPED_STATES})

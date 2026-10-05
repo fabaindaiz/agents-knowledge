@@ -40,6 +40,8 @@ INDEX = """# Index
 | **Plan and design** | What will this touch? | {{notes:plan}} |
 | **Review** | What could this remove? | {{notes:review}} |
 
+<!-- generated: about -->
+
 The checks are in [areas/one.md](areas/one.md).
 """
 FULL = """---
@@ -251,8 +253,12 @@ class Build(Base):
         self.assertIn("| [beta](../notes/active/beta.md) | The claim of beta. | When it does not hold | a check for beta |", area)
         self.assertIn("| Do alpha | [alpha](../notes/active/alpha.md) | the obvious fails |", area)
         self.assertIn("| alpha | A paper — **well established** | reasoned |", area)
-        self.assertIn("| **Plan and design** | What will this touch? | [alpha](cards/alpha.md) · [beta](cards/beta.md) |", index)
-        self.assertIn("| **Review** | What could this remove? | [alpha](cards/alpha.md) |", index)
+        # The phase table names each note by slug; its one link to the card is in the *about to do* table,
+        # so the index the reviewer loads whole does not repeat a link per phase.
+        self.assertIn("| **Plan and design** | What will this touch? | `alpha` · `beta` |", index)
+        self.assertIn("| **Review** | What could this remove? | `alpha` |", index)
+        self.assertIn("| Do alpha | [alpha](cards/alpha.md) | the obvious fails |", index)
+        self.assertEqual(index.count("](cards/alpha.md)"), 1)
         card = (self.agents / "knowledge/cards/alpha.md").read_text()
         self.assertIn("**Not when.** When the first case holds · When the second case holds", card)
         self.assertIn("(../notes/active/alpha.md)", card)
