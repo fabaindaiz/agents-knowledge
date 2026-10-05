@@ -919,6 +919,26 @@ class UserDenies(Base):
         self.assertEqual(code, 0, out)  # a warning, never a failure
         self.assertIn("! user deny `Edit(docs/**)`", out)
 
+    def test_a_dot_slash_rule_is_anchored_at_the_root_and_the_warning_says_what_it_reports(self) -> None:
+        # `./.env` floated to any depth like `.env`; and the warning spoke only of files the gate writes.
+        repo = self.a_repo([])
+        (repo / "sub").mkdir()
+        (repo / "sub/.env").write_text("B=2\n")
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "a nested env")
+
+        anchored = B.deny_covers("./.env", ["sub/.env", ".env"], repo, self.root)
+        floating = B.deny_covers(".env", ["sub/.env", ".env"], repo, self.root)
+        (self.root / "user-settings.json").write_text(json.dumps({"permissions": {"deny": ["Read(./.env)"]}}))
+        with mock.patch.dict("os.environ", {"AGENT_GUIDES_USER_SETTINGS": str(self.root / "user-settings.json")}):
+            warnings = B.user_deny_warnings(repo)
+
+        self.assertEqual(anchored, [".env"])
+        self.assertEqual(floating, ["sub/.env", ".env"])
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("covers 1 committed file", warnings[0])
+        self.assertIn("every committed file the rule matches", warnings[0])
+
     def test_an_absolute_rule_reaches_the_repository_and_none_without_settings(self) -> None:
         repo = self.a_repo(["Edit(/" + str(self.root) + "/repo/docs/*.md)"])
 

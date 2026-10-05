@@ -2546,7 +2546,8 @@ def published_on(repo: Path, sha: str) -> list[str]:
 # - File rules are `Read(path)` and `Edit(path)`, gitignore syntax: `//p` is absolute, `~/p` is under the
 #   home folder, `/p` is relative to the settings file's own folder (for user settings, `~/.claude/p`), and
 #   `p` or `./p` is relative to the session's working directory, taken here to be the repository root. A
-#   pattern without a slash, or a single directory and `/**` in a deny rule, matches at any depth. A Read
+#   bare pattern without a slash, or a single directory and `/**` in a deny rule, matches at any depth; one
+#   written `./p` names that path at the root and is not floated (`./.env` is not `sub/.env`). A Read
 #   deny also blocks Edit and Write on that path. A `Write(path)` rule is accepted but never consulted.
 # - They block the assistant's file tools and the file commands it runs in a shell, not a script that
 #   opens files itself: a gate or hook still writes the file, while the session cannot edit it by hand.
@@ -2602,8 +2603,10 @@ def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path
         anchor, pattern = Path.home(), rule_path[2:]
     elif rule_path.startswith("/"):
         anchor, pattern = settings_dir, rule_path[1:]
+    elif rule_path.startswith("./"):
+        anchor, pattern = repo, rule_path[2:]  # a path the rule spells from the root: anchored there, never floated
     else:
-        anchor, pattern, relative = repo, rule_path.removeprefix("./"), True
+        anchor, pattern, relative = repo, rule_path, True
     pattern = pattern.rstrip("/")
     if not pattern:
         return []
@@ -2623,7 +2626,8 @@ def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path
 
 
 def user_deny_warnings(repo: Path) -> list[str]:
-    """Deny rules in the user's own settings that cover files committed in this repository.
+    """Deny rules in the user's own settings that cover files committed in this repository: every committed
+    file a rule matches, broader than the files a gate or hook writes, which the tool cannot tell apart.
 
     A warning, never a failure: the repository's gate and hooks may write those files, and a session here
     cannot lift a user deny (see the assumptions above). Empty when the repository is not a git work tree
@@ -2653,9 +2657,11 @@ def user_deny_warnings(repo: Path) -> list[str]:
         inert = " (the host never consults a `Write(path)` rule; `Edit(path)` is the one that blocks)" \
             if m.group(1) == "Write" and m.group(2) is not None else ""
         warnings.append(f"user deny `{rule}` in {shown} covers {len(covered)} committed file{'s' if len(covered) > 1 else ''} "
-                        f"here ({examples}): user and project denies merge, and a deny at any level wins over every allow, "
-                        f"so no setting in this repository lifts it and a session here cannot edit what its gate or hooks "
-                        f"write there; narrow the rule (anchor it with `//` or `~/`) if that is not meant{inert}")
+                        f"here ({examples}; every committed file the rule matches is reported, not only those a gate or "
+                        f"hook writes): user and project denies merge, and a deny at any level wins over every allow, "
+                        f"so no setting in this repository lifts it and a session here cannot edit those files, nor what "
+                        f"its gate or hooks write among them; narrow the rule (anchor it with `//` or `~/`) if that is "
+                        f"not meant{inert}")
     return warnings
 
 
