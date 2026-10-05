@@ -20,6 +20,14 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**State on 2026-10-05, at the close of 0.0.28.** A fresh-context review of 0.0.27, run before anything was
+published, found four important defects (a traceback that blocked pushes, a trailers check that read published
+history and advised rewriting it, a count that undercounted recurrences, and the home not applying its own
+attribution setting) and ten minor ones; a second review of the fixes found four more. 0.0.28 carries all of them,
+the three skills' descriptions reworded from the trigger research, and what the day's eight research documents made
+actionable at once (`meta/reviews/2026-10-05-*.md`); the rest waits for the owner (`i-5ed7e8-54cb3f`). The
+carriers on this machine took 0.0.28 except the one the owner is working on from another machine.
+
 **State on 2026-10-05, at the close of 0.0.27.** Release 0.0.27 is tagged (on `release/0.0.27`, not yet
 merged into `main` nor pushed). It took in two hundred and twenty-one proposals from eight carriers, every
 one harvested in the same session, transcripts included, with a verdict the owner reviewed theme by theme
@@ -103,7 +111,9 @@ the full original, edited here, and the release, generated from it by code and n
 is a build rule over the original. Industry formats over home-grown ones. Everything derivable is
 generated. Nothing leaves the candidate queue by age. The user is the sole author of commits and tags. A
 prediction is written before a measurement, and a refuted one is stated, not moved. Where a local
-checkout and its remote disagree after a rewrite, the remote is the record.
+checkout and its remote disagree after a rewrite, the remote is the record. Carriers are updated only when the owner asks, and only
+the ones named; a session never offers to update another repository's `.agents/` on its own. Questions run in
+modes (principle 15): a decision review one decision per turn, everything at once before the owner leaves.
 
 **The template repository** a new project starts from holds 0.0.27 on a branch with its tag, with no
 `carrier.toml`; it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
@@ -130,24 +140,26 @@ folder be committed and pushed; queued experiments taken into a build input chan
 workflow of agents was launched without the owner opting in. Each was caught before anything wrong
 reached a carrier's remote, most by a check, two by the owner.
 
-**Waiting on the user:**
+**Waiting on the user** (at the close of 0.0.28; the owner closed the session in this repository only):
 
-1. **Merge and push the home** (`release/0.0.27` into `main`, fast-forward, with the tag `v0.0.27`) and the
-   template's branch and tag.
-2. **Push each carrier's `chore/harvest-2026-10-05`** (harvest, records close, 0.0.27), merging into its
-   main branch as its own rules say. Two of them have live sessions on other branches; one has a gate that
-   hangs under heavy load (run it when the machine is quiet).
-3. **Install the updated profile** on each machine: the guide's install block in the personal
-   configuration repository (an agent may not write the user-level instruction file), and the
-   `attribution` setting where a machine lacks it.
-4. **Published commits that carry the attribution trailer** in several carriers: left as they are by the
-   owner's ruling; rewriting them is the owner's call.
-5. Carriers' own open items the agents recorded for the owner (each in that carrier's roadmap): a worktree
-   with a day of uncommitted work, backup branches, an unanswered request about owner-grantable exceptions,
-   a demo build recorded on a device, a phase whose records close waits for its own session.
-6. `i-5ed7e8-ef066e` and `i-5ed7e8-543516`, as before.
-7. One repository holds a bundle with no `carrier.toml` (a paused bootstrap): not a carrier until it mints
-   its id.
+1. **The carriers' branches**: eight carriers hold their harvest, records close and 0.0.27/0.0.28 on a branch
+   named for the session's harvest, committed and unpushed; merging and pushing each is the owner's call. One
+   carrier the owner is working on from another machine holds 0.0.27 staged and uncommitted on that branch, and
+   its local copy is stale: leave it until that machine has pushed. Two carriers' checkouts are used by live
+   sessions on other branches.
+2. **Install the updated profile** on each machine (an agent may not write the user-level instruction file): the
+   install block of the profile guide in the personal configuration repository; and the `attribution` setting
+   where a machine lacks it.
+3. **This machine's client** runs a version whose background time limit applies to interactive sessions; a later
+   version lifts it. Keep the machine on mains power with the lid open during long meta-sessions.
+4. **Published commits carrying the attribution trailer** in three carriers: leave and document, or rewrite per
+   repository (`meta/reviews/2026-10-05-attribution-in-published-history.md`).
+5. **The research decisions** of `i-5ed7e8-54cb3f`, and the review of one-carrier changes, `i-5ed7e8-94f262`.
+6. Carriers' own open items recorded in their roadmaps for the owner: a worktree with a day of uncommitted work,
+   backup branches, an unanswered request about owner-grantable exceptions, a demo build recorded on a device, a
+   phase whose records close waits for its own session, a timing test still absolute in one carrier.
+7. `i-5ed7e8-ef066e` and `i-5ed7e8-543516`, as before. One repository holds a bundle with no `carrier.toml` (a
+   paused bootstrap).
 
 ## Next
 
@@ -185,6 +197,12 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
      the procedure; a method note; `check-local` checks the attribution setting and the hooks path.
   7. *Triggers* (`skill-triggers`): `trigger.py`'s changes and the eval protocol, with the owner labelling the
      ambiguous cases.
+- **`i-5ed7e8-89ec30` · Refuse a commit chained on a gate whose output goes through a filter.** The second occurrence in
+  this repository (0.0.25 committed and pushed a stale release folder; on 2026-10-05 a commit landed with three
+  generated files stale), each time the gate's status was the filter's. The rule is in the close skill and the
+  bootstrap; it does not act at the moment the command is typed. *Remedy:* the session hook that already guards
+  `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
+  about half an hour with a planted test. *Collision:* the hook's other checks.
 - **`i-5ed7e8-94f262` · Review the method changes published on one carrier's evidence (0.0.26 and 0.0.27).**
   Each is marked *one carrier's evidence* in `.agents/CHANGELOG.md` and `meta/tracking/history.md`: keep it
   where a second carrier's entries or harvest show it acting, rework it where they show friction, withdraw
@@ -469,6 +487,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **0.0.28, 2026-10-05: the fixes of two fresh-context reviews of 0.0.27, before either was published.**
+  Described in `.agents/CHANGELOG.md`.
 - **0.0.27, 2026-10-05: the maintainer's way of deciding, and eight carriers' harvests taken in.** Two
   hundred and twenty-one proposals, seven notes admitted, the question modes and two skills. Described in
   `.agents/CHANGELOG.md`.
