@@ -36,7 +36,8 @@ You do not have to remember this for it to hold:
   `.agents/`. `bundle.py verify` and `release.py check` run it.
 - A Claude Code hook (`.claude/settings.json`) states the rule at the start of every session and on
   every prompt, and blocks `git commit` and `git push` while the check fails.
-- A git hook (`.githooks/pre-commit`) blocks any commit, by anyone, while it fails. Enable it once
+- Git hooks block any commit while it fails (`.githooks/pre-commit`) and any push whose commits leak a
+  private term or credit an assistant (`.githooks/pre-push`: `privacy --commits` and `trailers`). Enable them once
   per clone: `git config core.hooksPath .githooks`.
 - CI runs the same check.
 
@@ -139,6 +140,8 @@ python3 meta/tools/release.py check                    # the home's CI: verify, 
 python3 meta/tools/release.py build [--check]          # the whole release and SHA256SUMS, from sources/
 python3 meta/tools/release.py report                   # sizes, budgets and the knowledge funnel
 python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible
+python3 .agents/tools/bundle.py privacy --commits @{u}..HEAD   # the same, over what a push sends
+python3 .agents/tools/bundle.py trailers               # no commit message credits an assistant
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates
 pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads the same through PyYAML
 python3 evals/harness.py check                         # the experiment's graders are seen to fail and pass
