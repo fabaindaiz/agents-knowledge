@@ -168,6 +168,9 @@ For each carrier, and **with that carrier as today's repository** (`prompt-conte
 - **Never write over uncommitted bundle files** without their owner's word.
 - **Never close on "the checksums match"** — close on `align`, which also verifies and checks the registry.
 - **Never guess a carrier.** One that is not reached is named, not assumed aligned.
+- **Never leave a long meta-session to a machine that may sleep, or to gates run in parallel**: a sleeping
+  machine fires every wall-clock timer at wake, and parallel gates compete for it
+  (`prompt-context.md` §*Long runs and delegates*).
 - **Never let two parallel agents share a scratch directory.** Each gets its own, named for its task, and a destructive step there (planting a violation, deleting a folder) first checks that its target resolves inside it.
 - **Never let a private carrier become recognisable** in the release, in `meta/tracking/` or in a changelog, and never write a description beside a carrier id.
 - **Never write into a repository this session does not have open**, even when its path is in the manifest. `release.py splice` refuses it; that refusal is the rule, not an obstacle to work around.

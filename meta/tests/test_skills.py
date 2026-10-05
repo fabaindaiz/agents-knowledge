@@ -557,3 +557,44 @@ class TriggerEval(Base):
         self.assertEqual((verdict["fire"], verdict["misfire"]), (0.8, 0.1))
         self.assertTrue(verdict["passed"])
         self.assertFalse(self.T.verdict(results + [{"expect": False, "fired": True}])["passed"])
+
+    @staticmethod
+    def call(name: str, skill: str = "") -> str:
+        block = {"type": "tool_use", "name": name, "input": {"skill": skill} if skill else {}}
+        return json.dumps({"type": "assistant", "message": {"content": [block]}})
+
+    def test_the_lenient_metric_counts_a_fire_in_the_first_three_calls_before_any_write(self) -> None:
+        read, skill, write = self.call("Read"), self.call("Skill", "close"), self.call("Edit")
+
+        self.assertEqual(self.T.judge(self.T.tool_calls([read, skill]), "close"), {"strict": False, "lenient": True})
+        self.assertEqual(self.T.judge(self.T.tool_calls([skill]), "plugin:close"[7:]), {"strict": True, "lenient": True})
+        self.assertEqual(self.T.judge(self.T.tool_calls([write, skill]), "close"), {"strict": False, "lenient": False})
+        self.assertEqual(self.T.judge(self.T.tool_calls([read, read, read, skill]), "close"),
+                         {"strict": False, "lenient": False})
+
+    def test_intervals_owner_cases_and_captures_are_reported(self) -> None:
+        lo, hi = self.T.wilson(8, 10)
+        self.assertAlmostEqual(lo, 0.49, places=2)
+        self.assertAlmostEqual(hi, 0.943, places=2)
+        self.assertEqual(self.T.wilson(0, 0), (0.0, 1.0))
+
+        results = [{"request": "close it", "expect": True, "owner": True, "fired": False, "lenient": False,
+                    "first_call": "Skill:wrap-up"}] * 3 + [{"request": "push", "expect": False, "fired": False,
+                                                            "lenient": False, "first_call": "Bash"}] * 3
+        verdict = self.T.verdict(results)
+        self.assertEqual(verdict["owner_fire"], 0.0)
+        self.assertFalse(verdict["passed"])
+        self.assertEqual(len(verdict["fire_interval"]), 2)
+        self.assertEqual(self.T.captures(results)["close it"], {"Skill:wrap-up": 3})
+
+    def test_refused_tools_stay_visible_and_are_denied_by_a_hook(self) -> None:
+        settings = self.T.deny_hook_settings({"permissions": {"allow": ["Read"]},
+                                              "hooks": {"PreToolUse": [{"matcher": "Read", "hooks": []}]}})
+
+        self.assertEqual(settings["permissions"], {"allow": ["Read"]})
+        added = settings["hooks"]["PreToolUse"][-1]
+        self.assertIn("Bash", added["matcher"])
+        self.assertNotIn("Skill", added["matcher"])
+        self.assertIn("exit 2", added["hooks"][0]["command"])
+        self.assertEqual(len(settings["hooks"]["PreToolUse"]), 2)
+        self.assertNotIn("--disallowedTools", self.T.command("claude", "a request"))

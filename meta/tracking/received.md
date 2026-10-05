@@ -311,3 +311,30 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-dcf54666cf` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-e191a3b34f` | 0.0.27 | queued as `a-mutation-that-did-not-apply-reads-as-a-result` |
 | `p-f62a14e734` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-0c47190a71` | 0.0.29 | queued as `register-resolves-a-worktree-to-its-repository` |
+| `p-0ddd2bc888` | 0.0.29 | another occurrence of the admitted `a-filtered-gate-cannot-block`; carried by `i-5ed7e8-89ec30` |
+| `p-11cb79103c` | 0.0.29 | queued as `install-skills-names-a-shadowed-base-change` |
+| `p-1c8e43f1bb` | 0.0.29 | admitted into the method and the tools, 0.0.29: the private folder and its three layers |
+| `p-43f2749b3d` | 0.0.29 | applied to the method, 0.0.29: §*Long runs and delegates* and the meta-session's line (`d-5ed7e8-88c4f6`) |
+| `p-4cbe922a45` | 0.0.29 | queued as `gather-reads-a-branch-not-only-the-checkout` |
+| `p-4d8247843c` | 0.0.29 | admitted into the method, 0.0.29: artifact 6's Status column (parts under review) |
+| `p-4f5980bee6` | 0.0.29 | admitted into the tools, 0.0.29: `bundle.py decisions` and `--migrate` |
+| `p-8b14810588` | 0.0.29 | queued as `a-machine-local-check-input-is-part-of-every-gate-that-reads-it` |
+| `p-8de6fcd6f2` | 0.0.29 | applied to the method, 0.0.29: §*Long runs and delegates* and the meta-session's line (`d-5ed7e8-88c4f6`) |
+| `p-be7f469024` | 0.0.29 | admitted into the method, 0.0.29: the adoption row for a host that keeps ADRs |
+| `p-d977e402eb` | 0.0.29 | admitted into the method, 0.0.29: known debt and the when-to-write criteria (criteria under review) |
+| `p-029f0e713d` | 0.0.29 | queued as `timeout-is-not-an-outcome` |
+| `p-055c3ccdef` | 0.0.29 | queued as `privacy-misses-a-derived-prefix-in-own-fields` |
+| `p-1ba10e1a86` | 0.0.29 | answered: already resolved in an earlier release (the prune offers the better wording as a proposal) |
+| `p-2fa5a68b2e` | 0.0.29 | queued as `a-confirmation-needs-a-terminal` |
+| `p-3cd68c8c75` | 0.0.29 | another occurrence for the queued experiment `remote-mutation-names-target-effect-reversal`; it stays queued |
+| `p-537bd458f8` | 0.0.29 | answered: already resolved in 0.0.27 (the roadmap heading puts the id after the middle dot) |
+| `p-5da3b658f6` | 0.0.29 | another occurrence of the note `a-check-must-be-seen-to-fail` (into which its slug was folded), merged into its evidence |
+| `p-8294259ef6` | 0.0.29 | answered: already resolved (the carrier's fields have one home, `carrier.toml`, stated in the README) |
+| `p-82e5750c62` | 0.0.29 | queued as `ids-cannot-read-a-history-that-quotes-a-placeholder` |
+| `p-9589187233` | 0.0.29 | another occurrence of the note `derived-copy-goes-stale-silently`, merged into its evidence |
+| `p-ad51fa8803` | 0.0.29 | queued as `invariant-survives-a-refactor` |
+| `p-b9b82d45a5` | 0.0.29 | queued as `read-output-is-untrusted-input` |
+| `p-c604d1066e` | 0.0.29 | queued as `a-session-socket-is-a-credential` |
+| `p-d8c7a59ff1` | 0.0.29 | another occurrence of the note `a-check-must-be-seen-to-fail`, merged into its evidence |
+| `p-dc22c63de8` | 0.0.29 | queued as `ids-warns-where-a-host-must-fail` |

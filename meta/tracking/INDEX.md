@@ -6,16 +6,16 @@ Read it before admitting a note or writing a candidate: an idea listed here is e
 answered, never created again under a new name. The full rows are in `candidates.md` and `history.md`,
 the notes in `sources/notes/`.
 
-## Notes under review (0)
+## Notes under review (1)
 
-None.
+- `a-rewrite-cleans-only-what-refs-reach` — Rewriting published history removes a line only from what branches and tags still reach: the forge keeps the old commits by hash and any …
 
 ## Retired notes (2)
 
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (84)
+## Candidates in the queue (96)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -71,7 +71,7 @@ None.
 - `ratchet-in-a-pinned-environment` — K, since 0.0.21 · lacks a release to apply it
 - `best-effort-side-channels` — K, since 0.0.21 · lacks a release to apply it
 - `nested-partial-update-replaces` — K, since 0.0.21 · lacks a release to apply it
-- `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks cost figures; whether per-surface reviewers beat one reviewer reading everything. The second repository arrived at 0.0.27, and widens …
+- `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks a comparison with k independent generalists at equal cost (the literature says what holds either way: independence, merged findings …
 - `an-update-is-driven-by-the-new-side` — K, since 0.0.23 · lacks a second occurrence, and literature on self-updating clients
 - `a-repair-request-runs-once-per-load` — K, since 0.0.23 · lacks a second occurrence; it may be an occurrence of `retry-over-irreversible-effect`
 - `pin-the-treatment-per-trial` — K, since 0.0.24 · lacks a second occurrence; overlaps reproduce-the-checkout-not-only-the-environment
@@ -101,13 +101,36 @@ None.
 - `a-batch-child-gets-no-terminal` — K, since 0.0.27 · lacks a decision between a refusal as textbook and one *Working safely* sentence (a command an agent runs is non-interactive: standard …
 - `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); a second repository; one sentence in principle 7 or 18
 - `a-principle-can-have-no-subject-in-a-carrier` — M, since 0.0.27 · lacks a second carrier for the misfiling; a design: a trigger field on not-yet and declined entries that `check-local` or the update can …
+- `register-resolves-a-worktree-to-its-repository` — M, since 0.0.29 · lacks a fix with a test
+- `install-skills-names-a-shadowed-base-change` — M, since 0.0.29 · lacks a second carrier's occurrence of a replaced section; a tool change with a test
+- `gather-reads-a-branch-not-only-the-checkout` — M, since 0.0.29 · lacks a second meta-session
+- `a-machine-local-check-input-is-part-of-every-gate-that-reads-it` — M, since 0.0.29 · lacks a second occurrence
+- `timeout-is-not-an-outcome` — K, since 0.0.29 · lacks an occurrence; likely an occurrence of `retry-over-irreversible-effect` rather than a note of its own
+- `privacy-misses-a-derived-prefix-in-own-fields` — K, since 0.0.29 · lacks a rule that recognises a legacy record id's repo part as derived and flags it beside any descriptive text in `.agents/`
+- `a-confirmation-needs-a-terminal` — K, since 0.0.29 · lacks an occurrence (the first live session is pending); may be the harness form of `a-default-scope-is-the-widest-one` rather than a claim …
+- `ids-cannot-read-a-history-that-quotes-a-placeholder` — K, since 0.0.29 · lacks a rule for what is an example rather than a record: inline code, a placeholder form the method names, or an ignore list
+- `invariant-survives-a-refactor` — M, since 0.0.29 · lacks a place in `prompt-bootstrap.md` beside that sentence
+- `read-output-is-untrusted-input` — K, since 0.0.29 · lacks an occurrence in a carrier; the literature is strong (two measured studies of instructions planted in operational logs, where …
+- `a-session-socket-is-a-credential` — K, since 0.0.29 · lacks an occurrence; overlaps `secrets-survive-rotation` and may extend it
+- `ids-warns-where-a-host-must-fail` — K, since 0.0.29 · lacks a flag that fails on non-legacy foreign-prefix definitions; and a cited-but-undefined check, which every host also rebuilds
 
 ## Offered again, to merge (0)
 
 None.
 
-## Answered: admitted, folded, refused or dropped (233)
+## Answered: admitted, folded, refused or dropped (244)
 
+- `decision-log-status-decider-and-why` — **admitted into the method**, artifact 6: the Status cell, proposed rows only a person accepts, `unconfirmed:` and `accepting:`; the …
+- `decision-log-known-debt-and-criteria` — **admitted into the method**, artifact 6: *Looks deliberate, is not* and the criteria for a row
+- `decisions-check-and-migration` — **admitted into the tools**: `bundle.py decisions` and `--migrate`, tried read-only against every reachable carrier's log before release
+- `private-records-and-privacy-layers` — **admitted into the method and the tools**: the private folder, the sentinel rule, the public guard and the home's re-check; `propose` …
+- `adopting-a-host-that-keeps-adrs` — **admitted into the method**: the adoption table's row
+- `prune-cannot-lift-into-a-body-it-may-not-edit` — **answered**: already resolved; the prune's *Covered, worse* verdict offers the better wording as a proposal
+- `ids-misses-the-roadmap-heading` — **answered**: resolved in 0.0.27, where the roadmap template moved the id after the middle dot
+- `own-fields-have-two-homes` — **answered**: resolved; the method files carry no header fields, and `carrier.toml` is the one home the README states
+- `long-gates-run-where-a-watchdog-cannot-stop-them` — **applied to the method** with its correction: §*Long runs and delegates* in `prompt-context.md`, a line in the meta-session procedure and …
+- `a-rewrite-cleans-only-what-refs-reach` — **admitted under review**, from the research of 2026-10-05 and the home's own rewrite; it awaits a carrier's rewrite or a decision to leave …
+- `a-local-copy-of-the-release-procedure-goes-stale` — **folded** into `derived-copy-goes-stale-silently` as a form of it: a carrier skill restating the method's change procedure, read in place …
 - `refusal-must-not-read-like-an-answer` — **admitted** as a note, four repositories: the queued data-analysis occurrence and three offered at this release (a channel with no signal …
 - `readout-per-silent-outcome` — **admitted** as a note, two repositories: the second supplied the answer from the target runtime the row lacked (readouts read on the real …
 - `documented-defaults-drift-from-code` — **admitted** as a note, four repositories, with the remedy the row lacked: rewrite the reference from its reader, then hold every …

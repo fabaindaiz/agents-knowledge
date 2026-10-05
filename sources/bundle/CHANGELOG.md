@@ -8,9 +8,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
-The decisions log as a decision record a tool reads, and confidential records that never leave a carrier. A
-carrier's update migrates its log (`prompt-update.md`) and adds `bundle.py decisions` to its gate. The parts
-marked *under review* are re-judged at the next harvest.
+## [0.0.29] - 2026-10-05
+
+The decisions log as a decision record a tool reads, confidential records that never leave a carrier, and the
+owner's decisions on the research of the same day. Its update migrates the carrier's decisions log
+(`prompt-update.md`) and adds `bundle.py decisions` to its gate. The parts marked *under review* are re-judged
+at the next harvest.
 
 ### Added
 
@@ -31,8 +34,23 @@ marked *under review* are re-judged at the next harvest.
 - **The home reads every proposal for privacy again** in `gather` and `intake`, and does not take in one that
   fails or carries a warning nobody answered with `privacy-allow`; the harvest and the close ask the human.
 
+- **§*Long runs and delegates*** (`prompt-context.md`): what stops a delegate that did nothing wrong (a sleeping
+  machine fires every wall-clock timer at wake, the stall watchdog, a lost hand-off), how to run a long gate, gates
+  serialised behind one lock, three lines in every delegate brief.
+- **A test in the gate asserts behaviour, never speed** (principle 18): waits wait for their condition, a timeout is a
+  hang detector, a speed that matters is counted or measured apart; the ratchet note says the same of thresholds.
+- **`check-local` warns** when the committed settings lack the empty `attribution` setting, or when a hooks folder
+  exists and `core.hooksPath` does not point at it.
+- **A note under review, `a-rewrite-cleans-only-what-refs-reach`**: published attribution lines are left and
+  documented; a rewrite, when chosen, is range-limited, leased and followed on every other machine.
+- **Two more occurrences** in `a-check-must-be-seen-to-fail` and a second form of `derived-copy-goes-stale-silently`.
+
 ### Changed
 
+- **An offered whole-branch review** states that its evidence is uncontrolled, proves each finding or reports it
+  unconfirmed, and records findings confirmed and rejected with tokens and minutes in the entry's *Review*.
+- **`report` says how far its estimate is off**: characters over four run about 1.4× low for bundle text; budgets
+  stay in that unit.
 - **Adopting a host that keeps ADR files**: the files stay; an index row per record maps its status to the
   method's, and the mapping is recorded in `adapted`.
 

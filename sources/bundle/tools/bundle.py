@@ -1140,7 +1140,10 @@ def report(tree: Path, sessions: dict[str, list[tuple[str, str | None]]] | None 
         }
     return {
         "tree": str(tree),
-        "tokens": "estimate: ceil(characters / 4)",
+        # Measured on 2026-10-05 from usage deltas on one machine: bundle text runs at about 2.9 characters
+        # per token, so this estimate is about 1.4 times low. Every budget is set in this same unit, so
+        # relative comparisons and the budgets stand; only the absolute figure is low.
+        "tokens": "estimate: ceil(characters / 4), about 1.4× low for bundle text",
         "context_window": CONTEXT_WINDOW,
         "total": total,
         "folders": dict(sorted(folders.items(), key=lambda item: item[0].encode())),
@@ -2958,6 +2961,38 @@ def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path
     return covered
 
 
+def attribution_warnings(repo: Path) -> list[str]:
+    """Where a repository would let the host credit an assistant, or its own hooks do not run: warnings.
+
+    The host adds an attribution line by default; only the committed `attribution` setting, with empty
+    strings, turns it off wherever the repository is cloned. A repository that keeps git hooks in a folder
+    of its own runs them only once `core.hooksPath` points there, which is set per clone. Neither is a failure:
+    the repository may not use that host, and a fresh clone has not set the path yet; both are said.
+    """
+    out = []
+    settings = repo / ".claude/settings.json"
+    if settings.is_file():
+        try:
+            data = json.loads(settings.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            data = {}
+        attribution = data.get("attribution") if isinstance(data, dict) else None
+        if not (isinstance(attribution, dict) and attribution.get("commit") == "" and attribution.get("pr") == ""):
+            out.append(f"{settings.relative_to(repo)}: no `attribution` setting with empty `commit` and `pr`, so the host "
+                       "adds its attribution line to commits and pull requests (`prompt-context.md` §*The platform's own mechanics*)")
+    for folder in (".githooks", ".hooks"):
+        if (repo / folder).is_dir() and any((repo / folder).iterdir()):
+            try:
+                path = git(repo, "config", "--get", "core.hooksPath").strip()
+            except (subprocess.CalledProcessError, OSError):
+                path = ""
+            if path.rstrip("/") != folder:
+                out.append(f"{folder}/ holds git hooks and core.hooksPath is {path or 'unset'}, so they do not run: "
+                           f"git config core.hooksPath {folder}")
+            break
+    return out
+
+
 def user_deny_warnings(repo: Path) -> list[str]:
     """Deny rules in the user's own settings that cover files committed in this repository: every committed
     file a rule matches, broader than the files a gate or hook writes, which the tool cannot tell apart.
@@ -3002,7 +3037,7 @@ def user_deny_warnings(repo: Path) -> list[str]:
 # it may read. They stand in for the cost caps (a normal session at most 1.5 times a session without the
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
 # crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
-# tenth.
+# tenth. In the report's unit, characters over four, which runs about 1.4 times low for bundle text.
 BUDGETS = {"coding": 10_100, "card": 360, "review": 6_900}
 def largest_card(tree: Path) -> tuple[str, int]:
     """(note, estimated tokens) of the largest card: what one lookup from the index costs."""
@@ -3683,7 +3718,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         repos = workspace(args.repos).repos if declared else [OWN_REPO]
         found = check_local_all(repos)
         for repo in repos:
-            for warning in user_deny_warnings(repo):
+            for warning in user_deny_warnings(repo) + attribution_warnings(repo):
                 print(f"  ! {repo.name}: {warning}")
         for name, problems in found:
             for problem in problems:

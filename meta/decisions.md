@@ -3,7 +3,7 @@
 The home's decisions log, in the format release 0.0.29 proposes for artifact 6
 (`meta/reviews/2026-10-05-decision-records.md`): `Status` is `<state> <date> · <decider>`, with `h1` the owner
 and `agent s-…` an agent's session; `Why` may begin with `unconfirmed:` and end with `accepting:`. Seeded on
-2026-10-05 with the decision-record review only; earlier decisions stay where they were taken (the roadmap,
+2026-10-05 with the decision-record review, then the research decisions of `i-5ed7e8-54cb3f`; earlier decisions stay where they were taken (the roadmap,
 `meta/tracking/history.md`, the changelog). This repository is public: no name, no carrier, no private source.
 Ids from `bundle.py id d`. `release.py check` runs `bundle.py decisions` over it.
 
@@ -29,3 +29,17 @@ Ids from `bundle.py id d`. `release.py check` runs `bundle.py decisions` over it
 | d-5ed7e8-5df93f | accepted 2026-10-05 · h1 | A host that keeps its ADR files keeps them, maps their statuses to the method's and records the mapping in `adapted` | principle 19: the host's shapes win, the guarantees do not bend | — |
 | d-5ed7e8-7cf2a0 | accepted 2026-10-05 · h1 | The home keeps its own decisions log, seeded with this review only | `decision-review` writes to a decisions log and the home had none; it tries the format on a real file before nine carriers get it | `release.py check` |
 | d-5ed7e8-aec800 | accepted 2026-10-05 · h1 | A private source is never cited, and carrier evidence is written only as rounded aggregates | principle 20; this repository is public | `bundle.py privacy --paths`, `release.py check` |
+
+## The research of 2026-10-05 (`i-5ed7e8-54cb3f`)
+
+Each priced in its document under `meta/reviews/2026-10-05-*.md`; decided by the owner one per turn.
+
+| Id | Status | Decision | Why | Enforced in |
+|---|---|---|---|---|
+| d-5ed7e8-bb201c | declined 2026-10-05 · h1 | Splitting the knowledge index now (the lookup alone, the phase guide generated apart) | its own document asks for it measured, not as a side effect, and no pilot has run it; accepting: the reviewer has room for about three more notes before its budget | — (reopens with pilot-9's index arm and a reviewer pilot) |
+| d-5ed7e8-041ac8 | accepted 2026-10-05 · h1 | `report` labels its token figures as a chars/4 estimate, about 1.4× low for bundle text, and every budget stays in that unit | relative comparisons stand and every earlier figure stays comparable; the measured rate comes from one machine over three weeks | `bundle.py report` |
+| d-5ed7e8-a45b2e | accepted 2026-10-05 · h1 | An offered whole-branch review states that its evidence is uncontrolled, proves each finding or reports it unconfirmed, records findings confirmed and rejected with tokens and minutes, and is not split by area | the evidence had no control and no precision; merged independent findings with proofs hold either way, specialists against generalists is unsettled | — |
+| d-5ed7e8-88c4f6 | accepted 2026-10-05 · h1 | Long runs and delegates get a subsection outside the coding session, one line in the meta-session procedure and three lines in every delegate brief | the delegates were stopped by a sleeping machine whose timers fired at wake, not by load; the coding session has about a hundred and fifty tokens left | — |
+| d-5ed7e8-99f200 | accepted 2026-10-05 · h1 | A test in the gate asserts behaviour, never speed; a wait waits for its condition; a timeout is a hang detector set well above the normal time | timing tests failed on a shared machine's load, not on the code | — |
+| d-5ed7e8-808dc7 | accepted 2026-10-05 · h1 | Attribution lines already published are left and documented; `check-local` warns when the committed settings lack the attribution setting or the hooks path is unset; rewriting history has a note under review | a rewrite cleans only what branches and tags reach, and costs every other machine a careful recovery | `bundle.py check-local` |
+| d-5ed7e8-ef5760 | accepted 2026-10-05 · h1 | `trigger.py` gains a lenient metric, repeatable runs with intervals and a table of which skill captured each case, before its eval runs | an eval whose tool hides the competing skills or counts only the first call measures the wrong thing; accepting: changed without a real run in this session, so it is unproven until `i-5ed7e8-578c22` runs | `meta/tests` |

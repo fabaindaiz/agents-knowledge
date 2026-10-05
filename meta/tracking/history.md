@@ -6,6 +6,33 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue by the release 0.0.29
+
+The decision-record review settled by the owner (`meta/reviews/2026-10-05-decision-records.md`, rows in
+`meta/decisions.md`), one carrier's proposals that had waited since 0.0.25, and the home's own. Four of that
+carrier's proposals quoted text and were rewritten generalised by the carrier before intake, at the owner's word.
+
+| Candidate | Where it went |
+|---|---|
+| `decision-log-status-decider-and-why` | **admitted into the method**, artifact 6: the Status cell, proposed rows only a person accepts, `unconfirmed:` and `accepting:`; the decider aliases, `unconfirmed:`/`found`, `accepting:` and the criteria under review until the 0.0.30 harvest |
+| `decision-log-known-debt-and-criteria` | **admitted into the method**, artifact 6: *Looks deliberate, is not* and the criteria for a row |
+| `decisions-check-and-migration` | **admitted into the tools**: `bundle.py decisions` and `--migrate`, tried read-only against every reachable carrier's log before release |
+| `private-records-and-privacy-layers` | **admitted into the method and the tools**: the private folder, the sentinel rule, the public guard and the home's re-check; `propose` refusing was declined (`d-5ed7e8-e9cdd9`) |
+| `adopting-a-host-that-keeps-adrs` | **admitted into the method**: the adoption table's row |
+| `prune-cannot-lift-into-a-body-it-may-not-edit` | **answered**: already resolved; the prune's *Covered, worse* verdict offers the better wording as a proposal |
+| `ids-misses-the-roadmap-heading` | **answered**: resolved in 0.0.27, where the roadmap template moved the id after the middle dot |
+| `own-fields-have-two-homes` | **answered**: resolved; the method files carry no header fields, and `carrier.toml` is the one home the README states |
+| `long-gates-run-where-a-watchdog-cannot-stop-them` | **applied to the method** with its correction: §*Long runs and delegates* in `prompt-context.md`, a line in the meta-session procedure and three lines per brief; the cause was a sleeping machine whose timers fired at wake, not load (`meta/reviews/2026-10-05-long-runs-and-delegates.md`) |
+| `a-rewrite-cleans-only-what-refs-reach` | **admitted under review**, from the research of 2026-10-05 and the home's own rewrite; it awaits a carrier's rewrite or a decision to leave one, at the 0.0.30 harvest |
+| `a-local-copy-of-the-release-procedure-goes-stale` | **folded** into `derived-copy-goes-stale-silently` as a form of it: a carrier skill restating the method's change procedure, read in place of its source |
+
+| Proposal | Where it went |
+|---|---|
+| `p-0ddd2bc888`, an occurrence offered for the method's admitted `a-filtered-gate-cannot-block` | **recorded**: the home's own, on 2026-10-05; the enforcer is `i-5ed7e8-89ec30` |
+| `p-3cd68c8c75`, an occurrence offered for the queued experiment `remote-mutation-names-target-effect-reversal` | **recorded**; the experiment stays queued |
+| `p-5da3b658f6`, extends `split-a-checked-file-and-the-check-goes-blind` (folded into `a-check-must-be-seen-to-fail`) | **merged** into that note's evidence: an index check that globbed a folder a release had moved |
+| `p-d8c7a59ff1`, extends `a-check-must-be-seen-to-fail` | **merged** into that note's evidence: two more checks over zero subjects, found by a triage |
+
 ## Taken out of the queue by the release 0.0.27
 
 Method changes resting on one carrier's evidence were published marked so, and are reviewed at the next release. Proposals that extend a method file share its name as a slug, so each is recorded below by its id; occurrences offered for a note that stands are in the next section, also by id. Every figure a carrier gave is a ratio or an order of magnitude here.

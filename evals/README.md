@@ -78,3 +78,19 @@ python3 evals/power_tost.py --tasks 40 --reps 3 --margin 0.20 --hetero 0.15   # 
 `evals/runs/` holds transcripts and diffs and is not committed: transcripts carry the logged-in
 account's identity. Python 3.11 or newer, standard library only; Study 1's trials need `bwrap` and `socat`
 for Claude Code's sandbox on Linux.
+
+## Skill triggers
+
+`skills/trigger.py` measures whether a skill fires on the requests it is for and stays quiet on the near
+misses (its docstring says how). The protocol, set on 2026-10-05 (`meta/reviews/2026-10-05-skill-triggers.md`):
+
+1. **One pilot carrier**, with its plugins on and its own `.claude/` copied in (`--claude-dir`); check first
+   that the three method skills' descriptions are in the session's skill listing.
+2. **Held-out cases in the carrier**, never here: requests that expect the skill, near misses, and the owner's
+   own phrasings marked `"owner": true`; the owner labels the ambiguous ones (about twenty minutes).
+3. **Stage 1**, one run per case, to find the cases that capture or misfire; **stage 2**, `--runs 3`, with a
+   prediction written down before it runs.
+4. **A pass**: strict fire at least 0.8, misfire at most 0.1, the owner's words alone at least 0.8, every rate
+   reported with its interval and the capture table read for which competitor took each missed case.
+
+The run itself waits on `i-5ed7e8-578c22`; cost (assumption) a couple of hours of headless sessions.

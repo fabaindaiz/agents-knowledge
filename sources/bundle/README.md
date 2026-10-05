@@ -1,6 +1,6 @@
 ---
 bundle: "agent-guides"
-version: "0.0.28"
+version: "0.0.29"
 released: "2026-10-05"
 ---
 

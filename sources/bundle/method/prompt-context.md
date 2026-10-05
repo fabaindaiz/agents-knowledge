@@ -799,6 +799,15 @@ specification.** Prose written from code in progress records the bug as intent;
 a test written to the comment asserts what was never implemented. Go back to the
 requirement.
 
+**A test in the gate asserts behaviour, never speed.** A wait waits for its
+condition, never for a fixed sleep. A timeout is a hang detector: set about ten
+times above the normal time, enforced from outside the test, and printing the
+stacks when it fires. A speed that matters is counted in a unit no machine changes
+(operations, allocations), made relative within one run, or measured in a job of
+its own that repeats and reports an interval — on a machine other sessions share,
+an absolute time measures the load. A test found red on the untouched base gets
+the strict expected-failure mark, not a sentence in the commit message.
+
 **Prevents:** a suite that certifies the implementation's bugs, and the specific
 agent failure of writing a green test around code it just wrote.
 
@@ -844,10 +853,14 @@ saying it did. **A host workflow that already reviews by default** (a
 whole-branch review at the end of a plan) **is left in place.** The method's
 card-driven reviewer runs on request, as measured on one task's diff; a
 whole-branch review in a fresh context is **offered** in one question, with its
-cost, at the end of every multi-task plan — in several repositories nearly every
-one found a defect the green suite missed, at minutes and about 1e5 tokens each,
-though none was compared with a card-driven run or with what a missed defect
-costs. Its findings go in the changelog's *Review*, where the harvest reads them.
+cost, at the end of every multi-task plan. Its evidence is thin: in several
+repositories nearly every one reported a defect the green suite missed, at
+minutes and about 1e5 tokens each, with no control, no precision recorded and no
+second run compared, and on a large change almost any capable review finds
+something. **Each finding comes with its proof** — the command, the test or the
+line; one without is reported unconfirmed. The changelog's *Review* records the
+findings confirmed and rejected, the tokens and the minutes, where the harvest
+reads them. No split by area: k specialists against k generalists is unsettled.
 
 And the direction that is easy to forget: **the host repo usually knows
 something the method does not.** A convention you would not have chosen, which
@@ -1967,6 +1980,29 @@ down when you notice it — the observation is only available from inside a
 workspace, and it disappears the moment you close the other windows.
 
 ---
+
+### Long runs and delegates
+
+A delegated agent's work ends in its report, and three things stop one that did
+nothing wrong: **a machine that sleeps**, **the harness's stall watchdog**, and **a
+lost hand-off**. Wall-clock timers — a command's timeout, a background time limit,
+the watchdog — keep counting while a sleeping machine's processes are frozen and
+fire at the next wake, so a gate that seems to hang under load may have spent its
+whole limit asleep. Keep the machine awake for a long run (on mains power, lid
+open, a keep-awake held), or attend it.
+
+- **A gate under the foreground ceiling** runs in the foreground, with a timeout
+  above its usual time. **A longer one** runs in the background with a timeout of
+  about three times its usual time, and the delegate ends its turn until notified;
+  never a sleep loop, and printing progress resets nothing.
+- **Gates are serialised**, one per machine behind a lock (`flock`, `lockf`), or
+  each delegate stops at *staged, message saved* and the coordinator runs them one
+  at a time: the gates, not the agents, compete for the machine.
+- **Every delegate brief carries three lines**: its scratch directory and its
+  done-state; how to run the gate, and the lock; and that its report is its final
+  message, which is the channel a harness keeps.
+- **A stalled delegate is not a failed task**: read its scratch directory and
+  `git status`, then resume it by message. Check every report first-hand.
 
 ## Models, reasoning levels and cost
 

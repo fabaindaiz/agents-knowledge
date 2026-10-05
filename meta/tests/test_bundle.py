@@ -271,6 +271,8 @@ class Sessions(Base):
         self.assertEqual(B.budget_problems(agents), [])
         code, out = run("report", str(agents), "--json")
         self.assertIn("folders", json.loads(out))
+        code, out = run("report", str(agents))
+        self.assertIn("characters / 4), about 1.4× low for bundle text", out)  # an estimate, and how far off
 
     def test_the_reviewers_load_counts_its_own_definition(self) -> None:
         agents = make_bundle(self.root)
@@ -1498,3 +1500,49 @@ class PrivateRecords(Base):
         self.assertFalse(any("unknown key" in p for p in problems), problems)
         self.assertTrue(any("visibility" in p for p in problems), problems)
         self.assertTrue(any("private_folder" in p for p in problems), problems)
+
+
+class AttributionSetting(Base):
+    """`check-local` warns where a repository's committed settings would let the host add an attribution line,
+    or where its git hooks exist and do not run."""
+
+    def repo(self, settings: str | None, hooks: bool = False) -> Path:
+        repo = init_repo(self.root / "repo")
+        make_bundle(repo)
+        if settings is not None:
+            (repo / ".claude").mkdir()
+            (repo / ".claude/settings.json").write_text(settings)
+        if hooks:
+            (repo / ".githooks").mkdir()
+            (repo / ".githooks/pre-commit").write_text("#!/bin/sh\n")
+        return repo
+
+    def test_settings_without_the_attribution_object_are_warned(self) -> None:
+        for settings in ('{"permissions": {}}', '{"attribution": {"commit": "made by a tool", "pr": ""}}',
+                         '{"includeCoAuthoredBy": false}'):
+            with self.subTest(settings=settings):
+                warnings = B.attribution_warnings(self.repo(settings))
+                self.assertEqual(len(warnings), 1, warnings)
+                self.assertIn("attribution", warnings[0])
+                shutil.rmtree(self.root / "repo")
+
+    def test_the_empty_attribution_object_passes_and_no_settings_says_nothing(self) -> None:
+        self.assertEqual(B.attribution_warnings(self.repo('{"attribution": {"commit": "", "pr": "", "sessionUrl": false}}')), [])
+        shutil.rmtree(self.root / "repo")
+        self.assertEqual(B.attribution_warnings(self.repo(None)), [])
+
+    def test_hooks_that_do_not_run_are_warned(self) -> None:
+        repo = self.repo(None, hooks=True)
+        warnings = B.attribution_warnings(repo)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("core.hooksPath", warnings[0])
+
+        git(repo, "config", "core.hooksPath", ".githooks")
+        self.assertEqual(B.attribution_warnings(repo), [])
+
+    def test_check_local_prints_them_without_failing(self) -> None:
+        repo = self.repo('{"permissions": {}}')
+        code, out = run("check-local", str(repo))
+        self.assertEqual(code, 0, out)
+        self.assertIn("! repo:", out)
+        self.assertIn("attribution", out)

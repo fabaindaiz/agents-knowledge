@@ -190,7 +190,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   the intake and each carrier's migration wait for the owner. Parts are under review until the 0.0.30 harvest. *Collides with:* artifact 6, the adoption
   table, principle 20, the harvest, bootstrap and update prompts, the `close` skill, `bundle.py privacy`,
   `release.py gather` and `intake`, and every carrier's `docs/decisions.md`.
-- **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05**, each a decision for the owner at the next release, each
+- **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05** — **decided 2026-10-05** for 0.0.29, one per turn (`d-5ed7e8-bb201c` to `d-5ed7e8-ef5760` in `meta/decisions.md`): 2, 3, 4, 5, 6 and 7's tool changes applied; **1 deferred** until pilot-9's index arm and a reviewer pilot (the reviewer has room for about three more notes); still open: bring the cost profile script into `evals/` (it is not on this machine), re-weigh `i-5ed7e8-1ac328` against `i-5ed7e8-16b90a` (the update sessions and the method's size are the bigger lever), leave and document the published attribution lines in the three carriers that hold them (from the machine that has them), and run the trigger eval (`i-5ed7e8-578c22`). Each was a decision for the owner, each
   priced in its document under `meta/reviews/2026-10-05-*.md`:
   1. *Index shape* (`index-scaling`): make `INDEX.md` the lookup alone and move the phase guide to a generated
      `PHASES.md` (reviewer from about 6.6k to 3.7k tokens), measured through pilot-9 and a reviewer-only pilot; no

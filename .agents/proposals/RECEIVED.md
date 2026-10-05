@@ -8,6 +8,8 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-00c0b433e4` | 0.0.26 | another occurrence of `a-default-scope-is-the-widest-one`, to merge |
 | `p-00cb1ad8d0` | 0.0.27 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
 | `p-017d89caf7` | 0.0.27 | another occurrence of `isolated-review-by-default`, to merge |
+| `p-029f0e713d` | 0.0.29 | queued as `timeout-is-not-an-outcome` |
+| `p-055c3ccdef` | 0.0.29 | queued as `privacy-misses-a-derived-prefix-in-own-fields` |
 | `p-0633cfe548` | 0.0.27 | another occurrence of `derived-over-chosen-identifiers`, to merge |
 | `p-06475b65b2` | 0.0.27 | queued as `attribute-a-change-by-its-record-not-a-proxy` |
 | `p-0724a44a03` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -19,9 +21,11 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-0ab0598a86` | 0.0.26 | queued as `pause-means-pause` |
 | `p-0ae4431bd4` | 0.0.27 | another occurrence of `a-version-bump-spends-the-forward-compatibility-it-was-protecting`, to merge |
 | `p-0bf5549a32` | 0.0.27 | another occurrence of `template-id-format-matches-the-checker`, to merge |
+| `p-0c47190a71` | 0.0.29 | queued as `register-resolves-a-worktree-to-its-repository` |
 | `p-0c854a71cf` | 0.0.26 | refused by its harvest; recorded in the history |
 | `p-0d91291209` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-0dbcddd68d` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-0ddd2bc888` | 0.0.29 | another occurrence of the admitted `a-filtered-gate-cannot-block`; carried by `i-5ed7e8-89ec30` |
 | `p-0ebd0b0dbf` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-0f36ede788` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-0f9cb857ca` | 0.0.27 | queued as `reread-the-source-case-before-recording-an-answer` |
@@ -31,6 +35,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-10f85b5cb7` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-111c3c7143` | 0.0.24 | another occurrence of `validate-each-transformation-run`, to merge |
 | `p-11b5e09dda` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-11cb79103c` | 0.0.29 | queued as `install-skills-names-a-shadowed-base-change` |
 | `p-127099fa7f` | 0.0.26 | another occurrence of `a-cache-key-names-its-invalidators`, to merge |
 | `p-12c61d894f` | 0.0.27 | queued as `empty-success-retried-write` |
 | `p-1316b0ef30` | 0.0.26 | another occurrence of `steps-readable-by-a-permission-layer`, to merge |
@@ -39,7 +44,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-161bdcd683` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-1626b85549` | 0.0.27 | another occurrence of `documented-defaults-drift-from-code`, to merge |
 | `p-1b8559b29c` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-1ba10e1a86` | 0.0.29 | answered: already resolved in an earlier release (the prune offers the better wording as a proposal) |
 | `p-1bf4aedf89` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
+| `p-1c8e43f1bb` | 0.0.29 | admitted into the method and the tools, 0.0.29: the private folder and its three layers |
 | `p-207be9eaf6` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
 | `p-215eefeff0` | 0.0.24 | another occurrence of `local-host-is-a-test-double-of-the-production-host`, to merge |
 | `p-21f9218907` | 0.0.27 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
@@ -60,6 +67,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-2dd8588046` | 0.0.27 | queued as `fix-stale-note-path-in-bootstrap` |
 | `p-2e680bc5bb` | 0.0.27 | queued as `a-precondition-check-lives-where-the-action-already-looks` |
 | `p-2e724dea78` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-2fa5a68b2e` | 0.0.29 | queued as `a-confirmation-needs-a-terminal` |
 | `p-303423ae22` | 0.0.27 | another occurrence of `document-language-is-its-readers`, to merge |
 | `p-32fee93dc6` | 0.0.26 | refused by its harvest; recorded in the history |
 | `p-330f16caed` | 0.0.24 | refused by its harvest; recorded in the history |
@@ -79,6 +87,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-3a3b473225` | 0.0.27 | another occurrence of `gate-sequence-stops-at-the-first-red-step`, to merge |
 | `p-3ad6ecc680` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-3b5da3c834` | 0.0.27 | another occurrence of `derive-state-from-one-clock`, to merge |
+| `p-3cd68c8c75` | 0.0.29 | another occurrence for the queued experiment `remote-mutation-names-target-effect-reversal`; it stays queued |
 | `p-3d21b013e1` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-3d56f1da7b` | 0.0.27 | another occurrence of `same-answer-or-refuse`, to merge |
 | `p-410a0f3b1d` | 0.0.27 | another occurrence of `validate-each-transformation-run`, to merge |
@@ -90,6 +99,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-42fea0af36` | 0.0.27 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
 | `p-43622a75fe` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-438a84b072` | 0.0.27 | queued as `extend-reproduce-the-checkout-not-only` |
+| `p-43f2749b3d` | 0.0.29 | applied to the method, 0.0.29: §*Long runs and delegates* and the meta-session's line (`d-5ed7e8-88c4f6`) |
 | `p-44248aceed` | 0.0.27 | another occurrence of `a-local-memory-is-not-a-handoff`, to merge |
 | `p-4439077689` | 0.0.27 | another occurrence of `metric-against-trivial-predictor`, to merge |
 | `p-44c65a050f` | 0.0.27 | another occurrence of `derive-state-from-one-clock`, to merge |
@@ -98,9 +108,12 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-47766d2196` | 0.0.27 | queued as `decide-which-side-is-wrong-from-a-trace` |
 | `p-486cadec03` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-4a2be00ec2` | 0.0.26 | queued as `splice-dry-run-lists-what-it-removes` |
+| `p-4cbe922a45` | 0.0.29 | queued as `gather-reads-a-branch-not-only-the-checkout` |
 | `p-4ce378d8b4` | 0.0.27 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
 | `p-4d07bc8699` | 0.0.27 | another occurrence of `an-append-only-log-cannot-be-grandfathered-by-line`, to merge |
+| `p-4d8247843c` | 0.0.29 | admitted into the method, 0.0.29: artifact 6's Status column (parts under review) |
 | `p-4f3ae7128a` | 0.0.27 | another occurrence of `derived-copy-goes-stale-silently`, to merge |
+| `p-4f5980bee6` | 0.0.29 | admitted into the tools, 0.0.29: `bundle.py decisions` and `--migrate` |
 | `p-4f9d0e0f44` | 0.0.24 | queued as `steps-readable-by-a-permission-layer` |
 | `p-4fdfbfa55b` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-512ee889f6` | 0.0.26 | run logged against `a-check-must-be-seen-to-fail` |
@@ -109,6 +122,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-51cd17c789` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-5243221d44` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-532edbd1fc` | 0.0.26 | queued as `prompt-context` |
+| `p-537bd458f8` | 0.0.29 | answered: already resolved in 0.0.27 (the roadmap heading puts the id after the middle dot) |
 | `p-53b1e16730` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
 | `p-5473653cb3` | 0.0.27 | queued as `measure-the-cost-not-the-proxy` |
 | `p-558d9bb6f6` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -117,6 +131,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-5a04855aa7` | 0.0.27 | another occurrence of `citation-checked-for-existence-is-not-checked-for-relevance`, to merge |
 | `p-5a33d7a5d9` | 0.0.26 | another occurrence of `prompt-bootstrap`, to merge |
 | `p-5c945ae226` | 0.0.27 | queued as `edit-deny-also-blocks-shell-writes` |
+| `p-5da3b658f6` | 0.0.29 | another occurrence of the note `a-check-must-be-seen-to-fail` (into which its slug was folded), merged into its evidence |
 | `p-5db9d3ed20` | 0.0.24 | queued as `exact-sync-removes-the-project-under-development` |
 | `p-5e301aac5a` | 0.0.27 | queued as `data-location-is-part-of-the-deploy` |
 | `p-5fd3ec7890` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -156,7 +171,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-81f946fe00` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-822de2ac26` | 0.0.26 | queued as `find-carriers-by-searching-not-by-the-manifest` |
 | `p-823b7ee2d0` | 0.0.26 | queued as `gather-reads-the-remote-not-a-stale-checkout` |
+| `p-8294259ef6` | 0.0.29 | answered: already resolved (the carrier's fields have one home, `carrier.toml`, stated in the README) |
 | `p-8296bd59a7` | 0.0.26 | refused by its harvest; recorded in the history |
+| `p-82e5750c62` | 0.0.29 | queued as `ids-cannot-read-a-history-that-quotes-a-placeholder` |
 | `p-83b4ad875e` | 0.0.26 | queued as `chain-the-commit-on-the-gate` |
 | `p-83c1e3338a` | 0.0.27 | another occurrence of `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check`, to merge |
 | `p-843caad988` | 0.0.27 | another occurrence of `a-filtered-gate-cannot-block`, to merge |
@@ -170,9 +187,11 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-89be736558` | 0.0.27 | queued as `a-judgement-check-warns-a-mistake-check-fails` |
 | `p-8a7b029e40` | 0.0.27 | another occurrence of `same-answer-or-refuse`, to merge |
 | `p-8a923f0004` | 0.0.27 | queued as `a-request-accepted-is-not-an-effect` |
+| `p-8b14810588` | 0.0.29 | queued as `a-machine-local-check-input-is-part-of-every-gate-that-reads-it` |
 | `p-8b9b70ed39` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-8be96d0b78` | 0.0.27 | another occurrence of `derived-copy-goes-stale-silently`, to merge |
 | `p-8d242646f4` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-8de6fcd6f2` | 0.0.29 | applied to the method, 0.0.29: §*Long runs and delegates* and the meta-session's line (`d-5ed7e8-88c4f6`) |
 | `p-8ed3e43261` | 0.0.27 | another occurrence of `refusal-must-not-read-like-an-answer`, to merge |
 | `p-8f4aa41a5a` | 0.0.27 | queued as `roadmap-heading-id-position` |
 | `p-8f681c5178` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -181,6 +200,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-940bf2c979` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-94fc43c6d1` | 0.0.26 | another occurrence of `prompt-context`, to merge |
 | `p-95873d5caf` | 0.0.26 | another occurrence of `sweep-the-rendered-extremes`, to merge |
+| `p-9589187233` | 0.0.29 | another occurrence of the note `derived-copy-goes-stale-silently`, merged into its evidence |
 | `p-9620d10a56` | 0.0.27 | queued as `walk-the-rulings-before-the-plan-runs` |
 | `p-96bc2c9474` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-988df660e1` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -212,6 +232,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-a9ede7e057` | 0.0.27 | another occurrence of `absence-is-a-third-value`, to merge |
 | `p-aa28d761f6` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-acaf4cb669` | 0.0.27 | queued as `match-rendered-units-to-source-by-content` |
+| `p-ad51fa8803` | 0.0.29 | queued as `invariant-survives-a-refactor` |
 | `p-ad97de28a0` | 0.0.27 | another occurrence of `recursive-scan-skips-nested-checkouts`, to merge |
 | `p-b19ea8150f` | 0.0.26 | queued as `parallel-agents-get-disjoint-scratch` |
 | `p-b1d0825adf` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -224,12 +245,14 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-b757765f45` | 0.0.27 | queued as `harness-attribution-needs-a-root-rule` |
 | `p-b7b7b02aba` | 0.0.27 | another occurrence of `persist-inputs-derive-verdicts`, to merge |
 | `p-b90d59393e` | 0.0.27 | another occurrence of `adversarial-review-per-attack-surface-before-a-tag`, to merge |
+| `p-b9b82d45a5` | 0.0.29 | queued as `read-output-is-untrusted-input` |
 | `p-bb38157dbc` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-bbd015e401` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-bbe2b55729` | 0.0.26 | another occurrence of `derived-copy-goes-stale-silently`, to merge |
 | `p-bd85188ec9` | 0.0.27 | queued as `bundle-tool-refuses-an-old-interpreter-in-one-line` |
 | `p-bde82faab4` | 0.0.24 | another occurrence of `an-update-is-driven-by-the-new-side`, to merge |
 | `p-bdfc8f7fcc` | 0.0.27 | another occurrence of `dry-run-a-procedure-by-an-agent-before-release`, to merge |
+| `p-be7f469024` | 0.0.29 | admitted into the method, 0.0.29: the adoption row for a host that keeps ADRs |
 | `p-be8c106a62` | 0.0.27 | another occurrence of `one-field-one-decision`, to merge |
 | `p-bf2579d9d9` | 0.0.27 | another occurrence of `prompt-context`, to merge |
 | `p-bf6195cb90` | 0.0.27 | queued as `a-deny-for-secrets-catches-their-template` |
@@ -244,6 +267,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-c48b3661f4` | 0.0.27 | another occurrence of `derived-copy-goes-stale-silently`, to merge |
 | `p-c5401dbd7f` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-c59eb782a0` | 0.0.27 | another occurrence of `validate-each-transformation-run`, to merge |
+| `p-c604d1066e` | 0.0.29 | queued as `a-session-socket-is-a-credential` |
 | `p-c6597e57b4` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-c6ccf81eb7` | 0.0.24 | another occurrence of `copied-instruction-claims-its-origin`, to merge |
 | `p-c8a0d1ee0b` | 0.0.27 | refused by its harvest; recorded in the history |
@@ -263,10 +287,13 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-d34301cac5` | 0.0.27 | another occurrence of `check-every-anchor-before-the-first-write`, to merge |
 | `p-d5b044935c` | 0.0.26 | queued as `count-a-friction-by-searching-the-log` |
 | `p-d7956af6c5` | 0.0.27 | another occurrence of `merge-by-shared-fact-not-shared-shape`, to merge |
+| `p-d8c7a59ff1` | 0.0.29 | another occurrence of the note `a-check-must-be-seen-to-fail`, merged into its evidence |
 | `p-d8ec6a1d1c` | 0.0.26 | another occurrence of `derive-state-from-one-clock`, to merge |
 | `p-d939b1aadc` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-d977e402eb` | 0.0.29 | admitted into the method, 0.0.29: known debt and the when-to-write criteria (criteria under review) |
 | `p-dac316fe6f` | 0.0.27 | another occurrence of `document-language-is-its-readers`, to merge |
 | `p-db9415fe19` | 0.0.27 | refused by its harvest; recorded in the history |
+| `p-dc22c63de8` | 0.0.29 | queued as `ids-warns-where-a-host-must-fail` |
 | `p-dcc52047a5` | 0.0.26 | queued as `one-adversarial-generator-per-promise` |
 | `p-dcf54666cf` | 0.0.27 | refused by its harvest; recorded in the history |
 | `p-dd2d347a1d` | 0.0.27 | another occurrence of `dry-run-a-procedure-by-an-agent-before-release`, to merge |

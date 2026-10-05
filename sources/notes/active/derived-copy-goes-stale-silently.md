@@ -66,3 +66,5 @@ The source-wins form is the repository's design elsewhere: when a content descri
 **2026-10-05 — a stamp bypassed by its consumers, in a code-generator repository.** A host build of a vendored tool was patched and stamped so that older builds would rebuild; two consumer scripts reused any existing binary and so ran the unpatched one. A fresh-context review of the fix found it; every consumer now calls the build script every time.
 
 **Still unmeasured:** whether a step keyed on content (hash, size, inode) is reached in practice before the stale copy is served. Answered for one content-keyed step (it refused) and one equality-keyed step (it missed only an edit that kept size and time). Each carrier's mtime-keyed steps are its own, so the experiment stays queued for the ones that have not run it.
+
+**2026-09-24, offered at 0.0.29 — a restated procedure is a derived copy too.** A carrier skill that restated how the method is changed (edit its documents directly, raise the version) went on being followed as written after the method made releases the only writer: in two carriers' state-review skills, read in place of the method they copied.
