@@ -1367,7 +1367,7 @@ SUPERSEDES = re.compile(rf"\bsupersedes\s+({_DECISION_ID})\b")
 DEBT_HEADING = "looks deliberate, is not"
 DECISION_COLUMNS = ("Id", "Status", "Decision", "Why", "Enforced in")
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
-_PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\.(?:py|pyi|md|mdc|json|jsonc|ya?ml|toml|ini|cfg|sh|bash|js|mjs|cjs|ts|tsx|jsx|rs|go|java|kt|swift|rb|php|cs|c|h|cc|cpp|hpp|sql|html|css|txt|lock|gradle|xml|ps1|bat))$")
+_PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\w\.(?:py|pyi|md|mdc|json|jsonc|ya?ml|toml|ini|cfg|sh|bash|js|mjs|cjs|ts|tsx|jsx|rs|go|java|kt|swift|rb|php|cs|c|h|cc|cpp|hpp|sql|html|css|txt|lock|gradle|xml|ps1|bat))$")
 # A dotted name with no such extension (`permissions.deny`, `Stores.start`) is a key or a symbol, not a file.
 
 
@@ -1561,9 +1561,11 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
 
 
 def _first_dates(path: Path) -> dict[str, str]:
-    """The date of the first commit that wrote each decision id into this log, following renames."""
+    """The author date of the first commit that wrote each decision id into this log, following renames.
+
+    The author date, because a history rewrite gives every commit a new committer date and keeps the author's."""
     try:
-        log = git(path.parent, "log", "--reverse", "--follow", "--format=%x00%cs", "-p", "-U0", "--", path.name)
+        log = git(path.parent, "log", "--reverse", "--follow", "--format=%x00%as", "-p", "-U0", "--", path.name)
     except (subprocess.CalledProcessError, OSError):
         return {}
     dates: dict[str, str] = {}

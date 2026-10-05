@@ -1394,7 +1394,8 @@ class Decisions(Base):
                         "| d-abcdef-111111 | One store | why | — |\n")
         git(repo, "add", "-A")
         subprocess.run(["git", "-C", str(repo), "commit", "-q", "--no-verify", "-m", "one"], check=True,
-                       env={**__import__("os").environ, "GIT_COMMITTER_DATE": "2026-06-14T10:00:00", "GIT_AUTHOR_DATE": "2026-06-14T10:00:00"})
+                       env={**__import__("os").environ, "GIT_COMMITTER_DATE": "2026-09-29T10:00:00", "GIT_AUTHOR_DATE": "2026-06-14T10:00:00"})
+        # a history rewrite resets the committer date; the author date (06-14) is when the row was written
         path.write_text(path.read_text() + "| d-abcdef-222222 | Two | why | — |\n"
                         "\n## Looks deliberate, is not\n\n| Id | What | Why it is not deliberate | Fix when |\n|---|---|---|---|\n"
                         "| d-abcdef-333333 | Two parsers | accident | soon |\n")
@@ -1447,7 +1448,8 @@ class Decisions(Base):
         self.assertIn("no such file", out)
         self.assertNotIn("Traceback", out)
 
-        path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | Deny writes | why | `permissions.deny`, `Stores.start` |\n")
+        path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | Deny writes | why | `permissions.deny`, `Stores.start`, "
+                        "the `.mdc` rules |\n")
         self.assertEqual(self.check(path)[1], [])
 
     def test_the_migration_command_writes_only_when_told(self) -> None:

@@ -8,6 +8,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Fixed
+
+- `bundle.py decisions --migrate` dates a row by the author date of the commit that first wrote it, which a history
+  rewrite keeps; the committer date it read was reset by one, dating every row to the rewrite.
+- An extension written alone in Enforced in (the `.mdc` rules) is no longer read as a missing file.
+
 ## [0.0.29] - 2026-10-05
 
 The decisions log as a decision record a tool reads, confidential records that never leave a carrier, and the
