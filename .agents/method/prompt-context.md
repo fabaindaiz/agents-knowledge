@@ -1314,7 +1314,7 @@ where each one will collide, written now while it is clear.
 The honest current state of the thing that is in motion. Updated every time it moves.
 
 ## <Area>
-### i-<repo6>-<content6> · <Idea>
+### <Idea> · i-<repo6>-<content6>
 What it is, in two lines.
 **What it collides with.** The rule, by its id, and why the collision is real.
 **What is already in its favour.** The mechanisms that exist.
@@ -1327,7 +1327,8 @@ Ideas retired by a number, with the number, so they stay retired.
 | Idea | Does it break <the core invariant>? |
 ```
 
-Each item's `i-` id is minted once with `bundle.py id i "<idea>"` when the item is
+Each item's `i-` id goes after the middle dot, where `bundle.py ids` reads a
+heading's id. It is minted once with `bundle.py id i "<idea>"` when the item is
 written, and it does not change when the item's state or wording does.
 
 **The roadmap is a ledger, not a wish list, and that means it is written to when
@@ -1362,7 +1363,7 @@ areas. This is where friction goes once it has been hit twice (principle 17),
 and each entry takes the same shape as any other, plus the arithmetic:
 
 ```markdown
-### i-<repo6>-<content6> · <The friction, named as what it costs>
+### <The friction, named as what it costs> · i-<repo6>-<content6>
 **What happens now.** The manual steps, counted.
 **Cost.** <seconds or steps> × <how often> × <how many sessions>.
 **The fix.** One line if it is one line.

@@ -32,6 +32,9 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
     python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search
     python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
+    python3 .agents/tools/bundle.py turns [--since DATE] [PROJECT_DIR...]
+                                                                what the human said in this repository's local
+                                                                session transcripts, oldest first; read-only
     python3 .agents/tools/bundle.py digest [TREE] --check       deprecated alias of `verify` (0.0.x only)
 
 With no REPO, the repositories are this session's workspace: `AGENT_WORKSPACE` if it is set, else the
@@ -39,6 +42,14 @@ local manifest (see `MANIFEST`), which lists this machine's paths and never trav
 """
 
 from __future__ import annotations
+
+import sys
+
+# Before any import that needs 3.11 (`tomllib`): an older interpreter gets one line, not a traceback. Written
+# in syntax that 3.9 still parses, so the refusal is reached at all.
+if sys.version_info < (3, 11):
+    sys.exit(f"bundle.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
+             "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
 
 import argparse
 import builtins
@@ -54,7 +65,6 @@ import re
 import secrets
 import shutil
 import subprocess
-import sys
 import tarfile
 import tempfile
 import tomllib
@@ -602,6 +612,7 @@ class PrivacyReport:
     allowances: list[tuple[str, str]]
     files: int
     terms: str
+    skipped: str = ""
 
     @property
     def failures(self) -> list[Finding]:
@@ -614,7 +625,8 @@ class PrivacyReport:
     def notes(self) -> list[str]:
         """The warnings, every waiver, and which terms were checked: printed whether or not anything failed."""
         return ([f"  ! WARN {f.where} {f.rule}: {f.match}" for f in self.warnings]
-                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances] + [f"  . {self.terms}"])
+                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances] + [f"  . {self.terms}"]
+                + ([f"  . {self.skipped}"] if self.skipped else []))
 
     def summary(self) -> str:
         counts: dict[str, int] = {}
@@ -750,7 +762,13 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
         targets = [(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
     findings: list[Finding] = []
     allowances: list[tuple[str, str]] = []
+    skipped: set[int] = set()
     for path, rel, shown in targets:
+        # A private repository's name is a leak anywhere but inside that repository: there it is the
+        # repository's own name. Its proposals still leave it (the home takes them in), so they keep
+        # every term, and so does the home, whose files are what it publishes.
+        own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(path.parent if path.is_file() else path)
+        exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
         for line in _privacy_lines(path, rel, shown):
             where = f"{line.shown}:{line.number}"
             found: list[Finding] = []
@@ -761,8 +779,10 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
                 found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)]
             # The term itself is not printed: this output is pasted into sessions and changelogs, and
             # the one thing it must not carry is the word it caught.
+            hits = term_hits(line.text, terms)
+            skipped.update(i for i in hits if i in exempt)
             found += [Finding("FAIL", "private-term", where, f"term on line {i} of the terms file")
-                      for i in term_hits(line.text, terms)]
+                      for i in hits if i not in exempt]
             code = [m.span() for m in INLINE_CODE.finditer(line.text)]
             marker = next((m for m in PRIVACY_ALLOW.finditer(line.text)
                            if not any(a <= m.start() < b for a, b in code)), None)
@@ -775,7 +795,32 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
                 allowances.append((where, reason))
                 found = []
             findings += found
-    return PrivacyReport(findings, allowances, len(targets), note)
+    said = (f"private terms on line{'s' if len(skipped) > 1 else ''} {', '.join(map(str, sorted(skipped)))} of the terms file "
+            "skipped inside the repository they name (its folder or its origin remote); its proposals still checked") if skipped else ""
+    return PrivacyReport(findings, allowances, len(targets), note, said)
+
+
+@functools.lru_cache(maxsize=None)
+def _own_names(folder: Path) -> frozenset[str]:
+    """The names, casefolded, of the git repository `folder` sits in: its folder's and its origin remote's.
+
+    Empty outside a repository, and in the home repository, which publishes what it holds: there a
+    private term is a leak whatever it names.
+    """
+    try:
+        top = Path(git(folder, "rev-parse", "--show-toplevel").strip())
+    except (subprocess.CalledProcessError, OSError):
+        return frozenset()
+    if (top / "sources/bundle/tools/bundle.py").is_file() and (top / "meta/tools/release.py").is_file():
+        return frozenset()
+    names = {top.name}
+    try:
+        remote = git(top, "remote", "get-url", "origin").strip()
+    except (subprocess.CalledProcessError, OSError):
+        remote = ""
+    if remote:
+        names.add(re.split(r"[/:]", remote.rstrip("/"))[-1].removesuffix(".git"))
+    return frozenset(n.casefold() for n in names if n)
 
 
 # --- sessions and their size ------------------------------------------------------------------------
@@ -2471,16 +2516,46 @@ def entry_template_text(log: str) -> str | None:
     return None if at is None else _first_fence("\n".join(lines[at + 1:]))
 
 
-def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
-    """The log's own entry format, which wins; else the method's (`prompt-context.md`, its changelog artifact)."""
+ENTRY_FIELD = re.compile(r"^\*\*(.+?)\*\*\s*(.*)$")
+FROM_METHOD = "from the method's entry format, which this log's lacks:"
+
+
+def _field_key(label: str) -> str:
+    return re.sub(r"[^\w ]", "", label).strip().casefold()
+
+
+def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str]]:
+    """The entry format to write with, and the labels of the fields the method's adds to the log's own.
+
+    The log's own format wins, but it was copied from some release, and a newer release may have added a
+    field to the method's (`prompt-context.md`, its changelog artifact): taking the log's alone kept every
+    such field away from a carrier, silently. So each field of the method's that the log's lacks is
+    appended, its description marked as coming from the method, and named in the second value.
+    """
     own = entry_template_text(log.read_text(encoding="utf-8")) if log.is_file() else None
-    if own:
-        return own
     method = section(tree / "method/prompt-context.md", CHANGELOG_ARTIFACT)
     template = _first_fence(method) if method else None
+    if not own:
+        if not template:
+            raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
+        return template, []
     if not template:
-        raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
-    return template
+        return own, []
+    have = {_field_key(m.group(1)) for line in own.split("\n") if (m := ENTRY_FIELD.match(line))}
+    added: list[tuple[str, str]] = []
+    for line in template.split("\n"):
+        if m := ENTRY_FIELD.match(line):
+            added.append((m.group(1), m.group(2).strip()))
+        elif added and line.strip() and not line.startswith("#"):
+            added[-1] = (added[-1][0], (added[-1][1] + " " + line.strip()).strip())
+    added = [(label, text) for label, text in added if _field_key(label) not in have]
+    lines = [f"**{label}** {FROM_METHOD} {text}".rstrip() for label, text in added]
+    return own.rstrip("\n") + "\n" + "".join(line + "\n" for line in lines), [label for label, _ in added]
+
+
+def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
+    """The log's own entry format, with the method's fields it lacks appended; else the method's."""
+    return entry_format(log, tree)[0]
 
 
 def new_entry(title: str, carrier: str, today: str, template: str) -> str:
@@ -2488,7 +2563,7 @@ def new_entry(title: str, carrier: str, today: str, template: str) -> str:
     in a comment, which the writer replaces."""
     fields: list[list[str]] = []
     for line in template.split("\n"):
-        if m := re.match(r"^\*\*(.+?)\*\*\s*(.*)$", line):
+        if m := ENTRY_FIELD.match(line):
             fields.append([m.group(1), m.group(2).strip()])
         elif fields and line.strip() and not line.startswith("#"):
             fields[-1][1] = (fields[-1][1] + " " + line.strip()).strip()
@@ -2536,10 +2611,55 @@ def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
 
 @dataclass(frozen=True)
 class Memory:
+    """One local memory: where the repository holds its rule (`found_in`), and where it holds only a code
+    span the memory names (`partly`, with the spans in `matched`). `searched` is false when the memory
+    gives neither enough words of a rule nor a code span to look for."""
+
     name: str
     description: str
     found_in: list[str]
     searched: bool
+    partly: list[str]
+    matched: list[str]
+
+
+# Words too common to tell one rule from another; with every word under four letters, never matched.
+COMMON_WORDS = frozenset("""
+about above after again against also always another anything because been before being below between both
+cannot could does doing done down each either else even ever every first from have having here into just
+keep kept last less like made make many more most much must never next none only other over same should
+since some still such than that their them then there these they thing this those through under until upon
+very want were what when where whether which while will with within without would your yours
+""".split())
+MEMORY_HELD = 0.6  # the share of a rule's words one passage must hold for the repository to hold the rule
+MEMORY_MIN_WORDS = 3  # below this, words cannot tell a rule from a coincidence
+
+
+def _stems(text: str) -> set[str]:
+    """The distinctive words of a text, cut to a crude stem so `trailers` meets `trailer`."""
+    words = (w.lower() for w in re.findall(r"[A-Za-z][A-Za-z'-]*[A-Za-z]", text))
+    return {(w[:-1] if w.endswith("s") and not w.endswith("ss") else w)[:6]
+            for w in words if len(w) >= 4 and w not in COMMON_WORDS}
+
+
+def _passages(text: str) -> list[set[str]]:
+    """A document's passages, as stems: paragraphs, with each heading, list item and table row its own."""
+    passages: list[list[str]] = []
+    for line in text.split("\n"):
+        if not line.strip():
+            passages.append([])
+        elif re.match(r"^\s*(?:#|[-*+]\s|\d+[.)]\s|\|)", line) or not passages:
+            passages.append([line])
+        else:
+            passages[-1].append(line)
+    return [s for p in passages if p and (s := _stems(" ".join(p)))]
+
+
+def _memory_rule(description: str, body: str) -> set[str]:
+    """What a memory claims, as stems: its description and its body's first paragraph, code spans left out
+    (a command or a name the rule mentions is not the rule)."""
+    first = next((p for p in re.split(r"\n\s*\n", body.strip()) if p.strip()), "")
+    return _stems(re.sub(r"`[^`\n]*`", " ", description + "\n" + first))
 
 
 def memory_dir(repo: Path, home: Path | None = None) -> Path:
@@ -2548,19 +2668,25 @@ def memory_dir(repo: Path, home: Path | None = None) -> Path:
 
 
 def memory_report(memory: Path, repo: Path) -> list[Memory]:
-    """Each local memory, and the tracked files of the repository that hold what it names in code spans.
+    """Each local memory, and the tracked files of the repository that hold its rule.
 
-    None found means it lives only on this machine: another machine, or another assistant, never sees it.
-    A memory with no code span is not searched (`searched` false): only a reader can place it. The bundle
-    is not searched either: what it says is the method's, not what this repository recorded.
+    A file holds the rule when one of its passages holds most of the rule's words (`MEMORY_HELD`); a file
+    that shares only a code span the memory names (a command, a script) holds it partly, and the span is
+    reported, because a rule that merely mentions the gate is not recorded wherever the gate is. None
+    found means it lives only on this machine: another machine, or another assistant, never sees it. A
+    memory with too few words and no code span is not searched (`searched` false): only a reader can
+    place it. The bundle is not searched either: what it says is the method's, not what this repository
+    recorded.
     """
     tracked = [repo / rel for rel in git(repo, "ls-files").split("\n") if rel and not rel.startswith(".agents/")]
-    texts = {}
+    texts, passages = {}, {}
     for path in tracked:
         try:
-            texts[path.relative_to(repo).as_posix()] = path.read_text(encoding="utf-8")
+            rel = path.relative_to(repo).as_posix()
+            texts[rel] = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
+        passages[rel] = _passages(texts[rel])
     found = []
     for path in sorted(memory.glob("*.md")):
         if path.name == "MEMORY.md":
@@ -2570,9 +2696,151 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
         meta = {k: v.replace('\\"', '"') for k, v in
                 re.findall(r"^(name|description):[ \t]*\"?(.*?)\"?[ \t]*$", front or "", re.MULTILINE)}
         spans = {s.strip() for s in re.findall(r"`([^`\n]{4,})`", body)}
-        where = sorted(rel for rel, content in texts.items() if any(s in content for s in spans))
-        found.append(Memory(meta.get("name") or path.stem, meta.get("description", ""), where, bool(spans)))
+        rule = _memory_rule(meta.get("description", ""), body)
+        if len(rule) < MEMORY_MIN_WORDS:
+            rule = set()
+        need = max(MEMORY_MIN_WORDS, math.ceil(MEMORY_HELD * len(rule)))
+        held = sorted(rel for rel in texts if rule and any(len(rule & p) >= need for p in passages[rel]))
+        partly = [] if held else sorted(rel for rel, content in texts.items() if any(s in content for s in spans))
+        matched = sorted(s for s in spans if any(s in texts[rel] for rel in partly))
+        found.append(Memory(meta.get("name") or path.stem, meta.get("description", ""), held, bool(spans or rule),
+                            partly, matched))
     return found
+
+
+# --- what the human said: the assistant's local session transcripts ------------------------------------
+# A harvest reads what was said and never recorded (`prompt-harvest.md`, Phase 1 step 1): the typed turns,
+# the messages sent while the assistant worked, and the answers to question tools, whose free text
+# overrides the options. Claude Code keeps each session as JSON lines under `~/.claude/projects/<the
+# repository's path, every other character a dash>/`. Read here, printed, never written anywhere: a
+# transcript carries the logged-in account's identity.
+
+# What the host writes into the human's side of a transcript: reminders, notifications, another agent's
+# messages, the editor's context. A part that starts with one of these is not the human's.
+TRANSCRIPT_NOISE = ("<system-reminder>", "<task-notification>", "<agent-message", "<local-command", "<ide_", "Caveat:",
+                    "Base directory for this skill")
+TURN_LIMIT = 4000  # characters of one message shown; a pasted log is not what the harvest reads for
+
+
+def _encoded(path: Path) -> str:
+    return re.sub(r"[^A-Za-z0-9]", "-", path.as_posix())
+
+
+def transcript_dirs(repo: Path, home: Path | None = None) -> list[Path]:
+    """The transcript folders of a repository: its own, the assistant's worktrees under it, and every git
+    worktree of it, those that exist, in that order."""
+    projects = (home or Path.home()) / ".claude/projects"
+    own = _encoded(repo)
+    found = [projects / own, *sorted(projects.glob(own + "--claude-worktrees-*"))]
+    try:
+        listed = git(repo, "worktree", "list", "--porcelain")
+    except (subprocess.CalledProcessError, OSError):
+        listed = ""
+    found += [projects / _encoded(Path(line[9:])) for line in listed.split("\n") if line.startswith("worktree ")]
+    return [p for i, p in enumerate(found) if p.is_dir() and p not in found[:i]]
+
+
+def _content_text(content: object) -> str:
+    """The text parts of a message that are not the host's (`TRANSCRIPT_NOISE`), joined."""
+    parts = [content] if isinstance(content, str) else [
+        c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text"] if isinstance(content, list) else []
+    return "\n".join(p for p in parts if p.strip() and not p.lstrip().startswith(TRANSCRIPT_NOISE))
+
+
+def _short(text: str, limit: int = TURN_LIMIT) -> str:
+    text = text.strip()
+    return text if len(text) <= limit else text[:limit] + f" [... {len(text) - limit} more characters]"
+
+
+def _answer_lines(result: dict) -> list[str]:
+    """A question tool's round: each question with its options, then each answer, free text marked."""
+    questions = [q for q in result.get("questions") or [] if isinstance(q, dict)]
+    labels = {q.get("question"): {o.get("label") for o in q.get("options") or [] if isinstance(o, dict)} for q in questions}
+    lines = [f"    Q: {q.get('question')} [{' | '.join(str(o.get('label')) for o in q.get('options') or [] if isinstance(o, dict))}]"
+             for q in questions]
+    for question, answer in (result.get("answers") or {}).items():
+        chosen = {part.strip() for part in str(answer).split(",")}
+        free = not (chosen <= labels.get(question, set()) or str(answer) in labels.get(question, set()))
+        lines.append(f"    A: {_short(str(answer))}" + ("  (free text)" if free else ""))
+    for question, note in (result.get("annotations") or {}).items():
+        if isinstance(note, dict) and note.get("notes"):
+            lines.append(f"    note on {str(question)[:80]!r}: {_short(str(note['notes']))}  (free text)")
+    return lines
+
+
+def read_turns(path: Path, since: str = "", context: bool = False) -> list[tuple[str, list[str]]]:
+    """What the human said in one transcript, in order, as (timestamp, lines): typed turns, messages sent
+    mid-turn, question rounds and the skills invoked. The assistant's own words, tool results, reminders
+    and a delegated agent's prompts are left out; with `context`, the assistant's last words before each
+    typed turn are kept, shortened."""
+    said: list[tuple[str, list[str]]] = []
+    last, when = "", ""
+    for raw in path.read_text(encoding="utf-8", errors="replace").split("\n"):
+        try:
+            record = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(record, dict) or record.get("isSidechain"):
+            continue
+        when = str(record.get("timestamp") or when)
+        stamp = when[:16].replace("T", " ")
+        message = record.get("message") if isinstance(record.get("message"), dict) else {}
+        kind = record.get("type")
+        found: list[str] = []
+        if kind == "assistant":
+            for part in message.get("content") or []:
+                if not isinstance(part, dict):
+                    continue
+                if part.get("type") == "text" and part.get("text", "").strip():
+                    last = part["text"].strip()
+                if part.get("type") == "tool_use" and part.get("name") == "Skill":
+                    found.append(f"- {stamp} skill: {(part.get('input') or {}).get('skill')}")
+        elif kind == "user" and not record.get("isMeta") and not (
+                isinstance(record.get("origin"), dict) and record["origin"].get("kind", "human") != "human"):
+            result = record.get("toolUseResult")
+            if isinstance(result, dict) and "answers" in result:
+                found = [f"- {stamp} questions:", *_answer_lines(result)]
+            elif isinstance(result, str) and "doesn't want to proceed" in result:
+                reason = result.partition("the user said:")[2].strip()
+                found.append(f"- {stamp} rejected a tool call" + (f": {_short(reason)}" if reason else ""))
+            elif result is None:
+                text = _content_text(message.get("content")).strip()
+                command = re.search(r"<command-name>(.*?)</command-name>", text)
+                if command:
+                    args = re.search(r"<command-args>(.*?)</command-args>", text, re.DOTALL)
+                    found.append(f"- {stamp} command: {command.group(1)}" + (f" {_short(args.group(1))}" if args and args.group(1).strip() else ""))
+                elif text.startswith("[Request interrupted"):
+                    found.append(f"- {stamp} interrupted the assistant")
+                elif text and not text.startswith(TRANSCRIPT_NOISE):
+                    if context and last:
+                        found.append(f"  (after the assistant said: {_short(last, 300)!r})")
+                    found.append(f"- {stamp} human: {_short(text)}")
+        elif kind == "attachment":
+            attachment = record.get("attachment") or {}
+            if isinstance(attachment, dict) and attachment.get("type") == "queued_command" \
+                    and attachment.get("commandMode") in (None, "prompt"):
+                text = _content_text(attachment.get("prompt")).strip()
+                if text and not text.startswith(TRANSCRIPT_NOISE):
+                    found.append(f"- {stamp} human, mid-turn: {_short(text)}")
+        if found and (not since or when[:10] >= since):
+            said.append((when, found))
+    return said
+
+
+def turns_report(dirs: list[Path], since: str = "", context: bool = False, labels: dict[Path, str] | None = None) -> list[str]:
+    """Every session of the given transcript folders with something the human said, the oldest first,
+    each under a heading with its first timestamp, its short id and its folder."""
+    sessions = []
+    for folder in dirs:
+        for path in folder.glob("*.jsonl"):
+            said = read_turns(path, since, context)
+            if said:
+                sessions.append((said[0][0], path.stem[:8], (labels or {}).get(folder, folder.name), said))
+    lines = []
+    for first, sid, where, said in sorted(sessions, key=lambda s: (s[0], s[1])):
+        lines += ["", f"## {first[:16].replace('T', ' ')} · session {sid} ({where})", ""]
+        lines += [line for _, found in said for line in found]
+    return lines
 
 
 # Every refusal the tool raises on purpose. Caught in `main`, printed as one line, exit 2: a refusal
@@ -2647,7 +2915,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("kind", choices=["entry"])
     p.add_argument("parts", nargs="+", metavar="TITLE")
     p.add_argument("--repo", default=str(OWN_REPO))
-    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins")
+    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins, "
+                   "and the method's fields it lacks are appended, marked")
+    p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
     p = sub.add_parser("count", help="the entries of a log, and the lines of other files, that mention a symptom")
@@ -2656,12 +2926,16 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
+    p = sub.add_parser("turns", help="what the human said in the assistant's local session transcripts, oldest first; read-only")
+    p.add_argument("dirs", nargs="*", metavar="PROJECT_DIR",
+                   help="transcript folders (default: REPO's in ~/.claude/projects, and its worktrees')")
+    p.add_argument("--since", default="", metavar="DATE", help="YYYY-MM-DD, that day included (a harvest: harvested_through)")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--context", action="store_true", help="also the assistant's last words before each typed turn, shortened")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
-    if sys.version_info < (3, 11):
-        sys.exit(f"bundle.py needs Python 3.11 or newer (this is {sys.version.split()[0]}); run it with python3.11+")
     args = _parser().parse_args(argv)
     try:
         return _run(args)
@@ -2796,12 +3070,16 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         repo = Path(args.repo)
         log = Path(args.log) if args.log else repo / ".claude/logs/agent-changelog.md"
         title = " ".join(args.parts)
-        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), entry_template(log))
+        template, added = entry_format(log, Path(args.bundle))
+        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template)
         if not args.write:
             print(entry, end="")
-            return 0
-        log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
-        print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+        else:
+            log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
+            print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+        if added:
+            print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
+                  "add them to the log's format, or say there why it omits them")
         return 0
     if args.command == "count":
         files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]
@@ -2815,10 +3093,33 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         memory = Path(args.memory) if args.memory else memory_dir(repo)
         found = memory_report(memory, repo) if memory.is_dir() else []
         for m in found:
-            state = "in the repository" if m.found_in else "only on this machine" if m.searched else "read it: no code span"
-            print(f"  {state:22} {m.name}: {m.description}" + (f"  ({', '.join(m.found_in[:3])})" if m.found_in else ""))
-        lone = sum(m.searched and not m.found_in for m in found)
-        print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(not m.searched for m in found)} to read")
+            state = ("in the repository" if m.found_in else "partly held" if m.partly
+                     else "only on this machine" if m.searched else "read it: too little to match")
+            where = (f"  ({', '.join(m.found_in[:3])})" if m.found_in else
+                     f"  (only {', '.join(f'`{s}`' for s in m.matched[:3])}, in {', '.join(m.partly[:3])}; its rule's words are not found together: read it)"
+                     if m.partly else "")
+            print(f"  {state:22} {m.name}: {m.description}{where}")
+        lone = sum(m.searched and not m.found_in and not m.partly for m in found)
+        print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(bool(m.partly) for m in found)} partly held, "
+              f"{sum(not m.searched for m in found)} to read")
+        return 0
+    if args.command == "turns":
+        if args.since and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.since):
+            raise RefusedError(f"--since {args.since}: not a date, YYYY-MM-DD")
+        repo = Path(args.repo).resolve()
+        dirs = [Path(d) for d in args.dirs] or transcript_dirs(repo)
+        # Named by role, not by path: the folder's name is the repository's path, home folder included.
+        labels = {} if args.dirs else {d: "this checkout" if d.name == _encoded(repo) else
+                                       "worktree " + d.name.rpartition("-worktrees-")[2] if "-worktrees-" in d.name else "another worktree"
+                                       for d in dirs}
+        if not dirs:
+            print(f"no transcripts for this repository under {Path('~/.claude/projects')}: give PROJECT_DIR")
+            return 0
+        lines = turns_report(dirs, args.since, args.context, labels)
+        for line in lines:
+            print(line)
+        print(f"\n{sum(line.startswith('## ') for line in lines)} sessions with something the human said, in {len(dirs)} folders"
+              + (f", since {args.since}" if args.since else ""))
         return 0
     return 2
 
