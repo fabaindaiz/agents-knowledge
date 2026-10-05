@@ -24,7 +24,8 @@ something else depends on — because that is what decides its order.
 merged into `main` nor pushed). It took in two hundred and twenty-one proposals from eight carriers, every
 one harvested in the same session, transcripts included, with a verdict the owner reviewed theme by theme
 (`meta/tracking/history.md`): seven notes admitted after a literature step, twenty-four grown, eight queued
-candidates folded, method changes in ten themes, seventy-eight refusals recorded. It also put the
+candidates folded, method changes in eight themes the owner reviewed one by one (plus two rulings taken
+before them: the review offered, attribution as a setting), seventy-eight refusals recorded. It also put the
 maintainer's own way of deciding into the method, measured from every transcript on this machine
 (`meta/reviews/2026-10-05-working-practices.md`): four question modes and the example rule in principle 15,
 and the skills `decision-review` and `user-walk`. The coding session measures 9,882 of its 10,100-token
@@ -163,9 +164,32 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
   the close is offered before a push that ends a plan) without a trigger eval. Run `evals/skills/trigger.py`
   in a pilot carrier with held-out phrasings in the owner's own words: fire at least four in five, misfire at
-  most one in ten; near misses "execute the plan", "write tests for this function", "push"; and check that a
+  most one in ten; near misses "execute the plan", "write tests for this function", "push", and a plain
+  bug report (which must not fire `user-walk`); and check that a
   general brainstorming skill does not shadow `decision-review` on a request to review an existing spec.
   *Collision:* the skills' descriptions, which every carrier's `LOCAL.md` may override.
+- **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05**, each a decision for the owner at the next release, each
+  priced in its document under `meta/reviews/2026-10-05-*.md`:
+  1. *Index shape* (`index-scaling`): make `INDEX.md` the lookup alone and move the phase guide to a generated
+     `PHASES.md` (reviewer from about 6.6k to 3.7k tokens), measured through pilot-9 and a reviewer-only pilot; no
+     topic slicing yet.
+  2. *Cost* (`bundle-cost-in-sessions`): the prediction of `i-5ed7e8-a437c6` held (about 1/60 in sessions that
+     consult the bundle, 1/75 overall); bring the profile script into `evals/`, re-weigh `i-5ed7e8-1ac328` against
+     `i-5ed7e8-16b90a`, and decide whether `report` keeps chars/4 (about 1.4× low for bundle text).
+  3. *Review evidence* (`review-panels`): narrow the offered review's evidence sentence; a proof per finding; each
+     review records confirmed findings, tokens and minutes; the per-area candidate's gap restated; the experiment.
+  4. *Long runs* (`long-runs-and-delegates`): the delegate subsection, one line in `prompt-sync.md`, three lines per
+     brief; keep the machine awake during long meta-sessions.
+  5. *Timing* (`timing-in-the-gate`): the note's threshold paragraph and one paragraph in principle 18.
+  6. *Published trailers* (`attribution-in-published-history`): leave and document, or rewrite per repository with
+     the procedure; a method note; `check-local` checks the attribution setting and the hooks path.
+  7. *Triggers* (`skill-triggers`): `trigger.py`'s changes and the eval protocol, with the owner labelling the
+     ambiguous cases.
+- **`i-5ed7e8-94f262` · Review the method changes published on one carrier's evidence (0.0.26 and 0.0.27).**
+  Each is marked *one carrier's evidence* in `.agents/CHANGELOG.md` and `meta/tracking/history.md`: keep it
+  where a second carrier's entries or harvest show it acting, rework it where they show friction, withdraw
+  it where nothing used it. *When:* at the next release that takes in harvests from carriers on 0.0.27.
+  *Collision:* the coding session's budget, if any is withdrawn from the session loop.
 - **`i-5ed7e8-cc0b86` · Queue the experiments the five other new 0.0.27 notes name.** Only two of the
   seven admitted notes had their experiment queued in `meta/tracking/experiments.md`. *Collision:* none.
 - **`i-5ed7e8-2aabb5` · The bootstrap's opening questions ask the initialisation's objectives.** It contradicts
