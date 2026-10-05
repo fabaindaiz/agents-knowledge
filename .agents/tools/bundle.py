@@ -2976,7 +2976,12 @@ since some still such than that their them then there these they thing this thos
 very want were what when where whether which while will with within without would your yours
 """.split())
 MEMORY_HELD = 0.6  # the share of a rule's words one passage must hold for the repository to hold the rule
-MEMORY_MIN_WORDS = 3  # below this, words cannot tell a rule from a coincidence
+# Below this, words cannot tell a rule from a coincidence: a short rule ("run the lint and test gate before
+# any commit") shares three words with any file that names the scripts, so a passage must hold four.
+MEMORY_MIN_WORDS = 4
+# Files that are not prose: a manifest, a lockfile or a configuration names scripts and keys, never states a
+# rule, so a rule's words are not matched in them (a code span the memory names still is).
+NON_PROSE_SUFFIXES = frozenset({".json", ".jsonc", ".lock", ".toml", ".yaml", ".yml", ".ini", ".cfg", ".sum"})
 
 
 def _stems(text: str) -> set[str]:
@@ -3014,7 +3019,9 @@ def memory_dir(repo: Path, home: Path | None = None) -> Path:
 def memory_report(memory: Path, repo: Path) -> list[Memory]:
     """Each local memory, and the tracked files of the repository that hold its rule.
 
-    A file holds the rule when one of its passages holds most of the rule's words (`MEMORY_HELD`); a file
+    A file holds the rule when one of its passages holds most of the rule's words (`MEMORY_HELD`), and at
+    least `MEMORY_MIN_WORDS` of them; a manifest, lockfile or configuration (`NON_PROSE_SUFFIXES`) never
+    does. A file
     that shares only a code span the memory names (a command, a script) holds it partly, and the span is
     reported, because a rule that merely mentions the gate is not recorded wherever the gate is. None
     found means it lives only on this machine: another machine, or another assistant, never sees it. A
@@ -3030,7 +3037,7 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
             texts[rel] = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        passages[rel] = _passages(texts[rel])
+        passages[rel] = [] if path.suffix.lower() in NON_PROSE_SUFFIXES else _passages(texts[rel])
     found = []
     for path in sorted(memory.glob("*.md")):
         if path.name == "MEMORY.md":

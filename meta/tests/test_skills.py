@@ -401,6 +401,29 @@ class MemoryDiff(Base):
 
         self.assertEqual((found.found_in, found.partly), (["AGENTS.md"], []))
 
+    def test_a_short_rule_is_not_held_by_a_manifest_or_by_three_shared_words(self) -> None:
+        # A package manifest whose script names matched held "Run the lint and test gate before any commit".
+        repo = init_repo(self.root / "repo")
+        (repo / "package.json").write_text('{\n  "scripts": {\n    "lint": "eslint .",\n    "test": "jest",\n'
+                                           '    "gate": "npm run lint && npm run test",\n    "commit": "cz"\n  }\n}\n')
+        (repo / "package-lock.json").write_text('{"lint": 1, "test": 2, "gate": 3, "commit": 4}\n')
+        (repo / "README.md").write_text("# Scripts\n\nThe lint, test and gate scripts live in the manifest.\n")
+        commit(repo)
+        memory = self.root / "memory"
+        memory.mkdir()
+        (memory / "gate.md").write_text('---\nname: "gate"\ndescription: "Run the lint and test gate before any commit"\n---\n\n'
+                                        "Run the lint and test gate before any commit.\n")
+
+        found = B.memory_report(memory, repo)[0]
+
+        self.assertEqual(found.found_in, [])
+        self.assertTrue(found.searched)
+
+        (repo / "CONTRIBUTING.md").write_text("# Contributing\n\n- Run the lint and the test gate before every commit.\n")
+        commit(repo)
+
+        self.assertEqual(B.memory_report(memory, repo)[0].found_in, ["CONTRIBUTING.md"])
+
     def test_a_memory_with_nested_frontmatter_is_read(self) -> None:
         repo = init_repo(self.root / "repo")
         commit(repo)
