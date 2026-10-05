@@ -18,7 +18,7 @@ work a review has not read: if one is pending, say so and stop there.
 **A push or a deploy is not a close either.** When one is about to end a plan and no close has run in
 this session, offer the close in one question first: the counts, the deferred findings, the device
 questions and the hand-off happen nowhere else. Push after the answer, whatever it is. (A rule acts
-only where the action reads it: `prompt-context.md` §*The enforcement ladder*.)
+only where the action reads it: `.agents/method/prompt-context.md` §*The enforcement ladder*.)
 
 ## 1. Every part of what was asked
 
@@ -32,7 +32,8 @@ free text of question answers (it overrides the options). List each part as **do
   "nothing yet". The root instruction file's map names where each kind lives.
 - A new dated record (research, plan, spec) gets its folder's index row.
 - A rule or a settled question: a decision row with its Status and its enforcer. Run
-  `python3 .agents/tools/bundle.py decisions docs/decisions.md`: each `proposed` row is a decision for
+  `python3 .agents/tools/bundle.py decisions <the decisions log>` (`docs/decisions.md` unless the root file's map
+  names another): each `proposed` row is a decision for
   the human, and each `unconfirmed:` reason a fact question; ask them in the hand-off, never decide them.
 - A proposal written this session that `bundle.py privacy` warns on is a question too: "is this
   private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`.
@@ -70,7 +71,7 @@ instructions) is silently reverted on every other machine, and loses to the host
 this one: a commit trailer the human forbade is the usual case. Move it into the repository's root
 instruction file, and where it can be checked, into a hook or the gate (for that case, attribution off
 in the committed project settings and a check that fails on an attribution trailer:
-`prompt-context.md`, artifact 4, *Attribution is a setting, not a sentence*).
+`.agents/method/prompt-context.md`, artifact 4, *Attribution is a setting, not a sentence*).
 
 ## 6. Devices and production
 

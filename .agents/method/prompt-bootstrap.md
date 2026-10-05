@@ -859,7 +859,7 @@ first checks that its target resolves inside that directory.
       `bundle.py id d`, a Status (what was read from the code is `· found`, its
       reason `unconfirmed:`), and the enforcer column filled — including the rows
       that say `—`; `bundle.py decisions docs/decisions.md` runs in the gate.
-- [ ] Confidential context, if the repository keeps any, in `docs/private/`
+- [ ] Confidential context, if the repository keeps any, in `.private/`
       (gitignored where the repository is public), each file opening with the
       sentinel line of principle 20, and `visibility` set in `carrier.toml`.
 - [ ] The root file carries the one-line privacy reminder, and the line that

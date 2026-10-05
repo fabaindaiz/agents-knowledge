@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 The human decides best one decision at a time, each shown by example, and decides worst after the
 plan has run: rulings walked after a plan was executed were mostly changed, and the plan grew an
 addendum; walked before it, none was needed. So this runs **before** the plan. The rules for every
-question are `prompt-context.md` §15; this is its decision-review mode.
+question are `.agents/method/prompt-context.md` §15; this is its decision-review mode.
 
 ## 1. Read first
 

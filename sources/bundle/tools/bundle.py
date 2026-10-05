@@ -79,6 +79,7 @@ import tarfile
 import tempfile
 import tomllib
 import unicodedata
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -576,7 +577,7 @@ class PrivacyRule:
 # travels, it is a private file pasted out whole, whatever the rest of it holds and whatever no terms list
 # names; written inside a sentence, as the method describes it, it is not.
 PRIVATE_SENTINEL = "confidential: never leaves this repository"
-PRIVATE_FOLDER = "docs/private"
+PRIVATE_FOLDER = ".private"  # at the root: never under `docs/`, which a site generator publishes
 
 
 def _sentinels(text: str) -> list[str]:
@@ -1366,7 +1367,8 @@ SUPERSEDES = re.compile(rf"\bsupersedes\s+({_DECISION_ID})\b")
 DEBT_HEADING = "looks deliberate, is not"
 DECISION_COLUMNS = ("Id", "Status", "Decision", "Why", "Enforced in")
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
-_PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\.[A-Za-z]{1,5})$")
+_PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\.(?:py|pyi|md|mdc|json|jsonc|ya?ml|toml|ini|cfg|sh|bash|js|mjs|cjs|ts|tsx|jsx|rs|go|java|kt|swift|rb|php|cs|c|h|cc|cpp|hpp|sql|html|css|txt|lock|gradle|xml|ps1|bat))$")
+# A dotted name with no such extension (`permissions.deny`, `Stores.start`) is a key or a symbol, not a file.
 
 
 def table_cells(line: str) -> list[str]:
@@ -1476,6 +1478,8 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
     warnings: list[str] = []
     counts = {"rows": 0, "proposed": 0, "unconfirmed": 0, "debt": 0}
     for path in files:
+        if not path.is_file():
+            raise RefusedError(f"{path}: no such file; give the decisions log this repository keeps (its root file's map names it)")
         rows: dict[str, DecisionRow] = {}
         root = _repo_root(path)
         known = None
@@ -1573,7 +1577,7 @@ def _first_dates(path: Path) -> dict[str, str]:
     return dates
 
 
-def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[str, list[tuple[str, str]]]:
+def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[str, list[tuple[str, str]], list[str]]:
     """A four-column decisions log with the Status column added: each row `accepted recorded <date>`.
 
     The date is that of the first commit that wrote the row's id into the log (`recorded`, because a bulk
@@ -1582,19 +1586,34 @@ def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[s
     are left as they are, so a second run changes nothing. Supersessions written in prose are not read:
     mapping them is the update session's reading.
 
+    A four-column table under another header than the log's own — the commonest one among its tables of
+    decisions — is left as it is and named: an open, half-decided section holds rows that are `proposed`,
+    whatever its columns say, and only a person maps them.
+
     Returns:
-        (the new text, [(id, date) for each row given a Status]).
+        (the new text, [(id, date) for each row given a Status], [each table left as it is, with its line]).
     """
+    if not path.is_file():
+        raise RefusedError(f"{path}: no such file; give the decisions log this repository keeps (its root file's map names it)")
     today = today or datetime.date.today()
     lines = path.read_text(encoding="utf-8").split("\n")
     dates = None
     migrated: list[tuple[str, str]] = []
+    left: list[str] = []
+    candidates = []
     for debt, table in _decision_tables(path):
         rows = [(n, table_cells(line)) for n, line in table]
         ids = [c[0] for _, c in rows if c and re.fullmatch(_DECISION_ID, c[0])]
         if debt or not ids or len(rows) < 2 or not TABLE_SEPARATOR.match(table[1][1]):
             continue
         if any(len(c) != 4 for _, c in rows):
+            continue
+        candidates.append((table, rows))
+    headers = Counter(tuple(c.lower() for c in rows[0][1]) for _, rows in candidates)
+    own = headers.most_common(1)[0][0] if headers else None  # the commonest header; a tie goes to the first one
+    for table, rows in candidates:
+        if tuple(c.lower() for c in rows[0][1]) != own:
+            left.append(f"line {table[0][0]}: | {' | '.join(rows[0][1])} | ({len(rows) - 2} rows)")
             continue
         dates = _first_dates(path) if dates is None else dates
         for index, (number, cells) in enumerate(rows):
@@ -1609,7 +1628,7 @@ def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[s
             else:
                 cells = [cells[0], "", *cells[1:]]
             lines[number - 1] = "| " + " | ".join(c.replace("|", "\\|") if "`" not in c else c for c in cells) + " |"
-    return "\n".join(lines), migrated
+    return "\n".join(lines), migrated, left
 
 # --- formats: frontmatter, carrier file, checksums, versions -----------------------------------------
 # Every format here is an industry one, read by a documented subset so the tool stays standard library
@@ -3755,10 +3774,13 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         if args.migrate:
             total = 0
             for path in files:
-                text, migrated = migrate_decisions(path)
+                text, migrated, left = migrate_decisions(path)
                 total += len(migrated)
                 for row_id, date in migrated:
                     print(f"  . {path}: {row_id} accepted recorded {date}")
+                for table in left:
+                    print(f"  ! {path}: left as it is, another header than the log's own; map its rows by hand "
+                          f"(an open section's rows are proposed, with `decides:`): {table}")
                 if args.write and migrated:
                     path.write_text(text, encoding="utf-8")
             print(f"{total} rows {'gained' if args.write else 'would gain'} a Status"

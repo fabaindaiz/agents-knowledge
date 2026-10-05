@@ -28,7 +28,7 @@ at the next harvest.
   an agent's acceptance over a person's decision; warns on proposed rows, unconfirmed reasons and an enforcer path
   that names no file. `--migrate` gives a four-column log its Status column, each row dated from the commit that
   first wrote it.
-- **A private folder per carrier** (`docs/private/`, or `private_folder` in `carrier.toml`): no tool or harvest
+- **A private folder per carrier** (`.private/` at the root, or `private_folder` in `carrier.toml`): no tool or harvest
   reads it; each file opens with a sentinel line the privacy check fails on anywhere else; a push of the carrier
   does not read it; `verify` fails when a carrier declared `visibility = "public"` tracks it in git.
 - **The home reads every proposal for privacy again** in `gather` and `intake`, and does not take in one that
@@ -44,6 +44,21 @@ at the next harvest.
 - **A note under review, `a-rewrite-cleans-only-what-refs-reach`**: published attribution lines are left and
   documented; a rewrite, when chosen, is range-limited, leased and followed on every other machine.
 - **Two more occurrences** in `a-check-must-be-seen-to-fail` and a second form of `derived-copy-goes-stale-silently`.
+
+### Fixed before it was carried
+
+A read-only review of each reachable carrier against this release, run before it was carried, found these; they
+are fixed in it:
+
+- `bundle.py decisions` on a log that does not exist refuses in one line instead of a traceback, and a dotted key
+  or symbol in Enforced in (`permissions.deny`) is no longer read as a missing file.
+- `--migrate` gives the Status column only to the tables in the log's own header and names any other, such as an
+  open, half-decided section, whose rows a person maps to `proposed`.
+- The installed skills point at `.agents/method/prompt-context.md` by its full path, which a carrier's own pointer
+  check resolves, and `close` runs the decisions check on the log the root file names.
+- The update procedure warns that a carrier's own audit reading the log by column position goes on passing after
+  the migration while checking the wrong cell.
+- The private folder's default is `.private/` at the root, not under `docs/`, which a site generator publishes.
 
 ### Changed
 

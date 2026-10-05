@@ -1399,9 +1399,10 @@ class Decisions(Base):
                         "\n## Looks deliberate, is not\n\n| Id | What | Why it is not deliberate | Fix when |\n|---|---|---|---|\n"
                         "| d-abcdef-333333 | Two parsers | accident | soon |\n")
 
-        text, migrated = B.migrate_decisions(path, today=self.TODAY)
+        text, migrated, left = B.migrate_decisions(path, today=self.TODAY)
 
         self.assertEqual(migrated, [("d-abcdef-111111", "2026-06-14"), ("d-abcdef-222222", "2026-10-20")])
+        self.assertEqual(left, [])
         self.assertIn("| Id | Status | Decision | Why | Enforced in |", text)
         self.assertIn("| d-abcdef-111111 | accepted recorded 2026-06-14 | One store | why | — |", text)
         self.assertIn("| d-abcdef-333333 | Two parsers | accident | soon |", text)
@@ -1423,6 +1424,31 @@ class Decisions(Base):
         errors, _, counts = self.check(path)
 
         self.assertEqual((errors, counts["rows"]), ([], 3))
+
+    def test_the_migration_leaves_a_table_with_another_header_to_a_person(self) -> None:
+        repo = init_repo(self.root / "open")
+        path = repo / "decisions.md"
+        path.write_text("## Store\n\n| Id | Decision | Why | Enforced in |\n|---|---|---|---|\n| d-abcdef-111111 | One | why | — |\n"
+                        "| d-abcdef-222222 | Two | why | — |\n\n## Open, half decided\n\n"
+                        "| Id | Subject | State | Who decides |\n|---|---|---|---|\n| d-abcdef-333333 | Three | unresolved | the team |\n")
+
+        text, migrated, left = B.migrate_decisions(path, today=self.TODAY)
+
+        self.assertEqual([m[0] for m in migrated], ["d-abcdef-111111", "d-abcdef-222222"])
+        self.assertEqual(len(left), 1, left)
+        self.assertIn("Who decides", left[0])
+        self.assertIn("| d-abcdef-333333 | Three | unresolved | the team |", text)
+        code, out = run("decisions", str(path), "--migrate")
+        self.assertIn("left as it is", out)
+
+    def test_a_missing_log_is_refused_in_one_line_and_a_config_key_is_not_a_file(self) -> None:
+        code, out = run("decisions", str(self.root / "nowhere.md"))
+        self.assertEqual(code, 2, out)
+        self.assertIn("no such file", out)
+        self.assertNotIn("Traceback", out)
+
+        path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | Deny writes | why | `permissions.deny`, `Stores.start` |\n")
+        self.assertEqual(self.check(path)[1], [])
 
     def test_the_migration_command_writes_only_when_told(self) -> None:
         repo = init_repo(self.root / "cmd")
@@ -1482,15 +1508,15 @@ class PrivateRecords(Base):
         B.write_checksums(agents)
         self.assertEqual([p for p in B.verify_problems(agents) if "private" in p or "visibility" in p], [])
 
-        (repo / "docs/private").mkdir(parents=True)
-        (repo / "docs/private/people.md").write_text(self.SENTINEL + "\n\nh1 = someone\n")
-        (repo / ".gitignore").write_text("docs/private/\n")
+        (repo / ".private").mkdir(parents=True)
+        (repo / ".private/people.md").write_text(self.SENTINEL + "\n\nh1 = someone\n")
+        (repo / ".gitignore").write_text(".private/\n")
         git_commit(repo, "chore: ignored")
-        self.assertEqual([p for p in B.verify_problems(agents) if "docs/private" in p], [])
+        self.assertEqual([p for p in B.verify_problems(agents) if ".private" in p], [])
 
-        git(repo, "add", "-f", "docs/private/people.md")
+        git(repo, "add", "-f", ".private/people.md")
         git_commit(repo, "chore: tracked by mistake")
-        problems = [p for p in B.verify_problems(agents) if "docs/private" in p]
+        problems = [p for p in B.verify_problems(agents) if ".private" in p]
         self.assertEqual(len(problems), 1, problems)
         self.assertIn("public", problems[0])
 

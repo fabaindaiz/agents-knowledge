@@ -125,7 +125,7 @@ which no release writes and `SHA256SUMS` does not list:
 | `adapted` | its renamings and substitutions, one line each |
 | `declined` | what it refused, each with a reason written for a stranger |
 | `visibility` | `public` or `private`; when `public`, `verify` fails if git tracks the private folder |
-| `private_folder` | where its confidential records live, when not `docs/private` (principle 20) |
+| `private_folder` | where its confidential records live, when not `.private` at the root (principle 20) |
 
 **They are never taken from another copy.** A bundle that arrives with a `carrier.toml` carries the
 record of the repository it came from, and an `adapted` entry naming a file this repository does not

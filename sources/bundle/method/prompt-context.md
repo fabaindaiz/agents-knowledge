@@ -903,8 +903,8 @@ carrier is private, is described only by a neutral kind, and **never has its
 carrier id written beside a description** — the id is what would join every
 other detail to it.
 
-**A carrier's confidential records stay in its private folder** (`docs/private/`,
-gitignored where the repository is public): no tool and no harvest reads it, and
+**A carrier's confidential records stay in its private folder** (`.private/`, at the
+root; gitignored where the repository is public): no tool and no harvest reads it, and
 each file opens with the sentinel line the privacy check fails on anywhere else.
 
 **Privacy wins over record-keeping.** Where this rule meets "never lose

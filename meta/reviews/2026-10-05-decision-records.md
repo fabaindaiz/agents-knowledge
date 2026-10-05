@@ -85,7 +85,7 @@ to it, and reports it under *decided for you*; to change a decision a person too
 it writes a `proposed` row that supersedes it.
 
 **Who decided** matters (the owner: it is important to know who is taking the decisions), and a name must not
-travel. So the row carries an alias, and `docs/private/people.md` maps each alias to a name and role.
+travel. So the row carries an alias, and `.private/people.md` maps each alias to a name and role.
 An alias is never reassigned, like an id: a person who leaves keeps theirs, a new one gets the next. The public
 home has only `h1`. A blank decider counts as a person for the check.
 
@@ -132,8 +132,8 @@ update session maps supersessions and declined rows already written in prose; wh
 
 ### Records that never leave a carrier
 
-- **The folder.** `docs/private/` in each carrier (the host may name it otherwise and record that in `adapted`),
-  for confidential context keyed by decision id (`docs/private/<d-id>.md`) and for `people.md`. No tool reads
+- **The folder.** `.private/` at the root of each carrier (first `docs/private/`, moved when the carriers' review found that a site generator publishes `docs/` and audits walk it: `d-5ed7e8-f86625`) (the host may name it otherwise and record that in `adapted`),
+  for confidential context keyed by decision id (`.private/<d-id>.md`) and for `people.md`. No tool reads
   it; the harvest is told never to read it. In a public repository it is in `.gitignore`.
 - **The sentinel.** Every file there starts with the line `confidential: never leaves this repository`.
   `bundle.py privacy` fails when that line stands on its own anywhere it reads (`.agents/`, given paths, a commit

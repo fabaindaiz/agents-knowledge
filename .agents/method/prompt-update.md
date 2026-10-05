@@ -81,8 +81,12 @@ reads right. Every row becomes `accepted recorded <date>`, the date its id was
 first committed, with no decider, which counts as a person's. Then read the rows
 whose prose says a decision was reversed, replaced or rejected, and write their
 states (`superseded by d-…` both ways, `declined`); a section of half-decided
-rows becomes `proposed` rows with `decides:`. Where you are unsure, leave
-`accepted`. Add `bundle.py decisions docs/decisions.md` to the gate, and run it.
+rows, which the migration leaves as it is and names, becomes `proposed` rows
+with `decides:`. Where you are unsure, leave `accepted`. **Then read this
+repository's own audit for anything that reads the log by column position**:
+the enforcer is now the last column and the second is Status, so a check on
+the fourth cell goes on passing while it checks the reason instead. Add
+`bundle.py decisions docs/decisions.md` to the gate, and run it.
 
 Add a decisions row (id from `bundle.py id d`) for anything now settled
 differently, and one changelog entry (id from `bundle.py id s`) covering the
