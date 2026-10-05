@@ -20,8 +20,8 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
-**State on 2026-10-05, at the close of 0.0.29, on a second machine.** Release 0.0.29 is tagged locally and **not
-pushed**: the decision-record design (`meta/reviews/2026-10-05-decision-records.md`, `meta/decisions.md`), the
+**State on 2026-10-05, at the close of 0.0.29, on a second machine.** Release 0.0.29 is tagged and **pushed with its
+tag**: the decision-record design (`meta/reviews/2026-10-05-decision-records.md`, `meta/decisions.md`), the
 owner's decisions on the research of the same day (`i-5ed7e8-54cb3f`: one deferred, the rest applied), and one
 carrier's proposals that had waited since 0.0.25. A read-only review of every reachable carrier against the
 unpublished release found five defects, fixed before it was carried (the release was cut again under the same
@@ -29,9 +29,10 @@ version, its tag never having left the machine); two more found while carrying a
 reached four carriers, each on a new branch cut from its integration branch, for a pull request the owner opens
 (`release.py align`: the home and four aligned); their main checkouts still hold 0.0.25 until those merge. The
 carriers this machine shares with the first one hold newer work there, unpushed, and were not reached; two
-repositories the owner named have no bundle on any branch and wait for a bootstrap. Waiting on the owner: push
-the home with its tag; open the four pull requests; the bootstraps; the proposed rows each carrier's log now
-shows; installing the method's skills in those carriers, each with its `LOCAL.md`.
+repositories the owner named had no bundle on any branch (bootstrapped later the same day, below). Waiting on
+the owner: push the carriers' branches and open their pull requests (several carriers deny an agent's push, and one
+forbids pushing); the proposed rows each carrier's log now shows; installing the method's skills in the four
+updated carriers, each with its `LOCAL.md`; and a credentials ticket in the two bootstrapped repositories.
 
 **Later the same day:** the two repositories with no bundle were bootstrapped, each on a branch cut from an
 unmerged ticket branch that holds its gate, so their pull requests merge after it; both registered at 0.0.29
