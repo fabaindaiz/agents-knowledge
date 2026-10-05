@@ -2607,10 +2607,55 @@ def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
 
 @dataclass(frozen=True)
 class Memory:
+    """One local memory: where the repository holds its rule (`found_in`), and where it holds only a code
+    span the memory names (`partly`, with the spans in `matched`). `searched` is false when the memory
+    gives neither enough words of a rule nor a code span to look for."""
+
     name: str
     description: str
     found_in: list[str]
     searched: bool
+    partly: list[str]
+    matched: list[str]
+
+
+# Words too common to tell one rule from another; with every word under four letters, never matched.
+COMMON_WORDS = frozenset("""
+about above after again against also always another anything because been before being below between both
+cannot could does doing done down each either else even ever every first from have having here into just
+keep kept last less like made make many more most much must never next none only other over same should
+since some still such than that their them then there these they thing this those through under until upon
+very want were what when where whether which while will with within without would your yours
+""".split())
+MEMORY_HELD = 0.6  # the share of a rule's words one passage must hold for the repository to hold the rule
+MEMORY_MIN_WORDS = 3  # below this, words cannot tell a rule from a coincidence
+
+
+def _stems(text: str) -> set[str]:
+    """The distinctive words of a text, cut to a crude stem so `trailers` meets `trailer`."""
+    words = (w.lower() for w in re.findall(r"[A-Za-z][A-Za-z'-]*[A-Za-z]", text))
+    return {(w[:-1] if w.endswith("s") and not w.endswith("ss") else w)[:6]
+            for w in words if len(w) >= 4 and w not in COMMON_WORDS}
+
+
+def _passages(text: str) -> list[set[str]]:
+    """A document's passages, as stems: paragraphs, with each heading, list item and table row its own."""
+    passages: list[list[str]] = []
+    for line in text.split("\n"):
+        if not line.strip():
+            passages.append([])
+        elif re.match(r"^\s*(?:#|[-*+]\s|\d+[.)]\s|\|)", line) or not passages:
+            passages.append([line])
+        else:
+            passages[-1].append(line)
+    return [s for p in passages if p and (s := _stems(" ".join(p)))]
+
+
+def _memory_rule(description: str, body: str) -> set[str]:
+    """What a memory claims, as stems: its description and its body's first paragraph, code spans left out
+    (a command or a name the rule mentions is not the rule)."""
+    first = next((p for p in re.split(r"\n\s*\n", body.strip()) if p.strip()), "")
+    return _stems(re.sub(r"`[^`\n]*`", " ", description + "\n" + first))
 
 
 def memory_dir(repo: Path, home: Path | None = None) -> Path:
@@ -2619,19 +2664,25 @@ def memory_dir(repo: Path, home: Path | None = None) -> Path:
 
 
 def memory_report(memory: Path, repo: Path) -> list[Memory]:
-    """Each local memory, and the tracked files of the repository that hold what it names in code spans.
+    """Each local memory, and the tracked files of the repository that hold its rule.
 
-    None found means it lives only on this machine: another machine, or another assistant, never sees it.
-    A memory with no code span is not searched (`searched` false): only a reader can place it. The bundle
-    is not searched either: what it says is the method's, not what this repository recorded.
+    A file holds the rule when one of its passages holds most of the rule's words (`MEMORY_HELD`); a file
+    that shares only a code span the memory names (a command, a script) holds it partly, and the span is
+    reported, because a rule that merely mentions the gate is not recorded wherever the gate is. None
+    found means it lives only on this machine: another machine, or another assistant, never sees it. A
+    memory with too few words and no code span is not searched (`searched` false): only a reader can
+    place it. The bundle is not searched either: what it says is the method's, not what this repository
+    recorded.
     """
     tracked = [repo / rel for rel in git(repo, "ls-files").split("\n") if rel and not rel.startswith(".agents/")]
-    texts = {}
+    texts, passages = {}, {}
     for path in tracked:
         try:
-            texts[path.relative_to(repo).as_posix()] = path.read_text(encoding="utf-8")
+            rel = path.relative_to(repo).as_posix()
+            texts[rel] = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
+        passages[rel] = _passages(texts[rel])
     found = []
     for path in sorted(memory.glob("*.md")):
         if path.name == "MEMORY.md":
@@ -2641,8 +2692,15 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
         meta = {k: v.replace('\\"', '"') for k, v in
                 re.findall(r"^(name|description):[ \t]*\"?(.*?)\"?[ \t]*$", front or "", re.MULTILINE)}
         spans = {s.strip() for s in re.findall(r"`([^`\n]{4,})`", body)}
-        where = sorted(rel for rel, content in texts.items() if any(s in content for s in spans))
-        found.append(Memory(meta.get("name") or path.stem, meta.get("description", ""), where, bool(spans)))
+        rule = _memory_rule(meta.get("description", ""), body)
+        if len(rule) < MEMORY_MIN_WORDS:
+            rule = set()
+        need = max(MEMORY_MIN_WORDS, math.ceil(MEMORY_HELD * len(rule)))
+        held = sorted(rel for rel in texts if rule and any(len(rule & p) >= need for p in passages[rel]))
+        partly = [] if held else sorted(rel for rel, content in texts.items() if any(s in content for s in spans))
+        matched = sorted(s for s in spans if any(s in texts[rel] for rel in partly))
+        found.append(Memory(meta.get("name") or path.stem, meta.get("description", ""), held, bool(spans or rule),
+                            partly, matched))
     return found
 
 
@@ -2890,10 +2948,15 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         memory = Path(args.memory) if args.memory else memory_dir(repo)
         found = memory_report(memory, repo) if memory.is_dir() else []
         for m in found:
-            state = "in the repository" if m.found_in else "only on this machine" if m.searched else "read it: no code span"
-            print(f"  {state:22} {m.name}: {m.description}" + (f"  ({', '.join(m.found_in[:3])})" if m.found_in else ""))
-        lone = sum(m.searched and not m.found_in for m in found)
-        print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(not m.searched for m in found)} to read")
+            state = ("in the repository" if m.found_in else "partly held" if m.partly
+                     else "only on this machine" if m.searched else "read it: too little to match")
+            where = (f"  ({', '.join(m.found_in[:3])})" if m.found_in else
+                     f"  (only {', '.join(f'`{s}`' for s in m.matched[:3])}, in {', '.join(m.partly[:3])}; its rule's words are not found together: read it)"
+                     if m.partly else "")
+            print(f"  {state:22} {m.name}: {m.description}{where}")
+        lone = sum(m.searched and not m.found_in and not m.partly for m in found)
+        print(f"{len(found)} memories in {memory}: {lone} only on this machine, {sum(bool(m.partly) for m in found)} partly held, "
+              f"{sum(not m.searched for m in found)} to read")
         return 0
     return 2
 

@@ -329,14 +329,15 @@ class Count(Base):
 class MemoryDiff(Base):
     def test_each_memory_says_whether_the_repository_holds_what_it_names(self) -> None:
         repo = init_repo(self.root / "repo")
-        (repo / "notes.md").write_text("Start the emulator with `-gpu swiftshader`.\n")
+        (repo / "notes.md").write_text("Start the emulator with `-gpu swiftshader`;\nthe hardware renderer crashes it on this machine.\n")
         commit(repo)
         memory = self.root / "memory"
         memory.mkdir()
         (memory / "MEMORY.md").write_text("- index\n")
-        (memory / "gpu.md").write_text('---\nname: "gpu"\ndescription: "the software GPU"\n---\n\nUse `-gpu swiftshader`.\n')
+        (memory / "gpu.md").write_text('---\nname: "gpu"\ndescription: "the emulator needs the software GPU"\n---\n\n'
+                                       "Start it with `-gpu swiftshader`: the hardware renderer crashes it.\n")
         (memory / "lone.md").write_text('---\nname: "lone"\ndescription: "only here"\n---\n\nRun `make wobble`.\n')
-        (memory / "prose.md").write_text('---\nname: "prose"\ndescription: "no code span"\n---\n\nKeep one scale.\n')
+        (memory / "prose.md").write_text('---\nname: "prose"\ndescription: "scale"\n---\n\nOne scale.\n')
         (repo / ".agents").mkdir()
         (repo / ".agents/README.md").write_text("The bundle says `make wobble` too.\n")
         commit(repo)
@@ -348,6 +349,33 @@ class MemoryDiff(Base):
         self.assertEqual(found["lone"].found_in, [])
         self.assertTrue(found["lone"].searched)
         self.assertFalse(found["prose"].searched)
+
+    def test_a_shared_code_span_alone_is_partly_held_and_names_what_matched(self) -> None:
+        # A rule that names the gate was counted as held because the gate's name appears in the repository.
+        repo = init_repo(self.root / "repo")
+        (repo / "CONTRIBUTING.md").write_text("# Contributing\n\nBefore you push, run `make gate`: it runs the tests and the linter.\n")
+        commit(repo)
+        memory = self.root / "memory"
+        memory.mkdir()
+        (memory / "trailer.md").write_text(
+            '---\nname: "trailer"\ndescription: "no attribution trailer"\n---\n\n'
+            "Never add an attribution trailer to a commit message; run `make gate` before every commit.\n\n"
+            "**Why:** the owner is the sole author.\n")
+
+        found = B.memory_report(memory, repo)[0]
+
+        self.assertEqual((found.found_in, found.partly, found.matched), ([], ["CONTRIBUTING.md"], ["make gate"]))
+        code, out = run("memory-diff", "--repo", str(repo), "--memory", str(memory))
+        self.assertEqual(code, 0, out)
+        self.assertIn("partly held", out)
+        self.assertIn("make gate", out)
+
+        (repo / "AGENTS.md").write_text("# Rules\n\n- Commits carry no attribution trailer in their message.\n- Other rules.\n")
+        commit(repo)
+
+        found = B.memory_report(memory, repo)[0]
+
+        self.assertEqual((found.found_in, found.partly), (["AGENTS.md"], []))
 
     def test_a_memory_with_nested_frontmatter_is_read(self) -> None:
         repo = init_repo(self.root / "repo")
