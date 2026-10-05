@@ -994,3 +994,52 @@ class PrePush(Base):
         self.assertIn("FAIL", blocked.stdout + blocked.stderr)
         self.assertNotEqual(new_branch.returncode, 0, new_branch.stdout + new_branch.stderr)
         self.assertEqual(passed.returncode, 0, passed.stdout + passed.stderr)
+
+    def test_an_attribution_trailer_is_not_pushed(self) -> None:
+        (self.repo / "a.md").write_text("A line.\n")
+        git_commit(self.repo, "docs: a line\n\n" + Trailers.ASSISTANT)
+
+        blocked = self.push()
+
+        self.assertNotEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
+        self.assertIn("attribution", blocked.stdout + blocked.stderr)
+
+
+class Trailers(Base):
+    """A commit message that credits an assistant: the user is the sole author of every commit."""
+
+    ASSISTANT = "Co-" + "Authored-By: Claude Opus <noreply" + "@" + "anthropic.com>"
+    GENERATED = "\U0001f916 Generated with [Claude Code](https://claude.com/claude-code)"
+
+    def a_repo(self, *messages: str) -> Path:
+        repo = init_repo(self.root / "repo")
+        for number, message in enumerate(messages):
+            (repo / f"f{number}.md").write_text(f"{number}\n")
+            git_commit(repo, message)
+        return repo
+
+    def test_an_assistant_trailer_or_a_generated_line_fails_and_a_person_does_not(self) -> None:
+        repo = self.a_repo("chore: start", "feat: a\n\n" + self.ASSISTANT, "feat: b\n\n" + self.GENERATED,
+                           "feat: c\n\nCo-" + "Authored-By: Jane Roe", "build: files generated with release.py build",
+                           "fix: d\n\nThe line it added was generated with care.")
+
+        found = B.trailer_problems(repo, "HEAD~5..HEAD")[0]
+        code, out = run("trailers", "HEAD~3..HEAD", "--repo", str(repo))
+
+        self.assertEqual([sha_line.split(" ", 1)[1] for sha_line in found], ["feat: a: " + self.ASSISTANT, "feat: b: " + self.GENERATED])
+        self.assertEqual(code, 0, out)  # the last three carry none
+
+    def test_the_default_range_is_the_last_twenty_commits_without_an_upstream(self) -> None:
+        repo = self.a_repo("chore: start", "feat: a\n\n" + self.ASSISTANT, *[f"chore: {n}" for n in range(19)])
+
+        code, out = run("trailers", "--repo", str(repo))
+        older = run("trailers", "--repo", str(self.a_repo_with_more(repo)))[0]
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("the last 20 commits", out)
+        self.assertEqual(older, 0)
+
+    def a_repo_with_more(self, repo: Path) -> Path:
+        (repo / "more.md").write_text("more\n")
+        git_commit(repo, "chore: one more")  # the attribution is now the 21st commit back
+        return repo

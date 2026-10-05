@@ -17,6 +17,9 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py privacy --commits RANGE [--repo R]
                                                                 the same rules over a range's commit messages
                                                                 and added lines: what a push publishes
+    python3 .agents/tools/bundle.py trailers [RANGE] [--repo R] no commit message in the range credits an assistant
+                                                                (an attribution trailer, a "Generated with" line);
+                                                                default @{u}..HEAD, or the last 20 commits
     python3 .agents/tools/bundle.py carrier-id [REPO] [--mint]  the carrier's stored random id; --mint writes one
     python3 .agents/tools/bundle.py id d|i|s TEXT... [--repo R] a record id: decision, roadmap item, session
     python3 .agents/tools/bundle.py ids [--carrier REPO] FILE... record ids in files: malformed, defined twice,
@@ -2453,6 +2456,42 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
     return [(repo.name, problems) for repo in repos if (problems := check_local(repo))]
 
 
+# --- commit messages ---------------------------------------------------------------------------------
+
+# Who an attribution line names when it credits an assistant rather than a person. A person's trailer
+# passes: the rule this enforces is that the user is the sole author, and a tool adds these lines by default.
+ASSISTANT_NAME = r"\b(?:claude|anthropic|copilot|chatgpt|openai|gpt|codex|gemini|cursor|devin|aider|windsurf|codeium|tabnine|codewhisperer)\b"
+ATTRIBUTION = (re.compile(r"^\s*co-authored-by:.*" + ASSISTANT_NAME, re.IGNORECASE),
+               re.compile(r"^\W*generated (?:with|by)\b.*" + ASSISTANT_NAME, re.IGNORECASE))
+TRAILER_DEFAULT = 20  # commits read when the branch has no upstream
+
+
+def trailer_problems(repo: Path, rev_range: str | None = None) -> tuple[list[str], str, int]:
+    """(problems, the range as read, commits read): each commit message line in the range that credits an
+    assistant, as `SHA SUBJECT: LINE`. With no range, `@{u}..HEAD`, or the last `TRAILER_DEFAULT` commits of
+    HEAD when the branch has no upstream."""
+    if rev_range is None:
+        try:
+            git(repo, "rev-parse", "--verify", "--quiet", "@{u}")
+            rev_range, args = "@{u}..HEAD", ["@{u}..HEAD"]
+        except subprocess.CalledProcessError:
+            rev_range, args = f"no upstream: the last {TRAILER_DEFAULT} commits", ["-n", str(TRAILER_DEFAULT), "HEAD"]
+    else:
+        args = rev_range.split()
+    try:
+        log = git(repo, "log", "--reverse", "--format=%H%x1f%B%x1e", *args, "--")
+    except subprocess.CalledProcessError as error:
+        said = (error.stderr or "").strip().splitlines()
+        raise RefusedError(f"trailers {rev_range}: not a range git reads here" + (f" ({said[-1]})" if said else "")) from None
+    commits = [record.strip("\n").split("\x1f", 1) for record in log.split("\x1e") if record.strip()]
+    problems = []
+    for sha, message in commits:
+        subject = message.strip().split("\n", 1)[0]
+        problems += [f"{sha[:10]} {subject}: {line.strip()}" for line in message.split("\n")
+                     if any(rule.search(line) for rule in ATTRIBUTION)]
+    return problems, rev_range, len(commits)
+
+
 # --- the user's own assistant settings ---------------------------------------------------------------
 
 # What is assumed about the host (Claude Code), read from its settings and permissions documentation:
@@ -3131,6 +3170,10 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--commits", metavar="RANGE", help="read the messages of a git range and the lines its commits add instead "
                    "(`@{u}..HEAD`; words separated by spaces, as `git rev-list` takes them): what a push publishes")
     p.add_argument("--repo", default=str(OWN_REPO), help="with --commits: the repository (default: this tool's)")
+    p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
+    p.add_argument("range", nargs="?", metavar="RANGE", help="a git range, words separated by spaces "
+                   f"(default: @{{u}}..HEAD, or the last {TRAILER_DEFAULT} commits with no upstream)")
+    p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("report", help="files, bytes and estimated tokens per folder and per session type")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p.add_argument("--json", action="store_true", help="the report as JSON instead of markdown tables")
@@ -3260,6 +3303,14 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print(note)
         print(result.summary())
         return 1 if result.failures else 0
+    if args.command == "trailers":
+        problems, read, count = trailer_problems(Path(args.repo), args.range)
+        for problem in problems:
+            print("  x " + problem)
+        print(f"trailers over {count} commits ({read}): " + (f"{len(problems)} attribution lines; the user is the sole author, "
+                                                            "so remove them (`git commit --amend`, or a rebase) before pushing"
+                                                            if problems else "no attribution line"))
+        return 1 if problems else 0
     if args.command == "report":
         tree = Path(args.tree)
         data = report(tree)

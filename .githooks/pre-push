@@ -1,7 +1,8 @@
 #!/bin/sh
 # Privacy gate for every push from this repository, by anyone: what a push publishes is the commit
 # messages and the lines each commit adds, history included, so they must pass
-# `bundle.py privacy --commits` (see AGENTS.md) as the tree passes `bundle.py privacy`. Enabled per clone with
+# `bundle.py privacy --commits` (see AGENTS.md) as the tree passes `bundle.py privacy`, and no message may
+# credit an assistant (`bundle.py trailers`). Enabled per clone with
 #   git config core.hooksPath .githooks
 # git gives the hook one line per ref on standard input: <local ref> <local sha> <remote ref> <remote sha>.
 # Overriding a finding needs the user's explicit instruction and a `privacy-allow: <reason>` marker.
@@ -37,6 +38,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     if ! "$python" "$tool" privacy --commits "$range" --repo "$top" </dev/null; then
         echo "pre-push: $local_ref -> $remote_ref blocked: a commit message or an added line fails \`bundle.py privacy\`." \
             "Fix the commit (reword or rewrite it); only on the user's explicit instruction add \`privacy-allow: <reason>\` on that line." >&2
+        status=1
+    fi
+    if ! "$python" "$tool" trailers "$range" --repo "$top" </dev/null; then
+        echo "pre-push: $local_ref -> $remote_ref blocked: a commit message carries an attribution line crediting an assistant;" \
+            "the user is the sole author of every commit (AGENTS.md). Reword the commit to remove it." >&2
         status=1
     fi
 done
