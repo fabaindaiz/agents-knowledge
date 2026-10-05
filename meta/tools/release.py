@@ -23,16 +23,19 @@ The tests are in `meta/tests/` (`python3 -m unittest discover -s meta/tests -t .
 
 from __future__ import annotations
 
+import sys
+
+# Before any other import, in syntax that 3.9 still parses: an older interpreter gets one line, not a traceback.
+if sys.version_info < (3, 11):
+    sys.exit(f"release.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
+             "Run it with a newer one: python3.11 meta/tools/release.py ... (or uv run --python 3.11 ...)")
+
 import argparse
 import datetime
 import importlib.util
 import re
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-
-if sys.version_info < (3, 11):
-    sys.exit(f"release.py needs Python 3.11 or newer (this is {sys.version.split()[0]})")
 
 ROOT = Path(__file__).resolve().parents[2]
 

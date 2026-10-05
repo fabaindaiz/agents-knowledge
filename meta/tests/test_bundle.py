@@ -6,15 +6,18 @@ the home's check reads this file with the same rules.
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import hashlib
 import io
 import json
 import math
+import shutil
+import subprocess
 from unittest import mock
 from pathlib import Path
 
-from meta.tests.support import NOTE, Base, a_proposal, bundle, make_bundle, old_outbox
+from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, make_bundle, old_outbox
 
 B = bundle
 
@@ -777,3 +780,40 @@ class ChangelogCommand(Base):
             archive.add(path, arcname=path.name)
         with self.assertRaisesRegex(B.RefusedError, "twice"):
             B.read_pack(twice)
+
+
+class OldInterpreter(Base):
+    """Under a Python older than 3.11 each tool refuses in one line, before an import that needs 3.11 fails."""
+
+    TOOLS = (ROOT / "sources/bundle/tools/bundle.py", ROOT / "meta/tools/release.py")
+
+    def test_the_version_check_comes_before_every_import_but_sys(self) -> None:
+        for path in self.TOOLS:
+            with self.subTest(tool=path.name):
+                body = ast.parse(path.read_text(encoding="utf-8")).body
+                check = next(i for i, node in enumerate(body) if isinstance(node, ast.If) and "version_info" in ast.unparse(node.test))
+                imports = [i for i, node in enumerate(body) if isinstance(node, (ast.Import, ast.ImportFrom))
+                           and not (isinstance(node, ast.ImportFrom) and node.module == "__future__")
+                           and not (isinstance(node, ast.Import) and [a.name for a in node.names] == ["sys"])]
+                self.assertLess(check, min(imports), "an import runs before the version check")
+                self.assertIn("python3.11", ast.unparse(body[check]), "the refusal says how to run a 3.11+ interpreter")
+
+    def test_an_old_interpreter_is_refused_in_one_line(self) -> None:
+        def version(exe: str) -> tuple[int, int]:
+            out = subprocess.run([exe, "-c", "import sys; print(*sys.version_info[:2])"], capture_output=True, text=True).stdout
+            return tuple(int(x) for x in out.split()) if out.strip() else (99, 0)
+
+        old = next((exe for exe in (shutil.which(n) for n in ("python3.9", "python3.10", "/usr/bin/python3")) if exe and version(exe) < (3, 11)), None)
+        if old is None:
+            self.skipTest("no Python older than 3.11 on this machine")
+        for path in self.TOOLS:
+            with self.subTest(tool=path.name):
+                result = subprocess.run([old, str(path), "--help"], capture_output=True, text=True)
+
+                said = (result.stdout + result.stderr).strip()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("Traceback", said)
+                self.assertEqual(len(said.split("\n")), 1, said)
+                self.assertIn(".".join(map(str, version(old))), said)
+                self.assertIn("python3.11", said)
+

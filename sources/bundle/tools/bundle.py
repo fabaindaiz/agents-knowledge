@@ -39,6 +39,14 @@ local manifest (see `MANIFEST`), which lists this machine's paths and never trav
 
 from __future__ import annotations
 
+import sys
+
+# Before any import that needs 3.11 (`tomllib`): an older interpreter gets one line, not a traceback. Written
+# in syntax that 3.9 still parses, so the refusal is reached at all.
+if sys.version_info < (3, 11):
+    sys.exit(f"bundle.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
+             "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
+
 import argparse
 import builtins
 import datetime
@@ -53,7 +61,6 @@ import re
 import secrets
 import shutil
 import subprocess
-import sys
 import tarfile
 import tempfile
 import tomllib
@@ -2659,8 +2666,6 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    if sys.version_info < (3, 11):
-        sys.exit(f"bundle.py needs Python 3.11 or newer (this is {sys.version.split()[0]}); run it with python3.11+")
     args = _parser().parse_args(argv)
     try:
         return _run(args)
