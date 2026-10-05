@@ -28,8 +28,7 @@ the three skills' descriptions reworded from the trigger research, and what the 
 actionable at once (`meta/reviews/2026-10-05-*.md`); the rest waits for the owner (`i-5ed7e8-54cb3f`). The
 carriers on this machine took 0.0.28 except the one the owner is working on from another machine.
 
-**State on 2026-10-05, at the close of 0.0.27.** Release 0.0.27 is tagged (on `release/0.0.27`, not yet
-merged into `main` nor pushed). It took in two hundred and twenty-one proposals from eight carriers, every
+**State on 2026-10-05, at the close of 0.0.27.** Release 0.0.27 is tagged, and with 0.0.28 merged into `main` and pushed with both tags. It took in two hundred and twenty-one proposals from eight carriers, every
 one harvested in the same session, transcripts included, with a verdict the owner reviewed theme by theme
 (`meta/tracking/history.md`): seven notes admitted after a literature step, twenty-four grown, eight queued
 candidates folded, method changes in eight themes the owner reviewed one by one (plus two rulings taken
@@ -40,7 +39,7 @@ and the skills `decision-review` and `user-walk`. The coding session measures 9,
 budget; the reviewer 6,566 of 6,900, after the index's phase table stopped repeating card links (a build
 rule). Every carrier on this machine took 0.0.27 on its harvest branch, unpushed (*Waiting on the user*);
 the two whose checkouts were held by live sessions were updated in scratch worktrees of those branches.
-The template holds 0.0.27 on a branch with its tag.
+The template's `main` holds 0.0.28 with both tags, pushed.
 
 **What went wrong this session**, each now a proposal of this repository or a carrier's: the home piped
 its own check through a filter before a commit (stale generated files landed; fixed by the next commit);
@@ -97,7 +96,7 @@ was restored from the tag before anything was committed (proposal `parallel-agen
 
 **The route from here:**
 
-1. **Push and merge**, as listed in *Waiting on the user*.
+1. **The carriers' branches**, as listed in *Waiting on the user* (the home and the template are pushed).
 2. **`i-5ed7e8-578c22`:** trigger evals for `decision-review` and `user-walk`, and for `close` after its
    trigger changed, in a pilot carrier, with held-out phrasings in the owner's words.
 3. **`i-5ed7e8-cc0b86`:** queue the experiments the five other new notes name.
@@ -115,7 +114,7 @@ checkout and its remote disagree after a rewrite, the remote is the record. Carr
 the ones named; a session never offers to update another repository's `.agents/` on its own. Questions run in
 modes (principle 15): a decision review one decision per turn, everything at once before the owner leaves.
 
-**The template repository** a new project starts from holds 0.0.27 on a branch with its tag, with no
+**The template repository** a new project starts from holds 0.0.28 on its `main`, pushed with its tag, with no
 `carrier.toml`; it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
 
 **This machine's record of its carriers** is the local manifest (`~/.config/agent-guides/carriers.toml`),
