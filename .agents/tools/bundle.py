@@ -821,15 +821,17 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
         try:
             message = scratch / short / "COMMIT_MESSAGE"
             message.parent.mkdir(parents=True, exist_ok=True)
-            message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8")
+            message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8", errors="surrogateescape")
             targets.append(Target(message, message.name, f"{short} message", None, repo))
             for rel, lines in _commit_files(repo, sha):
                 if not lines:
                     continue
+                if git(repo, "cat-file", "-t", f"{sha}:{rel}").strip() != "blob":
+                    continue  # a submodule's pointer: the commit it names is that repository's to check
                 content = git(repo, "cat-file", "blob", f"{sha}:{rel}", binary=True)
                 if b"\0" in content:
                     continue
-                copy = scratch / short / rel
+                copy = scratch / short / rel.encode("utf-8", "surrogateescape").decode("utf-8", "replace")
                 copy.parent.mkdir(parents=True, exist_ok=True)
                 copy.write_bytes(content)
                 targets.append(Target(copy, _bundle_rel(copy), f"{short}:{rel}", frozenset(lines), repo))
@@ -857,7 +859,7 @@ def _commit_files(repo: Path, sha: str) -> list[tuple[str, set[int]]]:
         return [(path, hunk_added(git(repo, "diff-tree", "-r", "--no-commit-id", "--cc", "-U0", "--no-color",
                                       "--no-ext-diff", sha, "--", f":(literal){path}"))) for path in paths]
     fields = git(repo, "diff-tree", "-z", "-r", "--root", "--no-commit-id", "--name-status", "-M",
-                 "--diff-filter=AMRC", sha).split("\0")
+                 "--diff-filter=AMRCT", sha).split("\0")
     files, i = [], 0
     while i < len(fields) and fields[i]:
         paths = fields[i + 1 : i + (3 if fields[i][0] in "RC" else 2)]
@@ -1164,7 +1166,8 @@ CARRIER_ID = re.compile(r"^r-[0-9a-f]{6}$")
 
 
 def git(repo: Path, *args: str, binary: bool = False) -> str | bytes:
-    result = subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=not binary)
+    result = subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=not binary,
+                            **({} if binary else {"encoding": "utf-8", "errors": "surrogateescape"}))
     return result.stdout
 
 
@@ -2513,6 +2516,10 @@ def trailer_problems(repo: Path, rev_range: str | None = None) -> tuple[list[str
     no remote (`HEAD --not --remotes`), so a new branch is not charged with what was published before it;
     only in a repository with no remote at all, the last `TRAILER_DEFAULT` commits, and the range says so."""
     if rev_range is None:
+        try:
+            git(repo, "rev-parse", "--verify", "--quiet", "HEAD")
+        except subprocess.CalledProcessError:
+            return [], "no commit yet", 0
         try:
             git(repo, "rev-parse", "--verify", "--quiet", "@{u}")
             rev_range, args = "@{u}..HEAD", ["@{u}..HEAD"]

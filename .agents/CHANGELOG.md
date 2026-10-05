@@ -24,10 +24,15 @@ same session ran on what was left open. A carrier that took 0.0.27 takes this on
   and leaves rewriting it to the owner, and catches any `…-by:` trailer naming an assistant without flagging prose.
 - **`count` folded a recurrence recorded in the same words as a copy**; it counts every entry and marks word-for-word
   repeats for the reader to judge (the close skill says how).
-- **The pre-push hook** checks a new ref against the remote being pushed to, and reads annotated tags.
+- **The home's pre-push hook** checks a new ref against the remote being pushed to, and reads annotated tags.
 - **The user-deny warning** anchors a `./` rule at the repository root and says it reports every committed file the
   rule matches.
 - **`memory-diff`** no longer takes a manifest, a lockfile or three shared words as holding a rule.
+- **A second review of these fixes** found four more, fixed here: `privacy --commits` read a file or a path that is
+  not UTF-8 with a traceback, refused a commit that moves a submodule's pointer, and never read a file whose type
+  changed; `trailers` in a repository with no commit was refused instead of reading nothing. The home's pre-push
+  hook resolves a push by URL to its configured remote, or reads every commit it sends, and strips only a real
+  signature from a tag's message.
 - **Step 2 and the working invocation** said to ask "all at once", against principle 15's decision review; they say
   together, or one per turn in a decision review.
 

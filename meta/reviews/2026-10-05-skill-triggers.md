@@ -8,7 +8,9 @@
   per skill; the body loads only on invocation. The docs describe no ranking engine; their advice is to put the key
   use case first, in the words users say. Skills tend to under-trigger and are skipped for one-step requests.
 - **The listing has a budget** (a fraction of the context window, default one hundredth); over it, descriptions are
-  dropped starting with the least-invoked skills — a newly installed skill first. Whether a given machine overflows
+  shortened to fit (the settings reference). The research agent read the skills page as dropping the least-invoked
+  skills' descriptions first, which would hit a newly installed skill first; a second reviewer could not confirm the
+  order (ASSUMPTION until checked in the client's diagnostic view). Whether a given machine overflows
   is visible in the client's context and diagnostic views, and is not measured yet.
 - **Precedence by name only decides which skill a slash command runs**; for automatic invocation every listed
   description competes in one prompt. A carrier cannot demote a plugin's skill from its own settings.

@@ -1108,6 +1108,56 @@ class PrePush(Base):
         self.assertEqual(clean.returncode, 0, clean.stdout + clean.stderr)
 
 
+class CommitsEdges(Base):
+    """`privacy --commits` and `trailers` on the commits a re-review found unread or refused: never a traceback,
+    never a push blocked by something that is not a leak."""
+
+    def test_a_file_that_is_not_utf8_is_read_without_a_traceback(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "start.md").write_text("# Start\n")
+        git_commit(repo, "docs: start")
+        (repo / "latin.txt").write_bytes(b"caf\xe9 au lait\n")
+        git_commit(repo, "docs: a latin-1 file")
+
+        code, out = run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))
+
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("Traceback", out)
+
+    def test_a_submodule_pointer_is_skipped_not_refused(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "start.md").write_text("# Start\n")
+        git_commit(repo, "docs: start")
+        head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        subprocess.run(["git", "-C", str(repo), "update-index", "--add", "--cacheinfo", f"160000,{head},sub"], check=True)
+        subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "build: a submodule"], check=True)
+
+        code, out = run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))
+
+        self.assertEqual(code, 0, out)
+
+    def test_a_type_change_is_read(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "target.md").write_text("# Target\n")
+        (repo / "link.md").symlink_to("target.md")
+        git_commit(repo, "docs: a link")
+        (repo / "link.md").unlink()
+        (repo / "link.md").write_text("# Now a file\n\n" + Privacy.PLANTED["home-path"] + "\n")
+        git_commit(repo, "docs: the link becomes a file")
+
+        code, out = run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("link.md", out)
+
+    def test_trailers_in_a_repository_with_no_commit_reads_nothing(self) -> None:
+        repo = init_repo(self.root / "repo")
+
+        code, out = run("trailers", "--repo", str(repo))
+
+        self.assertEqual(code, 0, out)
+
+
 class Trailers(Base):
     """A commit message that credits an assistant: the user is the sole author of every commit."""
 

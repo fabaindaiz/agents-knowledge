@@ -27,10 +27,14 @@ if [ -z "$python" ]; then
     exit 1
 fi
 remote=${1:-origin}  # git passes the remote's name (or its URL, when pushing to one with no name)
+url=${2:-}
 if git remote | grep -qxF -- "$remote"; then
     published="--remotes=$remote"
 else
-    published="--remotes"  # a URL: no remote-tracking ref is its own, so every remote's count as published
+    # Pushed to a URL: the remote whose fetch or push URL it is, if one is configured; otherwise nothing
+    # counts as published there, and every commit the push sends is read (slower, never unchecked).
+    named=$(git config --get-regexp '^remote\..*\.(push)?url$' 2>/dev/null | awk -v u="$url" '$2 == u {sub(/^remote\./, "", $1); sub(/\.(push)?url$/, "", $1); print $1; exit}')
+    if [ -n "$named" ]; then published="--remotes=$named"; else published="--exclude=* --remotes"; fi
 fi
 scratch=$(mktemp -d) || exit 1
 trap 'rm -rf "$scratch"' EXIT
@@ -40,7 +44,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     # An annotated tag publishes its own message besides the commits it points to.
     if [ "$(git cat-file -t "$local_sha" 2>/dev/null)" = tag ]; then
         message="$scratch/TAG_MESSAGE"
-        git cat-file -p "$local_sha" | sed '1,/^$/d' | sed '/^-----BEGIN /,$d' >"$message"
+        git cat-file -p "$local_sha" | sed '1,/^$/d' | sed -E '/^-----BEGIN (PGP SIGNATURE|SSH SIGNATURE|SIGNED MESSAGE)-----$/,$d' >"$message"
         if ! "$python" "$tool" privacy --paths "$message" </dev/null; then
             echo "pre-push: $local_ref -> $remote_ref blocked: the tag's message fails \`bundle.py privacy\`." \
                 "Recreate the tag with a clean message; only on the user's explicit instruction add \`privacy-allow: <reason>\` on that line." >&2

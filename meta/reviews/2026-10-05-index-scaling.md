@@ -37,7 +37,8 @@ Figures are estimated tokens as the home's `report` counts them (characters / 4)
   effect on adherence (McMillan, 2026). **So reshaping the index is about cost and headroom, not accuracy**,
   and a reshaping that adds a decision point can lose accuracy.
 - **Cost mechanics:** a cached write costs about 1.25× base input and a read about 0.1×, so a file read once
-  and carried for ten more calls costs about thirteen times its size in base input; input, not output,
+  and carried for ten more calls costs about 2.25 times its size in base input while the cache stays warm, and
+  about thirteen times if every call rewrites it (the cache expiring between calls); input, not output,
   drives agent cost (Bai et al., 2026).
 
 ## Designs, priced
