@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import math
+import re
 import shutil
 import subprocess
 from unittest import mock
@@ -817,3 +818,18 @@ class OldInterpreter(Base):
                 self.assertIn(".".join(map(str, version(old))), said)
                 self.assertIn("python3.11", said)
 
+
+class MethodTemplates(Base):
+    def test_every_record_heading_the_method_templates_is_read_as_a_definition_by_ids(self) -> None:
+        # Three carriers wrote a roadmap heading as the template showed it, and `ids` did not read it.
+        text = (ROOT / "sources/bundle/method/prompt-context.md").read_text(encoding="utf-8")
+        headings = [line for line in text.split("\n") if line.startswith("#") and "-<repo6>-<content6>" in line]
+        self.assertGreaterEqual(len(headings), 3)
+        for number, line in enumerate(headings):
+            with self.subTest(heading=line):
+                path = self.root / f"record-{number}.md"
+                path.write_text(re.sub(r"\b([dis])-<repo6>-<content6>", r"\1-abcdef-123456", line) + "\n")
+
+                errors, _, counts = B.record_id_check([path], None)
+
+                self.assertEqual((errors, counts["definitions"]), ([], 1))
