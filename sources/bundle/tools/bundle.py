@@ -2512,16 +2512,46 @@ def entry_template_text(log: str) -> str | None:
     return None if at is None else _first_fence("\n".join(lines[at + 1:]))
 
 
-def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
-    """The log's own entry format, which wins; else the method's (`prompt-context.md`, its changelog artifact)."""
+ENTRY_FIELD = re.compile(r"^\*\*(.+?)\*\*\s*(.*)$")
+FROM_METHOD = "from the method's entry format, which this log's lacks:"
+
+
+def _field_key(label: str) -> str:
+    return re.sub(r"[^\w ]", "", label).strip().casefold()
+
+
+def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str]]:
+    """The entry format to write with, and the labels of the fields the method's adds to the log's own.
+
+    The log's own format wins, but it was copied from some release, and a newer release may have added a
+    field to the method's (`prompt-context.md`, its changelog artifact): taking the log's alone kept every
+    such field away from a carrier, silently. So each field of the method's that the log's lacks is
+    appended, its description marked as coming from the method, and named in the second value.
+    """
     own = entry_template_text(log.read_text(encoding="utf-8")) if log.is_file() else None
-    if own:
-        return own
     method = section(tree / "method/prompt-context.md", CHANGELOG_ARTIFACT)
     template = _first_fence(method) if method else None
+    if not own:
+        if not template:
+            raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
+        return template, []
     if not template:
-        raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
-    return template
+        return own, []
+    have = {_field_key(m.group(1)) for line in own.split("\n") if (m := ENTRY_FIELD.match(line))}
+    added: list[tuple[str, str]] = []
+    for line in template.split("\n"):
+        if m := ENTRY_FIELD.match(line):
+            added.append((m.group(1), m.group(2).strip()))
+        elif added and line.strip() and not line.startswith("#"):
+            added[-1] = (added[-1][0], (added[-1][1] + " " + line.strip()).strip())
+    added = [(label, text) for label, text in added if _field_key(label) not in have]
+    lines = [f"**{label}** {FROM_METHOD} {text}".rstrip() for label, text in added]
+    return own.rstrip("\n") + "\n" + "".join(line + "\n" for line in lines), [label for label, _ in added]
+
+
+def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
+    """The log's own entry format, with the method's fields it lacks appended; else the method's."""
+    return entry_format(log, tree)[0]
 
 
 def new_entry(title: str, carrier: str, today: str, template: str) -> str:
@@ -2529,7 +2559,7 @@ def new_entry(title: str, carrier: str, today: str, template: str) -> str:
     in a comment, which the writer replaces."""
     fields: list[list[str]] = []
     for line in template.split("\n"):
-        if m := re.match(r"^\*\*(.+?)\*\*\s*(.*)$", line):
+        if m := ENTRY_FIELD.match(line):
             fields.append([m.group(1), m.group(2).strip()])
         elif fields and line.strip() and not line.startswith("#"):
             fields[-1][1] = (fields[-1][1] + " " + line.strip()).strip()
@@ -2688,7 +2718,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("kind", choices=["entry"])
     p.add_argument("parts", nargs="+", metavar="TITLE")
     p.add_argument("--repo", default=str(OWN_REPO))
-    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins")
+    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins, "
+                   "and the method's fields it lacks are appended, marked")
+    p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
     p = sub.add_parser("count", help="the entries of a log, and the lines of other files, that mention a symptom")
@@ -2835,12 +2867,16 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         repo = Path(args.repo)
         log = Path(args.log) if args.log else repo / ".claude/logs/agent-changelog.md"
         title = " ".join(args.parts)
-        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), entry_template(log))
+        template, added = entry_format(log, Path(args.bundle))
+        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template)
         if not args.write:
             print(entry, end="")
-            return 0
-        log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
-        print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+        else:
+            log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
+            print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+        if added:
+            print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
+                  "add them to the log's format, or say there why it omits them")
         return 0
     if args.command == "count":
         files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]

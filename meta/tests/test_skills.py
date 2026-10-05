@@ -252,6 +252,30 @@ class NewEntry(Base):
 
         self.assertIn("**Learned.** <!-- General and local. -->", entry)
 
+    def test_fields_a_newer_method_added_reach_a_log_with_its_own_format_and_are_named(self) -> None:
+        repo, agents = a_carrier(self.root)
+        (agents / "method/prompt-context.md").write_text(
+            "# Context\n\n### 5. `.claude/logs/agent-changelog.md`\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
+            "**What.** What changed.\n**Why.** The reason.\n**Not verified.** What could not be checked.\n**Learned** General and local.\n```\n")
+        log = repo / ".claude/logs/agent-changelog.md"
+        log.parent.mkdir(parents=True)
+        log.write_text(LOG)
+
+        entry = B.new_entry("T", "r-abcdef", "2026-01-03", B.entry_template(log, agents))
+
+        self.assertIn("**What.** <!-- What changed, concretely. -->", entry)
+        self.assertEqual(entry.count("**Why.**"), 1)
+        self.assertIn("**Not verified.** <!-- from the method's entry format, which this log's lacks: What could not be checked. -->", entry)
+        self.assertLess(entry.index("**Why.**"), entry.index("**Not verified.**"))
+        self.assertIn("**Learned** <!-- from the method's", entry)
+
+        code, out = run("new", "entry", "T", "--log", str(log), "--repo", str(repo), "--bundle", str(agents))
+
+        self.assertEqual(code, 0, out)
+        said = [line for line in out.split("\n") if "lacks" in line and "<!--" not in line]
+        self.assertEqual(len(said), 1, out)
+        self.assertIn("**Not verified.** **Learned**;", said[0])
+
     def test_the_entry_is_inserted_above_the_newest_one(self) -> None:
         entry = B.new_entry("A new session", "r-abcdef", "2026-01-03", B.entry_template_text(LOG))
 
