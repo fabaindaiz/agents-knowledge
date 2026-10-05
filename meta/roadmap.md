@@ -30,8 +30,8 @@ reached four carriers, each on a new branch cut from its integration branch, for
 (`release.py align`: the home and four aligned); their main checkouts still hold 0.0.25 until those merge. The
 carriers this machine shares with the first one hold newer work there, unpushed, and were not reached; two
 repositories the owner named had no bundle on any branch (bootstrapped later the same day, below). Waiting on
-the owner: push the carriers' branches and open their pull requests (several carriers deny an agent's push, and one
-forbids pushing); the proposed rows each carrier's log now shows; installing the method's skills in the four
+the owner: the pull requests of the six carriers' branches, which are pushed (the two bootstraps' onto their
+ticket branch, merged after it); the proposed rows each carrier's log now shows; installing the method's skills in the four
 updated carriers, each with its `LOCAL.md`; and a credentials ticket in the two bootstrapped repositories.
 
 **Later the same day:** the two repositories with no bundle were bootstrapped, each on a branch cut from an
