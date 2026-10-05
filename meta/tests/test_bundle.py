@@ -18,7 +18,7 @@ import subprocess
 from unittest import mock
 from pathlib import Path
 
-from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, make_bundle, old_outbox
+from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, git, init_repo, make_bundle, old_outbox
 
 B = bundle
 
@@ -503,6 +503,42 @@ class Privacy(Base):
         self.assertNotIn("ebra", " ".join(f.match for f in report.findings))
         with self.assertRaises(B.RefusedError):
             B.privacy_check(agents, terms_file=self.root / "no-such-terms.txt")
+
+    def test_inside_a_repository_its_own_name_is_no_leak_of_itself(self) -> None:
+        own, remote, other = "Quiet" + "fox", "Amber" + "gate", "Zebra" + "corp"
+        terms = self.root / "config/agent-guides/private-terms.txt"
+        terms.parent.mkdir(parents=True)
+        terms.write_text(f"{other}\n{own}\n{remote}\n")
+        repo = init_repo(self.root / own.lower())
+        git(repo, "remote", "add", "origin", f"git@example.com:someone/{remote}.git")
+        agents = make_bundle(repo)
+        plant(agents / "method/prompt-context.md", f"The {own} rules, as {remote} keeps them.")
+        (repo / "README.md").write_text(f"# {own}\n")
+        (self.root / "elsewhere.md").write_text(f"About {own}.\n")
+
+        report = B.privacy_check(agents)
+
+        self.assertEqual(report.failures, [])
+        said = "\n".join(report.notes())
+        self.assertIn("lines 2, 3 of the terms file skipped inside the repository they name", said)
+        self.assertNotIn(own.lower(), said.lower())
+        with self.subTest("another private term still fails there"):
+            plant(agents / "method/prompt-context.md", f"Built for {other}.")
+            self.assertEqual(self.rules(B.privacy_check(agents)), ["private-term"])
+        with self.subTest("a proposal leaves the repository, so it keeps every term"):
+            agents = make_bundle(init_repo(self.root / "two" / own.lower()))
+            a_proposal(agents, f"Seen once in {own}.")
+            self.assertEqual(self.rules(B.privacy_check(agents)), ["private-term"])
+        with self.subTest("a file outside the repository keeps every term"):
+            report = B.privacy_check(paths=[repo / "README.md", self.root / "elsewhere.md"])
+            self.assertEqual([f.where for f in report.failures], [f"{self.root / 'elsewhere.md'}:1"])
+        with self.subTest("the home publishes what it holds, so it keeps every term"):
+            home = init_repo(self.root / "three" / own.lower())
+            for rel in ("sources/bundle/tools/bundle.py", "meta/tools/release.py"):
+                (home / rel).parent.mkdir(parents=True)
+                (home / rel).write_text("")
+            plant(make_bundle(home) / "method/prompt-context.md", f"The {own} rules.")
+            self.assertEqual(self.rules(B.privacy_check(home / ".agents")), ["private-term"])
 
     def test_a_waiver_suppresses_its_line_and_is_listed(self) -> None:
         agents = make_bundle(self.root)

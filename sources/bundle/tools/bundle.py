@@ -608,6 +608,7 @@ class PrivacyReport:
     allowances: list[tuple[str, str]]
     files: int
     terms: str
+    skipped: str = ""
 
     @property
     def failures(self) -> list[Finding]:
@@ -620,7 +621,8 @@ class PrivacyReport:
     def notes(self) -> list[str]:
         """The warnings, every waiver, and which terms were checked: printed whether or not anything failed."""
         return ([f"  ! WARN {f.where} {f.rule}: {f.match}" for f in self.warnings]
-                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances] + [f"  . {self.terms}"])
+                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances] + [f"  . {self.terms}"]
+                + ([f"  . {self.skipped}"] if self.skipped else []))
 
     def summary(self) -> str:
         counts: dict[str, int] = {}
@@ -756,7 +758,13 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
         targets = [(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
     findings: list[Finding] = []
     allowances: list[tuple[str, str]] = []
+    skipped: set[int] = set()
     for path, rel, shown in targets:
+        # A private repository's name is a leak anywhere but inside that repository: there it is the
+        # repository's own name. Its proposals still leave it (the home takes them in), so they keep
+        # every term, and so does the home, whose files are what it publishes.
+        own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(path.parent if path.is_file() else path)
+        exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
         for line in _privacy_lines(path, rel, shown):
             where = f"{line.shown}:{line.number}"
             found: list[Finding] = []
@@ -767,8 +775,10 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
                 found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)]
             # The term itself is not printed: this output is pasted into sessions and changelogs, and
             # the one thing it must not carry is the word it caught.
+            hits = term_hits(line.text, terms)
+            skipped.update(i for i in hits if i in exempt)
             found += [Finding("FAIL", "private-term", where, f"term on line {i} of the terms file")
-                      for i in term_hits(line.text, terms)]
+                      for i in hits if i not in exempt]
             code = [m.span() for m in INLINE_CODE.finditer(line.text)]
             marker = next((m for m in PRIVACY_ALLOW.finditer(line.text)
                            if not any(a <= m.start() < b for a, b in code)), None)
@@ -781,7 +791,32 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
                 allowances.append((where, reason))
                 found = []
             findings += found
-    return PrivacyReport(findings, allowances, len(targets), note)
+    said = (f"private terms on line{'s' if len(skipped) > 1 else ''} {', '.join(map(str, sorted(skipped)))} of the terms file "
+            "skipped inside the repository they name (its folder or its origin remote); its proposals still checked") if skipped else ""
+    return PrivacyReport(findings, allowances, len(targets), note, said)
+
+
+@functools.lru_cache(maxsize=None)
+def _own_names(folder: Path) -> frozenset[str]:
+    """The names, casefolded, of the git repository `folder` sits in: its folder's and its origin remote's.
+
+    Empty outside a repository, and in the home repository, which publishes what it holds: there a
+    private term is a leak whatever it names.
+    """
+    try:
+        top = Path(git(folder, "rev-parse", "--show-toplevel").strip())
+    except (subprocess.CalledProcessError, OSError):
+        return frozenset()
+    if (top / "sources/bundle/tools/bundle.py").is_file() and (top / "meta/tools/release.py").is_file():
+        return frozenset()
+    names = {top.name}
+    try:
+        remote = git(top, "remote", "get-url", "origin").strip()
+    except (subprocess.CalledProcessError, OSError):
+        remote = ""
+    if remote:
+        names.add(re.split(r"[/:]", remote.rstrip("/"))[-1].removesuffix(".git"))
+    return frozenset(n.casefold() for n in names if n)
 
 
 # --- sessions and their size ------------------------------------------------------------------------
