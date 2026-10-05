@@ -26,12 +26,36 @@ if [ -z "$python" ]; then
     echo "pre-push: the tools need Python 3.11 or newer and none was found; refusing the push rather than letting it through unchecked" >&2
     exit 1
 fi
+remote=${1:-origin}  # git passes the remote's name (or its URL, when pushing to one with no name)
+if git remote | grep -qxF -- "$remote"; then
+    published="--remotes=$remote"
+else
+    published="--remotes"  # a URL: no remote-tracking ref is its own, so every remote's count as published
+fi
+scratch=$(mktemp -d) || exit 1
+trap 'rm -rf "$scratch"' EXIT
 status=0
 while read -r local_ref local_sha remote_ref remote_sha; do
     case "$local_sha" in *[!0]*) ;; *) continue ;; esac  # a deletion publishes no commit
+    # An annotated tag publishes its own message besides the commits it points to.
+    if [ "$(git cat-file -t "$local_sha" 2>/dev/null)" = tag ]; then
+        message="$scratch/TAG_MESSAGE"
+        git cat-file -p "$local_sha" | sed '1,/^$/d' | sed '/^-----BEGIN /,$d' >"$message"
+        if ! "$python" "$tool" privacy --paths "$message" </dev/null; then
+            echo "pre-push: $local_ref -> $remote_ref blocked: the tag's message fails \`bundle.py privacy\`." \
+                "Recreate the tag with a clean message; only on the user's explicit instruction add \`privacy-allow: <reason>\` on that line." >&2
+            status=1
+        fi
+        if ! "$python" "$tool" trailers --message "$message" </dev/null; then
+            echo "pre-push: $local_ref -> $remote_ref blocked: the tag's message credits an assistant;" \
+                "the user is the sole author (AGENTS.md). Recreate the tag without it." >&2
+            status=1
+        fi
+    fi
     # A ref the remote already has: what is new since it. A new ref, or a remote tip this clone does
-    # not hold (a force push): every commit no remote-tracking ref holds.
-    range="$local_sha --not --remotes"
+    # not hold (a force push): every commit the remote pushed to does not hold, as far as its
+    # remote-tracking refs say (another remote holding a commit does not make it published here).
+    range="$local_sha --not $published"
     case "$remote_sha" in
         *[!0]*) git cat-file -e "$remote_sha^{commit}" 2>/dev/null && range="$remote_sha..$local_sha" ;;
     esac

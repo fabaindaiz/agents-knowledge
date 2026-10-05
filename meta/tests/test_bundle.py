@@ -1034,6 +1034,34 @@ class PrePush(Base):
         self.assertNotEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
         self.assertIn("attribution", blocked.stdout + blocked.stderr)
 
+    def test_a_new_ref_is_read_against_the_remote_pushed_to_not_any_remote(self) -> None:
+        # A commit another remote already holds was taken as published everywhere.
+        subprocess.run(["git", "init", "-q", "--bare", str(self.root / "mirror.git")], check=True)
+        git(self.repo, "remote", "add", "mirror", str(self.root / "mirror.git"))
+        (self.repo / "a.md").write_text("A line.\n")
+        git_commit(self.repo, "docs: a line\n\n" + Privacy.PLANTED["email"])
+        git(self.repo, "push", "-q", "--no-verify", "mirror", "HEAD:refs/heads/topic")
+
+        blocked = self.push("HEAD:refs/heads/topic")
+
+        self.assertNotEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
+        self.assertIn("FAIL", blocked.stdout + blocked.stderr)
+
+    def test_an_annotated_tag_is_read_for_a_leak_and_an_attribution(self) -> None:
+        git(self.repo, "tag", "-a", "v1", "-m", "release 1\n\n" + Trailers.ASSISTANT)
+        git(self.repo, "tag", "-a", "v2", "-m", "release 2\n\n" + Privacy.PLANTED["email"])
+        git(self.repo, "tag", "-a", "v3", "-m", "release 3\n\nA plain note.")
+
+        credited = self.push("refs/tags/v1")
+        leaked = self.push("refs/tags/v2")
+        clean = self.push("refs/tags/v3")
+
+        self.assertNotEqual(credited.returncode, 0, credited.stdout + credited.stderr)
+        self.assertIn("attribution", credited.stdout + credited.stderr)
+        self.assertNotEqual(leaked.returncode, 0, leaked.stdout + leaked.stderr)
+        self.assertIn("FAIL", leaked.stdout + leaked.stderr)
+        self.assertEqual(clean.returncode, 0, clean.stdout + clean.stderr)
+
 
 class Trailers(Base):
     """A commit message that credits an assistant: the user is the sole author of every commit."""

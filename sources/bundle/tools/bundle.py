@@ -3211,9 +3211,11 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
     p.add_argument("range", nargs="*", metavar="RANGE", help="a git range, as `git log` takes it, options included "
                    "(`--all`, `main..feature`, `HEAD --not --remotes`), in one argument or several "
-                   f"(default:@{{u}}..HEAD; with no upstream, the commits on no remote; with no remote at all, "
+                   f"(default: @{{u}}..HEAD; with no upstream, the commits on no remote; with no remote at all, "
                    f"the last {TRAILER_DEFAULT} commits)")
     p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--message", metavar="FILE", help="read one message from a file instead of a range: an annotated "
+                   "tag's, which a push publishes too")
     p = sub.add_parser("report", help="files, bytes and estimated tokens per folder and per session type")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p.add_argument("--json", action="store_true", help="the report as JSON instead of markdown tables")
@@ -3275,22 +3277,22 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _trailers_argv(argv: list[str]) -> list[str]:
-    """`trailers` arguments with every word but `--repo R` (and help) taken as the range, in order, so a
-    rev-list option (`--all`, `--not`, `--remotes=origin`) is part of it instead of refused as unknown."""
+    """`trailers` arguments with every word but `--repo R`, `--message FILE` (and help) taken as the range, in
+    order, so a rev-list option (`--all`, `--not`, `--remotes=origin`) is part of it instead of refused."""
     if not argv or argv[0] != "trailers" or {"-h", "--help"} & set(argv):
         return argv
-    rest, repo, i = [], [], 1
+    rest, own, i = [], [], 1
     while i < len(argv):
         word = argv[i]
-        if word == "--repo" and i + 1 < len(argv):
-            repo, i = ["--repo", argv[i + 1]], i + 2
+        if word in ("--repo", "--message") and i + 1 < len(argv):
+            own, i = [*own, word, argv[i + 1]], i + 2
             continue
-        if word.startswith("--repo="):
-            repo = ["--repo", word.split("=", 1)[1]]
+        if word.startswith(("--repo=", "--message=")):
+            own += word.split("=", 1)
         elif word != "--":
             rest.append(word)
         i += 1
-    return ["trailers", *repo, *(["--", *rest] if rest else [])]
+    return ["trailers", *own, *(["--", *rest] if rest else [])]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -3363,6 +3365,16 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         print(result.summary())
         return 1 if result.failures else 0
     if args.command == "trailers":
+        if args.message:
+            if args.range:
+                raise RefusedError("trailers: --message reads one message, not a range; give one or the other")
+            lines = Path(args.message).read_text(encoding="utf-8", errors="replace").split("\n")
+            found = [line.strip() for line in lines if any(rule.search(line) for rule in ATTRIBUTION)]
+            for line in found:
+                print(f"  x {args.message}: {line}")
+            print(f"trailers over the message in {args.message}: " + (
+                f"{len(found)} attribution lines; the user is the sole author, so remove them" if found else "no attribution line"))
+            return 1 if found else 0
         repo = Path(args.repo)
         problems, read, count = trailer_problems(repo, " ".join(args.range) or None)
         published = 0
