@@ -981,6 +981,31 @@ class PrivacyCommits(Base):
             self.assertTrue(any(f":{name}:4 home-path" in line for line in failed), (name, out))
         self.assertEqual(len(failed), 3, out)
 
+    def test_a_line_a_merge_adds_itself_is_read_and_one_it_brings_in_is_not(self) -> None:
+        # A merge's diff was never read, so a line written into the merge itself (an evil merge) passed.
+        repo = init_repo(self.root / "repo")
+        (repo / "notes.md").write_text("# Notes\n\none\ntwo\nthree\n")
+        git_commit(repo, "docs: start")
+        git(repo, "switch", "-q", "-c", "side")
+        (repo / "notes.md").write_text("# Notes\n\none\ntwo\nthree\n" + Privacy.PLANTED["email"] + "\n")
+        git_commit(repo, "docs: side")
+        git(repo, "switch", "-q", "-")
+        (repo / "notes.md").write_text("# Notes\n\nONE\ntwo\nthree\n")
+        git_commit(repo, "docs: main")
+        git(repo, "merge", "-q", "--no-commit", "--no-ff", "side")
+        (repo / "notes.md").write_text("# Notes\n\nONE\ntwo\n" + Privacy.PLANTED["home-path"] + "\nthree\n"
+                                       + Privacy.PLANTED["email"] + "\n")
+        (repo / "other.md").write_text("A plain line.\n" + Privacy.PLANTED["currency"] + "\n")
+        git_commit(repo, "Merge side")
+
+        code, out = run("privacy", "--commits", "HEAD^!", "--repo", str(repo))
+
+        failed = [line for line in out.split("\n") if line.startswith("  x FAIL ")]
+        self.assertEqual(code, 1, out)
+        self.assertEqual(len(failed), 2, out)
+        self.assertIn("notes.md:5 home-path", failed[0])
+        self.assertIn("other.md:2", failed[1])  # a file only the merge adds
+
     def test_a_git_failure_is_a_one_line_refusal(self) -> None:
         repo = init_repo(self.root / "repo")
         (repo / "a.md").write_text("A line.\n")

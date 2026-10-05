@@ -807,8 +807,7 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
     """Each commit of a range as privacy targets: its message, and every file it adds lines to, written
     into `scratch` at its own path (so its scope reads as in the tree) with only the added lines read.
 
-    A merge's message is read but not its diff: what it brings in is in the commits it merges, or was
-    pushed before. A binary file, or one with no added line, is not read. A git failure is a refusal of
+    A merge's message is read, and of its diff only the lines it writes itself (`_commit_files`). A binary file, or one with no added line, is not read. A git failure is a refusal of
     one line, never a traceback: the pre-push hook would block the push on it with nothing to act on."""
     try:
         shas = git(repo, "rev-list", "--reverse", *rev_range.split()).split()
@@ -824,8 +823,10 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
             message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8")
             targets.append(Target(message, message.name, f"{short} message", None, repo))
             for rel, lines in _commit_files(repo, sha):
+                if not lines:
+                    continue
                 content = git(repo, "cat-file", "blob", f"{sha}:{rel}", binary=True)
-                if not lines or b"\0" in content:
+                if b"\0" in content:
                     continue
                 copy = scratch / short / rel
                 copy.parent.mkdir(parents=True, exist_ok=True)
@@ -841,13 +842,19 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
 
 def _commit_files(repo: Path, sha: str) -> list[tuple[str, set[int]]]:
     """(path, the line numbers of the commit's version of it that the commit adds), for each file a commit
-    adds or changes; none for a merge.
+    adds or changes.
 
     The paths are read NUL-separated, never from a patch header, where git ends a path holding a space with
     a tab and C-quotes one holding a quote or a backslash. Each file's patch is then read on its own, its
-    old path included so a rename still reads as one, and only its hunks are parsed."""
+    old path included so a rename still reads as one, and only its hunks are parsed.
+
+    A merge is read as a combined diff: only the files it leaves different from every parent, and in them
+    only the lines no parent holds, which the merge wrote itself (a conflict resolved by hand, or an evil
+    merge). What it brings in from a parent is in that parent's commits, or was pushed before."""
     if len(git(repo, "rev-list", "--parents", "-n", "1", sha).split()) > 2:
-        return []
+        paths = [p for p in git(repo, "diff-tree", "-z", "-r", "--no-commit-id", "--cc", "--name-only", sha).split("\0") if p]
+        return [(path, hunk_added(git(repo, "diff-tree", "-r", "--no-commit-id", "--cc", "-U0", "--no-color",
+                                      "--no-ext-diff", sha, "--", f":(literal){path}"))) for path in paths]
     fields = git(repo, "diff-tree", "-z", "-r", "--root", "--no-commit-id", "--name-status", "-M",
                  "--diff-filter=AMRC", sha).split("\0")
     files, i = [], 0
