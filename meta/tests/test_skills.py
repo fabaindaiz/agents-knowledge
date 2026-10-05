@@ -327,21 +327,24 @@ class Count(Base):
         self.assertEqual(code, 0, out)
         self.assertIn("1 entries", out)
 
-    def test_an_event_copied_into_several_entries_counts_once_and_the_fold_is_said(self) -> None:
+    def test_a_line_repeated_word_for_word_is_counted_and_flagged_never_subtracted(self) -> None:
+        # A friction recorded each time in the same words was folded as a copy, and undercounted.
         log = self.root / "log.md"
-        copied = "- The stash was refused by the sandbox."
-        log.write_text(LOG + f"\n## 2026-01-04 · s-abcdef-333333 — Later\n\n{copied}\n"
-                             f"\n## 2026-01-05 · s-abcdef-444444 — Close\n\n  {copied.upper()}  \n"
-                             "\n## 2026-01-06 · s-abcdef-555555 — Again\n\n- The stash was refused once more.\n")
+        same = "- The stash was refused by the sandbox."
+        log.write_text(LOG + f"\n## 2026-01-04 · s-abcdef-333333 — Later\n\n{same}\n"
+                             f"\n## 2026-01-05 · s-abcdef-444444 — Close\n\n  {same.upper()}  \n"
+                             f"\n## 2026-01-06 · s-abcdef-555555 — Again\n\n{same}\n")
 
-        counted, folded = B.count_report("stash", [log])
+        counted, repeats = B.count_report("stash", [log])
         code, out = run("count", "stash", str(log))
 
-        self.assertEqual([m.where for m in counted], ["2026-01-04 · s-abcdef-333333 — Later", "2026-01-06 · s-abcdef-555555 — Again"])
-        self.assertEqual([m.where for m in folded], ["2026-01-05 · s-abcdef-444444 — Close"])
-        self.assertEqual(len(B.count_mentions("stash", [log])), 2)
-        self.assertIn("2 entries", out)
-        self.assertIn("1 folded", out)
+        self.assertEqual(len(counted), 3)
+        self.assertEqual([m.where for m in repeats], ["2026-01-05 · s-abcdef-444444 — Close", "2026-01-06 · s-abcdef-555555 — Again"])
+        self.assertEqual(len(B.count_mentions("stash", [log])), 3)
+        self.assertIn("3 entries", out)
+        self.assertIn("2 of them repeat an earlier line word for word", out)
+        self.assertIn("a copy or a recurrence", out)
+        self.assertNotIn("folded", out)
         self.assertIn("not incidents", out)
         helps = [line for line in B._parser().format_help().split("\n") if line.strip().startswith("count ")]
         self.assertIn("not incidents", " ".join(helps))

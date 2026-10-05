@@ -37,7 +37,7 @@ own tool, never by this one.
                                                                 carrier's LOCAL.md, into .claude/skills/
     python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
     python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search:
-                                                                entries, not incidents; a copied line counts once
+                                                                entries, not incidents; a repeated line is flagged
     python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
     python3 .agents/tools/bundle.py turns [--since DATE] [PROJECT_DIR...]
                                                                 what the human said in this repository's local
@@ -2895,13 +2895,13 @@ def _mention_text(line: str) -> str:
 
 
 def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[Mention]]:
-    """(counted, folded): the entries that mention a symptom, and the ones that only repeat a line already counted.
+    """(counted, repeats): every entry that mentions a symptom, and those of them whose every mentioning line
+    repeats, word for word, a line of an earlier entry.
 
     Case-insensitive; once per entry of a log (a level-2 heading), once per line of a file with no entries.
-    An entry whose every mentioning line is, as text, a line of an entry counted before it is one event
-    copied into several entries (a summary, a carried-over item), and is folded instead of counted. What is
-    counted is entries that mention the symptom, not incidents: one incident told in different words in two
-    entries still counts twice."""
+    A repeat is counted, never subtracted: it may be one event copied into a later entry (a summary, a
+    carried-over item) or the same friction recorded again in the same words, and only a reader can tell.
+    What is counted is entries that mention the symptom, not incidents."""
     needle = symptom.lower()
     entries: list[tuple[Mention, list[str]]] = []
     for path in files:
@@ -2916,11 +2916,12 @@ def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[M
                     at[where] = len(entries)
                     entries.append((Mention(str(path), number, where), []))
                 entries[at[where]][1].append(_mention_text(line))
-    counted, folded, seen = [], [], set()
+    repeats, seen = [], set()
     for mention, texts in entries:
-        (folded if all(t in seen for t in texts) else counted).append(mention)
+        if all(t in seen for t in texts):
+            repeats.append(mention)
         seen.update(texts)
-    return counted, folded
+    return [mention for mention, _ in entries], repeats
 
 
 def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
@@ -3248,7 +3249,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
-    p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a copied line counts once")
+    p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: this repository's .claude/logs/agent-changelog.md")
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
@@ -3426,13 +3427,13 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 0
     if args.command == "count":
         files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]
-        hits, folded = count_report(args.symptom, files)
+        hits, repeats = count_report(args.symptom, files)
         for hit in hits:
-            print(f"  {hit.file}:{hit.line}  {hit.where}")
-        for hit in folded:
-            print(f"  = {hit.file}:{hit.line}  {hit.where}: folded, it only repeats a line counted above")
-        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}, {len(folded)} folded as copies; "
-              "entries that mention it, not incidents")
+            print(f"  {'=' if hit in repeats else ' '} {hit.file}:{hit.line}  {hit.where}"
+                  + (": repeats an earlier line word for word" if hit in repeats else ""))
+        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}; entries that mention it, not incidents"
+              + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
+                 "or a recurrence" if repeats else ""))
         return 0
     if args.command == "memory-diff":
         repo = Path(args.repo).resolve()
