@@ -962,6 +962,36 @@ class PrivacyCommits(Base):
         self.assertEqual(run("privacy", "--commits", "HEAD", "--repo", str(repo))[0], 1)  # the root commit added the leak
         self.assertEqual(run("privacy", "--commits", "nothing..HEAD", "--repo", str(repo))[0], 2)
 
+    def test_a_path_with_a_space_a_quote_or_a_backslash_is_read(self) -> None:
+        # git writes such a path in a patch header with a trailing tab, or C-quoted; read back as a path,
+        # `git show` exited 128 and the traceback blocked every push.
+        repo = init_repo(self.root / "repo")
+        (repo / "start.md").write_text("# Start\n")
+        git_commit(repo, "docs: start")
+        names = ["my file.md", 'say "hi".md', "back\\slash.md"]
+        for name in names:
+            (repo / name).write_text("# A file\n\nA plain line.\n" + Privacy.PLANTED["home-path"] + "\n")
+        git_commit(repo, "docs: three awkward names")
+
+        code, out = run("privacy", "--commits", "HEAD~1..HEAD", "--repo", str(repo))
+
+        failed = [line for line in out.split("\n") if line.startswith("  x FAIL ")]
+        self.assertEqual(code, 1, out)
+        for name in names:
+            self.assertTrue(any(f":{name}:4 home-path" in line for line in failed), (name, out))
+        self.assertEqual(len(failed), 3, out)
+
+    def test_a_git_failure_is_a_one_line_refusal(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "a.md").write_text("A line.\n")
+        git_commit(repo, "docs: start")
+        failing = subprocess.CalledProcessError(128, ["git"], stderr="fatal: a broken object\n")
+
+        with mock.patch.object(B, "_commit_files", side_effect=failing):
+            code, out = run("privacy", "--commits", "HEAD", "--repo", str(repo))
+
+        self.assertEqual(code, 2, out)
+
 
 class PrePush(Base):
     """The home's pre-push hook reads the commits being pushed, and blocks the push on a FAIL."""

@@ -808,7 +808,8 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
     into `scratch` at its own path (so its scope reads as in the tree) with only the added lines read.
 
     A merge's message is read but not its diff: what it brings in is in the commits it merges, or was
-    pushed before. A binary file, or one with no added line, is not read."""
+    pushed before. A binary file, or one with no added line, is not read. A git failure is a refusal of
+    one line, never a traceback: the pre-push hook would block the push on it with nothing to act on."""
     try:
         shas = git(repo, "rev-list", "--reverse", *rev_range.split()).split()
     except subprocess.CalledProcessError as error:
@@ -817,50 +818,72 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
     targets = []
     for sha in shas:
         short = sha[:10]
-        message = scratch / short / "COMMIT_MESSAGE"
-        message.parent.mkdir(parents=True, exist_ok=True)
-        message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8")
-        targets.append(Target(message, message.name, f"{short} message", None, repo))
-        if len(git(repo, "rev-list", "--parents", "-n", "1", sha).split()) > 2:
-            continue
-        patch = git(repo, "-c", "core.quotePath=false", "diff-tree", "-r", "--root", "--no-commit-id", "-p", "-U0",
-                    "--no-color", "--no-ext-diff", "-M", "--diff-filter=AMRC", sha)
-        for rel, lines in added_lines(patch).items():
-            content = git(repo, "show", f"{sha}:{rel}", binary=True)
-            if not lines or b"\0" in content:
-                continue
-            copy = scratch / short / rel
-            copy.parent.mkdir(parents=True, exist_ok=True)
-            copy.write_bytes(content)
-            targets.append(Target(copy, _bundle_rel(copy), f"{short}:{rel}", frozenset(lines), repo))
+        try:
+            message = scratch / short / "COMMIT_MESSAGE"
+            message.parent.mkdir(parents=True, exist_ok=True)
+            message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8")
+            targets.append(Target(message, message.name, f"{short} message", None, repo))
+            for rel, lines in _commit_files(repo, sha):
+                content = git(repo, "cat-file", "blob", f"{sha}:{rel}", binary=True)
+                if not lines or b"\0" in content:
+                    continue
+                copy = scratch / short / rel
+                copy.parent.mkdir(parents=True, exist_ok=True)
+                copy.write_bytes(content)
+                targets.append(Target(copy, _bundle_rel(copy), f"{short}:{rel}", frozenset(lines), repo))
+        except subprocess.CalledProcessError as error:
+            said = error.stderr.decode("utf-8", "replace") if isinstance(error.stderr, bytes) else (error.stderr or "")
+            said = said.strip().splitlines()
+            raise RefusedError(f"--commits {rev_range}: git could not read commit {short}"
+                               + (f" ({said[-1]})" if said else "")) from None
     return targets, len(shas)
 
 
-HUNK = re.compile(r"^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+def _commit_files(repo: Path, sha: str) -> list[tuple[str, set[int]]]:
+    """(path, the line numbers of the commit's version of it that the commit adds), for each file a commit
+    adds or changes; none for a merge.
+
+    The paths are read NUL-separated, never from a patch header, where git ends a path holding a space with
+    a tab and C-quotes one holding a quote or a backslash. Each file's patch is then read on its own, its
+    old path included so a rename still reads as one, and only its hunks are parsed."""
+    if len(git(repo, "rev-list", "--parents", "-n", "1", sha).split()) > 2:
+        return []
+    fields = git(repo, "diff-tree", "-z", "-r", "--root", "--no-commit-id", "--name-status", "-M",
+                 "--diff-filter=AMRC", sha).split("\0")
+    files, i = [], 0
+    while i < len(fields) and fields[i]:
+        paths = fields[i + 1 : i + (3 if fields[i][0] in "RC" else 2)]
+        i += 1 + len(paths)
+        patch = git(repo, "diff-tree", "-r", "--root", "--no-commit-id", "-p", "-U0", "--no-color", "--no-ext-diff",
+                    "-M", sha, "--", *(f":(literal){p}" for p in paths))
+        files.append((paths[-1], hunk_added(patch)))
+    return files
 
 
-def added_lines(patch: str) -> dict[str, set[int]]:
-    """{path: the line numbers, in the new file, that a zero-context patch adds}. Hunk bodies are consumed by
-    their counts, so an added line that itself starts with `+++ ` is not read as a header."""
-    added: dict[str, set[int]] = {}
-    current, old_left, new_left, at = None, 0, 0, 0
+HUNK = re.compile(r"^(@{2,}) (?:-\d+(?:,\d+)? )+\+(\d+)(?:,\d+)? @{2,}")
+
+
+def hunk_added(patch: str) -> set[int]:
+    """The line numbers, in the result, that a zero-context patch of one file adds: a plain patch's `+`
+    lines, or a combined (merge) patch's lines that are `+` against every parent.
+
+    No header is read as a path. A hunk's body is every line after its `@@` header that starts with one
+    prefix column per parent, each a space, `+` or `-`; a header line (`diff`, `@@`) starts otherwise."""
+    added: set[int] = set()
+    width, at = 0, 0
     for line in patch.split("\n"):
-        if old_left or new_left:
-            if line.startswith("-"):
-                old_left -= 1
-            elif line.startswith("+"):
-                if current is not None:
-                    added[current].add(at)
-                at, new_left = at + 1, new_left - 1
+        if m := HUNK.match(line):
+            width, at = len(m.group(1)) - 1, int(m.group(2))
             continue
-        if line.startswith("+++ "):
-            name = line[4:]
-            current = None if name == "/dev/null" else name.removeprefix("b/")
-            if current is not None:
-                added.setdefault(current, set())
-        elif m := HUNK.match(line):
-            old_left = int(m.group(1)) if m.group(1) is not None else 1
-            at, new_left = int(m.group(2)), int(m.group(3)) if m.group(3) is not None else 1
+        if not width or line.startswith("\\"):  # "\ No newline at end of file"
+            continue
+        prefix = line[:width]
+        if len(prefix) < width or set(prefix) - set(" +-"):
+            width = 0
+        elif "-" not in prefix:  # a line the result holds
+            if set(prefix) == {"+"}:
+                added.add(at)
+            at += 1
     return added
 
 
