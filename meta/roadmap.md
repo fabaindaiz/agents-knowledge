@@ -20,6 +20,29 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**State on 2026-10-05, at the close of 0.0.27.** Release 0.0.27 is tagged (on `release/0.0.27`, not yet
+merged into `main` nor pushed). It took in two hundred and twenty-one proposals from eight carriers, every
+one harvested in the same session, transcripts included, with a verdict the owner reviewed theme by theme
+(`meta/tracking/history.md`): seven notes admitted after a literature step, twenty-four grown, eight queued
+candidates folded, method changes in ten themes, seventy-eight refusals recorded. It also put the
+maintainer's own way of deciding into the method, measured from every transcript on this machine
+(`meta/reviews/2026-10-05-working-practices.md`): four question modes and the example rule in principle 15,
+and the skills `decision-review` and `user-walk`. The coding session measures 9,882 of its 10,100-token
+budget; the reviewer 6,566 of 6,900, after the index's phase table stopped repeating card links (a build
+rule). Every carrier on this machine took 0.0.27 on its harvest branch, unpushed (*Waiting on the user*);
+the two whose checkouts were held by live sessions were updated in scratch worktrees of those branches.
+The template holds 0.0.27 on a branch with its tag.
+
+**What went wrong this session**, each now a proposal of this repository or a carrier's: the home piped
+its own check through a filter before a commit (stale generated files landed; fixed by the next commit);
+a gather read checkouts held by live sessions on other branches (a pack from a worktree closed it);
+adding private carriers' names to the machine's term list turned one carrier's own audit red; two
+delegates were stopped by the stall watchdog while waiting on long gates, and one carrier's gate hung under
+the load of many parallel agents; a delegate briefly switched a live session's checkout and switched it
+back; one carrier's update commit was made without a visible gate chain and its gate was re-run green
+afterwards; the owner's profile could not be installed by an agent (a self-modification refused by the
+permission layer).
+
 **State on 2026-10-03, at the close of 0.0.26.** Release 0.0.26 is tagged. It took in one carrier's
 first harvest and the home's own proposals (sixty-six, every verdict in `meta/tracking/history.md`),
 the method changes that harvest asked for, published on one carrier's evidence and marked to be
@@ -65,13 +88,14 @@ was restored from the tag before anything was committed (proposal `parallel-agen
 
 **The route from here:**
 
-1. **Push**: the carriers' commits, on the branches listed in *Waiting on the user*.
-2. **Cost:** `i-5ed7e8-a437c6`, then `i-5ed7e8-1ac328`.
-3. **The next release:** the two tool defects (`i-5ed7e8-29e484`, `i-5ed7e8-87ffc2`) and the proposals
-   written against 0.0.24 and 0.0.25.
-4. **After:** compressing the method's release by build rules (`i-5ed7e8-16b90a`).
-5. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`); skills per area;
-   the read log (`i-5ed7e8-6c2aff`); rules re-stated at phase boundaries (`i-5ed7e8-bc5867`).
+1. **Push and merge**, as listed in *Waiting on the user*.
+2. **`i-5ed7e8-578c22`:** trigger evals for `decision-review` and `user-walk`, and for `close` after its
+   trigger changed, in a pilot carrier, with held-out phrasings in the owner's words.
+3. **`i-5ed7e8-cc0b86`:** queue the experiments the five other new notes name.
+4. **Cost:** `i-5ed7e8-a437c6`, then `i-5ed7e8-1ac328`; then compressing the method's release by build
+   rules (`i-5ed7e8-16b90a`).
+5. **Paused or deferred:** the efficacy studies (`i-5ed7e8-0d9b6a`, `i-5ed7e8-bf5663`); the read log
+   (`i-5ed7e8-6c2aff`); rules re-stated at phase boundaries (`i-5ed7e8-bc5867`).
 
 **Rules the user set, which every step keeps:** content has at least two forms, marked in every file:
 the full original, edited here, and the release, generated from it by code and never edited; compression
@@ -80,8 +104,8 @@ generated. Nothing leaves the candidate queue by age. The user is the sole autho
 prediction is written before a measurement, and a refuted one is stated, not moved. Where a local
 checkout and its remote disagree after a rewrite, the remote is the record.
 
-**The template repository** a new project starts from holds 0.0.25, with no `carrier.toml`; from the next
-release on it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
+**The template repository** a new project starts from holds 0.0.27 on a branch with its tag, with no
+`carrier.toml`; it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
 
 **This machine's record of its carriers** is the local manifest (`~/.config/agent-guides/carriers.toml`),
 never committed; the names of private carriers are in the local private-terms list. The history before
@@ -107,14 +131,22 @@ reached a carrier's remote, most by a check, two by the owner.
 
 **Waiting on the user:**
 
-1. Push the four carriers not yet pushed, each a fast-forward (the branch of each is in the session's
-   closing report, kept on this machine only), and close or update their pull requests. Where a carrier
-   was updated on a branch cut from its remote, move its old local branch onto the remote afterwards.
-2. The carriers' own follow-ups the agents named, each the owner's decision: wiring `bundle.py verify`
-   into a gate that does not call it yet; stale lint and type baselines; a local environment with an
-   outdated private package; one uncommitted log entry left by another session.
-3. `i-5ed7e8-ef066e`: review the hand-written boundaries of twelve notes.
-4. `i-5ed7e8-543516`: the release pages from `v0.0.22` to `v0.0.25`.
+1. **Merge and push the home** (`release/0.0.27` into `main`, fast-forward, with the tag `v0.0.27`) and the
+   template's branch and tag.
+2. **Push each carrier's `chore/harvest-2026-10-05`** (harvest, records close, 0.0.27), merging into its
+   main branch as its own rules say. Two of them have live sessions on other branches; one has a gate that
+   hangs under heavy load (run it when the machine is quiet).
+3. **Install the updated profile** on each machine: the guide's install block in the personal
+   configuration repository (an agent may not write the user-level instruction file), and the
+   `attribution` setting where a machine lacks it.
+4. **Published commits that carry the attribution trailer** in several carriers: left as they are by the
+   owner's ruling; rewriting them is the owner's call.
+5. Carriers' own open items the agents recorded for the owner (each in that carrier's roadmap): a worktree
+   with a day of uncommitted work, backup branches, an unanswered request about owner-grantable exceptions,
+   a demo build recorded on a device, a phase whose records close waits for its own session.
+6. `i-5ed7e8-ef066e` and `i-5ed7e8-543516`, as before.
+7. One repository holds a bundle with no `carrier.toml` (a paused bootstrap): not a carrier until it mints
+   its id.
 
 ## Next
 
@@ -127,6 +159,15 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   rules, is done outside the bundle: it is personal, so it never enters `.agents/`. The phases and the
   items beside them:
 
+- **`i-5ed7e8-578c22` · Trigger evals for `decision-review` and `user-walk`, and for `close` after its
+  trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
+  the close is offered before a push that ends a plan) without a trigger eval. Run `evals/skills/trigger.py`
+  in a pilot carrier with held-out phrasings in the owner's own words: fire at least four in five, misfire at
+  most one in ten; near misses "execute the plan", "write tests for this function", "push"; and check that a
+  general brainstorming skill does not shadow `decision-review` on a request to review an existing spec.
+  *Collision:* the skills' descriptions, which every carrier's `LOCAL.md` may override.
+- **`i-5ed7e8-cc0b86` · Queue the experiments the five other new 0.0.27 notes name.** Only two of the
+  seven admitted notes had their experiment queued in `meta/tracking/experiments.md`. *Collision:* none.
 - **`i-5ed7e8-2aabb5` · The bootstrap's opening questions ask the initialisation's objectives.** It contradicts
   itself today (do not read before asking, and detect first), and across the initialisations reviewed
   only one asked the purpose first. Settle the order by repository kind: ask first in an empty one; in
@@ -404,6 +445,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **0.0.27, 2026-10-05: the maintainer's way of deciding, and eight carriers' harvests taken in.** Two
+  hundred and twenty-one proposals, seven notes admitted, the question modes and two skills. Described in
+  `.agents/CHANGELOG.md`.
 - **0.0.26, 2026-10-03: the method's skills, and one carrier's first harvest taken in.** Phase 1 of
   the redesign (`i-5ed7e8-191d2a`) and sixty-six proposals; the carrier tracking now holds every
   carrier this machine runs (`i-5ed7e8-4fea65`). Described in `.agents/CHANGELOG.md`.
