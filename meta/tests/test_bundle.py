@@ -396,7 +396,26 @@ class Privacy(Base):
         report = B.privacy_check(make_bundle(self.root))
 
         self.assertEqual(report.findings, [])
-        self.assertIn("no private terms checked", report.terms)
+        self.assertTrue(report.partial)
+
+    def test_the_terms_read_are_counted_and_fingerprinted(self) -> None:
+        terms = self.root / "terms.txt"
+        terms.write_text("# private\nZeta\n  alpha \nzeta\n\n")
+
+        code, out = run("privacy", str(make_bundle(self.root)), "--terms", str(terms))
+
+        fingerprint = hashlib.sha256("alpha\nzeta".encode()).hexdigest()[:8]
+        self.assertEqual(code, 0, out)
+        self.assertIn(f"private terms: 2 read from {terms}, list {fingerprint}", out)
+        self.assertNotIn("partial", out)
+
+    def test_no_terms_list_is_a_warning_never_a_silent_pass(self) -> None:
+        code, out = run("privacy", str(make_bundle(self.root)))
+
+        self.assertEqual(code, 0, out)  # a warning, not a failure
+        self.assertIn("! WARN partial: no private-terms list on this machine", out)
+        self.assertIn("1 WARN", out.strip().split("\n")[-1])
+        self.assertIn("partial", out.strip().split("\n")[-1])
 
     def test_each_rule_fails_on_its_planted_leak(self) -> None:
         for rule, line in self.PLANTED.items():

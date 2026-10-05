@@ -613,6 +613,7 @@ class PrivacyReport:
     files: int
     terms: str
     skipped: str = ""
+    partial: bool = False  # no private-terms list on this machine: the generic rules ran, the private names did not
 
     @property
     def failures(self) -> list[Finding]:
@@ -625,7 +626,8 @@ class PrivacyReport:
     def notes(self) -> list[str]:
         """The warnings, every waiver, and which terms were checked: printed whether or not anything failed."""
         return ([f"  ! WARN {f.where} {f.rule}: {f.match}" for f in self.warnings]
-                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances] + [f"  . {self.terms}"]
+                + [f"  . allowed {where}: {reason}" for where, reason in self.allowances]
+                + [f"  ! WARN {self.terms}" if self.partial else f"  . {self.terms}"]
                 + ([f"  . {self.skipped}"] if self.skipped else []))
 
     def summary(self) -> str:
@@ -633,8 +635,9 @@ class PrivacyReport:
         for f in self.findings:
             counts[f"{f.level} {f.rule}"] = counts.get(f"{f.level} {f.rule}", 0) + 1
         per_rule = ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))
-        return (f"privacy over {self.files} files: {len(self.failures)} FAIL, {len(self.warnings)} WARN, "
-                f"{len(self.allowances)} allowed" + (f" ({per_rule})" if per_rule else ""))
+        return (f"privacy over {self.files} files: {len(self.failures)} FAIL, {len(self.warnings) + self.partial} WARN, "
+                f"{len(self.allowances)} allowed" + (f" ({per_rule})" if per_rule else "")
+                + ("; partial: no private-terms list, private names not checked" if self.partial else ""))
 
 
 def _bundle_rel(path: Path) -> str:
@@ -754,7 +757,13 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
     # Printed with `~` for the home folder: this line is pasted into sessions, and a home path is one
     # of the things this check exists to catch.
     shown = str(source).replace(str(Path.home()), "~", 1)
-    note = f"private terms: {len(terms)} from {shown}" if source.is_file() else f"no private terms checked: {shown} does not exist"
+    # How many terms and which list, by a short hash of the normalised list: two machines, or two runs, that
+    # print the same hash checked the same names, and the names themselves are never printed.
+    normalised = sorted({term.casefold() for term in terms})
+    fingerprint = hashlib.sha256("\n".join(normalised).encode("utf-8")).hexdigest()[:8]
+    partial = not source.is_file()
+    note = (f"partial: no private-terms list on this machine ({shown} does not exist), so no private name was checked"
+            if partial else f"private terms: {len(normalised)} read from {shown}, list {fingerprint}")
     if paths:
         targets = [(p, _bundle_rel(p), str(p)) for p in paths]
     else:
@@ -797,7 +806,7 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
             findings += found
     said = (f"private terms on line{'s' if len(skipped) > 1 else ''} {', '.join(map(str, sorted(skipped)))} of the terms file "
             "skipped inside the repository they name (its folder or its origin remote); its proposals still checked") if skipped else ""
-    return PrivacyReport(findings, allowances, len(targets), note, said)
+    return PrivacyReport(findings, allowances, len(targets), note, said, partial)
 
 
 @functools.lru_cache(maxsize=None)
