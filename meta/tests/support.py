@@ -161,8 +161,9 @@ class Base(unittest.TestCase):
     def setUp(self) -> None:
         # Resolved, because macOS keeps the temporary folder behind a symlink (`/var` -> `/private/var`).
         self.root = Path(tempfile.mkdtemp()).resolve()
-        # No test reads this machine's private terms or carriers: they are not the fixture's.
-        environment = mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(self.root / "config")})
+        # No test reads this machine's private terms, carriers or assistant settings: they are not the fixture's.
+        environment = mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(self.root / "config"),
+                                                   "AGENT_GUIDES_USER_SETTINGS": str(self.root / "no-user-settings.json")})
         environment.start()
         self.addCleanup(environment.stop)
         self.addCleanup(shutil.rmtree, self.root)

@@ -869,3 +869,40 @@ class MethodTemplates(Base):
                 errors, _, counts = B.record_id_check([path], None)
 
                 self.assertEqual((errors, counts["definitions"]), ([], 1))
+
+
+class UserDenies(Base):
+    """A deny rule in the user's own assistant settings reaches every repository: it merges with the project's."""
+
+    def a_repo(self, denies: list[str]) -> Path:
+        repo = init_repo(self.root / "repo")
+        make_bundle(repo)
+        (repo / "docs").mkdir()
+        (repo / "docs/guide.md").write_text("# Guide\n")
+        (repo / ".env").write_text("A=1\n")
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "start")
+        (self.root / "user-settings.json").write_text(json.dumps({"permissions": {"deny": denies}}))
+        return repo
+
+    def test_a_user_deny_that_covers_a_committed_file_is_warned(self) -> None:
+        repo = self.a_repo(["Read(./.env)", "Edit(docs/**)", "Read(~/.ssh/id_*)", "Bash(rm *)", "Edit(/docs/**)"])
+
+        with mock.patch.dict("os.environ", {"AGENT_GUIDES_USER_SETTINGS": str(self.root / "user-settings.json")}):
+            warnings = B.user_deny_warnings(repo)
+            code, out = run("verify", str(repo / ".agents"))
+
+        self.assertEqual(len(warnings), 2, warnings)
+        self.assertIn("Read(./.env)", warnings[0])
+        self.assertIn("Edit(docs/**)", warnings[1])
+        self.assertIn("docs/guide.md", warnings[1])
+        self.assertTrue(all("merge" in w for w in warnings))
+        self.assertEqual(code, 0, out)  # a warning, never a failure
+        self.assertIn("! user deny `Edit(docs/**)`", out)
+
+    def test_an_absolute_rule_reaches_the_repository_and_none_without_settings(self) -> None:
+        repo = self.a_repo(["Edit(/" + str(self.root) + "/repo/docs/*.md)"])
+
+        with mock.patch.dict("os.environ", {"AGENT_GUIDES_USER_SETTINGS": str(self.root / "user-settings.json")}):
+            self.assertEqual(len(B.user_deny_warnings(repo)), 1)
+        self.assertEqual(B.user_deny_warnings(repo), [])  # the fixture's default: no user settings file

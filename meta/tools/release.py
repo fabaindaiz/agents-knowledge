@@ -770,7 +770,7 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
     problems += queue_problems(root)
-    return problems, privacy.notes() + home.notes()
+    return problems, privacy.notes() + home.notes() + [f"  ! {w}" for w in B.user_deny_warnings(root)]
 
 
 QUEUE_ROW = re.compile(r"^(?:(?:extends|overlaps)\s+)?`?[a-z0-9][\w.-]*`?(?:\s*\+\s*`?[a-z0-9][\w.-]*`?)*\s+—\s")

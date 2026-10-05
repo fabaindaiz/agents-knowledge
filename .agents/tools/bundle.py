@@ -2345,6 +2345,129 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
     return [(repo.name, problems) for repo in repos if (problems := check_local(repo))]
 
 
+# --- the user's own assistant settings ---------------------------------------------------------------
+
+# What is assumed about the host (Claude Code), read from its settings and permissions documentation:
+# - User settings (`~/.claude/settings.json`) apply to every project. List keys such as
+#   `permissions.deny` MERGE across the user, shared-project and local-project files instead of the
+#   higher level replacing the lower, and rules are evaluated deny, then ask, then allow: a deny at any
+#   level wins over an allow at any level. So a project cannot lift a deny its user wrote.
+# - File rules are `Read(path)` and `Edit(path)`, gitignore syntax: `//p` is absolute, `~/p` is under the
+#   home folder, `/p` is relative to the settings file's own folder (for user settings, `~/.claude/p`), and
+#   `p` or `./p` is relative to the session's working directory, taken here to be the repository root. A
+#   pattern without a slash, or a single directory and `/**` in a deny rule, matches at any depth. A Read
+#   deny also blocks Edit and Write on that path. A `Write(path)` rule is accepted but never consulted.
+# - They block the assistant's file tools and the file commands it runs in a shell, not a script that
+#   opens files itself: a gate or hook still writes the file, while the session cannot edit it by hand.
+# Not modelled: `!` carve-outs (a negated rule is skipped, so a warning may over-report), managed
+# settings, and `CLAUDE_CONFIG_DIR` beyond where the user file is looked for.
+USER_SETTINGS_ENV = "AGENT_GUIDES_USER_SETTINGS"
+FILE_RULE = re.compile(r"^(Read|Edit|Write)(?:\((.*)\))?$", re.DOTALL)
+
+
+def user_settings_path() -> Path:
+    """The user-level assistant settings: `$AGENT_GUIDES_USER_SETTINGS`, else under `$CLAUDE_CONFIG_DIR`,
+    else `~/.claude/settings.json`."""
+    if os.environ.get(USER_SETTINGS_ENV):
+        return Path(os.environ[USER_SETTINGS_ENV])
+    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "settings.json"
+
+
+def _glob_regex(pattern: str) -> str:
+    """A gitignore-style glob as a regular expression over `/`-separated paths."""
+    out, i = [], 0
+    while i < len(pattern):
+        if pattern.startswith("**/", i):
+            out.append("(?:.*/)?")
+            i += 3
+        elif pattern.startswith("**", i):
+            out.append(".*")
+            i += 2
+        elif pattern[i] == "*":
+            out.append("[^/]*")
+            i += 1
+        elif pattern[i] == "?":
+            out.append("[^/]")
+            i += 1
+        elif pattern[i] == "[" and "]" in pattern[i + 2 :]:
+            end = pattern.index("]", i + 2)
+            body = pattern[i + 1 : end]
+            out.append("[" + ("^" + body[1:] if body.startswith("!") else body).replace("\\", "\\\\") + "]")
+            i = end + 1
+        else:
+            out.append(re.escape(pattern[i]))
+            i += 1
+    return "".join(out)
+
+
+def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path) -> list[str]:
+    """The files (relative to `repo`) a deny rule's path pattern written in user settings matches."""
+    if rule_path.startswith("!"):
+        return []
+    relative = False
+    if rule_path.startswith("//"):
+        anchor, pattern = Path("/"), rule_path[2:]
+    elif rule_path.startswith("~/"):
+        anchor, pattern = Path.home(), rule_path[2:]
+    elif rule_path.startswith("/"):
+        anchor, pattern = settings_dir, rule_path[1:]
+    else:
+        anchor, pattern, relative = repo, rule_path.removeprefix("./"), True
+    pattern = pattern.rstrip("/")
+    if not pattern:
+        return []
+    # Only a relative pattern floats: an anchored one matches at its anchor and nowhere deeper.
+    anywhere = relative and ("/" not in pattern or bool(re.fullmatch(r"[^/]+/\*\*", pattern)))
+    rx = re.compile(("(?:.*/)?" if anywhere else "") + _glob_regex(pattern), re.DOTALL)
+    anchor = Path(os.path.realpath(anchor))
+    covered = []
+    for rel in files:
+        try:
+            parts = (repo / rel).relative_to(anchor).parts
+        except ValueError:
+            continue
+        if any(rx.fullmatch("/".join(parts[:n])) for n in range(1, len(parts) + 1)):
+            covered.append(rel)
+    return covered
+
+
+def user_deny_warnings(repo: Path) -> list[str]:
+    """Deny rules in the user's own settings that cover files committed in this repository.
+
+    A warning, never a failure: the repository's gate and hooks may write those files, and a session here
+    cannot lift a user deny (see the assumptions above). Empty when the repository is not a git work tree
+    or there are no user settings."""
+    settings = user_settings_path()
+    if not settings.is_file():
+        return []
+    shown = str(settings).replace(str(Path.home()), "~", 1)
+    try:
+        denies = (json.loads(settings.read_text(encoding="utf-8")).get("permissions") or {}).get("deny") or []
+    except (ValueError, AttributeError):
+        return [f"{shown}: not readable as settings JSON, so its deny rules were not compared with this repository"]
+    repo = Path(os.path.realpath(repo))
+    try:
+        files = [f for f in git(repo, "ls-files", "-z").split("\0") if f]
+    except (subprocess.CalledProcessError, OSError):
+        return []
+    warnings = []
+    for rule in denies:
+        m = FILE_RULE.match(str(rule).strip())
+        if not m:
+            continue
+        covered = files if m.group(2) is None else deny_covers(m.group(2).strip(), files, repo, settings.parent)
+        if not covered:
+            continue
+        examples = ", ".join(covered[:3]) + (", ..." if len(covered) > 3 else "")
+        inert = " (the host never consults a `Write(path)` rule; `Edit(path)` is the one that blocks)" \
+            if m.group(1) == "Write" and m.group(2) is not None else ""
+        warnings.append(f"user deny `{rule}` in {shown} covers {len(covered)} committed file{'s' if len(covered) > 1 else ''} "
+                        f"here ({examples}): user and project denies merge, and a deny at any level wins over every allow, "
+                        f"so no setting in this repository lifts it and a session here cannot edit what its gate or hooks "
+                        f"write there; narrow the rule (anchor it with `//` or `~/`) if that is not meant{inert}")
+    return warnings
+
+
 # Static budgets, in estimated tokens: what a coding session loads before its task, and the largest card
 # it may read. They stand in for the cost caps (a normal session at most 1.5 times a session without the
 # bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
@@ -2953,6 +3076,8 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         problems = verify_problems(tree, privacy, release=args.release)
         for note in privacy.notes() if privacy else []:
             print(note)
+        for warning in [] if args.release else user_deny_warnings(tree.resolve().parent):
+            print("  ! " + warning)
         for problem in problems:
             print("  x " + problem)
         print(f"verify {tree}: " + (f"{bundle_version(tree)} verified" if not problems else f"{len(problems)} problems"))
@@ -2961,6 +3086,9 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         declared = args.repos or os.environ.get(WORKSPACE_ENV) or MANIFEST.exists()
         repos = workspace(args.repos).repos if declared else [OWN_REPO]
         found = check_local_all(repos)
+        for repo in repos:
+            for warning in user_deny_warnings(repo):
+                print(f"  ! {repo.name}: {warning}")
         for name, problems in found:
             for problem in problems:
                 print(f"  x {name}: {problem}")
