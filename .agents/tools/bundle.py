@@ -30,7 +30,8 @@ own tool, never by this one.
                                                                 the bundle's skills, each merged with the
                                                                 carrier's LOCAL.md, into .claude/skills/
     python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
-    python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search
+    python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search:
+                                                                entries, not incidents; a copied line counts once
     python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
     python3 .agents/tools/bundle.py turns [--since DATE] [PROJECT_DIR...]
                                                                 what the human said in this repository's local
@@ -2714,22 +2715,44 @@ class Mention:
     where: str
 
 
-def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
-    """Where a symptom is mentioned, case-insensitively: once per entry of a log (a level-2 heading), once per
-    line of a file with no entries. The count a close writes for a friction, instead of one from memory."""
-    needle, hits = symptom.lower(), []
+def _mention_text(line: str) -> str:
+    """A line as a copy of it reads: case, spacing and a list or quote marker set aside."""
+    return " ".join(re.sub(r"^\s*(?:[-*+>]|\d+[.)])\s+", "", line).casefold().split())
+
+
+def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[Mention]]:
+    """(counted, folded): the entries that mention a symptom, and the ones that only repeat a line already counted.
+
+    Case-insensitive; once per entry of a log (a level-2 heading), once per line of a file with no entries.
+    An entry whose every mentioning line is, as text, a line of an entry counted before it is one event
+    copied into several entries (a summary, a carried-over item), and is folded instead of counted. What is
+    counted is entries that mention the symptom, not incidents: one incident told in different words in two
+    entries still counts twice."""
+    needle = symptom.lower()
+    entries: list[tuple[Mention, list[str]]] = []
     for path in files:
         lines = path.read_text(encoding="utf-8").split("\n")
-        heading, seen = None, set()
+        heading, at = None, {}
         for number, line in enumerate(lines, 1):
             if line.startswith("## "):
                 heading = line[3:].strip()
             if needle in line.lower():
                 where = heading or f"line {number}"
-                if (path, where) not in seen:
-                    seen.add((path, where))
-                    hits.append(Mention(str(path), number, where))
-    return hits
+                if where not in at:
+                    at[where] = len(entries)
+                    entries.append((Mention(str(path), number, where), []))
+                entries[at[where]][1].append(_mention_text(line))
+    counted, folded, seen = [], [], set()
+    for mention, texts in entries:
+        (folded if all(t in seen for t in texts) else counted).append(mention)
+        seen.update(texts)
+    return counted, folded
+
+
+def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
+    """The entries counted for a symptom (`count_report`): the count a close writes for a friction, instead of
+    one from memory."""
+    return count_report(symptom, files)[0]
 
 
 @dataclass(frozen=True)
@@ -3043,7 +3066,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
-    p = sub.add_parser("count", help="the entries of a log, and the lines of other files, that mention a symptom")
+    p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a copied line counts once")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: this repository's .claude/logs/agent-changelog.md")
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
@@ -3211,10 +3234,13 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 0
     if args.command == "count":
         files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]
-        hits = count_mentions(args.symptom, files)
+        hits, folded = count_report(args.symptom, files)
         for hit in hits:
             print(f"  {hit.file}:{hit.line}  {hit.where}")
-        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}")
+        for hit in folded:
+            print(f"  = {hit.file}:{hit.line}  {hit.where}: folded, it only repeats a line counted above")
+        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}, {len(folded)} folded as copies; "
+              "entries that mention it, not incidents")
         return 0
     if args.command == "memory-diff":
         repo = Path(args.repo).resolve()
