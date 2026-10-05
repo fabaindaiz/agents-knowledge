@@ -179,6 +179,15 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   bug report (which must not fire `user-walk`); and check that a
   general brainstorming skill does not shadow `decision-review` on a request to review an existing spec.
   *Collision:* the skills' descriptions, which every carrier's `LOCAL.md` may override.
+- **`i-5ed7e8-1bc188` · Decision records and private records for 0.0.29.** The owner settled the design in a
+  decision review (`meta/reviews/2026-10-05-decision-records.md`; rows `d-5ed7e8-969802` to `d-5ed7e8-aec800`
+  in `meta/decisions.md`): a Status cell with state, date and decider, `proposed` rows only a person accepts,
+  `unconfirmed:` and `accepting:` in Why, known debt, the when-to-write criteria, `bundle.py decisions` and a
+  git-dated migration, a private folder per carrier with a sentinel, a public-repository guard and the home's
+  re-check, and privacy warnings in proposals asked of the owner. Five of this repository's proposals carry it
+  to the intake. Parts are under review until the 0.0.30 harvest. *Collides with:* artifact 6, the adoption
+  table, principle 20, the harvest, bootstrap and update prompts, the `close` skill, `bundle.py privacy`,
+  `release.py gather` and `intake`, and every carrier's `docs/decisions.md`.
 - **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05**, each a decision for the owner at the next release, each
   priced in its document under `meta/reviews/2026-10-05-*.md`:
   1. *Index shape* (`index-scaling`): make `INDEX.md` the lookup alone and move the phase guide to a generated
@@ -455,8 +464,14 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   First counts in pilot-6 (`evals/cost_smoke.py`): the trigger was followed on every trivial trial; a check
   was named in the final report in only a quarter of the other trials under either wiring. A finer count
   (which card's check ran) waits for the phased session's review, which records it.
-- **`i-5ed7e8-ca6ce3` · Evaluate MADR for decision records**, the most used format for architecture
-  decision records, against the method's own decisions table. *Waits on:* `i-5ed7e8-8236cb`.
+- **`i-5ed7e8-ca6ce3` · Evaluate MADR for decision records** — **closed 2026-10-05**: done, more widely, by
+  the decision-record review (`meta/reviews/2026-10-05-decision-records.md`, rows in `meta/decisions.md`),
+  carried to 0.0.29 by `i-5ed7e8-1bc188`. It did not wait on `i-5ed7e8-8236cb`, which collides with artifacts
+  1, 3 and 5, not 6.
+- **`i-5ed7e8-bf017b` · Scope decision rows by path when a log outgrows one read.** The ADR practice of
+  naming the paths a decision governs, so an agent opens only the rows its change touches (declined for now,
+  `d-5ed7e8-c59752`). *Reopens when:* a carrier's log passes a few hundred rows and a session is seen not to
+  read it whole, or a harvest finds a decision broken because its row was not read.
 - **`i-5ed7e8-7425a6` · Signed release tags.** `SHA256SUMS` shows that a copy is the release it says it
   is, not who published it. *Waits on:* a second person publishing releases.
 - **`i-5ed7e8-aca224` · A host-side record-id and renumbering check in every carrier's audit.**
