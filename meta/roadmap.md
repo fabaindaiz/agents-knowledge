@@ -20,6 +20,26 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**State on 2026-10-05, at the close of 0.0.29, on a second machine.** Release 0.0.29 is tagged locally and **not
+pushed**: the decision-record design (`meta/reviews/2026-10-05-decision-records.md`, `meta/decisions.md`), the
+owner's decisions on the research of the same day (`i-5ed7e8-54cb3f`: one deferred, the rest applied), and one
+carrier's proposals that had waited since 0.0.25. A read-only review of every reachable carrier against the
+unpublished release found five defects, fixed before it was carried (the release was cut again under the same
+version, its tag never having left the machine); two more found while carrying are fixed under *Unreleased*. It
+reached four carriers, each on a new branch cut from its integration branch, for a pull request the owner opens
+(`release.py align`: the home and four aligned); their main checkouts still hold 0.0.25 until those merge. The
+carriers this machine shares with the first one hold newer work there, unpushed, and were not reached; two
+repositories the owner named have no bundle on any branch and wait for a bootstrap. Waiting on the owner: push
+the home with its tag; open the four pull requests; the bootstraps; the proposed rows each carrier's log now
+shows; installing the method's skills in those carriers, each with its `LOCAL.md`.
+
+**What went wrong this session:** the release was carried as "ready" before each carrier's own audit had run
+over it, and the review then found it would turn one carrier's gate red and leave three carriers' enforcer
+checks silently reading the wrong cell; the migration dated rows by committer date, which a history rewrite had
+reset; `register` wrote scratch worktree paths into the manifest again (restored from a backup); the shell did
+not split a variable holding several paths, twice, and one `rm` ran before the writes it was meant to follow (in
+a scratch worktree, recovered).
+
 **State on 2026-10-05, at the close of 0.0.28.** A fresh-context review of 0.0.27, run before anything was
 published, found four important defects (a traceback that blocked pushes, a trailers check that read published
 history and advised rewriting it, a count that undercounted recurrences, and the home not applying its own
@@ -490,6 +510,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   ran it. It gets the release from a session where it is open, or through its own `incoming/`, converted
   by hand first if its release has no tag, as 0.0.24's changelog says; then it adds the three root-file
   lines of the bootstrap's Phase 4 and installs the reviewer. *Blocked on:* a session with it open.
+  **At the close of 0.0.29** (on the second machine), not reached: `r-419136`, `r-098980` and `r-7c8794`, whose
+  newer work is on the first machine and unpushed; `r-1190d3`, `r-81be2b` and `r-cef56f`, reviewed against the
+  release but left out of this session by the owner; and every carrier only the first machine holds.
 
 ## Closed by measurement
 
@@ -503,6 +526,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **0.0.29, 2026-10-05: decision records a tool reads, records that never leave a carrier, and the research
+  decided.** `i-5ed7e8-1bc188` and `i-5ed7e8-54cb3f` (one item deferred). Described in `.agents/CHANGELOG.md`.
 - **0.0.28, 2026-10-05: the fixes of two fresh-context reviews of 0.0.27, before either was published.**
   Described in `.agents/CHANGELOG.md`.
 - **0.0.27, 2026-10-05: the maintainer's way of deciding, and eight carriers' harvests taken in.** Two
