@@ -1330,9 +1330,12 @@ def remember(records: list[dict], manifest: Path) -> None:
 
     data = tomllib.loads(resolved.read_text(encoding="utf-8")) if resolved.is_file() else {}
     listed = [str(p) for p in data.get("carriers", [])]
-    known = {r["path"]: r for r in data.get("carrier", [])}
+    # A record without an id names a repository that is no carrier yet: never written, and one an earlier
+    # run wrote is dropped. Its path stays in `carriers`, which is the machine's own list.
+    known = {r["path"]: r for r in data.get("carrier", []) if r.get("carrier")}
     for record in records:
-        known[record["path"]] = record
+        if record.get("carrier"):
+            known[record["path"]] = record
         if record["path"] not in listed:
             listed.append(record["path"])
     lines = ["# This machine's carriers of the agent-guides bundle. Never committed anywhere.",
@@ -1595,7 +1598,15 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             records = [local_record(p) for p in paths if (p / ".agents").is_dir()]
             remember(records, B.MANIFEST)
             for r in records:
-                print(f"{r['carrier'] or '(no id)':10} {r['version'] or '?':26} {r['name']}  {r['path']}")
+                if r["carrier"]:
+                    print(f"{r['carrier']:10} {r['version'] or '?':26} {r['name']}  {r['path']}")
+            for r in records:
+                # A repository started from the template and paused before its bootstrap minted an id holds a
+                # release but is no carrier yet: listed, and never recorded under an empty id.
+                if not r["carrier"]:
+                    why = ("not a carrier yet (no carrier.toml)" if not (Path(r["path"]) / ".agents" / B.CARRIER_FILE).is_file()
+                           else "no carrier id stored yet")
+                    print(f"  {r['name']}: {why}; holds {r['version'] or 'no versioned release'}  {r['path']}")
             for path in paths:
                 # The working tree is one branch: a bundle kept on another is found only by reading them all.
                 branches = bundle_branches(path) if (path / ".git").exists() else []

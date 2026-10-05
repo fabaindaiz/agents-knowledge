@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from unittest import mock
 
-from meta.tests.support import BOOTSTRAP, CONTEXT, Base, a_proposal, bundle, commit, git, init_repo, old_outbox, release
+from meta.tests.support import BOOTSTRAP, CONTEXT, README, Base, a_proposal, bundle, commit, git, init_repo, old_outbox, release
 
 B = bundle
 
@@ -486,6 +486,28 @@ class Carry(Base):
         self.assertEqual(data["carrier"][0]["carrier"], B.stored_carrier_id(repo))
         self.assertNotIn(str(repo), registry.read_text())
         self.assertNotIn("| one |", registry.read_text())
+
+    def test_carriers_names_a_bootstrap_with_no_carrier_file_and_records_no_empty_id(self) -> None:
+        import tomllib
+
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        paused = make_carrier(self.root, "paused")  # started from the template: a release, no carrier.toml yet
+        (paused / ".agents/README.md").write_text(README.format(version="0.0.1"))
+        manifest = self.root / "config/agent-guides/carriers.toml"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(f'carriers = ["{repo}", "{paused}"]\n')
+        out = io.StringIO()
+
+        with mock.patch.object(B, "MANIFEST", manifest), contextlib.redirect_stdout(out):
+            code = self.R.main(["carriers"])
+
+        self.assertEqual(code, 0, out.getvalue())
+        self.assertIn("paused: not a carrier yet (no carrier.toml)", out.getvalue())
+        data = tomllib.loads(manifest.read_text())
+        self.assertEqual([r["name"] for r in data["carrier"]], ["one"])
+        self.assertEqual(data["carriers"], [str(repo), str(paused)])
 
     def test_the_local_manifest_is_never_written_inside_a_repository(self) -> None:
         with self.assertRaisesRegex(self.R.RefusedError, "outside every one"):
