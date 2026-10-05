@@ -32,7 +32,11 @@ free text of question answers (it overrides the options). List each part as **do
 - `grep` the documents for every claim the diff made false: a number, a path, a rule, a count, a
   "nothing yet". The root instruction file's map names where each kind lives.
 - A new dated record (research, plan, spec) gets its folder's index row.
-- A rule or a settled question: a decision row with its enforcer.
+- A rule or a settled question: a decision row with its Status and its enforcer. Run
+  `python3 .agents/tools/bundle.py decisions docs/decisions.md`: each `proposed` row is a decision for
+  the human, and each `unconfirmed:` reason a fact question; ask them in the hand-off, never decide them.
+- A proposal written this session that `bundle.py privacy` warns on is a question too: "is this
+  private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`.
 
 ## 3. The changelog entry
 

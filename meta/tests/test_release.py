@@ -555,6 +555,34 @@ class Carry(Base):
         self.assertIn("## Offered again, to merge", queue)
         self.assertIn("extends old-idea — Seen again here.", queue.split("## Offered again")[1])
 
+    def test_gather_names_and_intake_refuses_a_proposal_that_fails_privacy_or_warns_unanswered(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo)
+        self.splice(repo)
+        agents = repo / ".agents"
+        count = "about " + "4," + "812" + " rows a day"
+        a_proposal(agents, "In one repository of this kind, once.", target="clean-idea")
+        a_proposal(agents, "Write to " + "jdoe" + "@" + "corp-mail.io" + " for it.", target="leaky-idea")
+        a_proposal(agents, f"It handled {count}.", target="unanswered-idea")
+        a_proposal(agents, f"It handled {count}. " + "privacy" + "-allow: a generic order of magnitude, the owner said so",
+                   target="answered-idea")
+        commit(repo, "harvest")
+
+        gathered = self.R.gather([repo], self.root / "out", self.home)
+        result = self.R.intake(self.root / "out", "0.0.1", self.home)
+
+        named = " ".join(gathered["carriers"]["one"]["privacy"])
+        self.assertIn("FAIL email", named)
+        self.assertIn("WARN exact-count", named)
+        self.assertIn("privacy", (self.root / "out/gather.md").read_text())
+        queue = (self.home / "meta/tracking/candidates.md").read_text()
+        self.assertIn("clean-idea", queue)
+        self.assertIn("answered-idea", queue)
+        self.assertNotIn("leaky-idea", queue)
+        self.assertNotIn("unanswered-idea", queue)
+        self.assertEqual(len(result["received"]), 2)
+        self.assertEqual(len(result["privacy"]), 2, result["privacy"])
+
     def test_the_home_gathered_as_a_carrier_is_read_for_its_proposals_only(self) -> None:
         a_proposal(self.home / ".agents", "Seen in the home.", target="home-idea")
         (self.home / "sources/bundle/method/prompt-context.md").write_text(CONTEXT + "\nbeing written\n")

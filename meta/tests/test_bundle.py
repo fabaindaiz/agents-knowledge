@@ -1263,3 +1263,238 @@ class Trailers(Base):
         (repo / "more.md").write_text("more\n")
         git_commit(repo, "chore: one more")  # the attribution is now the 21st commit back
         return repo
+
+
+class Decisions(Base):
+    """The decisions log: a Status cell a tool reads, supersession both ways, and a person over an agent."""
+
+    HEAD = "| Id | Status | Decision | Why | Enforced in |\n|---|---|---|---|---|\n"
+    TODAY = __import__("datetime").date(2026, 10, 20)
+
+    def log(self, rows: str, extra: str = "") -> Path:
+        repo = init_repo(self.root / "repo")
+        (repo / "tools").mkdir(exist_ok=True)
+        (repo / "tools/audit.py").write_text("print('audit')\n")
+        path = repo / "docs/decisions.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# Decisions\n\n## Store\n\n" + self.HEAD + rows + extra)
+        return path
+
+    def check(self, path: Path) -> tuple[list[str], list[str], dict]:
+        return B.decision_check([path], today=self.TODAY)
+
+    def test_a_well_formed_log_passes_and_its_rows_are_counted(self) -> None:
+        path = self.log(
+            "| d-abcdef-111111 | accepted 2026-09-01 · h1 | Writes go through one store | a second path drifted twice; accepting: one extra hop | `tools/audit.py` |\n"
+            "| d-abcdef-222222 | declined 2026-09-02 · h1 | A second store | it drifted | — |\n"
+            "| d-abcdef-333333 | accepted 2026-10-05 · agent s-abcdef-444444 | Tests name the rule they guard | reviewers asked | — |\n"
+            "| d-abcdef-555555 | accepted recorded 2026-06-14 | An old row, migrated | from before the column | — |\n",
+            "\n## Looks deliberate, is not\n\n| Id | What | Why it is not deliberate | Fix when |\n|---|---|---|---|\n"
+            "| d-abcdef-666666 | Two date parsers | a merge accident | any change to imports |\n")
+
+        errors, warnings, counts = self.check(path)
+
+        self.assertEqual((errors, warnings), ([], []))
+        self.assertEqual((counts["rows"], counts["debt"]), (4, 1))
+
+    def test_a_status_that_does_not_parse_fails(self) -> None:
+        path = self.log("| d-abcdef-111111 | Accepted | One store | why | — |\n"
+                        "| d-abcdef-222222 | accepted 2026-13-01 · h1 | A bad date | why | — |\n"
+                        "| d-abcdef-333333 | accepted 2026-09-01 · decides: h2 | Only proposed rows wait on someone | why | — |\n"
+                        "| d-abcdef-444444 | One store | a four-column row | — |\n")
+
+        errors, _, _ = self.check(path)
+
+        self.assertEqual(len(errors), 4, errors)
+        self.assertTrue(any("five" in e for e in errors), errors)
+
+    def test_supersession_is_written_both_ways(self) -> None:
+        path = self.log(
+            "| d-abcdef-111111 | superseded by d-abcdef-222222 2026-10-01 · h1 | One store | why | — |\n"
+            "| d-abcdef-222222 | accepted 2026-10-01 · h1 | Two stores | they diverged on purpose | — |\n"
+            "| d-abcdef-333333 | superseded by d-abcdef-999999 2026-10-01 · h1 | Gone | why | — |\n"
+            "| d-abcdef-444444 | accepted 2026-10-02 · h1 | A third | supersedes d-abcdef-555555 | — |\n"
+            "| d-abcdef-555555 | accepted 2026-09-01 · h1 | The old third | why | — |\n")
+
+        errors, _, _ = self.check(path)
+
+        self.assertEqual(len(errors), 3, errors)
+        self.assertTrue(any("d-abcdef-222222" in e and "supersedes d-abcdef-111111" in e for e in errors), errors)
+        self.assertTrue(any("d-abcdef-999999" in e for e in errors), errors)
+        self.assertTrue(any("d-abcdef-555555" in e for e in errors), errors)
+
+    def test_a_proposed_supersession_leaves_the_old_row_standing(self) -> None:
+        path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | One store | why | — |\n"
+                        "| d-abcdef-222222 | proposed 2026-10-05 · agent s-abcdef-444444 · decides: h1 | Two stores | supersedes d-abcdef-111111 | — |\n")
+
+        errors, warnings, counts = self.check(path)
+
+        self.assertEqual(errors, [])
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("proposed since 2026-10-05", warnings[0])
+        self.assertIn("h1", warnings[0])
+        self.assertEqual(counts["proposed"], 1)
+
+    def test_an_agent_cannot_accept_over_a_person_or_a_blank_decider(self) -> None:
+        path = self.log(
+            "| d-abcdef-111111 | superseded by d-abcdef-222222 2026-10-01 · h1 | One store | why | — |\n"
+            "| d-abcdef-222222 | accepted 2026-10-01 · agent s-abcdef-777777 | Two stores | supersedes d-abcdef-111111 | — |\n"
+            "| d-abcdef-333333 | superseded by d-abcdef-444444 2026-10-01 | Migrated | why | — |\n"
+            "| d-abcdef-444444 | accepted 2026-10-01 · agent s-abcdef-777777 | Over a blank | supersedes d-abcdef-333333 | — |\n"
+            "| d-abcdef-555555 | superseded by d-abcdef-666666 2026-10-01 · agent s-abcdef-111111 | An agent's | why | — |\n"
+            "| d-abcdef-666666 | accepted 2026-10-02 · agent s-abcdef-777777 | Over an agent | supersedes d-abcdef-555555 | — |\n")
+
+        errors, _, _ = self.check(path)
+
+        self.assertEqual(len(errors), 2, errors)
+        self.assertTrue(all("proposed" in e for e in errors), errors)
+
+    def test_an_unconfirmed_reason_and_a_dead_enforcer_are_warned(self) -> None:
+        path = self.log(
+            "| d-abcdef-111111 | accepted 2026-09-01 · found | Routers never touch the store | unconfirmed: read from the code | `tools/audit.py` |\n"
+            "| d-abcdef-222222 | accepted 2026-09-01 · h1 | One store | why | `tools/old_audit.py`, `make check` |\n"
+            "| d-abcdef-333333 | accepted 2026-09-01 · h1 | By name | why | `audit.py` |\n")
+
+        errors, warnings, counts = self.check(path)
+
+        self.assertEqual(errors, [])
+        self.assertEqual(len(warnings), 2, warnings)
+        self.assertTrue(any("unconfirmed" in w for w in warnings), warnings)
+        self.assertTrue(any("tools/old_audit.py" in w for w in warnings), warnings)
+        self.assertEqual(counts["unconfirmed"], 1)
+
+    def test_a_duplicate_row_fails_and_fences_are_examples(self) -> None:
+        path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | One | why | — |\n"
+                        "| d-abcdef-111111 | accepted 2026-09-01 · h1 | Again | why | — |\n",
+                        "\n```markdown\n| d-abcdef-999999 | <state> | example | why | — |\n```\n")
+
+        errors, _, _ = self.check(path)
+
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("twice", errors[0])
+
+    def test_the_command_exits_one_on_a_failure_and_prints_the_counts(self) -> None:
+        good = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | One | why | — |\n")
+        code, out = run("decisions", str(good))
+        self.assertEqual(code, 0, out)
+        self.assertIn("1 rows", out)
+
+        good.write_text(good.read_text().replace("accepted 2026-09-01 · h1", "approved"))
+        code, out = run("decisions", str(good))
+        self.assertEqual(code, 1, out)
+        self.assertIn("  x ", out)
+
+    def test_the_migration_dates_each_row_from_the_commit_that_wrote_it(self) -> None:
+        repo = init_repo(self.root / "old")
+        path = repo / "docs/decisions.md"
+        path.parent.mkdir(parents=True)
+        path.write_text("# Decisions\n\n| Id | Decision | Why | Enforced in |\n|---|---|---|---|\n"
+                        "| d-abcdef-111111 | One store | why | — |\n")
+        git(repo, "add", "-A")
+        subprocess.run(["git", "-C", str(repo), "commit", "-q", "--no-verify", "-m", "one"], check=True,
+                       env={**__import__("os").environ, "GIT_COMMITTER_DATE": "2026-06-14T10:00:00", "GIT_AUTHOR_DATE": "2026-06-14T10:00:00"})
+        path.write_text(path.read_text() + "| d-abcdef-222222 | Two | why | — |\n"
+                        "\n## Looks deliberate, is not\n\n| Id | What | Why it is not deliberate | Fix when |\n|---|---|---|---|\n"
+                        "| d-abcdef-333333 | Two parsers | accident | soon |\n")
+
+        text, migrated = B.migrate_decisions(path, today=self.TODAY)
+
+        self.assertEqual(migrated, [("d-abcdef-111111", "2026-06-14"), ("d-abcdef-222222", "2026-10-20")])
+        self.assertIn("| Id | Status | Decision | Why | Enforced in |", text)
+        self.assertIn("| d-abcdef-111111 | accepted recorded 2026-06-14 | One store | why | — |", text)
+        self.assertIn("| d-abcdef-333333 | Two parsers | accident | soon |", text)
+        path.write_text(text)
+        self.assertEqual(self.check(path)[0], [])
+        self.assertEqual(B.migrate_decisions(path, today=self.TODAY)[1], [])  # a second run changes nothing
+
+    def test_a_cell_with_a_multi_backtick_code_span_keeps_its_columns(self) -> None:
+        self.assertEqual(B.table_cells("| d-abcdef-111111 | fences are ```` ``` ```` or `~~~` | why | — |"),
+                         ["d-abcdef-111111", "fences are ```` ``` ```` or `~~~`", "why", "—"])
+        self.assertEqual(B.table_cells("| a | `x | y` | b \\| c |"), ["a", "`x | y`", "b | c"])
+        self.assertEqual(B.table_cells("| a | an unclosed ` tick | b |"), ["a", "an unclosed ` tick", "b"])
+
+    def test_ids_of_the_first_scheme_are_rows_too(self) -> None:
+        path = self.log("| D-001 | superseded by D-002 2026-09-01 · h1 | One | why | — |\n"
+                        "| D-002 | accepted 2026-09-02 · h1 | Two | supersedes D-001 | — |\n"
+                        "| d-abcdef-017 | accepted 2026-09-03 · h1 | Three | why | — |\n")
+
+        errors, _, counts = self.check(path)
+
+        self.assertEqual((errors, counts["rows"]), ([], 3))
+
+    def test_the_migration_command_writes_only_when_told(self) -> None:
+        repo = init_repo(self.root / "cmd")
+        path = repo / "decisions.md"
+        path.write_text("| Id | Decision | Why | Enforced in |\n|---|---|---|---|\n| d-abcdef-111111 | One | why | — |\n")
+        before = path.read_text()
+
+        code, out = run("decisions", str(path), "--migrate")
+        self.assertEqual((code, path.read_text()), (0, before), out)
+        self.assertIn("1 rows would gain a Status", out)
+
+        code, out = run("decisions", str(path), "--migrate", "--write")
+        self.assertEqual(code, 0, out)
+        self.assertIn("accepted recorded", path.read_text())
+
+
+class PrivateRecords(Base):
+    """A carrier's private folder: its sentinel fails wherever it travels, its files are not read in a push of
+    the carrier itself, and a public carrier that tracks the folder fails verify."""
+
+    SENTINEL = "confidential: " + "never leaves this repository"
+
+    def test_the_sentinel_line_fails_anywhere_in_the_bundle_and_a_mention_does_not(self) -> None:
+        agents = make_bundle(self.root / "one")
+        a_proposal(agents, "The context was pasted whole:\n\n" + self.SENTINEL + "\n\nand more.")
+        self.assertEqual(Privacy.rules(B.privacy_check(agents)), ["private-record"])
+
+        agents = make_bundle(self.root / "two")
+        plant(agents / "method/prompt-context.md", "Every private file starts with the line `" + self.SENTINEL + "`, as a sentinel.")
+        plant(agents / "method/prompt-context.md", "<!-- " + self.SENTINEL.upper() + " -->")
+        self.assertEqual(Privacy.rules(B.privacy_check(agents)), ["private-record"])
+
+    def a_carrier(self, name: str, **fields: str) -> Path:
+        repo = init_repo(self.root / name)
+        agents = make_bundle(repo)
+        carrier = B.read_carrier(agents)
+        B.write_carrier(agents, {**carrier, **fields})
+        return repo
+
+    def test_a_push_does_not_read_the_private_folder_but_reads_a_pasted_copy(self) -> None:
+        repo = self.a_carrier("push", private_folder="notes/secret")
+        git_commit(repo, "chore: start")
+        (repo / "notes/secret").mkdir(parents=True)
+        (repo / "notes/secret/d-abcdef-111111.md").write_text(self.SENTINEL + "\n\nA customer asked for it.\n")
+        git_commit(repo, "docs: private context")
+        self.assertEqual(B.privacy_check(commits=(repo, "HEAD~1..HEAD")).failures, [])
+
+        (repo / "docs").mkdir()
+        (repo / "docs/context.md").write_text(self.SENTINEL + "\n\nCopied out.\n")
+        git_commit(repo, "docs: copied out")
+        failures = B.privacy_check(commits=(repo, "HEAD~1..HEAD")).failures
+        self.assertEqual([f.rule for f in failures], ["private-record"])
+
+    def test_a_public_carrier_that_tracks_its_private_folder_fails_verify(self) -> None:
+        repo = self.a_carrier("public", visibility="public")
+        agents = repo / ".agents"
+        B.write_checksums(agents)
+        self.assertEqual([p for p in B.verify_problems(agents) if "private" in p or "visibility" in p], [])
+
+        (repo / "docs/private").mkdir(parents=True)
+        (repo / "docs/private/people.md").write_text(self.SENTINEL + "\n\nh1 = someone\n")
+        (repo / ".gitignore").write_text("docs/private/\n")
+        git_commit(repo, "chore: ignored")
+        self.assertEqual([p for p in B.verify_problems(agents) if "docs/private" in p], [])
+
+        git(repo, "add", "-f", "docs/private/people.md")
+        git_commit(repo, "chore: tracked by mistake")
+        problems = [p for p in B.verify_problems(agents) if "docs/private" in p]
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("public", problems[0])
+
+    def test_the_carrier_fields_are_known_and_checked(self) -> None:
+        repo = self.a_carrier("fields", visibility="secret", private_folder="../outside")
+        problems = B.verify_problems(repo / ".agents")
+        self.assertFalse(any("unknown key" in p for p in problems), problems)
+        self.assertTrue(any("visibility" in p for p in problems), problems)
+        self.assertTrue(any("private_folder" in p for p in problems), problems)

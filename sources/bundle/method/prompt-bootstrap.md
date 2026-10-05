@@ -638,7 +638,7 @@ Write this table once for your repo, in Phase 4, and follow it every session:
 
 | What you changed | What must move, in the same change |
 |---|---|
-| A rule, or the answer to a settled question | the decisions log: a new row with a `d-` id, **enforcer column filled** |
+| A rule, or the answer to a settled question | the decisions log: a new row with a `d-` id, its Status, **enforcer column filled** |
 | A number some document claims | the document that owns that number, with the new measurement |
 | A file, a layer, a public name | the architecture document, and every map that names it |
 | Something the roadmap planned | that entry's **state**, and what is still missing |
@@ -735,7 +735,7 @@ that dies with the context window.
 
 | What you learned | Where it goes |
 |---|---|
-| A question is now settled | `decisions.md`, with a `d-` id and its enforcer |
+| A question is now settled | `decisions.md`, with a `d-` id, a Status and its enforcer |
 | A number, and how you got it | the document that owns that number |
 | An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
 | A rule a script could check | the audit script, and note the rung it moved to |
@@ -855,8 +855,12 @@ first checks that its target resolves inside that directory.
 - [ ] The troubleshooting layer built from where the failure knowledge really
       lives, not from an assumed git history.
 - [ ] `docs/decisions.md`: every settled question, with an id minted by
-      `bundle.py id d`, and the enforcer column filled — including the rows
-      that say `—`.
+      `bundle.py id d`, a Status (what was read from the code is `· found`, its
+      reason `unconfirmed:`), and the enforcer column filled — including the rows
+      that say `—`; `bundle.py decisions docs/decisions.md` runs in the gate.
+- [ ] Confidential context, if the repository keeps any, in `docs/private/`
+      (gitignored where the repository is public), each file opening with the
+      sentinel line of principle 20, and `visibility` set in `carrier.toml`.
 - [ ] The root file carries the one-line privacy reminder, and the line that
       this repository's procedures win over the method's.
 - [ ] `.agents/carrier.toml` exists, minted by `bundle.py carrier-id --mint`,

@@ -8,6 +8,34 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+The decisions log as a decision record a tool reads, and confidential records that never leave a carrier. A
+carrier's update migrates its log (`prompt-update.md`) and adds `bundle.py decisions` to its gate. The parts
+marked *under review* are re-judged at the next harvest.
+
+### Added
+
+- **A Status column in the decisions log** (artifact 6): `<state> <date> · <decider>`, with `proposed`,
+  `accepted`, `declined`, `deprecated` and `superseded by d-…` in fixed English words. Only a person accepts or
+  declines; an agent changing a person's decision writes a `proposed` row. The decider is a stable alias, an
+  agent's session or `found`, and names stay in the private folder (*under review*).
+- **`unconfirmed:` and `accepting:` in Why**: a reason no person gave is marked, and a decision's own cost is
+  written (*under review*). Criteria for when a decision deserves a row (*under review*), and a section for what
+  looks deliberate and is not.
+- **`bundle.py decisions FILE`**: fails on a Status that does not parse, a supersession not written both ways and
+  an agent's acceptance over a person's decision; warns on proposed rows, unconfirmed reasons and an enforcer path
+  that names no file. `--migrate` gives a four-column log its Status column, each row dated from the commit that
+  first wrote it.
+- **A private folder per carrier** (`docs/private/`, or `private_folder` in `carrier.toml`): no tool or harvest
+  reads it; each file opens with a sentinel line the privacy check fails on anywhere else; a push of the carrier
+  does not read it; `verify` fails when a carrier declared `visibility = "public"` tracks it in git.
+- **The home reads every proposal for privacy again** in `gather` and `intake`, and does not take in one that
+  fails or carries a warning nobody answered with `privacy-allow`; the harvest and the close ask the human.
+
+### Changed
+
+- **Adopting a host that keeps ADR files**: the files stay; an index row per record maps its status to the
+  method's, and the mapping is recorded in `adapted`.
+
 ## [0.0.28] - 2026-10-05
 
 Fixes from a fresh-context review of 0.0.27 before it was published, and the first results of the research the

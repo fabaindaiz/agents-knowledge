@@ -185,7 +185,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `unconfirmed:` and `accepting:` in Why, known debt, the when-to-write criteria, `bundle.py decisions` and a
   git-dated migration, a private folder per carrier with a sentinel, a public-repository guard and the home's
   re-check, and privacy warnings in proposals asked of the owner. Five of this repository's proposals carry it
-  to the intake. Parts are under review until the 0.0.30 harvest. *Collides with:* artifact 6, the adoption
+  to the intake. **Implemented on `main`, unreleased** (2026-10-05): the method's originals, `bundle.py decisions`
+  and `--migrate`, the `private-record` rule, the public guard, the home's re-check, and their tests; the release,
+  the intake and each carrier's migration wait for the owner. Parts are under review until the 0.0.30 harvest. *Collides with:* artifact 6, the adoption
   table, principle 20, the harvest, bootstrap and update prompts, the `close` skill, `bundle.py privacy`,
   `release.py gather` and `intake`, and every carrier's `docs/decisions.md`.
 - **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05**, each a decision for the owner at the next release, each

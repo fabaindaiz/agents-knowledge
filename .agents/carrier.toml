@@ -5,3 +5,4 @@ upstream = ""
 harvested_through = "2026-10-05"
 adapted = []
 declined = []
+visibility = "public"

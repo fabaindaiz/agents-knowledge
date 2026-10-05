@@ -74,6 +74,15 @@ reorganise as part of an update.
 lists, and every inbound link to it. **Report it and wait before removing
 anything.** Then `python3 .agents/tools/bundle.py verify` must pass.
 
+If the decisions log is still in four columns, give it its Status column:
+`bundle.py decisions docs/decisions.md --migrate`, then `--write` once the list
+reads right. Every row becomes `accepted recorded <date>`, the date its id was
+first committed, with no decider, which counts as a person's. Then read the rows
+whose prose says a decision was reversed, replaced or rejected, and write their
+states (`superseded by d-…` both ways, `declined`); a section of half-decided
+rows becomes `proposed` rows with `decides:`. Where you are unsure, leave
+`accepted`. Add `bundle.py decisions docs/decisions.md` to the gate, and run it.
+
 Add a decisions row (id from `bundle.py id d`) for anything now settled
 differently, and one changelog entry (id from `bundle.py id s`) covering the
 update, including what you skipped and why. Do not touch anything unrelated,

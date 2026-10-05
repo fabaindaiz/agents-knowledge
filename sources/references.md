@@ -57,6 +57,28 @@ verbatim. A source that could not be opened is either marked as unverified or le
   the ones that were declined, and that part comes from Parnas.
   **Backs:** principle 10; artifact 6; the knowledge lifecycle. *Verified 2026-09-23 against the post.*
 
+- **[The architecture decision record collection](https://architecture-decision-record.github.io/)**
+  (Henderson). The templates in common use (Nygard, MADR, Tyree and Akerman, Y-statements and others), with a
+  status per record, timestamps on whatever can go stale, immutability by amendment or supersession, and named
+  owners per record. It also reports that teams found a living record with dated insertions worked better than
+  strict immutability.
+  **Confirms:** the Status cell and supersession written in place (principle 6), an enforcer per decision.
+  **We differ on purpose:** one row in one log, not one file per decision, since no carrier keeps one and a
+  file opens a second home for the why (principle 5); content-hash ids, not sequence numbers, whose next free
+  value depends on a branch not yet merged; deciders as aliases, with names only in the private folder
+  (principle 20).
+  **Not applied yet:** the paths each decision governs (`i-5ed7e8-bf017b`).
+  **Backs:** artifact 6. *Verified 2026-10-05 against the repository.*
+
+- **[MADR](https://adr.github.io/madr/)** (Markdown Any Decision Records). A record lists the considered options
+  with their pros and cons, and splits positive from negative consequences.
+  **Confirms:** that a decision record can hold the options it rejected, so the line below no longer says an ADR
+  cannot; the `accepting:` clause takes its negative consequences.
+  **We differ on purpose:** the options live with the document that owns the long form, or the changelog entry
+  that took the decision, not in the log's row.
+  **Backs:** artifact 6. *Verified 2026-10-05 against the template as the collection above reproduces it; the
+  project's own site was not opened.*
+
 - **[Diátaxis](https://diataxis.fr/)** (Procida). Documentation comes in four kinds: tutorial,
   how-to, reference and explanation. A how-to guide *"serves the work of the already-competent
   user"*: it contains action and nothing else.
@@ -350,5 +372,5 @@ read in full.
 | another assistant's surface | the Copilot and Cursor pages above | support differs per surface, and the products move monthly — re-verify before relying on a row |
 | the privacy rule or `bundle.py privacy` | Sweeney; Narayanan & Shmatikov | a list of forbidden words is not the defence — a combination of harmless details identifies |
 | a rule about keeping documents current | Lethbridge; Aghajani | outdated high-level documents keep their value, so do not force updates everywhere |
-| the decisions log or the `declined` field | Parnas & Clements; Nygard | an ADR alone does not record rejected options |
+| the decisions log or the `declined` field | Parnas & Clements; Nygard; MADR | Nygard's template does not record rejected options; MADR does |
 | the note format | *Design Patterns*; Nygard | applicability is not the same thing as a boundary |

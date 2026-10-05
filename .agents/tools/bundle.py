@@ -24,6 +24,10 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py id d|i|s TEXT... [--repo R] a record id: decision, roadmap item, session
     python3 .agents/tools/bundle.py ids [--carrier REPO] FILE... record ids in files: malformed, defined twice,
                                                                 or defined under another carrier's id
+    python3 .agents/tools/bundle.py decisions FILE... [--migrate [--write]]
+                                                                a decisions log: its Status cells, supersession
+                                                                both ways, no agent over a person; --migrate adds
+                                                                the Status column to a four-column log
     python3 .agents/tools/bundle.py report [TREE] [--json] [--check]   size per folder and session; budgets
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
     python3 .agents/tools/bundle.py export DEST                 the shipped files and SHA256SUMS: a release as it travels
@@ -569,7 +573,20 @@ class PrivacyRule:
     placeholder_exempt: bool = False
 
 
+# Every file of a carrier's private folder starts with this line. Found as a line of its own anywhere that
+# travels, it is a private file pasted out whole, whatever the rest of it holds and whatever no terms list
+# names; written inside a sentence, as the method describes it, it is not.
+PRIVATE_SENTINEL = "confidential: never leaves this repository"
+PRIVATE_FOLDER = "docs/private"
+
+
+def _sentinels(text: str) -> list[str]:
+    bare = re.sub(r"^\s*(?:<!--|[#>*+`-])*\s*|\s*(?:-->|`)*\s*$", "", text)
+    return [PRIVATE_SENTINEL] if bare.casefold() == PRIVATE_SENTINEL else []
+
+
 PRIVACY_RULES: dict[str, PrivacyRule] = {
+    "private-record": PrivacyRule("FAIL", _sentinels),
     "email": PrivacyRule("FAIL", _emails, placeholder_exempt=True),
     "home-path": PrivacyRule("FAIL", _home_paths, placeholder_exempt=True),
     "forge-url": PrivacyRule("FAIL", _forge_paths, placeholder_exempt=True),
@@ -816,6 +833,7 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
         said = (error.stderr or "").strip().splitlines()
         raise RefusedError(f"--commits {rev_range}: not a range git reads here" + (f" ({said[-1]})" if said else "")) from None
     targets = []
+    private = private_folder(repo) + "/"
     for sha in shas:
         short = sha[:10]
         try:
@@ -824,8 +842,8 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
             message.write_text(git(repo, "log", "-1", "--format=%B", sha), encoding="utf-8", errors="surrogateescape")
             targets.append(Target(message, message.name, f"{short} message", None, repo))
             for rel, lines in _commit_files(repo, sha):
-                if not lines:
-                    continue
+                if not lines or rel.startswith(private):
+                    continue  # nothing added, or the carrier's private folder, whose files are private by design
                 if git(repo, "cat-file", "-t", f"{sha}:{rel}").strip() != "blob":
                     continue  # a submodule's pointer: the commit it names is that repository's to check
                 content = git(repo, "cat-file", "blob", f"{sha}:{rel}", binary=True)
@@ -1327,6 +1345,270 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
                                     f"not this carrier's {carrier}; fine only if this file keeps another carrier's records")
     return errors, warnings, counts
 
+
+# --- the decisions log ------------------------------------------------------------------------------
+# Artifact 6 is a table a tool reads: `| Id | Status | Decision | Why | Enforced in |`. The Status cell is
+# `<state> <date> · <decider>`, in fixed English keywords whatever language the log is written in, read by
+# column position so a log keeps its own headings. The decider is a person's stable alias (`h1`), an agent's
+# session (`agent s-...`) or `found` (read from the code); blank, on a migrated row, it counts as a person.
+# Only a person accepts: an agent that would change a person's decision writes a `proposed` row. The table
+# under *Looks deliberate, is not* is known debt, with columns of its own. Fenced blocks are examples.
+# Ids of the first schemes (`D-001`, `d-abcdef-017`) stay valid as written, so they are rows too.
+_DECISION_ID = r"(?:d-[0-9a-f]{6}-[0-9a-f]{3,6}|D-\d{3,4})"
+DECISION_STATUS = re.compile(
+    rf"^(?P<state>proposed|accepted|declined|deprecated|superseded by (?P<by>{_DECISION_ID}))"
+    r"\s+(?P<recorded>recorded\s+)?(?P<date>\d{4}-\d{2}-\d{2})"
+    rf"(?:\s*·\s*(?P<decider>h\d+|agent\s+s-[0-9a-f]{{6}}-[0-9a-f]{{3,6}}|found))?"
+    r"(?:\s*·\s*decides:\s*(?P<decides>h\d+))?$")
+SUPERSEDES = re.compile(rf"\bsupersedes\s+({_DECISION_ID})\b")
+DEBT_HEADING = "looks deliberate, is not"
+DECISION_COLUMNS = ("Id", "Status", "Decision", "Why", "Enforced in")
+TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
+_PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\.[A-Za-z]{1,5})$")
+
+
+def table_cells(line: str) -> list[str]:
+    """The cells of a markdown table row; a `|` escaped, or inside a code span, is part of its cell.
+
+    A code span opens with a run of backticks and closes with the next run of the same length (CommonMark),
+    so ```` ``` ```` is one span holding a fence; a run never closed is literal text.
+    """
+    cells, cell, i = [], [], 0
+    body = line.strip()
+    body = body[1:] if body.startswith("|") else body
+    while i < len(body):
+        ch = body[i]
+        if ch == "\\" and i + 1 < len(body) and body[i + 1] == "|":
+            cell.append("|")
+            i += 2
+            continue
+        if ch == "`":
+            run = len(body[i:]) - len(body[i:].lstrip("`"))
+            close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(body, i + run)
+            end = close.end() if close else i + run
+            cell.append(body[i:end])
+            i = end
+            continue
+        if ch == "|":
+            cells.append("".join(cell).strip())
+            cell = []
+        else:
+            cell.append(ch)
+        i += 1
+    if "".join(cell).strip():
+        cells.append("".join(cell).strip())
+    return cells
+
+
+@dataclass
+class DecisionRow:
+    """One row of a decisions log, its Status read (None where it does not parse)."""
+
+    id: str
+    where: str
+    status: re.Match | None
+    why: str
+    enforced: str
+
+    @property
+    def state(self) -> str:
+        return self.status.group("state").split()[0] if self.status else ""
+
+    @property
+    def decider(self) -> str:
+        return (self.status.group("decider") or "") if self.status else ""
+
+    def by_person(self) -> bool:
+        """Decided by a person: an alias, or no decider written (a migrated row), so an agent may not override it."""
+        return not self.decider or bool(re.fullmatch(r"h\d+", self.decider))
+
+
+def _decision_tables(path: Path) -> list[tuple[bool, list[tuple[int, str]]]]:
+    """Every table of a markdown file outside fences: (under the known-debt heading, its lines with numbers)."""
+    lines = path.read_text(encoding="utf-8", errors="replace").split("\n")
+    tables: list[tuple[bool, list[tuple[int, str]]]] = []
+    current: list[tuple[int, str]] = []
+    debt = False
+    for number, (line, prose) in enumerate(zip(lines, _prose(lines)), 1):
+        heading = HEADING.match(line) if prose else None
+        if heading:
+            debt = heading.group(2).strip("*_ ").lower().startswith(DEBT_HEADING)
+        if prose and line.lstrip().startswith("|"):
+            if not current:
+                tables.append((debt, current))
+            current.append((number, line))
+        else:
+            current = []
+    return tables
+
+
+def _git_files(root: Path) -> set[str] | None:
+    try:
+        listed = git(root, "ls-files", "--cached", "--others", "--exclude-standard", "-z")
+    except (subprocess.CalledProcessError, OSError):
+        return None
+    return {p for p in listed.split("\0") if p}
+
+
+def _repo_root(path: Path) -> Path:
+    try:
+        return Path(git(path.parent, "rev-parse", "--show-toplevel").strip())
+    except (subprocess.CalledProcessError, OSError):
+        return path.parent
+
+
+def decision_check(files: list[Path], today: datetime.date | None = None) -> tuple[list[str], list[str], dict[str, int]]:
+    """What is wrong with some decisions logs, what waits on a person, and how many rows there are.
+
+    Fails on a Status that does not read as `<state> <date> · <decider>`, a row that is not five columns,
+    a row written twice, a supersession not written both ways or naming a row the log does not hold, and an
+    agent's acceptance that supersedes a row a person decided (or one with no decider). Warns on every
+    proposed row, every reason marked `unconfirmed:`, and a backticked path in Enforced in that names no file:
+    a name cited enforces nothing.
+
+    Returns:
+        (errors, warnings, counts: rows, proposed, unconfirmed, debt).
+    """
+    today = today or datetime.date.today()
+    errors: list[str] = []
+    warnings: list[str] = []
+    counts = {"rows": 0, "proposed": 0, "unconfirmed": 0, "debt": 0}
+    for path in files:
+        rows: dict[str, DecisionRow] = {}
+        root = _repo_root(path)
+        known = None
+        for debt, table in _decision_tables(path):
+            for number, line in table:
+                cells = table_cells(line)
+                if not cells or not re.fullmatch(_DECISION_ID, cells[0]):
+                    continue
+                where = f"{path}:{number}"
+                if debt:
+                    counts["debt"] += 1
+                    continue
+                if len(cells) != len(DECISION_COLUMNS):
+                    errors.append(f"{where}: {cells[0]} has {len(cells)} columns; a decision row has five, "
+                                  f"{' | '.join(DECISION_COLUMNS)} (a four-column log: `bundle.py decisions FILE --migrate`)")
+                    continue
+                if cells[0] in rows:
+                    errors.append(f"{where}: {cells[0]} written twice (first at {rows[cells[0]].where})")
+                    continue
+                status = DECISION_STATUS.match(re.sub(r"[`*]", "", cells[1]).strip())
+                row = DecisionRow(cells[0], where, status, cells[3], cells[4])
+                rows[row.id] = row
+                counts["rows"] += 1
+                if status is None:
+                    errors.append(f"{where}: {row.id}: status {cells[1]!r} does not read as `<state> <date> · <decider>` "
+                                  "(proposed, accepted, declined, deprecated or superseded by d-...; a date; h<n>, "
+                                  "agent s-... or found)")
+                    continue
+                try:
+                    decided = datetime.date.fromisoformat(status.group("date"))
+                except ValueError:
+                    errors.append(f"{where}: {row.id}: {status.group('date')} is not a date")
+                    continue
+                if status.group("decides") and row.state != "proposed":
+                    errors.append(f"{where}: {row.id}: only a proposed row waits on someone (`decides:`)")
+                if row.state == "proposed":
+                    counts["proposed"] += 1
+                    warnings.append(f"{where}: {row.id}: proposed since {decided} ({(today - decided).days} days); "
+                                    f"only a person accepts it; waits on {status.group('decides') or 'a person'}")
+                if re.sub(r"^[\s*_`]+", "", row.why).lower().startswith("unconfirmed:"):
+                    counts["unconfirmed"] += 1
+                    warnings.append(f"{where}: {row.id}: why unconfirmed; a person confirms it or gives the reason")
+                for token in re.findall(r"`([^`\s]+)`", row.enforced):
+                    if any(c in token for c in "*?[") or not _PATHLIKE.match(token):
+                        continue
+                    if (root / token).exists():
+                        continue
+                    known = _git_files(root) if known is None else known
+                    if "/" not in token and known is not None and any(Path(p).name == token for p in known):
+                        continue
+                    warnings.append(f"{where}: {row.id}: Enforced in names `{token}`, which is no file here")
+        for row in rows.values():
+            if not row.status:
+                continue
+            by = row.status.group("by")
+            if by:
+                if by not in rows:
+                    errors.append(f"{row.where}: {row.id}: superseded by {by}, which this log does not hold")
+                elif f"supersedes {row.id}" not in rows[by].why:
+                    errors.append(f"{rows[by].where}: {by}: {row.id} says it is superseded by {by}, "
+                                  f"but {by}'s Why does not say `supersedes {row.id}`")
+            for old_id in SUPERSEDES.findall(row.why):
+                old = rows.get(old_id)
+                if old is None:
+                    errors.append(f"{row.where}: {row.id}: supersedes {old_id}, which this log does not hold")
+                    continue
+                if not old.status:
+                    continue
+                taken = row.state in ("accepted", "deprecated", "superseded")
+                if taken and old.status.group("by") != row.id:
+                    errors.append(f"{old.where}: {old_id}: {row.id} supersedes it, but its status does not say "
+                                  f"`superseded by {row.id}`")
+                if not taken and old.status.group("by") == row.id:
+                    errors.append(f"{old.where}: {old_id}: superseded by {row.id}, which is only {row.state}")
+                if row.state == "accepted" and row.decider.startswith("agent") and old.by_person():
+                    errors.append(f"{row.where}: {row.id}: an agent accepted a change to {old_id}, which a person "
+                                  f"decided; write it as proposed, for a person to accept")
+    return errors, warnings, counts
+
+
+def _first_dates(path: Path) -> dict[str, str]:
+    """The date of the first commit that wrote each decision id into this log, following renames."""
+    try:
+        log = git(path.parent, "log", "--reverse", "--follow", "--format=%x00%cs", "-p", "-U0", "--", path.name)
+    except (subprocess.CalledProcessError, OSError):
+        return {}
+    dates: dict[str, str] = {}
+    date = ""
+    for line in log.split("\n"):
+        if line.startswith("\0"):
+            date = line[1:].strip()
+        elif line.startswith("+") and not line.startswith("+++"):
+            for found in re.findall(_DECISION_ID, line):
+                dates.setdefault(found, date)
+    return dates
+
+
+def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[str, list[tuple[str, str]]]:
+    """A four-column decisions log with the Status column added: each row `accepted recorded <date>`.
+
+    The date is that of the first commit that wrote the row's id into the log (`recorded`, because a bulk
+    conversion would otherwise date many rows to one day), or today for a row not yet committed; the decider
+    is left blank, which counts as a person. A table already in five columns, and the known-debt table,
+    are left as they are, so a second run changes nothing. Supersessions written in prose are not read:
+    mapping them is the update session's reading.
+
+    Returns:
+        (the new text, [(id, date) for each row given a Status]).
+    """
+    today = today or datetime.date.today()
+    lines = path.read_text(encoding="utf-8").split("\n")
+    dates = None
+    migrated: list[tuple[str, str]] = []
+    for debt, table in _decision_tables(path):
+        rows = [(n, table_cells(line)) for n, line in table]
+        ids = [c[0] for _, c in rows if c and re.fullmatch(_DECISION_ID, c[0])]
+        if debt or not ids or len(rows) < 2 or not TABLE_SEPARATOR.match(table[1][1]):
+            continue
+        if any(len(c) != 4 for _, c in rows):
+            continue
+        dates = _first_dates(path) if dates is None else dates
+        for index, (number, cells) in enumerate(rows):
+            if index == 0:
+                cells = [cells[0], "Status", *cells[1:]]
+            elif index == 1:
+                cells = [cells[0], "---", *cells[1:]]
+            elif re.fullmatch(_DECISION_ID, cells[0]):
+                date = dates.get(cells[0]) or today.isoformat()
+                cells = [cells[0], f"accepted recorded {date}", *cells[1:]]
+                migrated.append((cells[0], date))
+            else:
+                cells = [cells[0], "", *cells[1:]]
+            lines[number - 1] = "| " + " | ".join(c.replace("|", "\\|") if "`" not in c else c for c in cells) + " |"
+    return "\n".join(lines), migrated
+
 # --- formats: frontmatter, carrier file, checksums, versions -----------------------------------------
 # Every format here is an industry one, read by a documented subset so the tool stays standard library
 # only: YAML frontmatter, TOML (`tomllib` reads it; a small writer writes the one file the tool owns),
@@ -1604,7 +1886,9 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 # never listed in `SHA256SUMS`, a release never writes it, and it holds everything that used to be the
 # "repository's own fields" of several headers. TOML, read by `tomllib`.
 CARRIER_FILE = "carrier.toml"
-CARRIER_KEYS = ("carrier", "adopted", "upstream", "harvested_through", "adapted", "declined")
+CARRIER_KEYS = ("carrier", "adopted", "upstream", "harvested_through", "adapted", "declined", "visibility",
+               "private_folder")
+VISIBILITIES = ("public", "private")
 
 
 def _toml_str(value: str) -> str:
@@ -2429,6 +2713,37 @@ def _scope_report(scope: Scope, verb: str) -> list[str]:
 # --- verify ----------------------------------------------------------------------------------------
 
 
+def private_folder(repo: Path, carrier: dict | None = None) -> str:
+    """The repository's private folder, relative to its root: `private_folder` in its carrier file, else the default."""
+    if carrier is None:
+        try:
+            carrier = read_carrier(repo / ".agents") or {}
+        except RefusedError:
+            carrier = {}
+    return str(carrier.get("private_folder") or PRIVATE_FOLDER).strip("/")
+
+
+def private_folder_problems(repo: Path, carrier: dict) -> list[str]:
+    """The private-folder fields read, and a public carrier's private folder kept out of git."""
+    problems = []
+    visibility = carrier.get("visibility", "")
+    if visibility and visibility not in VISIBILITIES:
+        problems.append(f"{CARRIER_FILE}: `visibility` is {visibility!r}; it is `public` or `private`")
+    folder = str(carrier.get("private_folder") or PRIVATE_FOLDER)
+    if folder.startswith("/") or ".." in Path(folder).parts:
+        problems.append(f"{CARRIER_FILE}: `private_folder` {folder!r} must be a path inside the repository")
+        return problems
+    if visibility == "public":
+        try:
+            tracked = [p for p in git(repo, "ls-files", "-z", "--", private_folder(repo, carrier)).split("\0") if p]
+        except (subprocess.CalledProcessError, OSError):
+            tracked = []
+        if tracked:
+            problems.append(f"{private_folder(repo, carrier)}/: this carrier is public and git tracks {len(tracked)} files "
+                            "of its private folder; untrack them and keep the folder in .gitignore")
+    return problems
+
+
 def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: bool = False) -> list[str]:
     """Everything a carrier's gate fails on: the copy is the release, it links and routes, it leaks nothing.
 
@@ -2469,6 +2784,7 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
         problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
                      if k in carrier and not isinstance(carrier[k], list)]
+        problems += private_folder_problems(tree.parent, carrier)
     return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
 
 
@@ -3239,6 +3555,12 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("ids", help="record ids in files: malformed or defined twice (exit 1), defined under another carrier's id (warned)")
     p.add_argument("files", nargs="+", metavar="FILE")
     p.add_argument("--carrier", metavar="REPO", help="the carrier whose prefix a definition should carry (default: this tool's repository, if it stores an id)")
+    p = sub.add_parser("decisions", help="a decisions log: status, supersession both ways, a person over an agent (exit 1); "
+                       "proposed rows, unconfirmed reasons and dead enforcers (warned)")
+    p.add_argument("files", nargs="+", metavar="FILE")
+    p.add_argument("--migrate", action="store_true", help="add the Status column to a four-column log, each row "
+                   "`accepted recorded <date>` from the commit that wrote it; prints what it would change")
+    p.add_argument("--write", action="store_true", help="with --migrate: write the files")
     p = sub.add_parser("privacy", help="nothing that identifies a private repository, its people or its infrastructure (exit 1 on a FAIL)")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE), help="the bundle whose files are read")
     p.add_argument("--paths", nargs="+", metavar="FILE", help="read these files instead of the tree, anywhere (a repository's README, a staged file)")
@@ -3391,6 +3713,30 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print(line)
         print(f"{counts['ids']} record ids in {len(args.files)} files: {counts['definitions']} defined, {counts['citations']} cited, "
               f"{counts['legacy']} of the first scheme; {len(errors)} errors, {len(warnings)} warnings")
+        return 1 if errors else 0
+    if args.command == "decisions":
+        files = [Path(f) for f in args.files]
+        if args.write and not args.migrate:
+            raise RefusedError("decisions: --write writes a migration; give --migrate with it")
+        if args.migrate:
+            total = 0
+            for path in files:
+                text, migrated = migrate_decisions(path)
+                total += len(migrated)
+                for row_id, date in migrated:
+                    print(f"  . {path}: {row_id} accepted recorded {date}")
+                if args.write and migrated:
+                    path.write_text(text, encoding="utf-8")
+            print(f"{total} rows {'gained' if args.write else 'would gain'} a Status"
+                  + ("" if args.write or not total else "; run again with --write") + ". Map supersessions and "
+                  "declined rows written in prose by reading them; when unsure, leave `accepted`")
+            return 0
+        errors, warnings, counts = decision_check(files)
+        for line in [f"  x {e}" for e in errors] + [f"  ! {w}" for w in warnings]:
+            print(line)
+        print(f"decisions in {len(files)} files: {counts['rows']} rows, {counts['proposed']} proposed, "
+              f"{counts['unconfirmed']} unconfirmed, {counts['debt']} known-debt rows; "
+              f"{len(errors)} errors, {len(warnings)} warnings")
         return 1 if errors else 0
     if args.command == "privacy":
         result = privacy_check(Path(args.tree), [Path(f) for f in args.paths] if args.paths else None,

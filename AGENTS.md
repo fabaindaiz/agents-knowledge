@@ -143,6 +143,7 @@ python3 .agents/tools/bundle.py privacy                # nothing private, direct
 python3 .agents/tools/bundle.py privacy --commits @{u}..HEAD   # the same, over what a push sends
 python3 .agents/tools/bundle.py trailers               # no commit message credits an assistant
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates
+python3 .agents/tools/bundle.py decisions meta/decisions.md   # the home's decisions log: status, supersession, a person over an agent
 pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads the same through PyYAML
 python3 evals/harness.py check                         # the experiment's graders are seen to fail and pass
 python3 evals/power_tost.py                            # Study 2's severity figures

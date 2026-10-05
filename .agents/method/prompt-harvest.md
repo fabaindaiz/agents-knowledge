@@ -51,7 +51,11 @@ never carry one's conventions into another.
 Privacy (principle 20): every candidate and every line of evidence is
 generalised before it is written — no figure, quote, identifier, domain noun or
 personal detail that could identify a private repository, its people or its
-users — and `bundle.py privacy` passes before the commit.
+users — and `bundle.py privacy` passes before the commit. The private folder
+(`docs/private/`) is never read. Every warning the check prints on a proposal
+is a question for me, "is this private?", defaulting to generalise it; only my
+yes writes `privacy-allow: <reason>`, and the home refuses a warning left
+unanswered.
 
 Finish with `python3 .agents/tools/bundle.py verify` and
 `python3 .agents/tools/bundle.py check-local .`, which must report nothing, and a
@@ -145,7 +149,7 @@ uncommitted diff is their work.
 
 1. **Read what this repository recorded since `harvested_through`**, that day included, not what it
    summarises: the root
-   instruction file, the area rules, the decisions log and its evidence, the changelog in full (it
+   instruction file, the area rules, the decisions log and its evidence (never the private folder), the changelog in full (it
    holds the discarded alternatives and the numbers), the roadmap, the audit script's comments, and
    the commit messages of the period. With several repositories open, one read-only agent per
    repository is cheap and keeps the reading from crowding out the judgement. What
@@ -213,6 +217,8 @@ uncommitted diff is their work.
 - **Never write what identifies a private repository** into a proposal — not its figures, quotes,
   identifiers, domain nouns or anyone's personal context — and never trust memory over
   `bundle.py privacy`.
+- **Never read the private folder** (`docs/private/`, or the one `carrier.toml` names), and never
+  answer a privacy warning for the human: when in doubt, it stays out.
 - **Never invent a second occurrence.** One repository seeing something twice is one repository; the
   count that matters is across carriers, and the release is where it is taken.
 - **Never harvest a repository this session does not have open**, however reachable its path is.

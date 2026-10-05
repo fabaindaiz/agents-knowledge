@@ -61,8 +61,9 @@ scope is too big: propose splitting it. Then:
 
 1. one screen: **decided by you** (the human), **decided for you** (by the agent), **open**;
 2. wait for the human to confirm it;
-3. write each decision to the decisions log, the deferred ones to the roadmap, and the amendments to
-   the spec, **before** any plan is written.
+3. write each decision to the decisions log — `accepted <date> · <alias>` for the human's, `· agent s-…`
+   for yours, the reason the human gave or `unconfirmed:` — the deferred ones to the roadmap, and the
+   amendments to the spec, **before** any plan is written.
 
 ## Hands off to
 

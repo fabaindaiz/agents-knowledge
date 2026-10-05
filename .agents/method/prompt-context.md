@@ -891,6 +891,10 @@ carrier is private, is described only by a neutral kind, and **never has its
 carrier id written beside a description** — the id is what would join every
 other detail to it.
 
+**A carrier's confidential records stay in its private folder** (`docs/private/`,
+gitignored where the repository is public): no tool and no harvest reads it, and
+each file opens with the sentinel line the privacy check fails on anywhere else.
+
 **Privacy wins over record-keeping.** Where this rule meets "never lose
 information", this rule wins. Sensitive detail is generalised while the lesson
 is still useful, and deleted when the specific detail was its only value, or
@@ -1304,13 +1308,15 @@ session down it.
 
 ### 6. `docs/decisions.md` — the index of everything settled
 
-ADR-lite, as tables grouped by subject. **Four columns, and the fourth is the
-one that matters.**
+A decision log in the ADR tradition, as tables grouped by subject: one row per
+decision rather than one file. **Five columns; the last is the one that
+matters, and the second is the one a tool reads.**
 
 ```markdown
-| Id | Decision | Why | Enforced in |
-|---|---|---|---|
-| d-abcdef-123456 | <the decision, imperative> | <the cost of the alternative, with the number> | <script, class, constant, config — or "—" for a decision with no enforcer> |
+| Id | Status | Decision | Why | Enforced in |
+|---|---|---|---|---|
+| d-abcdef-123456 | accepted 2026-01-05 · h1 | <the decision, imperative> | <the cost of the alternative, with the number>; accepting: <what this decision costs> | <script, class, constant, config — or "—" for a decision with no enforcer> |
+| d-abcdef-654321 | proposed 2026-01-09 · agent s-abcdef-111111 · decides: h1 | <the change> | supersedes d-abcdef-123456; <why> | — |
 ```
 
 Rules for it:
@@ -1319,13 +1325,44 @@ Rules for it:
   creation** — a later edit to the row never recomputes it — and never reused;
   `CLAUDE.md`, the changelog and the roadmap cite it. Ids written before this
   scheme (`D-001`, `d-abcdef-017`) stay valid as written and are never rewritten.
+- **Status** is `<state> <date> · <decider>`, in these English words whatever
+  language the log is written in, because a tool reads them: `proposed`,
+  `accepted`, `declined` (a non-decision, principle 10), `deprecated` (no longer
+  applies, nothing replaced it), `superseded by d-…` (written in the old row, in
+  place, and the new row's Why says `supersedes d-…`: principle 6). The date is
+  the decision's; a migrated row reads `accepted recorded <date>`, the date it
+  was first written down.
+- **The decider** is a person's stable alias (`h1`), an agent's session
+  (`agent s-…`) or `found` (read from the code: nobody who can be asked decided
+  it). A proposed row adds who must decide, `decides: h2`. **Only a person
+  accepts or declines.** An agent writes `accepted · agent s-…` only for what
+  principle 15 leaves to it, and reports it; to change a decision a person took,
+  or one with no decider, it writes a `proposed` row that supersedes it. An
+  alias is never reassigned, and which name it stands for is kept only in the
+  private folder (principle 20).
+- **Why** begins with `unconfirmed:` when no person gave the reason — a
+  bootstrap reading the code, an agent's inference; only a person removes the
+  mark. It ends with `accepting: <cost, with its number>` when the decision has a
+  cost of its own, which is the consequence a log otherwise forgets.
 - A decision with `—` in the last column is a decision that **can be broken
   silently**. That is allowed, but it should be visible.
-- Some rows are *decisions, not rules* (deliberate duplication, a rejected
-  refactor) and some are *discarded, with the number* (principle 6, 10). Mark
-  them as such — they are among the most useful rows in the file.
-- The prose and the measurements live in the document that owns them; this file
-  is the index that finds them.
+- `bundle.py decisions docs/decisions.md` belongs in the gate: it fails on a
+  Status that does not parse, a supersession not written both ways and an agent's
+  acceptance over a person's decision, and warns on every proposed row, every
+  unconfirmed reason and an enforcer path that names no file. A four-column log
+  gains the column with `--migrate`.
+- **Write a row** when a change adds or removes a runtime dependency, moves a
+  module boundary, changes persisted data or a public interface, is hard to
+  revert, is a choice a reviewer would question (not doing the common thing
+  included), or fixes a cross-cutting convention. Not for a fix, a rename, a
+  lint, or what an accepted row already covers.
+- The prose and the measurements live in the document that owns them; where no
+  document does, the changelog entry that took the decision (`s-…`) owns it and
+  the row cites it. This file is the index that finds them.
+- **What looks deliberate and is not** gets a section of its own at the end,
+  *Looks deliberate, is not* (`| Id | What | Why it is not deliberate | Fix when |`):
+  it tells the next agent what it may fix without asking, and a row is deleted
+  when it is fixed.
 - A decision is made **once**. If it is reopened with no new fact, the answer is
   this document.
 
@@ -1733,7 +1770,7 @@ produce this table and **show it**. It is the entire negotiation:
 | Guarantee the method needs | Typical file | What this repo already has | Verdict |
 |---|---|---|---|
 | Always-loaded invariants + a map | `CLAUDE.md` | `CONTRIBUTING.md` §Architecture | **extend it**, add the map, leave the rest |
-| Settled decisions, with enforcers | `docs/decisions.md` | `docs/adr/*.md` | **keep ADRs**, add the enforcer line to the template |
+| Settled decisions, with enforcers | `docs/decisions.md` | `docs/adr/*.md` | **keep ADRs**: an index row per record in the five columns, its status mapped (`rejected` → `declined`, `pending` → `proposed`), supersession both ways; the mapping in `adapted` |
 | External research, annotated | `docs/references.md` | a Notion page | **out of reach** — add a pointer, record in `adapted` |
 | Planned work with collisions | `docs/roadmap.md` | `PLANNING.md` | **add the missing sections** to it; do not rename |
 | Per-change log | `.claude/logs/agent-changelog.md` | Conventional Commits, squashed | **new file** — commit subjects cannot carry the *why* at this length |

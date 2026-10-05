@@ -1,7 +1,7 @@
 # Decision records against the ADR literature, and records that never leave a carrier
 
 **Date:** 2026-10-05. **Status:** design settled by the owner in a decision review, one decision per turn;
-nothing in `sources/` changed. It feeds release 0.0.29 through five of this repository's proposals and the
+implemented in `sources/` and the tools for the next release, not yet released. It feeds release 0.0.29 through five of this repository's proposals and the
 intake (`i-5ed7e8-1bc188`). It closes `i-5ed7e8-ca6ce3`. The decisions are rows of
 [`meta/decisions.md`](../decisions.md); this document holds the evidence and the reasons.
 
@@ -76,7 +76,7 @@ its own headings.
   nothing replaced it), `superseded by d-…` (principle 6: written in the old row, in place; the new row says
   `supersedes d-…` in its Why);
 - the date is the decision's; a migrated row reads `accepted recorded <date>`, the date of the first commit
-  that holds its id, because a bulk conversion would otherwise date many rows to one day;
+  that wrote its id into the log, because a bulk conversion would otherwise date many rows to one day;
 - the decider is a stable alias of a person (`h1`), an agent's session (`agent s-…`), or `found` (read from the
   code, decided by nobody who can be asked). A proposed row adds who must decide: `· decides: h2`.
 
@@ -126,7 +126,7 @@ rung 1: no check can judge them.
 
 ### Migration
 
-A command fills each existing row's Status as `accepted recorded <date>` from git, with a blank decider. The
+`bundle.py decisions FILE --migrate` fills each existing row's Status as `accepted recorded <date>` from git, with a blank decider. The
 update session maps supersessions and declined rows already written in prose; where unsure it leaves
 `accepted`. The heading of each table gains the Status column. Several hundred rows across the carriers.
 
@@ -135,9 +135,11 @@ update session maps supersessions and declined rows already written in prose; wh
 - **The folder.** `docs/private/` in each carrier (the host may name it otherwise and record that in `adapted`),
   for confidential context keyed by decision id (`docs/private/<d-id>.md`) and for `people.md`. No tool reads
   it; the harvest is told never to read it. In a public repository it is in `.gitignore`.
-- **The sentinel.** Every file there starts with `confidential: never leaves this repository`. `bundle.py privacy`
-  fails when that line, or the folder's path, appears in `.agents/` or in a commit range: it catches a pasted
-  file even when nothing in it is on a terms list.
+- **The sentinel.** Every file there starts with the line `confidential: never leaves this repository`.
+  `bundle.py privacy` fails when that line stands on its own anywhere it reads (`.agents/`, given paths, a commit
+  range): it catches a pasted file even when nothing in it is on a terms list. A push of the carrier does not read
+  the folder itself, whose files are private by design. *As built:* the folder's path is not a finding, since the
+  method and these proposals name it; a mention of the sentinel inside a sentence is not one either.
 - **The public-repository guard.** When `carrier.toml` declares the carrier public, `verify` fails if the folder
   is tracked by git.
 - **The home's re-check.** `release.py gather` and `intake` run the privacy check, sentinel included, over every
@@ -177,7 +179,7 @@ The firm ones rest on two or more carriers or on leak risk; the others on one so
 - **Paths per decision now**: only one log is large; `i-5ed7e8-bf017b` reopens it when a log outgrows one read.
 - **Real names in rows**: the harvest reads the row, and the only guard would be a terms list that exists on
   one machine.
-- **`propose` refusing on a privacy failure**: the owner chose the three later layers.
+- **`propose` refusing on a privacy failure**: the owner: the later layers suffice.
 - **A reconstructed history for the home's log**: tens of rows, all `found` and `unconfirmed`, with no evidence
   they are needed.
 

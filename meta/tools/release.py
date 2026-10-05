@@ -8,7 +8,7 @@ than copying from it, so every rule both need exists once.
 
     python3 meta/tools/release.py build [--check]         generated knowledge and SHA256SUMS, from sources/
     python3 meta/tools/release.py release X.Y.Z           version, date, build; prints the tag to create
-    python3 meta/tools/release.py check                   the home's CI: verify, build --check, privacy, links
+    python3 meta/tools/release.py check                   the home's CI: verify, build --check, privacy, links, its decisions log
     python3 meta/tools/release.py gather [REPO...] --out DIR [--packs FILE...]   phase 1: each carrier and its proposals
     python3 meta/tools/release.py intake DIR              the gathered proposals into meta/tracking/, as received
     python3 meta/tools/release.py lost BASE SNAPSHOT...   lines a carrier added that the home does not hold
@@ -780,7 +780,11 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
     problems += queue_problems(root)
-    return problems, privacy.notes() + home.notes() + [f"  ! {w}" for w in B.user_deny_warnings(root)]
+    log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
+    errors, warnings, _ = B.decision_check([log]) if log.is_file() else ([], [], {})
+    problems += [f"decisions: {e}" for e in errors]
+    return problems, (privacy.notes() + home.notes() + [f"  ! decisions: {w}" for w in warnings]
+                      + [f"  ! {w}" for w in B.user_deny_warnings(root)])
 
 
 QUEUE_ROW = re.compile(r"^(?:(?:extends|overlaps)\s+)?`?[a-z0-9][\w.-]*`?(?:\s*\+\s*`?[a-z0-9][\w.-]*`?)*\s+—\s")
@@ -933,6 +937,26 @@ def _offered(tree: Path, base: Path | None) -> tuple[list[dict], list[str]]:
     return offered, problems
 
 
+def proposal_privacy(offered: list[dict]) -> dict[str, list[str]]:
+    """Each proposal's privacy findings, read as the carrier's own file is read: a FAIL, or a WARN that no
+    `privacy-allow: <reason>` on its line answered, keeps it out of the intake until the carrier generalises
+    it or its owner answers. Only the rule and the line are reported, never what matched."""
+    import tempfile
+
+    found: dict[str, list[str]] = {}
+    with tempfile.TemporaryDirectory() as scratch:
+        folder = Path(scratch) / ".agents" / B.PROPOSALS
+        folder.mkdir(parents=True)
+        for item in offered:
+            proposal = B.Proposal(**{k: v for k, v in item.items() if k != "source"})
+            path = folder / f"{proposal.id}.md"
+            path.write_text(B.render_proposal(proposal), encoding="utf-8")
+            findings = B.privacy_check(paths=[path]).findings
+            if findings:
+                found[proposal.id] = [f"{f.level} {f.rule} at line {f.where.rsplit(':', 1)[-1]}" for f in findings]
+    return found
+
+
 def _forked_from(base: Path, tree: Path) -> list[str]:
     """Every shipped file that differs from the tagged release, even when the carrier rewrote its checksums."""
     ours, theirs = set(B.shipped(base)), set(B.shipped(tree))
@@ -977,6 +1001,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
         entry["forked"] = [] if legacy or home else B.check_local(repo) + (_forked_from(base, snapshot) if base else [])
         entry["lost"] = [f"{rel}: {line[:120]}" for _, rel, line in lost(base, {name: snapshot}, root)] if legacy and base else []
         entry["proposals"], entry["problems"] = _offered(snapshot, base)
+        entry["privacy"] = [f"{pid}: {'; '.join(found)}" for pid, found in proposal_privacy(entry["proposals"]).items()]
         report["carriers"][name] = entry
         offered = entry["proposals"]
         old = sum(not o["source"].startswith(B.PROPOSALS) for o in offered)
@@ -984,6 +1009,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
                   f"- base: {'tag v' + version if base else 'none: no release tag for this version; compare by hand'}",
                   f"- offers {len(offered)} proposals" + (f", {old} of them rows of its old outbox" if old else ""),
                   *[f"- not readable as a proposal: {p}" for p in entry["problems"]],
+                  *[f"- privacy, not taken in until generalised or answered: {p}" for p in entry["privacy"]],
                   *[f"- changed what only a release writes: {p}" for p in entry["forked"]],
                   *[f"- added over its release, and not in the home: {p}" for p in entry["lost"]], ""]
     from dataclasses import asdict
@@ -997,9 +1023,11 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
             problems += issues
             if proposal is not None and not issues:
                 found.append({**asdict(proposal), "source": f"{pack.name}:{name}"})
-        report["packs"][pack.name] = {"proposals": found, "problems": problems}
+        flagged = [f"{pid}: {'; '.join(f)}" for pid, f in proposal_privacy(found).items()]
+        report["packs"][pack.name] = {"proposals": found, "problems": problems, "privacy": flagged}
         lines += [f"## pack {pack.name}", "", f"- offers {len(found)} proposals",
-                  *[f"- not readable as a proposal: {p}" for p in problems], ""]
+                  *[f"- not readable as a proposal: {p}" for p in problems],
+                  *[f"- privacy, not taken in until generalised or answered: {p}" for p in flagged], ""]
     (out / "gather.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     (out / "gather.md").write_text("\n".join(lines), encoding="utf-8")
     return report
@@ -1066,7 +1094,7 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
     heard = {r[0].strip("`") for r in received_rows(root / "meta")}
     available = set(tags(root))
     result: dict = {"queued": [], "duplicates": [], "refused": [], "runs": 0, "received": [], "skipped": 0,
-                    "moved": [], "malformed": []}
+                    "moved": [], "malformed": [], "privacy": []}
     new_rows, new_runs, refused, again, ledger = [], [], [], [], []
     sources = [*report["carriers"].items(), *[(f"pack {k}", v) for k, v in report.get("packs", {}).items()]]
     for name, entry in sources:
@@ -1079,6 +1107,12 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
             _, issues = B.parse_proposal(B.render_proposal(p), offered["source"])
             if issues:
                 result["malformed"] += [f"{name}: {i}" for i in issues]
+                continue
+            # Read again here, whatever gather said: gather.json is a file anyone can edit, and a pack or a
+            # carrier without the hooks never ran the check. A warning no owner answered stays out too.
+            flagged = proposal_privacy([offered]).get(p.id)
+            if flagged:
+                result["privacy"].append(f"{name}: {p.id}: {'; '.join(flagged)}")
                 continue
             heard.add(p.id)
             if p.kind == "experiment":
@@ -1502,7 +1536,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--check", action="store_true", help="compare instead of writing; exit 1 on any difference")
     p = sub.add_parser("release", help="version and date into the README, then build; prints the tag command")
     p.add_argument("version", metavar="X.Y.Z")
-    sub.add_parser("check", help="the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets")
+    sub.add_parser("check", help="the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets, meta/decisions.md")
     p = sub.add_parser("gather", help="phase 1: each carrier against its release tag, and its proposals (writes only --out)")
     p.add_argument("repos", nargs="*")
     p.add_argument("--out", required=True)
@@ -1570,6 +1604,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
                 print(f"  ! written against an older release: {line}")
             for line in result["malformed"]:
                 print(f"  x not taken in: {line}")
+            for line in result["privacy"]:
+                print(f"  x not taken in, privacy (generalise it, or the carrier's owner answers with privacy-allow): {line}")
             print(f"intake: {len(result['received'])} proposals received ({len(result['queued'])} candidates queued, "
                   f"{result['runs']} experiment runs logged), {result['skipped']} already received before")
             return 0
