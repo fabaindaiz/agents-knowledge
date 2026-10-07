@@ -1,5 +1,8 @@
 # AGENTS.md
 
+**Read [`MANIFEST.md`](MANIFEST.md) first:** what this repository is for, what it will not become, and the
+limits every release is checked against.
+
 This repository is the **home** of the `agent-guides` bundle, where releases are written and cut (its
 `upstream` is empty). It holds no application; a change here reaches every carrier later.
 
@@ -75,7 +78,8 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
 5. **Phase 3:** `release.py register`, then `release.py align` must report every reached carrier
    aligned. Carriers not reached go in `meta/roadmap.md` under *Blocked outside*.
 6. **Close:** this repository's own learnings become its proposals (`prompt-harvest.md`, `bundle.py propose`); `meta/roadmap.md`
-   records the release under *Done* and rewrites *Where we are*; one commit per carrier, following that
+   records the release under *Done* and rewrites *Where we are* within 500 words, after adding the one it
+   replaces to `meta/archive/roadmap-states.md`; one commit per carrier, following that
    repository's own commit rules. Push, with the tag.
 7. **Template:** when the template repository a new project starts from is open on this machine, refresh
    its `.agents/` from the tag (`meta/method/prompt-sync.md`, Phase 3 step 6). It is not a carrier and

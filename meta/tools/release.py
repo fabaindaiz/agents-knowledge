@@ -779,7 +779,7 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     problems += B.invisible_characters(root, [p.relative_to(root).as_posix() for p in home_files(root)])
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
-    problems += queue_problems(root)
+    problems += queue_problems(root) + manifest_problems(root)
     log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
     errors, warnings, _ = B.decision_check([log]) if log.is_file() else ([], [], {})
     problems += [f"decisions: {e}" for e in errors]
@@ -796,6 +796,32 @@ def queue_problems(root: Path = ROOT) -> list[str]:
     return [f"meta/tracking/candidates.md: {r[0][:50]!r}: does not open with its slug (`slug — claim`)"
             for r in rows if not QUEUE_ROW.match(r[0].strip())]
 
+
+# `MANIFEST.md`'s checked limits. The export's cap is 0.0.29's shipped bytes; it is raised only with a decision row.
+EXPORT_CAP = 913_167
+DESCRIPTIONS_CAP = 2_600  # characters of the skill and agent descriptions a carrier loads on every turn
+HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
+
+
+def manifest_problems(root: Path = ROOT, export_cap: int = EXPORT_CAP, descriptions_cap: int = DESCRIPTIONS_CAP,
+                      handoff_cap: int = HANDOFF_CAP) -> list[str]:
+    """The limits `MANIFEST.md` marks as checked: the export does not grow, nor what every turn loads, nor the hand-off."""
+    problems = []
+    tree = root / ".agents"
+    size = sum((tree / rel).stat().st_size for rel in B.shipped(tree)) if tree.is_dir() else 0
+    if size > export_cap:
+        problems.append(f"the export ships {size} bytes, over the manifest's cap of {export_cap} (raise it only by a decision)")
+    described = sorted(tree.glob("method/skills/*/SKILL.md")) + sorted(tree.glob("agents/*.md"))
+    chars = sum(len(str(B.read_frontmatter(f.read_text(encoding="utf-8"), str(f))[0].get("description", ""))) for f in described)
+    if chars > descriptions_cap:
+        problems.append(f"the skill and agent descriptions are {chars} characters, over the manifest's cap of {descriptions_cap}")
+    roadmap = root / "meta/roadmap.md"
+    if roadmap.is_file():
+        section = re.search(r"^## Where we are\n(.*?)(?=^## |\Z)", roadmap.read_text(encoding="utf-8"), re.S | re.M)
+        words = len(section.group(1).split()) if section else 0
+        if words > handoff_cap:
+            problems.append(f"meta/roadmap.md: the hand-off is {words} words, over the manifest's cap of {handoff_cap}")
+    return problems
 
 # --- carriers: gather, intake, lost, splice, register, align ------------------------------------------
 # A carrier writes only what it owns: its carrier file and its harvest outbox. So a meta-session over

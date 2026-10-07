@@ -772,3 +772,29 @@ class Ledger(Base):
         self.assertEqual(R.build(home, check=True), [])
         history.write_text(history.read_text() + "| `another` | refused |\n")
         self.assertIn("meta/tracking/INDEX.md", "\n".join(R.build(home, check=True)))
+
+
+class Manifest(Base):
+    """`MANIFEST.md`'s checked limits: the export does not grow, the descriptions every turn loads, the hand-off."""
+
+    def tree(self) -> Path:
+        root = self.root / "home"
+        skill = root / ".agents/method/skills/close/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("---\nname: close\ndescription: Close the session.\n---\n\nBody.\n")
+        (root / ".agents/README.md").write_text("A bundle.\n")
+        (root / "meta").mkdir()
+        (root / "meta/roadmap.md").write_text("# Roadmap\n\n## Where we are\n\nOne two three.\n\n## Next\n\n" + "word " * 900)
+        return root
+
+    def test_a_tree_within_every_limit_passes(self) -> None:
+        R = release()
+        self.assertEqual(R.manifest_problems(self.tree(), export_cap=10_000), [])
+
+    def test_each_limit_crossed_fails(self) -> None:
+        R = release()
+        root = self.tree()
+        self.assertIn("export", "\n".join(R.manifest_problems(root, export_cap=10)))
+        self.assertIn("descriptions", "\n".join(R.manifest_problems(root, export_cap=10_000, descriptions_cap=5)))
+        (root / "meta/roadmap.md").write_text("## Where we are\n\n" + "word " * 501 + "\n## Next\n")
+        self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
