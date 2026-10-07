@@ -584,6 +584,20 @@ class TriggerEval(Base):
             self.assertEqual(allow("Bash", {"command": command}), 2, command)
         self.assertEqual(allow("Read"), 0)
         self.assertEqual(allow("mcp__tracker__create_issue"), 2)
+        # commands of an allowed reader that write or run something (a review on 2026-10-07)
+        for command in ("find . -fprintf /tmp/x %p", "find . -fprint0 /tmp/x", "find . -fls /tmp/x", "find . -okdir rm {} +",
+                        "find . -execdir rm {} +", "rg --pre=sh x", "rg --pre sh x", "tree -o /tmp/x", "git branch new",
+                        "git branch -D main", "git branch -m a b"):
+            self.assertEqual(allow("Bash", {"command": command}), 2, command)
+        for command in ("find . -name '*.md'", "git branch", "git branch --list", "git branch -a", "rg -n spec docs"):
+            self.assertEqual(allow("Bash", {"command": command}), 0, command)
+
+    def test_the_refusing_hook_fails_closed(self) -> None:
+        import subprocess
+        hook = self.T.deny_hook_settings(None)["hooks"]["PreToolUse"][-1]["hooks"][0]["command"]
+        for payload in ("not json", "[]", '{"tool_name": 3, "tool_input": "x"}'):
+            ran = subprocess.run(hook, shell=True, input=payload, capture_output=True, text=True)
+            self.assertEqual(ran.returncode, 2, payload)
 
     def test_a_shell_call_keeps_its_command_so_a_capture_can_be_read(self) -> None:
         bash = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash",

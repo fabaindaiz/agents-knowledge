@@ -817,9 +817,11 @@ def manifest_problems(root: Path = ROOT, export_cap: int = EXPORT_CAP, descripti
         problems.append(f"the skill and agent descriptions are {chars} characters, over the manifest's cap of {descriptions_cap}")
     roadmap = root / "meta/roadmap.md"
     if roadmap.is_file():
-        section = re.search(r"^## Where we are\n(.*?)(?=^## |\Z)", roadmap.read_text(encoding="utf-8"), re.S | re.M)
+        section = re.search(r"^## Where we are[ \t]*\r?\n(.*?)(?=^## |\Z)", roadmap.read_text(encoding="utf-8"), re.S | re.M)
         words = len(section.group(1).split()) if section else 0
-        if words > handoff_cap:
+        if not section:
+            problems.append("meta/roadmap.md: no *Where we are* section, so the hand-off cap cannot be read")
+        elif words > handoff_cap:
             problems.append(f"meta/roadmap.md: the hand-off is {words} words, over the manifest's cap of {handoff_cap}")
     return problems
 

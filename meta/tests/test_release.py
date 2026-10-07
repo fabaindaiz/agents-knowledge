@@ -798,3 +798,8 @@ class Manifest(Base):
         self.assertIn("descriptions", "\n".join(R.manifest_problems(root, export_cap=10_000, descriptions_cap=5)))
         (root / "meta/roadmap.md").write_text("## Where we are\n\n" + "word " * 501 + "\n## Next\n")
         self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
+        # a heading with trailing spaces or CRLF is still read, and a missing section is a problem, never a pass
+        (root / "meta/roadmap.md").write_text("## Where we are  \r\n\r\n" + "word " * 501 + "\r\n## Next\r\n")
+        self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
+        (root / "meta/roadmap.md").write_text("# Roadmap\n\n## Next\n")
+        self.assertIn("no *Where we are*", "\n".join(R.manifest_problems(root, export_cap=10_000)))

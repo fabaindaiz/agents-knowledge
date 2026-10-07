@@ -53,8 +53,10 @@ FIRE, MISFIRE = 0.8, 0.1
 # "push everything" must do nothing, through any tool the machine has.
 ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
 # A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
-READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|tree|pwd|git (status|log|diff|show|branch|ls-files))(\s|$)")
-SHELL_META = re.compile(r"[;&|<>`$\n\\()]|\s-(exec|execdir|delete|ok|fprint)\b|--output\b")
+READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$)(\s|$)")
+# Flags of an allowed reader that write or run: find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls),
+# rg's --pre, and --output (a review on 2026-10-07 found the -f* and --pre holes).
+SHELL_META = re.compile(r"[;&|<>`$\n\\()]|\s-(exec\w*|ok\w*|delete|f[a-z]\w*)\b|--output\b|--pre\b")
 PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
 CALLS = 5  # the lenient metric reads this many tool calls
 
@@ -271,7 +273,11 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
 
 def main(argv: list[str] | None = None) -> int:
     if (argv if argv is not None else sys.argv[1:]) == ["--hook"]:  # run by the refusing hook, one tool call on stdin
-        code = hook_decision(json.load(sys.stdin))
+        try:
+            code = hook_decision(json.load(sys.stdin))
+        except Exception as error:  # noqa: BLE001 -- a hook that raises exits 1, which the host lets through
+            print(f"trigger eval: refused, the hook could not read the call ({error})", file=sys.stderr)
+            return 2
         if code:
             print("trigger eval: tools are refused here", file=sys.stderr)
         return code

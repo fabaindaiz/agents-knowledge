@@ -81,7 +81,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   ready for review, a plan as a working artifact, the tracker as the roadmap's source, criteria and tasks mapped both
   ways, carrier linters excluding the bundle, a privacy answer rewriting the proposal, and in `prompt-sync` the branch
   question and the carrier's audit in the pre-carry review); and `i-5ed7e8-2aabb5`, `i-5ed7e8-94f262`,
-  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped); and the skill catalogue a complex task reads (`d-5ed7e8-0372b4`, `d-5ed7e8-4c80c1`; proposals `p-480f968069` as updated by `p-1070df9806`), whose carrier `LOCAL` lists are written in Phase 2; and the review turn's format for plans and decision walks (`d-5ed7e8-292961`, `d-5ed7e8-0fec6e`, `d-5ed7e8-d0cfa3`; proposals `p-b102eeae6f` as updated by `p-f76353b351`); documentation drift caught by `bundle.py docs-drift` (`d-5ed7e8-91f1be`, `p-12f06b3438`); a standard researcher agent on a cheaper model (`d-5ed7e8-cdf1f3`, defined by `d-5ed7e8-79b1cd`); the cost levers walked with the owner on 2026-10-07: the neutral ones, with a shorter reviewer check phase as a cost-pilot arm (`d-5ed7e8-8174a8`), and `bundle.py close` and `bundle.py lookup` over blind-written cues behind a recall gate (`d-5ed7e8-90786d`); the home writes the first documentation map. The external benchmark runs once, at a frozen tag, under its own protocol (`d-5ed7e8-d47ee1`), not in this release. The `[Unreleased]` fixes ride with it. *Collides with:*
+  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped); and the skill catalogue a complex task reads (`d-5ed7e8-0372b4`, `d-5ed7e8-4c80c1`; proposals `p-480f968069` as updated by `p-1070df9806`), whose carrier `LOCAL` lists are written in Phase 2; and the review turn's format for plans and decision walks (`d-5ed7e8-292961`, `d-5ed7e8-0fec6e`, `d-5ed7e8-d0cfa3`; proposals `p-b102eeae6f` as updated by `p-f76353b351`); documentation drift caught by `bundle.py docs-drift` (`d-5ed7e8-91f1be`, `p-12f06b3438`); a standard researcher agent on a cheaper model (`d-5ed7e8-cdf1f3`, defined by `d-5ed7e8-79b1cd`); the cost levers walked with the owner on 2026-10-07: the neutral ones, with a shorter reviewer check phase as a cost-pilot arm (`d-5ed7e8-8174a8`), and `bundle.py close` and `bundle.py lookup` over blind-written cues behind a recall gate (`d-5ed7e8-90786d`); the home writes the first documentation map. The external benchmark runs once, at a frozen tag, under its own protocol (`d-5ed7e8-d47ee1`), not in this release. Under `MANIFEST.md` the export may not grow past 0.0.29's bytes, so what this release adds is paid for by cuts; the candidates are ranked in `meta/reviews/2026-10-07-adversarial-shrink-review.md`. Tested in three layers: the gate, a registered cost pilot against `minimal`, and the trigger eval of every skill whose description changes. The `[Unreleased]` fixes ride with it. *Collides with:*
   the coding session's budget (about 145 tokens left), every carrier's update, and `i-5ed7e8-16b90a`.
 - **`i-5ed7e8-578c22` · Trigger evals for `decision-review` and `user-walk`, and for `close` after its
   trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
@@ -114,7 +114,15 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   generated files stale), each time the gate's status was the filter's. The rule is in the close skill and the
   bootstrap; it does not act at the moment the command is typed. *Remedy:* the session hook that already guards
   `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
-  about half an hour with a planted test. *Collision:* the hook's other checks.
+  about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
+  `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
+- **`i-5ed7e8-bd65a0` · A home command that runs the gate and commits the named files.** Two frictions recur in the
+  typed chain `tests && check && git add && git commit`: a gate piped through a filter (`i-5ed7e8-89ec30`, four
+  occurrences in the archived hand-offs) and an edit chained into the same command as `git`, which the privacy hook
+  refuses whole so the edit never lands (twice, the last two sessions). *Remedy:* `release.py commit -m MSG FILE...`
+  runs the tests and `check` on their own exit status, prints the failures, and commits only the named files; the
+  root file's checks section names it as the one way to commit here. About an hour with tests. *Collision:*
+  `i-5ed7e8-89ec30`, the privacy hook.
 - **`i-5ed7e8-94f262` · Review the method changes published on one carrier's evidence (0.0.26 and 0.0.27).**
   Each is marked *one carrier's evidence* in `.agents/CHANGELOG.md` and `meta/tracking/history.md`: keep it
   where a second carrier's entries or harvest show it acting, rework it where they show friction, withdraw
@@ -352,6 +360,12 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `bundle.py ids` checks record ids for format, prefix and duplicates; each carrier's audit should
   call it over its own records, and check that principles, artifacts and phases are never
   renumbered. *Waits on:* one carrier adopting it first.
+
+- **`i-5ed7e8-d60fb0` · One external benchmark run at a frozen tag (`d-5ed7e8-d47ee1`).** 60 post-cutoff
+  SWE-rebench tasks, two repetitions, `minimal` against the release, through the harness framework installed outside
+  every repository, with an adapter written here; capped per sitting, images pruned. *First:* its own protocol in
+  `evals/`, registered before any trial; the owner checks the subscription's terms for automated runs and creates
+  the token. *After:* 0.0.30, so the frozen tag carries its cost levers. Plan: `meta/reviews/2026-10-07-benchmark-measurement-plan.md` §4.
 
 ## Blocked outside
 
