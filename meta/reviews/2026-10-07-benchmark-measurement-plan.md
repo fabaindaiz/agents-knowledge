@@ -25,10 +25,10 @@ directory. Every source below was read at its abstract or dataset card on
 |---|---|---|---|---|---|---|
 | SWE-rebench leaderboard | CC-BY-4.0 dataset; monthly splits on the hub end 2026_03; the site's window runs to July 2026 (111 tasks / 65 repos), newer tasks' downloadability unchecked | ~160 post-2026-02 on the hub | prebuilt image per task, Docker, large disk | site lists a Claude Code reference at a few dollars and a few million tokens per problem, 93% cached (model unstated) | low for tasks opened after the model's cutoff | primary |
 | SWE-bench Pro, public | harness MIT; task content under the 11 upstream repos' licences (copyleft, chosen to deter training) | 731 (v1) / 642 (v2) + 51 hard; Go, Python, JS, TS | images on ghcr.io, anonymous pull; Harbor task format | ASSUMPTION: higher than rebench (harder, longer) | low-moderate (public since 2025, copyleft) | external-validity block, or fallback if the rebench pool is short |
-| SWE-bench Verified / Lite / Verified Mini | harness MIT; content from upstream repos | 500 / 300 / 50 | full ~130 GB images; Mini ~5 GB | ~$2-3 (ASSUMPTION) | high: a lab audit in Feb 2026 reported flawed tests and verbatim fixes (ASSUMPTION, secondary sources; primary page refused the fetch) | instrument checks only (controls, probe, A/A), where contamination does not matter |
-| SWE-bench-Live | MIT | 3,688 rows; monthly +50; issues to Aug 2025 per the card; some multi-language and Windows | Docker per task | ~$2-3 (ASSUMPTION) | pre-cutoff for current models | excluded (as at Study 2's G0) |
-| Multi-SWE-bench | CC0, subject to upstream licences | 1,632; Java, TS, JS, Go, Rust, C, C++ | Docker; ~1.8 GB data | ASSUMPTION ~$2-4 | moderate (2025) | optional language spread, secondary |
-| Terminal-Bench 2.0 | Apache-2.0 | 89 | Docker via Harbor, which ships a `claude-code` agent | ASSUMPTION $1-5, some tasks long | moderate (public since late 2025, tests public) | optional "non-SWE agentic" no-harm block, replaces Study 2's A as the unrelated-work test |
+| SWE-bench Verified / Lite / Verified Mini | harness MIT; content from upstream repos | 500 / 300 / 50 | full ~130 GB images; Mini ~5 GB | a few dollars (ASSUMPTION) | high: a lab audit in Feb 2026 reported flawed tests and verbatim fixes (ASSUMPTION, secondary sources; primary page refused the fetch) | instrument checks only (controls, probe, A/A), where contamination does not matter |
+| SWE-bench-Live | MIT | 3,688 rows; monthly +50; issues to Aug 2025 per the card; some multi-language and Windows | Docker per task | a few dollars (ASSUMPTION) | pre-cutoff for current models | excluded (as at Study 2's G0) |
+| Multi-SWE-bench | CC0, subject to upstream licences | 1,632; Java, TS, JS, Go, Rust, C, C++ | Docker; ~1.8 GB data | ASSUMPTION a few dollars | moderate (2025) | optional language spread, secondary |
+| Terminal-Bench 2.0 | Apache-2.0 | 89 | Docker via Harbor, which ships a `claude-code` agent | ASSUMPTION one to a few dollars, some tasks long | moderate (public since late 2025, tests public) | optional "non-SWE agentic" no-harm block, replaces Study 2's A as the unrelated-work test |
 | Aider polyglot | Exercism exercises under their open licences; aider's harness | 225, six languages | light, no images | cents to tens of cents | high, near ceiling for frontier models | not useful (ceiling) |
 
 Context files and skills on such benchmarks:
@@ -106,7 +106,7 @@ Cost: geometric mean of per-task ratios; pilot-9's paired log-ratio SD was 0.39 
 
 Smoke rules: it decides cost only (interval vs the x2.0 line and its refutation, as pilots 6-9); success is
 a tripwire (candidate fails 3 or more tasks `minimal` passes with none the other way -> stop and look), never
-a verdict. Per-trial cost: ~$2 `minimal`, ~$3 bundle arms, ~10-15 min (ASSUMPTION from the rebench reference
+a verdict. Per-trial cost: a few dollars, a third more in the bundle arms, ~10-15 min (ASSUMPTION from the rebench reference
 re-priced at the pilots' list prices; G1 measures it).
 
 ### Needs the owner's approval
@@ -117,3 +117,23 @@ re-priced at the pilots' list prices; G1 measures it).
   needs the owner's yes.
 - The subscription's terms for automated headless runs (G0.7); a budget cap; forecasts.
 - Whether to amend Study 2 (draft 3: E-only, cost-first) or register this as its own protocol.
+
+## 4. Walked with the owner, the same day
+
+**Frequency.** The owner judged an external run too costly for every release: it is done **once**, at a frozen
+tag. Every release keeps only the internal cost pilot of about an hour (`d-5ed7e8-7cac23`, unchanged). The
+standing smoke of §3 is withdrawn. For the one run, the owner chose a combined cap (half an hour per task, three
+hours per sitting, about half a hundred dollars at list price per sitting, and a stop at the first usage-limit
+error), and images pruned after each sitting. How large the run is and which tool runs it were left to decide.
+
+**Checked against primary sources, the same day:**
+
+- The harness framework of §2 is Apache-2.0, installs as a user tool outside any repository, runs each task in a
+  container and ships a Claude Code agent. Its agent code drops the API key and uses a subscription token when told
+  to, so an owner without an API key can run it; that token is a credential, created by the owner, and never
+  enters a repository or a log.
+- Its dataset registry carries SWE-bench Pro (731 tasks) and SWE-bench Verified (500), among others, but **not
+  SWE-rebench**: post-cutoff rebench tasks would need an adapter written here.
+- SWE-rebench's task images on the public registry number in the thousands; five drawn at random weigh 1.3 to 1.6
+  GB compressed each. Uncompressed size is an ASSUMPTION (two to three times). The machine has about 150 GB free
+  and runs podman, not Docker.
