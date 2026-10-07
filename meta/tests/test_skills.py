@@ -569,8 +569,42 @@ class TriggerEval(Base):
         self.assertEqual(self.T.judge(self.T.tool_calls([read, skill]), "close"), {"strict": False, "lenient": True})
         self.assertEqual(self.T.judge(self.T.tool_calls([skill]), "plugin:close"[7:]), {"strict": True, "lenient": True})
         self.assertEqual(self.T.judge(self.T.tool_calls([write, skill]), "close"), {"strict": False, "lenient": False})
-        self.assertEqual(self.T.judge(self.T.tool_calls([read, read, read, skill]), "close"),
+        self.assertEqual(self.T.judge(self.T.tool_calls([read] * 5 + [skill]), "close"),
                          {"strict": False, "lenient": False})
+        self.assertTrue(self.T.judge(self.T.tool_calls([read] * 4 + [skill]), "close")["lenient"])
+        # any tool the eval refuses ends the window, a connector's as much as an edit
+        self.assertFalse(self.T.judge(self.T.tool_calls([self.call("mcp__tracker__create"), skill]), "close")["lenient"])
+
+    def test_reading_the_skill_file_is_a_fire_and_a_router_skill_is_looked_past(self) -> None:
+        own = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                          "input": {"file_path": "/tmp/w/.claude/skills/close/SKILL.md"}}]}})
+        other = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
+                            "input": {"file_path": "/tmp/w/.claude/skills/closer/SKILL.md"}}]}})
+        router, todo, skill = self.call("Skill", "kit:using-kit"), self.call("TodoWrite"), self.call("Skill", "close")
+
+        self.assertTrue(self.T.judge(self.T.tool_calls([own]), "close")["strict"])
+        self.assertFalse(self.T.judge(self.T.tool_calls([other]), "close")["lenient"])
+        verdict = self.T.judge(self.T.tool_calls([router, todo, skill]), "close", routers=("using-kit",))
+        self.assertEqual(verdict, {"strict": False, "lenient": True, "routed": True})
+        self.assertFalse(self.T.judge(self.T.tool_calls([router, self.call("Grep"), skill]), "close",
+                                      routers=("using-kit",))["routed"])
+
+    def test_a_session_that_never_ran_is_an_error_never_a_quiet_answer(self) -> None:
+        init = json.dumps({"type": "system", "subtype": "init", "model": "m", "tools": ["Read"], "skills": ["close"]})
+        failed = json.dumps({"type": "result", "is_error": True, "result": "usage limit reached"})
+        quiet = json.dumps({"type": "result", "is_error": False, "result": "done"})
+
+        self.assertIsNone(self.T.session_error([init, self.call("Read")]))
+        self.assertIsNone(self.T.session_error([init, quiet]))
+        self.assertIn("usage limit", self.T.session_error([init, failed]))
+        self.assertIn("no result", self.T.session_error([init]))
+        self.assertIn("no init", self.T.session_error([]))
+        self.assertEqual(self.T.session_info([init])["model"], "m")
+
+        rows = [{"expect": True, "fired": True}] * 4 + [{"expect": False, "fired": False}] * 4 \
+            + [{"expect": False, "fired": False, "error": "usage limit"}] * 3
+        verdict = self.T.verdict(rows)
+        self.assertEqual((verdict["cases"], verdict["errors"]), (8, 3))
 
     def test_intervals_owner_cases_and_captures_are_reported(self) -> None:
         lo, hi = self.T.wilson(8, 10)
@@ -587,6 +621,14 @@ class TriggerEval(Base):
         self.assertEqual(len(verdict["fire_interval"]), 2)
         self.assertEqual(self.T.captures(results)["close it"], {"Skill:wrap-up": 3})
 
+    def test_a_canary_that_did_not_fire_makes_the_run_invalid(self) -> None:
+        clear = [{"expect": True, "fired": True}] * 4 + [{"expect": False, "fired": False}] * 4
+        self.assertTrue(self.T.verdict(clear + [{"expect": True, "canary": True, "fired": True}])["valid"])
+        broken = self.T.verdict(clear + [{"expect": True, "canary": True, "fired": False}])
+        self.assertFalse(broken["valid"])
+        self.assertFalse(broken["passed"])
+        self.assertEqual(broken["cases"], 8)
+
     def test_ambiguous_cases_are_reported_apart_and_never_decide(self) -> None:
         clear = [{"expect": True, "fired": True, "lenient": True}] * 4 + [{"expect": False, "fired": False}] * 4
         unsure = [{"expect": True, "ambiguous": True, "fired": False}] * 3 + [{"expect": False, "ambiguous": True, "fired": True}]
@@ -601,8 +643,11 @@ class TriggerEval(Base):
 
         self.assertEqual(settings["permissions"], {"allow": ["Read"]})
         added = settings["hooks"]["PreToolUse"][-1]
-        self.assertIn("Bash", added["matcher"])
-        self.assertNotIn("Skill", added["matcher"])
-        self.assertIn("exit 2", added["hooks"][0]["command"])
+        self.assertEqual(added["matcher"], "*")  # refused unless allowed: a connector's tools included
+        import subprocess
+        for tool, code in (("Read", 0), ("Skill", 0), ("Bash", 2), ("Edit", 2), ("mcp__tracker__create_issue", 2)):
+            ran = subprocess.run(added["hooks"][0]["command"], shell=True, input=json.dumps({"tool_name": tool}),
+                                 capture_output=True, text=True)
+            self.assertEqual(ran.returncode, code, tool)
         self.assertEqual(len(settings["hooks"]["PreToolUse"]), 2)
         self.assertNotIn("--disallowedTools", self.T.command("claude", "a request"))

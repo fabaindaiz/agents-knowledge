@@ -13,6 +13,12 @@ writes or runs is refused by a hook rather than hidden, so the model still sees 
 between, and a request such as "push everything" does nothing. The machine's own configuration (its global
 instructions, plugins and other skills) stays loaded on purpose: that is the competition the skill meets.
 
+Every tool but the few that only read or choose is refused, a connector's included. A session that never
+started or ended in an error before any tool call is an error, left out of every rate, and a few in a row stop
+the run. Reading the skill's file counts as invoking it. With `--router`, a skill that asks to run before any
+response is looked past (the routed metric). A case marked `"canary": true` names the skill outright: if one
+does not fire, the run is invalid, since the setup, not the description, is what failed.
+
 A pass is a strict fire rate of at least 0.8 on the requests that expect it, a misfire rate of at most 0.1 on
 the near misses, and at least 0.8 on the cases marked `"owner": true` (the owner's own words) when there are
 any (`meta/reviews/2026-10-02-adversarial-review.md`, §3.1; `meta/reviews/2026-10-05-skill-triggers.md`).
@@ -36,17 +42,21 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 from collections import Counter
 from pathlib import Path
 
 FIRE, MISFIRE = 0.8, 0.1
-REFUSED = ["Bash", "Edit", "Write", "NotebookEdit", "WebFetch", "WebSearch", "Agent", "Workflow"]
-WRITES = {"Edit", "Write", "NotebookEdit"}
-CALLS = 3  # the lenient metric reads this many tool calls
+# Every other tool is refused by a hook, a connector's (`mcp__…`) as much as a built-in one: a request such as
+# "push everything" must do nothing, through any tool the machine has.
+ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
+PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
+CALLS = 5  # the lenient metric reads this many tool calls
 
 
 def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN001 -- any iterable of stream-json lines
-    """(tool name, skill name when the tool is `Skill`) of the first tool calls in a stream, up to `limit`."""
+    """(tool name, its target) of the first tool calls in a stream, up to `limit`: the skill for `Skill`, the
+    path for `Read`, empty otherwise."""
     calls: list[tuple[str, str]] = []
     for line in lines:
         try:
@@ -58,7 +68,8 @@ def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN
         for block in event.get("message", {}).get("content", []):
             if block.get("type") == "tool_use":
                 name = block.get("name")
-                calls.append((name, str(block.get("input", {}).get("skill", "")) if name == "Skill" else ""))
+                key = {"Skill": "skill", "Read": "file_path"}.get(name)
+                calls.append((name, str(block.get("input", {}).get(key, "")) if key else ""))
                 if len(calls) >= limit:
                     return calls
     return calls
@@ -70,19 +81,59 @@ def first_call(lines) -> tuple[str | None, str]:  # noqa: ANN001
     return calls[0] if calls else (None, "")
 
 
-def judge(calls: list[tuple[str, str]], name: str) -> dict[str, bool]:
-    """Strict: the first call is this skill. Lenient: this skill among the first calls, before any write."""
+def judge(calls: list[tuple[str, str]], name: str, routers: tuple[str, ...] = ()) -> dict[str, bool]:
+    """Strict: the first call is this skill. Lenient: this skill among the first calls, before any refused one.
+    Routed, with `routers`: the first call past the preamble and the router skills named is this skill.
+
+    The skill is invoked through `Skill`, or its file is read (a host may load a skill that way)."""
     def ours(call: tuple[str, str]) -> bool:
-        return call[0] == "Skill" and call[1].split(":")[-1] == name
+        if call[0] == "Skill":
+            return call[1].split(":")[-1] == name
+        return call[0] == "Read" and f"/.claude/skills/{name}/" in call[1].replace("\\", "/")
 
     lenient = False
     for call in calls[:CALLS]:
-        if call[0] in WRITES:
-            break
         if ours(call):
             lenient = True
             break
-    return {"strict": bool(calls) and ours(calls[0]), "lenient": lenient}
+        if call[0] not in ALLOWED:
+            break
+    out = {"strict": bool(calls) and ours(calls[0]), "lenient": lenient}
+    if routers:
+        past = [c for c in calls if not (c[0] in PREAMBLE or (c[0] == "Skill" and c[1].split(":")[-1] in routers))]
+        out["routed"] = bool(past) and ours(past[0])
+    return out
+
+
+def session_info(lines) -> dict:  # noqa: ANN001
+    """What the session's init event says it loaded: the model, the tools and the skills it listed."""
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(event, dict) and event.get("type") == "system" and event.get("subtype") == "init":
+            return {k: event.get(k) for k in ("model", "tools", "skills", "slash_commands", "claude_code_version")}
+    return {}
+
+
+def session_error(lines, stderr: str = "") -> str | None:  # noqa: ANN001
+    """Why a session measured nothing, or None. A session that never started, or ended in an error before any
+    tool call, is an error and never a quiet answer: a usage limit hit mid-run would otherwise score every
+    remaining near miss as a pass."""
+    lines = list(lines)
+    if tool_calls(lines, 1):
+        return None
+    if not session_info(lines):
+        return "no init event" + (f": {stderr.strip()[-300:]}" if stderr.strip() else "")
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(event, dict) and event.get("type") == "result":
+            return f"error result: {str(event.get('result'))[:300]}" if event.get("is_error") else None
+    return "no result event" + (f": {stderr.strip()[-300:]}" if stderr.strip() else "")
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -106,8 +157,11 @@ def verdict(results: list[dict]) -> dict:
     A case marked `"ambiguous": true` is labelled by the owner's best guess: it is counted apart, by how often
     the session agreed with the label, and never decides the pass.
     """
-    unsure = [r for r in results if r.get("ambiguous")]
-    results = [r for r in results if not r.get("ambiguous")]
+    errors = [r for r in results if r.get("error")]
+    canaries = [r for r in results if r.get("canary") and not r.get("error")]
+    unsure = [r for r in results if r.get("ambiguous") and not r.get("error")]
+    results = [r for r in results if not (r.get("ambiguous") or r.get("canary") or r.get("error"))]
+    valid = all(r.get("fired") for r in canaries)
     expected = [r for r in results if r["expect"]]
     near = [r for r in results if not r["expect"]]
     owner = [r for r in expected if r.get("owner")]
@@ -115,11 +169,12 @@ def verdict(results: list[dict]) -> dict:
     misfire, misfire_interval = _rate(near, "fired")
     lenient, lenient_interval = _rate(expected, "lenient")
     owner_fire, owner_interval = _rate(owner, "fired")
-    passed = fire >= FIRE and misfire <= MISFIRE and (not owner or owner_fire >= FIRE)
+    passed = valid and fire >= FIRE and misfire <= MISFIRE and (not owner or owner_fire >= FIRE)
     return {"fire": fire, "fire_interval": fire_interval, "misfire": misfire, "misfire_interval": misfire_interval,
             "lenient_fire": lenient, "lenient_interval": lenient_interval,
             "owner_fire": owner_fire if owner else None, "owner_interval": owner_interval if owner else None,
-            "passed": passed, "cases": len(results),
+            "passed": passed, "valid": valid, "cases": len(results), "errors": len(errors),
+            "canary": {"cases": len(canaries), "fired": sum(bool(r.get("fired")) for r in canaries)},
             "ambiguous": {"cases": len(unsure), "agreed": sum(bool(r.get("fired")) == r["expect"] for r in unsure)}}
 
 
@@ -132,23 +187,30 @@ def captures(results: list[dict]) -> dict[str, dict[str, int]]:
 
 
 def deny_hook_settings(settings: dict | None) -> dict:
-    """The settings with a hook that refuses every tool that writes or runs, keeping the rest as they were.
+    """The settings with a hook that refuses every tool but the few that only read or choose, keeping the rest
+    as they were.
 
     `--disallowedTools` would remove those tools from what the model sees, which changes the choice being
-    measured; a hook refuses the call and leaves the choice alone."""
+    measured; a hook refuses the call and leaves the choice alone. It allows by name, so a tool nobody listed,
+    a connector's included, is refused."""
     out = json.loads(json.dumps(settings or {}))
-    hook = {"matcher": "|".join(REFUSED),
-            "hooks": [{"type": "command", "command": "echo 'trigger eval: tools are refused here' >&2; exit 2"}]}
+    check = ("import json,sys; t=json.load(sys.stdin).get('tool_name',''); "
+             f"sys.exit(0) if t in {list(ALLOWED)!r} else "
+             "(print('trigger eval: tools are refused here', file=sys.stderr), sys.exit(2))")
+    hook = {"matcher": "*", "hooks": [{"type": "command", "command": f"{sys.executable} -c \"{check}\""}]}
     out.setdefault("hooks", {}).setdefault("PreToolUse", []).append(hook)
     return out
 
 
-def command(claude: str, request: str) -> list[str]:
-    return [claude, "-p", request, "--output-format", "stream-json", "--verbose", "--no-session-persistence"]
+def command(claude: str, request: str, model: str | None = None) -> list[str]:
+    return [claude, "-p", request, "--output-format", "stream-json", "--verbose", "--no-session-persistence"] \
+        + (["--model", model] if model else [])
 
 
 def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
-             claude_dir: Path | None = None, fixture: Path | None = None) -> list[tuple[str, str]]:
+             claude_dir: Path | None = None, fixture: Path | None = None, model: str | None = None,
+             session_timeout: int = 300) -> dict:
+    """One session on one request: its first tool calls, why it measured nothing if it did not, and what it loaded."""
     work = Path(tempfile.mkdtemp(prefix="trigger-"))
     try:
         subprocess.run(["git", "init", "-q"], cwd=work, check=True)
@@ -161,9 +223,11 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
         settings_path = work / ".claude/settings.json"
         current = json.loads(settings_path.read_text(encoding="utf-8")) if settings_path.is_file() else None
         settings_path.write_text(json.dumps(deny_hook_settings(current), indent=2), encoding="utf-8")
-        with subprocess.Popen(command(claude, request), cwd=work, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                              text=True) as proc:
-            seen = []
+        with subprocess.Popen(command(claude, request, model), cwd=work, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, text=True) as proc:
+            seen: list[str] = []
+            watchdog = threading.Timer(session_timeout, proc.kill)  # a session that hangs ends as an error
+            watchdog.start()
             try:
                 for line in proc.stdout:
                     seen.append(line)
@@ -171,9 +235,11 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
                     if len(calls) >= CALLS or any(c[0] in WRITES for c in calls) or (calls and judge(calls, name)["lenient"]):
                         break
             finally:
+                watchdog.cancel()
                 proc.kill()
+                stderr = proc.stderr.read() if proc.stderr else ""
                 proc.wait(timeout=timeout)
-        return tool_calls(seen)
+        return {"calls": tool_calls(seen), "error": session_error(seen, stderr), "info": session_info(seen)}
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -188,32 +254,60 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixture", type=Path, help="files copied into each session's repository first")
     parser.add_argument("--claude", default=shutil.which("claude") or "claude")
     parser.add_argument("--out", type=Path, help="where to write each run's result and the verdict, as JSON")
-    parser.add_argument("--timeout", type=int, default=30)
+    parser.add_argument("--timeout", type=int, default=30, help="seconds to wait for a killed session to exit")
+    parser.add_argument("--session-timeout", type=int, default=300, help="seconds before a session is ended as an error")
+    parser.add_argument("--model", help="the model every session runs on; pin it, since the listing's budget follows it")
+    parser.add_argument("--router", action="append", default=[],
+                        help="a skill that asks to run before any response; the routed metric looks past it")
+    parser.add_argument("--max-errors", type=int, default=3, help="consecutive errors that stop the run")
     args = parser.parse_args(argv)
     text = args.skill.read_text(encoding="utf-8")
     name = next(line.split(":", 1)[1].strip().strip('"') for line in text.split("\n") if line.startswith("name:"))
-    results = []
+    results, sessions, streak = [], [], 0
+    version = subprocess.run([args.claude, "--version"], capture_output=True, text=True).stdout.strip()
     for case in json.loads(args.cases.read_text(encoding="utf-8")):
         for _ in range(args.runs):
-            calls = run_case(args.claude, args.skill, name, case["request"], args.timeout, args.claude_dir, args.fixture)
-            judged = judge(calls, name)
+            ran = run_case(args.claude, args.skill, name, case["request"], args.timeout, args.claude_dir, args.fixture,
+                           args.model, args.session_timeout)
+            calls = ran["calls"]
+            judged = judge(calls, name, tuple(args.router))
             first = f"{calls[0][0]}:{calls[0][1]}" if calls and calls[0][1] else (calls[0][0] if calls else "None")
             results.append({**case, "first_call": first, "calls": [f"{t}:{s}" if s else t for t, s in calls],
-                            "fired": judged["strict"], "lenient": judged["lenient"]})
-            print(f"  {'fire' if judged['strict'] else 'quiet':5} expect={'fire' if case['expect'] else 'quiet':5} "
-                  f"{first:24} {case['request']}", flush=True)
+                            "fired": judged["strict"], "lenient": judged["lenient"], "routed": judged.get("routed"),
+                            "error": ran["error"]})
+            if ran["info"]:
+                sessions.append(ran["info"])
+            state = "ERROR" if ran["error"] else ("fire" if judged["strict"] else "quiet")
+            print(f"  {state:5} expect={'fire' if case['expect'] else 'quiet':5} {first:24} {case['request']}"
+                  + (f"  [{ran['error']}]" if ran["error"] else ""), flush=True)
+            streak = streak + 1 if ran["error"] else 0
+            if streak >= args.max_errors:
+                print(f"stopped: {streak} sessions in a row measured nothing", flush=True)
+                break
+        if streak >= args.max_errors:
+            break
     result = verdict(results)
     print(f"fire {result['fire']} {result['fire_interval']} (at least {FIRE}), lenient {result['lenient_fire']} "
           f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {MISFIRE})"
           + (f", owner's words {result['owner_fire']} {result['owner_interval']}" if result["owner_fire"] is not None else "")
           + ": " + ("pass" if result["passed"] else "fail")
           + (f"; ambiguous, apart: {result['ambiguous']['agreed']}/{result['ambiguous']['cases']} agreed with the label"
-             if result["ambiguous"]["cases"] else ""))
+             if result["ambiguous"]["cases"] else "")
+          + (f"; canaries {result['canary']['fired']}/{result['canary']['cases']}"
+             + ("" if result["valid"] else ", so the run is INVALID") if result["canary"]["cases"] else "")
+          + (f"; {result['errors']} errors left out" if result["errors"] else ""))
+    if args.router:
+        routed = [r for r in results if r["expect"] and not (r.get("error") or r.get("ambiguous") or r.get("canary"))]
+        print(f"routed fire, past {', '.join(args.router)}: {sum(bool(r['routed']) for r in routed)}/{len(routed)}")
     for request, taken in captures([r for r in results if not r["fired"] and r["expect"]]).items():
         print(f"  captured: {request!r} -> {taken}")
     if args.out:
-        args.out.write_text(json.dumps({"skill": name, "verdict": result, "captures": captures(results),
-                                        "results": results}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        args.out.write_text(json.dumps({"skill": name, "claude_version": version, "model": args.model,
+                                        "routers": args.router, "sessions": sessions[:1], "verdict": result,
+                                        "captures": captures(results), "results": results},
+                                       indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    if streak >= args.max_errors:
+        return 2
     return 0 if result["passed"] else 1
 
 
