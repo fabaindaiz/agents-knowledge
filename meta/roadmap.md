@@ -204,7 +204,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   rules, is done outside the bundle: it is personal, so it never enters `.agents/`. The phases and the
   items beside them:
 
-- **`i-5ed7e8-855c42` · Release 0.0.30: the decided scope, after its pilots and the trigger eval.** Decided by the
+- **`i-5ed7e8-855c42` · Release 0.0.30: the decided scope, after its pilots and the trigger eval.** **Focus (`d-5ed7e8-7cac23`): standardisation and cost reduction without worse performance, with a cost pilot against the base model in every release from this one on.** Decided by the
   owner on 2026-10-07, one block at a time (`d-5ed7e8-a65c26` to `d-5ed7e8-9f3502` in `meta/decisions.md`). First,
   with the owner's account: pilot-9's index arm and a reviewer pilot (`d-5ed7e8-220ad3`), and the skill trigger eval
   (`i-5ed7e8-578c22`, `d-5ed7e8-07da79`). Then the meta-session: seven tool fixes (the proposals for align against the

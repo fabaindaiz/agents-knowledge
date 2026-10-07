@@ -575,6 +575,24 @@ class TriggerEval(Base):
         # any tool the eval refuses ends the window, a connector's as much as an edit
         self.assertFalse(self.T.judge(self.T.tool_calls([self.call("mcp__tracker__create"), skill]), "close")["lenient"])
 
+    def test_read_only_shell_commands_run_and_everything_else_is_refused(self) -> None:
+        allow = lambda tool, inp=None: self.T.hook_decision({"tool_name": tool, "tool_input": inp or {}})  # noqa: E731
+        for command in ("ls docs", "git status", "git log --oneline -5", "cat docs/spec.md", "git diff", "head -20 src/cart.py"):
+            self.assertEqual(allow("Bash", {"command": command}), 0, command)
+        for command in ("git push origin main", "git commit -m x", "rm -rf .", "ls; rm x", "cat a > b",
+                        "echo $(whoami)", "git status && git push", "curl http://x", "python3 -c 1"):
+            self.assertEqual(allow("Bash", {"command": command}), 2, command)
+        self.assertEqual(allow("Read"), 0)
+        self.assertEqual(allow("mcp__tracker__create_issue"), 2)
+
+    def test_a_shell_call_keeps_its_command_so_a_capture_can_be_read(self) -> None:
+        bash = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash",
+                           "input": {"command": "ls docs"}}]}})
+        self.assertEqual(self.T.tool_calls([bash]), [("Bash", "ls docs")])
+        # a read-only command does not end the window: the skill may still come after it
+        self.assertFalse(self.T.should_stop(self.T.tool_calls([bash]), "close"))
+        self.assertTrue(self.T.judge(self.T.tool_calls([bash, self.call("Skill", "close")]), "close")["lenient"])
+
     def test_a_session_is_stopped_at_a_fire_a_refused_call_or_the_window(self) -> None:
         read, skill, bash = self.call("Read"), self.call("Skill", "close"), self.call("Bash")
         stop = lambda lines: self.T.should_stop(self.T.tool_calls(lines), "close")  # noqa: E731
@@ -654,9 +672,11 @@ class TriggerEval(Base):
         added = settings["hooks"]["PreToolUse"][-1]
         self.assertEqual(added["matcher"], "*")  # refused unless allowed: a connector's tools included
         import subprocess
-        for tool, code in (("Read", 0), ("Skill", 0), ("Bash", 2), ("Edit", 2), ("mcp__tracker__create_issue", 2)):
-            ran = subprocess.run(added["hooks"][0]["command"], shell=True, input=json.dumps({"tool_name": tool}),
-                                 capture_output=True, text=True)
+        for tool, inp, code in (("Read", {}, 0), ("Skill", {}, 0), ("Bash", {"command": "git push"}, 2),
+                                ("Bash", {"command": "git status"}, 0), ("Edit", {}, 2),
+                                ("mcp__tracker__create_issue", {}, 2)):
+            ran = subprocess.run(added["hooks"][0]["command"], shell=True,
+                                 input=json.dumps({"tool_name": tool, "tool_input": inp}), capture_output=True, text=True)
             self.assertEqual(ran.returncode, code, tool)
         self.assertEqual(len(settings["hooks"]["PreToolUse"]), 2)
         self.assertNotIn("--disallowedTools", self.T.command("claude", "a request"))

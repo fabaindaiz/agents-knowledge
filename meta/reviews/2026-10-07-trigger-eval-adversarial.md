@@ -84,3 +84,20 @@ works with, and the debug warning is read to know whether the listing overflowed
   cases, so its owner gate does not apply and its fire rate rests on written cases.
 - A fixture outside every repository: a spec with five open questions, a half-done plan and uncommitted source,
   plus the carrier's root files and release.
+
+## Stage 1, a screen (one run per case)
+
+The owner's default model, pinned; the carrier's skills from its release branch; the fixture; the router skill
+looked past. No session errored, and every canary fired, so the setup measured something.
+
+| Skill | Strict fire | Misfire | Owner's words | Screen |
+|---|---:|---:|---:|---|
+| `close` | 9 of 9 | 0 of 8 | 9 of 9 | pass; the ambiguous cases agreed with their labels, 6 of 6 |
+| `decision-review` | 2 of 6 | 0 of 5 | 2 of 6 | fail |
+| `user-walk` | 5 of 6 | 0 of 6 | none left | pass |
+
+Every expected `decision-review` case that did not fire, and most near misses in every skill, began with a shell
+call, which the hook refused and which ended the window. The eval did not record the command, so it is not known
+whether the session was looking before choosing. *Fixed before stage 2:* a shell command that only reads runs and
+is recorded, and does not end the window; anything else is refused as before. Stage 1 is a screen, so it decides
+nothing: stage 2, with three runs, a written prediction and the trimmed-listing arm, does.

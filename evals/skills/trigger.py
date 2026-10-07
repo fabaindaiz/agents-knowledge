@@ -13,7 +13,8 @@ writes or runs is refused by a hook rather than hidden, so the model still sees 
 between, and a request such as "push everything" does nothing. The machine's own configuration (its global
 instructions, plugins and other skills) stays loaded on purpose: that is the competition the skill meets.
 
-Every tool but the few that only read or choose is refused, a connector's included. A session that never
+Every tool but the few that only read or choose is refused, a connector's included; a shell command runs
+only when it reads (`ls`, `cat`, `git status`, ... with no redirection or chaining), and is recorded. A session that never
 started or ended in an error before any tool call is an error, left out of every rate, and a few in a row stop
 the run. Reading the skill's file counts as invoking it. With `--router`, a skill that asks to run before any
 response is looked past (the routed metric). A case marked `"canary": true` names the skill outright: if one
@@ -36,6 +37,7 @@ the listing truncated or dropped measures nothing.
 from __future__ import annotations
 
 import argparse
+import re
 import json
 import math
 import shutil
@@ -50,6 +52,9 @@ FIRE, MISFIRE = 0.8, 0.1
 # Every other tool is refused by a hook, a connector's (`mcp__…`) as much as a built-in one: a request such as
 # "push everything" must do nothing, through any tool the machine has.
 ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
+# A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
+READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|tree|pwd|git (status|log|diff|show|branch|ls-files))(\s|$)")
+SHELL_META = re.compile(r"[;&|<>`$\n\\()]|\s-(exec|execdir|delete|ok|fprint)\b|--output\b")
 PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
 CALLS = 5  # the lenient metric reads this many tool calls
 
@@ -68,11 +73,28 @@ def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN
         for block in event.get("message", {}).get("content", []):
             if block.get("type") == "tool_use":
                 name = block.get("name")
-                key = {"Skill": "skill", "Read": "file_path"}.get(name)
-                calls.append((name, str(block.get("input", {}).get(key, "")) if key else ""))
+                key = {"Skill": "skill", "Read": "file_path", "Bash": "command"}.get(name)
+                calls.append((name, str(block.get("input", {}).get(key, ""))[:200] if key else ""))
                 if len(calls) >= limit:
                     return calls
     return calls
+
+
+def read_only(command: str) -> bool:
+    """A shell command that only reads the repository, run so a session may look before it chooses."""
+    command = command.strip()
+    return bool(READ_ONLY.match(command)) and not SHELL_META.search(command)
+
+
+def allowed(call: tuple[str, str]) -> bool:
+    return call[0] in ALLOWED or (call[0] == "Bash" and read_only(call[1]))
+
+
+def hook_decision(payload: dict) -> int:
+    """The refusing hook's answer for one tool call: 0 lets it run, 2 refuses it."""
+    tool = payload.get("tool_name", "")
+    command = str((payload.get("tool_input") or {}).get("command", ""))
+    return 0 if allowed((tool, command if tool == "Bash" else "")) else 2
 
 
 def first_call(lines) -> tuple[str | None, str]:  # noqa: ANN001
@@ -96,7 +118,7 @@ def judge(calls: list[tuple[str, str]], name: str, routers: tuple[str, ...] = ()
         if ours(call):
             lenient = True
             break
-        if call[0] not in ALLOWED:
+        if not allowed(call):
             break
     out = {"strict": bool(calls) and ours(calls[0]), "lenient": lenient}
     if routers:
@@ -107,7 +129,7 @@ def judge(calls: list[tuple[str, str]], name: str, routers: tuple[str, ...] = ()
 
 def should_stop(calls: list[tuple[str, str]], name: str) -> bool:
     """A session has said what it would do once it fired, tried a refused tool, or filled the window."""
-    return len(calls) >= CALLS or any(c[0] not in ALLOWED for c in calls) or (bool(calls) and judge(calls, name)["lenient"])
+    return len(calls) >= CALLS or any(not allowed(c) for c in calls) or (bool(calls) and judge(calls, name)["lenient"])
 
 
 def session_info(lines) -> dict:  # noqa: ANN001
@@ -199,10 +221,8 @@ def deny_hook_settings(settings: dict | None) -> dict:
     measured; a hook refuses the call and leaves the choice alone. It allows by name, so a tool nobody listed,
     a connector's included, is refused."""
     out = json.loads(json.dumps(settings or {}))
-    check = ("import json,sys; t=json.load(sys.stdin).get('tool_name',''); "
-             f"sys.exit(0) if t in {list(ALLOWED)!r} else "
-             "(print('trigger eval: tools are refused here', file=sys.stderr), sys.exit(2))")
-    hook = {"matcher": "*", "hooks": [{"type": "command", "command": f"{sys.executable} -c \"{check}\""}]}
+    hook = {"matcher": "*", "hooks": [{"type": "command",
+                                       "command": f"'{sys.executable}' '{Path(__file__).resolve()}' --hook"}]}
     out.setdefault("hooks", {}).setdefault("PreToolUse", []).append(hook)
     return out
 
@@ -250,6 +270,11 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
 
 
 def main(argv: list[str] | None = None) -> int:
+    if (argv if argv is not None else sys.argv[1:]) == ["--hook"]:  # run by the refusing hook, one tool call on stdin
+        code = hook_decision(json.load(sys.stdin))
+        if code:
+            print("trigger eval: tools are refused here", file=sys.stderr)
+        return code
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--skill", required=True, type=Path, help="the installed SKILL.md under test")
     parser.add_argument("--cases", required=True, type=Path,
