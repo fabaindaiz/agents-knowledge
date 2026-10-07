@@ -350,3 +350,17 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   release only if it keeps every discriminating task passing as often as `bundle_v29` and costs no more than it;
   otherwise the index keeps its shape and the result says so. The reviewer pilot is registered apart.
   Analysis: `evals/cost_smoke.py`.
+- **2026-10-07, exploratory — the reviewer pilot, the index split seen by the reviewer alone.** Registered before
+  any trial (`evals/review.py`). Each trial gives the `knowledge-reviewer` its own instructions and one fixed diff,
+  applied uncommitted to a fresh copy of a task's repository, in a headless session with the reviewer's tools only
+  (Read, Grep, Glob, Bash). *Arms:* `R0`, the current release's index; `R2`, the D2 split (`d2_index`). The
+  action-class slices of the review (R4) were never shipped and are not run. *Diffs:* the naive and the reference
+  overlay of six tasks, one per target note (`contacts-second-source-l1`, `refund-webhook-l1`,
+  `delivery-email-once-l1`, `recommendations-kill-switch-l1`, `settings-notification-preferences-l1`,
+  `api-page-size-limit-l1`), and the reference overlay of the three tasks no note concerns; two repetitions, the
+  pilots' model and degraded isolation. *Outcomes, read from the transcript:* the target card opened and named on
+  the naive diff (recall), the target named on the reference diff (over-application), the cards opened on the
+  neutral diffs, whether `PHASES.md` was read, and the input tokens. *Prediction* (from the review): `R2` spends at
+  most ×0.6 of `R0`'s input tokens with the same recall (refuted by fewer naive diffs with the target named);
+  *decision:* it joins the decision on D2 with pilot-9's result. Mechanical outcomes only: whether a named card
+  was right is read by hand in the report.
