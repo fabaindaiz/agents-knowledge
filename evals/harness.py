@@ -48,14 +48,15 @@ SOURCES = ROOT / "sources" / "notes"
 HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
-CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b"]
+CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b",
+              "bundle_v29", "bundle_v29_d2"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"],
 }
 
 ROUTING = """
@@ -99,8 +100,39 @@ Applies if, Not when and check), and open a full note only when a card's boundar
 this repository states an invariant that contradicts a note, follow the repository and say so. When asked
 for a review in a fresh context, give the diff to the `knowledge-reviewer` subagent and wait for its answer.
 """
+# pilot-9 (2026-10-07): the 0.0.29 wiring is 0.0.23's word for word, so both arms take ROUTING_V23B; they differ
+# from `bundle_v23b` only in the bundle they copy, the current release, and `bundle_v29_d2` in its index (`d2_index`).
 ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23,
-            "bundle_v23b": ROUTING_V23B}
+            "bundle_v23b": ROUTING_V23B, "bundle_v29": ROUTING_V23B, "bundle_v29_d2": ROUTING_V23B}
+REVIEWER_ARMS = ("bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2")
+LOOKUP_HEADING = "## By what you are about to do"
+
+
+def d2_index(agents: Path) -> dict:
+    """The index split of `meta/reviews/2026-10-05-index-scaling.md`, design D2, built on a copy for one arm.
+
+    `knowledge/INDEX.md` keeps its generated mark, its title and the lookup table, and says where the rest went;
+    everything else (the preamble, how to use it, the phase guide, the areas, how well founded, keeping usable,
+    what is not here) moves unchanged to `knowledge/PHASES.md`, in the same folder so every relative link holds.
+    The checksums are rewritten, so the copy verifies as a release.
+    """
+    index = agents / "knowledge" / "INDEX.md"
+    text = index.read_text()
+    head, _, rest = text.partition("\n## ")
+    rest = "## " + rest
+    sections = ["## " + s for s in ("\n" + rest).split("\n## ")[1:]]
+    lookup = next(s for s in sections if s.startswith(LOOKUP_HEADING))
+    others = [s for s in sections if s is not lookup]
+    mark, title = head.split("\n")[0], next(l for l in head.split("\n") if l.startswith("# "))
+    new_index = (f"{mark}\n\n{title}\n\nMatch what you are about to do below and open the cards it names. How to use "
+                 "this index, the guide by phase of work, the areas and how the knowledge is kept are in "
+                 "[PHASES.md](PHASES.md).\n\n" + lookup.rstrip() + "\n")
+    phases = (f"{mark}\n\n# Phases, areas and how this knowledge is used\n\n"
+              + head.split(title, 1)[1].strip() + "\n\n" + "\n".join(s.rstrip() + "\n" for s in others))
+    index.write_text(new_index)
+    (agents / "knowledge" / "PHASES.md").write_text(phases)
+    _bundle_tool().write_checksums(agents)
+    return {"index_chars": len(new_index), "phases_chars": len(phases), "index_chars_before": len(text)}
 
 ORACLE_HEADER = """
 ## Engineering note
@@ -258,15 +290,17 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b"):
+    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws)
         reviewer = ws / ".agents/agents/knowledge-reviewer.md"
-        if condition in ("bundle_v23", "bundle_v23b") and reviewer.is_file():
+        if condition in REVIEWER_ARMS and reviewer.is_file():
             (ws / ".claude/agents").mkdir(parents=True, exist_ok=True)
             shutil.copyfile(reviewer, ws / ".claude/agents/knowledge-reviewer.md")
         if condition == "ablated":
             info["ablation"] = ablate(ws / ".agents", task["notes"])
+        if condition == "bundle_v29_d2":
+            info["d2"] = d2_index(ws / ".agents")
     elif condition == "oracle":
         agents_md = task["agents_minimal"].rstrip() + "\n" + ORACLE_HEADER
         agents_md += "\n".join(note_text(s) for s in task["notes"])

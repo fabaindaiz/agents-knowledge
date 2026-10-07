@@ -330,3 +330,23 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   other three held. The result went to the user, who decided to tag 0.0.23 anyway, with the refutation
   stated in its changelog: a deviation from the registered decision, taken explicitly. The tagged release
   adds unmeasured wording fixes (`REPORT.md` §4.10).
+- **2026-10-07, exploratory — pilot-9, the index split (D2) against the current release.** Registered before any
+  trial; it replaces the pilot-9 sketched at 0.0.24 (triage, lookup and plan arms), which no longer matches the
+  plan (`meta/decisions.md`, `d-5ed7e8-220ad3`). *Arms:* `minimal`; `bundle_v29`, the current release with the
+  0.0.29 wiring (which is `ROUTING_V23B` word for word) and the reviewer installed; `bundle_v29_d2`, the same with
+  the index split of `meta/reviews/2026-10-05-index-scaling.md`, design D2, built on each workspace's copy by
+  `d2_index` (`knowledge/INDEX.md` keeps the lookup table and points to a `knowledge/PHASES.md` holding the rest,
+  unchanged). *Measured before the run:* the D2 index is about 3,800 tokens (the review estimated about 3,100,
+  presumably counting compacted cells as well) and the reviewer's load before a card about 4,400 (estimated about
+  3,700), against about 6,050 and 6,700 today. *Tasks:* pilot-6's six (`contacts-second-source-l1`,
+  `contacts-second-source-l2`, `refund-webhook-l2`, `inventory-csv-export`, `cli-help-typo`, `report-label-rename`).
+  *Agent and isolation:* the pilots' model, two repetitions, a new seed, every arm with the subagent tool, and the
+  pilots' degraded isolation (`--config-dir default`): the user's global instructions load in every arm alike, and
+  they changed after pilot-8, so ratios against earlier pilots are not comparable, only those inside this run.
+  *Predictions* (from the review, written before the run): `bundle_v29_d2` / `minimal` cost at most ×2.0 on the
+  non-trivial tasks (refuted above ×2.2) and at most ×1.2 on the trivial ones (refuted above ×1.4); every
+  discriminating task passes under `bundle_v29_d2` as often as under `bundle_v29` (refuted by any fewer pass);
+  `bundle_v29` keeps pilot-8's lines (×2.0 and ×1.2, refuted above ×2.3 and ×1.4). *Decision rule:* D2 joins a
+  release only if it keeps every discriminating task passing as often as `bundle_v29` and costs no more than it;
+  otherwise the index keeps its shape and the result says so. The reviewer pilot is registered apart.
+  Analysis: `evals/cost_smoke.py`.

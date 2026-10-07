@@ -30,9 +30,13 @@ PREDICTIONS = {
     "bundle_v22": {"trivial": (1.2, 1.4), "normal": (1.5, 1.8)},   # .agents/CHANGELOG.md [0.0.22], pilot-6
     "bundle_v23": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},   # .agents/CHANGELOG.md [0.0.23], pilot-7
     "bundle_v23b": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},  # the same, on the changed candidate, pilot-8
+    # pilot-9, registered 2026-10-07 in PROTOCOL.md: the current release as the baseline, and the D2 index split
+    # (`meta/reviews/2026-10-05-index-scaling.md`, "The experiment that would decide it").
+    "bundle_v29": {"trivial": (1.2, 1.4), "normal": (2.0, 2.3)},
+    "bundle_v29_d2": {"trivial": (1.2, 1.4), "normal": (2.0, 2.2)},
 }
 METRICS = ("cost", "turns", "out_tokens")
-ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b")
+ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2")
 CHECK_MENTION = re.compile(r"(?i)\b(verify by|the check|its check|card)\b")
 
 
@@ -106,7 +110,8 @@ def main(argv: list[str] | None = None) -> int:
          "| Group | Contrast | Metric | Ratio | 95% CI | Tasks | Prediction | Verdict |",
          "|---|---|---|---:|---|---:|---|---|"]
     for group, tasks in groups.items():
-        for a_arm, b_arm in (("bundle_v23b", "minimal"), ("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
+        for a_arm, b_arm in (("bundle_v29_d2", "minimal"), ("bundle_v29", "minimal"), ("bundle_v29_d2", "bundle_v29"),
+                             ("bundle_v23b", "minimal"), ("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
             for metric in METRICS:
                 cell: dict = {}
                 for r in valid:
@@ -134,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
           "| Group | Arm | Trials | Read the bundle | Index | Area index | Notes opened (mean) | Mentions a check | Called the reviewer |",
           "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
     for group, tasks in groups.items():
-        for arm in ("bundle", "bundle_v22", "bundle_v23", "bundle_v23b"):
+        for arm in ("bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"):
             rs = [adherence(run, r) for r in valid if r["task"] in tasks and r["condition"] == arm]
             if not rs:
                 continue
