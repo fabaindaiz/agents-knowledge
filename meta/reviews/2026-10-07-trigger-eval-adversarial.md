@@ -65,3 +65,22 @@ warns that usage-limit errors score zero without notice.
 `close`: strict fire 0.6 to 0.85, misfire 0.05 to 0.15, a pass about even. `decision-review`: strict 0.4 to 0.7,
 likely fail. `user-walk`: agent-written cases at least 0.8, the owner's captured by a brainstorming skill,
 likely failing the owner gate. The registered prediction is written before stage 2, after the fixture.
+
+## Verified against the primary text, the same day
+
+The host's skills documentation, downloaded whole, confirms the listing's budget: one percent of the model's
+context window, descriptions dropped from the least invoked skills first, every name always kept, a warning in
+the debug log when the listing overflows. A setting raises the fraction, and per-skill overrides set a skill to
+show its name only, or to be hidden. A summarising fetch of the same page had answered that no automatic dropping
+exists, which is wrong; the primary text was read instead. The consequence for the eval is that the budget follows
+the pinned model. A smaller context window drops more descriptions, so the model is pinned to the one the owner
+works with, and the debug warning is read to know whether the listing overflowed.
+
+## Done before stage 1
+
+- The cases, relabelled and partly rewritten as the owner decided (`d-5ed7e8-44de5f`), with one canary per skill.
+  Expected and near-miss counts per skill, by the clear cases that decide: `close` nine and eight, `decision-review`
+  six and five, `user-walk` six and six. `user-walk` has none of the owner's words left among its clear expected
+  cases, so its owner gate does not apply and its fire rate rests on written cases.
+- A fixture outside every repository: a spec with five open questions, a half-done plan and uncommitted source,
+  plus the carrier's root files and release.
