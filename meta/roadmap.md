@@ -20,28 +20,37 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-07, night.** All work is on the unpushed branch `evals/pilot-9`, on top of `docs/plan-0.0.30`;
-`main` is the remote's, `v0.0.29` is tagged and pushed. `MANIFEST.md` now frames the repository and caps this
-hand-off (`d-5ed7e8-b4c23f`).
+**State on 2026-10-07, at the close.** The home's branches are merged into `main` by fast-forward and pushed, at
+the owner's request, after an isolated code review; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository
+(`d-5ed7e8-b4c23f`): read it first. 0.0.30 takes everything pending, then one release a month; 0.1.0 keeps its five
+criteria (`i-5ed7e8-3e6760`).
 
-**Running:** `review-2` (120 trials, the D2 replication); when it ends, the skill trigger eval's stage 2 starts
-by itself (two arms, three runs, its prediction registered). Both live in temporary folders: after a restart,
-`python3 evals/review.py run evals/runs/review-2` resumes the first, and the second's runner is rebuilt from
-`meta/reviews/2026-10-07-trigger-eval-adversarial.md`.
+**Running when this session closed, outside the repository:**
+- `review-2`, the D2 replication (about seventy of 120 trials done). If it stopped, `python3 evals/review.py run
+  evals/runs/review-2` resumes it; then `python3 evals/review.py report evals/runs/review-2`.
+- The skill trigger eval's stage 2, detached, starting when `review-2` ends: `~/.config/agent-guides/trigger-stage2/run.sh`
+  (its inputs beside it), results in `~/.config/agent-guides/trigger-results/stage2/`, per-case majorities with
+  `stage2_majority.py` in that folder. Its prediction and a deviation are in `meta/reviews/2026-10-07-trigger-eval-adversarial.md`.
 
-**Decided today with the owner:** the cost levers (`d-5ed7e8-8174a8`), script navigation behind a recall gate
-(`-90786d`), one external benchmark at a frozen tag (`-d47ee1`), the researcher agent (`-79b1cd`), docs-drift as
-proposed, the manifest, and a monthly release counting from 0.0.30, which takes everything pending first.
+**Next, in order:**
+1. **Decide D2** by the rule registered in `evals/PROTOCOL.md` (cost at most ×0.95 by the geometric mean of pairs;
+   recall refuted if `R2` names the target on two or more fewer naive diffs). Read each run apart and pooled, and with
+   and without the one `R2` session per run that exited with code 1 (`i-5ed7e8-e09738`): find why it ended. Write
+   `evals/REPORT.md` §4.13 and both changelogs, then ask the owner (`d-5ed7e8-c3ebf0`).
+2. **Report stage 2**: both arms, the gate per skill, per-case majorities, against the prediction.
+3. **The 0.0.30 meta-session**, with the owner's yes (`i-5ed7e8-855c42`); the export may not grow, so additions are
+   paid by cuts (`meta/reviews/2026-10-07-adversarial-shrink-review.md`).
 
-**Next:** decide D2 by its registered rule and write `evals/REPORT.md` §4.13; report stage 2 with per-case
-majorities; then, with the owner's yes, the 0.0.30 meta-session (`i-5ed7e8-855c42`).
+**Decided this session:** `d-5ed7e8-8174a8`, `-90786d`, `-d47ee1` (`i-5ed7e8-d60fb0`), `-79b1cd`, `-b4c23f`;
+docs-drift as proposed. **Reviewed:** a mid-size model, isolated, over the code merged; three findings fixed, the
+rest deferred to `i-5ed7e8-e09738`.
 
-**Waiting on the owner:** pushing both branches and merging; the six carriers' 0.0.29 pull requests; the
-credentials ticket; the `proposed` rows in carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`); the
-subscription's terms for automated runs.
+**Waiting on the owner:** the six carriers' 0.0.29 pull requests; the credentials ticket; the `proposed` rows in
+carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`); the subscription's terms for automated runs.
 
-**What went wrong:** a gate piped into `tail` (it passed, but the rule forbids it); a decision row named a file not
-yet written.
+**What went wrong:** a gate piped into `tail` and an edit chained with `git`, again (`i-5ed7e8-bd65a0`); a `pkill`
+whose pattern matched its own command; a first check of the overlays read the wrong folders and found nothing,
+caught before it was reported.
 
 ## Standing rules and facts
 
@@ -116,6 +125,15 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
   about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
   `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
+- **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** An isolated review of
+  the code merged that night (a mid-size model) found, besides the three fixed before the merge: `evals/review.py`
+  scores a session that exited in error as a valid trial and never retries an errored one on resume (high, medium;
+  checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but one per run, both `R2` on a
+  naive diff, exited with code 1 after several times the usual input and did not name the target, so D2 is read
+  with and without them); `trigger.py` judges a command cut to 200 characters, does not drain standard error,
+  calls a run valid when every canary errored, and prints a verdict for a run stopped by errors (low); the
+  harness's frozen hash is not checked when a run resumes (low). A possible gap, an overlay's new file missing from
+  the reviewer's diff, was checked: no diff adds a file. *Remedy:* each under a test, before the next pilot run.
 - **`i-5ed7e8-bd65a0` · A home command that runs the gate and commits the named files.** Two frictions recur in the
   typed chain `tests && check && git add && git commit`: a gate piped through a filter (`i-5ed7e8-89ec30`, four
   occurrences in the archived hand-offs) and an edit chained into the same command as `git`, which the privacy hook

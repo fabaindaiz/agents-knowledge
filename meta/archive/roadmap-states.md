@@ -2,6 +2,29 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-07, night.** All work is on the unpushed branch `evals/pilot-9`, on top of `docs/plan-0.0.30`;
+`main` is the remote's, `v0.0.29` is tagged and pushed. `MANIFEST.md` now frames the repository and caps this
+hand-off (`d-5ed7e8-b4c23f`).
+
+**Running:** `review-2` (120 trials, the D2 replication); when it ends, the skill trigger eval's stage 2 starts
+by itself (two arms, three runs, its prediction registered). Both live in temporary folders: after a restart,
+`python3 evals/review.py run evals/runs/review-2` resumes the first, and the second's runner is rebuilt from
+`meta/reviews/2026-10-07-trigger-eval-adversarial.md`.
+
+**Decided today with the owner:** the cost levers (`d-5ed7e8-8174a8`), script navigation behind a recall gate
+(`-90786d`), one external benchmark at a frozen tag (`-d47ee1`), the researcher agent (`-79b1cd`), docs-drift as
+proposed, the manifest, and a monthly release counting from 0.0.30, which takes everything pending first.
+
+**Next:** decide D2 by its registered rule and write `evals/REPORT.md` §4.13; report stage 2 with per-case
+majorities; then, with the owner's yes, the 0.0.30 meta-session (`i-5ed7e8-855c42`).
+
+**Waiting on the owner:** pushing both branches and merging; the six carriers' 0.0.29 pull requests; the
+credentials ticket; the `proposed` rows in carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`); the
+subscription's terms for automated runs.
+
+**What went wrong:** a gate piped into `tail` (it passed, but the rule forbids it); a decision row named a file not
+yet written.
+
 **State on 2026-10-07, evening, closing a long session for a fresh one (`d-5ed7e8-cdf1f3`).** All of it is on the
 unpublished branch `evals/pilot-9`, on top of `docs/plan-0.0.30`; neither is pushed, and the owner publishes later.
 0.0.30's focus is now **standardisation and cost without worse performance** (`d-5ed7e8-7cac23`), with a cost

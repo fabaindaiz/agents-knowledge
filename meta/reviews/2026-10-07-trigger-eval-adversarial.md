@@ -143,3 +143,8 @@ had dropped that skill's description.
 by more than 0.1, or raises any misfire by more than 0.05, the advice is reopened. If the arms do not differ,
 the advice stands on the listing's size alone, about a third smaller on every turn. If a skill fails its gate
 in both arms, its description is rewritten before 0.0.30 ships it, and its cases are not.
+
+**A deviation, recorded before stage 2 ran.** An isolated code review the same night found that the read-only
+classifier let through readers' flags that write or run (`find`'s `-f…` and `-okdir`, `rg --pre`, `tree -o`, and
+`git branch` with a name), and that the refusing hook let a call through when it raised. Both were fixed under tests
+before stage 2 started, so stage 2 refuses a few commands stage 1 would have run; no stage 1 session ran one.
