@@ -16,6 +16,7 @@ instructions, plugins and other skills) stays loaded on purpose: that is the com
 A pass is a strict fire rate of at least 0.8 on the requests that expect it, a misfire rate of at most 0.1 on
 the near misses, and at least 0.8 on the cases marked `"owner": true` (the owner's own words) when there are
 any (`meta/reviews/2026-10-02-adversarial-review.md`, §3.1; `meta/reviews/2026-10-05-skill-triggers.md`).
+A case marked `"ambiguous": true` is run and reported apart, and never decides the pass.
 Each rate is printed with its Wilson interval; with `--runs N` every case runs N times. The table of first
 calls shows which competitor captured each case. Exit 0 on a pass, 1 on a fail. Cases are held out: none of
 them is written into the description it tests. They live in the carrier that runs them, beside its
@@ -99,7 +100,13 @@ def _rate(rows: list[dict], key: str) -> tuple[float, tuple[float, float]]:
 
 
 def verdict(results: list[dict]) -> dict:
-    """The rates on the cases that expect the skill and on the near misses, with intervals, and the pass."""
+    """The rates on the cases that expect the skill and on the near misses, with intervals, and the pass.
+
+    A case marked `"ambiguous": true` is labelled by the owner's best guess: it is counted apart, by how often
+    the session agreed with the label, and never decides the pass.
+    """
+    unsure = [r for r in results if r.get("ambiguous")]
+    results = [r for r in results if not r.get("ambiguous")]
     expected = [r for r in results if r["expect"]]
     near = [r for r in results if not r["expect"]]
     owner = [r for r in expected if r.get("owner")]
@@ -111,7 +118,8 @@ def verdict(results: list[dict]) -> dict:
     return {"fire": fire, "fire_interval": fire_interval, "misfire": misfire, "misfire_interval": misfire_interval,
             "lenient_fire": lenient, "lenient_interval": lenient_interval,
             "owner_fire": owner_fire if owner else None, "owner_interval": owner_interval if owner else None,
-            "passed": passed, "cases": len(results)}
+            "passed": passed, "cases": len(results),
+            "ambiguous": {"cases": len(unsure), "agreed": sum(bool(r.get("fired")) == r["expect"] for r in unsure)}}
 
 
 def captures(results: list[dict]) -> dict[str, dict[str, int]]:
@@ -173,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--skill", required=True, type=Path, help="the installed SKILL.md under test")
     parser.add_argument("--cases", required=True, type=Path,
-                        help="JSON: [{\"request\": ..., \"expect\": true|false, \"owner\": true (optional)}]")
+                        help="JSON: [{\"request\": ..., \"expect\": true|false, \"owner\": true, \"ambiguous\": true (both optional)}]")
     parser.add_argument("--runs", type=int, default=1, help="how many times each case runs")
     parser.add_argument("--claude-dir", type=Path, help="a carrier's .claude/ folder, copied into each session")
     parser.add_argument("--fixture", type=Path, help="files copied into each session's repository first")
@@ -197,7 +205,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"fire {result['fire']} {result['fire_interval']} (at least {FIRE}), lenient {result['lenient_fire']} "
           f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {MISFIRE})"
           + (f", owner's words {result['owner_fire']} {result['owner_interval']}" if result["owner_fire"] is not None else "")
-          + ": " + ("pass" if result["passed"] else "fail"))
+          + ": " + ("pass" if result["passed"] else "fail")
+          + (f"; ambiguous, apart: {result['ambiguous']['agreed']}/{result['ambiguous']['cases']} agreed with the label"
+             if result["ambiguous"]["cases"] else ""))
     for request, taken in captures([r for r in results if not r["fired"] and r["expect"]]).items():
         print(f"  captured: {request!r} -> {taken}")
     if args.out:

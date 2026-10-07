@@ -587,6 +587,14 @@ class TriggerEval(Base):
         self.assertEqual(len(verdict["fire_interval"]), 2)
         self.assertEqual(self.T.captures(results)["close it"], {"Skill:wrap-up": 3})
 
+    def test_ambiguous_cases_are_reported_apart_and_never_decide(self) -> None:
+        clear = [{"expect": True, "fired": True, "lenient": True}] * 4 + [{"expect": False, "fired": False}] * 4
+        unsure = [{"expect": True, "ambiguous": True, "fired": False}] * 3 + [{"expect": False, "ambiguous": True, "fired": True}]
+        verdict = self.T.verdict(clear + unsure)
+        self.assertTrue(verdict["passed"])
+        self.assertEqual((verdict["fire"], verdict["misfire"], verdict["cases"]), (1.0, 0.0, 8))
+        self.assertEqual(verdict["ambiguous"], {"cases": 4, "agreed": 0})
+
     def test_refused_tools_stay_visible_and_are_denied_by_a_hook(self) -> None:
         settings = self.T.deny_hook_settings({"permissions": {"allow": ["Read"]},
                                               "hooks": {"PreToolUse": [{"matcher": "Read", "hooks": []}]}})

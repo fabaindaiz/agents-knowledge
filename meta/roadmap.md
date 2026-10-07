@@ -213,7 +213,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   ready for review, a plan as a working artifact, the tracker as the roadmap's source, criteria and tasks mapped both
   ways, carrier linters excluding the bundle, a privacy answer rewriting the proposal, and in `prompt-sync` the branch
   question and the carrier's audit in the pre-carry review); and `i-5ed7e8-2aabb5`, `i-5ed7e8-94f262`,
-  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped). The `[Unreleased]` fixes ride with it. *Collides with:*
+  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped); and the skill catalogue a complex task reads (`d-5ed7e8-2ec5dd`, proposal `p-480f968069`), whose carrier `LOCAL` lists are written in Phase 2. The `[Unreleased]` fixes ride with it. *Collides with:*
   the coding session's budget (about 145 tokens left), every carrier's update, and `i-5ed7e8-16b90a`.
 - **`i-5ed7e8-578c22` · Trigger evals for `decision-review` and `user-walk`, and for `close` after its
   trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
