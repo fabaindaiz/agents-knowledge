@@ -364,3 +364,8 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   most ×0.6 of `R0`'s input tokens with the same recall (refuted by fewer naive diffs with the target named);
   *decision:* it joins the decision on D2 with pilot-9's result. Mechanical outcomes only: whether a named card
   was right is read by hand in the report.
+- **2026-10-07, pilot-9's first plan aborted.** After 11 of 36 trials (7 valid, 4 errors), every `bundle_v29_d2`
+  trial was refused by the harness's own digest check: the split rewrites the copy's checksums, and the check
+  compared the rewritten digest with the release the plan froze. The check now reads the release's digest taken
+  before the split (`release_digest`, with a test that reproduces the failure). The aborted run is kept apart as
+  `pilot-9-aborted` and not analysed; a new plan with the same design, model, settings and seed replaces it.

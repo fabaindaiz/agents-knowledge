@@ -300,6 +300,8 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
         if condition == "ablated":
             info["ablation"] = ablate(ws / ".agents", task["notes"])
         if condition == "bundle_v29_d2":
+            # The release as copied, before the split rewrites its checksums: the digest the plan froze.
+            info["release_digest"] = hashlib.sha256((ws / ".agents/SHA256SUMS").read_bytes()).hexdigest()[:12]
             info["d2"] = d2_index(ws / ".agents")
     elif condition == "oracle":
         agents_md = task["agents_minimal"].rstrip() + "\n" + ORACLE_HEADER
@@ -317,6 +319,11 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     git(ws, "add", "-A")
     git(ws, "commit", "-q", "-m", "start")
     return info
+
+
+def release_digest(ws: Path, info: dict) -> str:
+    """The digest of the release a trial was built from: taken before an arm rewrote the copy's checksums."""
+    return info.get("release_digest") or hashlib.sha256((ws / ".agents/SHA256SUMS").read_bytes()).hexdigest()[:12]
 
 
 def git(ws: Path, *args: str) -> str:
@@ -663,7 +670,7 @@ def run_trial(plan: dict, tr: dict, run: Path, dry: bool) -> dict:
     # The workspace copies the live `.agents/`, so a rebuild during a run would change the arm mid-run
     # (pilot-7, 2026-09-28): each trial records the digest it got, and one that differs is not run.
     if (ws / ".agents/SHA256SUMS").exists():
-        info["bundle_digest"] = hashlib.sha256((ws / ".agents/SHA256SUMS").read_bytes()).hexdigest()[:12]
+        info["bundle_digest"] = release_digest(ws, info)
         if plan.get("bundle_digest") and info["bundle_digest"] != plan["bundle_digest"]:
             raise RuntimeError(f"the bundle is {info['bundle_digest']}, the plan froze {plan['bundle_digest']}; "
                                "restore it or write a new plan")

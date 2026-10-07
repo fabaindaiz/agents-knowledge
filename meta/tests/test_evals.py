@@ -36,3 +36,12 @@ class Pilot9Arms(Base):
                          before.split("## By what you are about to do", 1)[1].split("\n## ", 1)[0].strip())
         self.assertGreater(info["index_chars"], 0)
         self.assertEqual(bundle.checksum_problems(agents), [])  # the copy still verifies as a release
+
+    def test_a_d2_trial_is_checked_against_the_release_it_was_built_from(self) -> None:
+        # pilot-9's first plan: d2_index rewrites SHA256SUMS, so the digest check refused every D2 trial.
+        import hashlib
+        frozen = hashlib.sha256((H.BUNDLE / "SHA256SUMS").read_bytes()).hexdigest()[:12]
+        for arm in ("bundle_v29", "bundle_v29_d2"):
+            ws = self.root / arm
+            info = H.prepare(H.load_task("cli-help-typo"), arm, ws)
+            self.assertEqual(H.release_digest(ws, info), frozen, arm)
