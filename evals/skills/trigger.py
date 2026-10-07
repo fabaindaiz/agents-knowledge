@@ -105,6 +105,11 @@ def judge(calls: list[tuple[str, str]], name: str, routers: tuple[str, ...] = ()
     return out
 
 
+def should_stop(calls: list[tuple[str, str]], name: str) -> bool:
+    """A session has said what it would do once it fired, tried a refused tool, or filled the window."""
+    return len(calls) >= CALLS or any(c[0] not in ALLOWED for c in calls) or (bool(calls) and judge(calls, name)["lenient"])
+
+
 def session_info(lines) -> dict:  # noqa: ANN001
     """What the session's init event says it loaded: the model, the tools and the skills it listed."""
     for line in lines:
@@ -232,7 +237,7 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
                 for line in proc.stdout:
                     seen.append(line)
                     calls = tool_calls(seen)
-                    if len(calls) >= CALLS or any(c[0] in WRITES for c in calls) or (calls and judge(calls, name)["lenient"]):
+                    if should_stop(calls, name):
                         break
             finally:
                 watchdog.cancel()

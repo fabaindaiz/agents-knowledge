@@ -575,6 +575,15 @@ class TriggerEval(Base):
         # any tool the eval refuses ends the window, a connector's as much as an edit
         self.assertFalse(self.T.judge(self.T.tool_calls([self.call("mcp__tracker__create"), skill]), "close")["lenient"])
 
+    def test_a_session_is_stopped_at_a_fire_a_refused_call_or_the_window(self) -> None:
+        read, skill, bash = self.call("Read"), self.call("Skill", "close"), self.call("Bash")
+        stop = lambda lines: self.T.should_stop(self.T.tool_calls(lines), "close")  # noqa: E731
+        self.assertFalse(stop([read, read]))
+        self.assertTrue(stop([read, skill]))
+        self.assertTrue(stop([bash]))
+        self.assertTrue(stop([self.call("mcp__tracker__create")]))
+        self.assertTrue(stop([read] * 5))
+
     def test_reading_the_skill_file_is_a_fire_and_a_router_skill_is_looked_past(self) -> None:
         own = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Read",
                           "input": {"file_path": "/tmp/w/.claude/skills/close/SKILL.md"}}]}})
