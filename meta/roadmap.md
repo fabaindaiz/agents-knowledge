@@ -171,7 +171,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   outside the home, and have `carrier-id --mint` stop defaulting `upstream` to the home's value.
   *Collision:* every carrier's gate runs `verify`, so a carrier with a copied identity turns red on update;
   the changelog says how to fix one.
-- **`i-5ed7e8-3e6760` · What makes a release productive: the criteria for the first minor release.** How the bundle is
+- **`i-5ed7e8-3e6760` · What makes a release productive: the criteria for the first minor release.** *Kept by the owner on 2026-10-07:* 0.0.30 ships under its own number, with everything pending; 0.1.0 is the first monthly release that meets all five, each checked at the cut. Today criterion 3 fails (the pilots measure about ×2.1 to ×2.3) and 0.0.30 resets criterion 4 (a `log` field in `carrier.toml`). How the bundle is
   used decides what "ready" means: every coding session in every carrier loads its root line and, on a
   change that touches state, a contract, data, security or verification, the index and its cards; each
   carrier harvests before a release; the home gathers, releases and carries. So a release is productive
