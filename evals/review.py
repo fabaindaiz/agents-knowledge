@@ -20,7 +20,9 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import random
+import statistics
 import re
 import shutil
 import subprocess
@@ -199,7 +201,18 @@ def cmd_report(args) -> int:
                      f"{(sum(len(r['out']['cards']) for r in neutral) / len(neutral)) if neutral else 0:.1f} | "
                      f"{frac(rs, 'phases_read')} | {means[arm]:.0f} |")
     if means.get("R0"):
-        lines += ["", f"R2 / R0 input tokens: ×{means['R2'] / means['R0']:.2f} (predicted at most ×0.6)."]
+        lines += ["", f"R2 / R0 input tokens: ×{means['R2'] / means['R0']:.2f} by the arms' means."]
+    pairs: dict = {}
+    for r in ok:
+        pairs.setdefault((r["task"], r["variant"], r["rep"]), {})[r["arm"]] = r["out"]
+    both = [v for v in pairs.values() if "R0" in v and "R2" in v]
+    for key, label in (("cost", "estimated cost (primary)"), ("input_tokens", "cumulative input"),
+                       ("first_card_context", "context at the first card")):
+        ratios = [v["R2"][key] / v["R0"][key] for v in both if v["R0"].get(key) and v["R2"].get(key)]
+        if ratios:
+            geo = math.exp(sum(math.log(x) for x in ratios) / len(ratios))
+            lines.append(f"R2 / R0 {label}: ×{geo:.2f}, geometric mean of {len(ratios)} paired diffs, "
+                         f"median ×{statistics.median(ratios):.2f}.")
     (run / "report.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
     return 0

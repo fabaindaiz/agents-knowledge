@@ -369,3 +369,22 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   compared the rewritten digest with the release the plan froze. The check now reads the release's digest taken
   before the split (`release_digest`, with a test that reproduces the failure). The aborted run is kept apart as
   `pilot-9-aborted` and not analysed; a new plan with the same design, model, settings and seed replaces it.
+- **2026-10-07, results — pilot-9 and the reviewer pilot.** Pilot-9 met its rule: `bundle_v29_d2` kept every
+  discriminating pass and cost ×0.97 of `bundle_v29` on the non-trivial tasks (`REPORT.md` §4.11). The reviewer
+  pilot refuted its prediction: ×0.91 of the input, not ×0.6, and the target named on one naive diff fewer
+  (§4.12). The registered quantity, cumulative input, was not the one the ×0.6 estimate was made for (the load
+  before the first card); that is the registration's error, stated, not corrected after the fact. The owner chose
+  to measure again before deciding (`meta/decisions.md`, d-5ed7e8-c3ebf0).
+- **2026-10-07, exploratory — the reviewer pilot replicated (`review-2`).** Registered before any trial, after
+  reading the first run and a post-hoc decomposition of its cost (`meta/reviews/2026-10-07-reviewer-cost-decomposition.md`),
+  so its predictions are informed by that run and say so. *Design:* the first run's 15 diffs and two arms (`R0`,
+  `R2`), four repetitions, a new seed (20261009), the same model, tools, turn limit and isolation: 120 trials.
+  *Outcomes:* the estimated cost per trial, primary, as the geometric mean of `R2` / `R0` over paired diffs (task,
+  variant, repetition); beside it, the cumulative input and the context held when the first card is chosen
+  (`first_card_context`, added before this plan); recall, the target named on the naive diffs; cards opened on the
+  neutral diffs. *Predictions:* the cost ratio at most ×0.95 (the first run gave ×0.93), refuted above ×1.0; the
+  context at the first card near ×0.87 (post hoc in the first run), refuted above ×0.95; recall equal, refuted if
+  `R2` names the target on two or more fewer of the 24 naive diffs than `R0`. *Decision rule:* D2 joins a release
+  only if the cost prediction holds and recall is not refuted; otherwise the index keeps its shape, and the cost
+  work turns to the check phase, which the decomposition shows to be the larger lever. Both runs are reported
+  apart and pooled. Analysis: `evals/review.py report`.
