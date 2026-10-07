@@ -101,3 +101,45 @@ call, which the hook refused and which ended the window. The eval did not record
 whether the session was looking before choosing. *Fixed before stage 2:* a shell command that only reads runs and
 is recorded, and does not end the window; anything else is refused as before. Stage 1 is a screen, so it decides
 nothing: stage 2, with three runs, a written prediction and the trimmed-listing arm, does.
+
+## Stage 2: the trimmed arm, set up and checked before any run
+
+The host's skills documentation, fetched whole the same day, says per-skill overrides in a project's settings set
+a skill to show its name only, and that **plugin skills are not affected by them**: a plugin is turned on or off
+as a whole. The arm was built within that limit and probed with one-word sessions on the pinned model, reading
+the debug log's listing warning:
+
+| Setting in the copied `.claude/settings.json` | Skills listed | Listing against its budget |
+|---|---:|---|
+| none (the current listing, the carrier's skills included) | 117 | about 44k characters, over the 30k budget |
+| the host's bundled skills set to name only | 117 | about 34k, still over |
+| the bundled and the account-synced skills set to name only (54 overrides) | 117 | under the budget, no warning |
+
+Overrides keyed by the synced skill's bare name and by its prefixed name both took effect (each hid its skill
+when set to off). Turning the plugins off would also fit the budget, but it removes a router and the closest
+competitors, so it measures a different machine; it was not used. No carrier skill, no method skill and no plugin
+skill is overridden. Which descriptions the current listing drops is not logged; that the carrier's are among
+them is an ASSUMPTION the trimmed arm tests.
+
+## Stage 2: the registered prediction, written before any run
+
+Both arms, three runs per case, the owner's default model pinned, the router looked past, the same fixture and
+cases as stage 1. Each skill is judged by the eval's own gate; cases are also reported by per-case majority (two
+runs of three).
+
+| Skill | Current arm, strict fire | Misfire | Gate | Trimmed arm against current |
+|---|---|---|---|---|
+| `close` | 0.85 or more | 0.05 or less | pass | within 0.1 either way |
+| `decision-review` | 0.3 to 0.6 (lenient 0.5 to 0.8) | 0.1 or less | fail on strict fire | 0 to 0.2 higher |
+| `user-walk` | 0.7 to 0.9 | 0.05 or less | about even | within 0.1 either way |
+
+The reasoning: `close` passed its screen with every case and its words are distinctive. `decision-review`'s
+requests point at material, so a session now allowed to read before choosing will often read first, which the
+strict metric scores as a miss. `user-walk` lost its one miss in the screen to a brainstorming competitor that no
+override reaches. The trimmed arm should not lower any fire rate; it raises one only where the current listing
+had dropped that skill's description.
+
+**What it decides.** `d-5ed7e8-4c80c1` already advises trimming. If the trimmed arm lowers any skill's strict fire
+by more than 0.1, or raises any misfire by more than 0.05, the advice is reopened. If the arms do not differ,
+the advice stands on the listing's size alone, about a third smaller on every turn. If a skill fails its gate
+in both arms, its description is rewritten before 0.0.30 ships it, and its cases are not.
