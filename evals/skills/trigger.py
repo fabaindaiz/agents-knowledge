@@ -20,7 +20,8 @@ A case marked `"ambiguous": true` is run and reported apart, and never decides t
 Each rate is printed with its Wilson interval; with `--runs N` every case runs N times. The table of first
 calls shows which competitor captured each case. Exit 0 on a pass, 1 on a fail. Cases are held out: none of
 them is written into the description it tests. They live in the carrier that runs them, beside its
-`LOCAL.md`, because they are its people's own words: never here.
+`LOCAL.md`, because they are its people's own words; cases that mix several repositories' words live outside
+every repository, in `~/.config/agent-guides/trigger-cases/` on the machine that runs them: never here.
 
 Before trusting a run, check that the skill's description is in the session's skill listing: a description
 the listing truncated or dropped measures nothing.
