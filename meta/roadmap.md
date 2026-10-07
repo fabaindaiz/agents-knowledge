@@ -31,8 +31,10 @@ reached four carriers, each on a new branch cut from its integration branch, for
 carriers this machine shares with the first one hold newer work there, unpushed, and were not reached; two
 repositories the owner named had no bundle on any branch (bootstrapped later the same day, below). Waiting on
 the owner: the pull requests of the six carriers' branches, which are pushed (the two bootstraps' onto their
-ticket branch, merged after it); the proposed rows each carrier's log now shows; installing the method's skills in the four
-updated carriers, each with its `LOCAL.md`; and a credentials ticket in the two bootstrapped repositories.
+ticket branch, merged after it); the proposed rows each carrier's log now shows; and a credentials ticket in the two
+bootstrapped repositories. On 2026-10-07 those six carriers' `close` and `decision-review` skills were mapped onto the
+ticket cycle their team shares (`meta/reviews/2026-10-07-host-ticket-cycle.md`), the four updated ones installing the
+skills then, and pushed on the same branches.
 
 **Later the same day:** the two repositories with no bundle were bootstrapped, each on a branch cut from an
 unmerged ticket branch that holds its gate, so their pull requests merge after it; both registered at 0.0.29
