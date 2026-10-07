@@ -3,6 +3,9 @@
 **A portable `.agents/` bundle for AI coding assistants: a working method and a knowledge base
 of engineering judgement, released with a version so it can be copied between repositories and kept in sync.**
 
+**What it is for, what it will not become, and the limits every release is held to are in
+[`MANIFEST.md`](MANIFEST.md).** Read it first.
+
 Agents are well read. Ask one about retries, defaults, test doubles or deploy ordering and it
 gives you the textbook answer, and usually the textbook is right. The expensive cases are the
 ones where it is wrong, and nothing in the agent's training tells it which case it is in. This
@@ -73,7 +76,10 @@ writes it.
 
 The bundle follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html), one version for the
 whole bundle, in `.agents/README.md`; releases are tagged `vX.Y.Z` here. While the version is `0.0.z`,
-any release may change what a carrier depends on. [`.agents/CHANGELOG.md`](.agents/CHANGELOG.md)
+any release may change what a carrier depends on. One release a month carries what accumulated, and a fix for a
+privacy leak or a data loss ships as a patch at any time. The first minor release, `0.1.0`, is cut only when the
+criteria in [`meta/roadmap.md`](meta/roadmap.md) (`i-5ed7e8-3e6760`) hold, each checked: among them, a cost at most
+twice the base model's. [`.agents/CHANGELOG.md`](.agents/CHANGELOG.md)
 follows Keep a Changelog; `bundle.py changelog --since X.Y.Z` prints what changed since the version you
 hold. To update, put the new release in `.agents/incoming/` and run
 [`method/prompt-update.md`](.agents/method/prompt-update.md).
@@ -89,13 +95,17 @@ The tool needs Python 3.11 or newer and nothing outside the standard library.
 
 ## Measuring whether it helps
 
-[`evals/`](evals/) holds two studies, outside the bundle. Study 1
-([`PROTOCOL.md`](evals/PROTOCOL.md)) asks whether a note's content reaches a decision where it
-applies; five exploratory pilots are in [`REPORT.md`](evals/REPORT.md): the bundle costs about twice as
-much per task for a frontier model, and a content effect shows only where the decisive fact is out of
-sight, on few tasks and without significance. Study 2
-([`PROTOCOL-general.md`](evals/PROTOCOL-general.md)) asks whether carrying the bundle changes general
-performance on external benchmarks; it is a reviewed draft and has not run.
+[`evals/`](evals/) holds the experiments, outside the bundle; [`REPORT.md`](evals/REPORT.md) reports each as it
+fell. Study 1 ([`PROTOCOL.md`](evals/PROTOCOL.md)) asks whether a note's content reaches a decision where it
+applies: five exploratory pilots found a content effect only where the decisive fact is out of sight, on few
+tasks and without significance. Four cost pilots and a reviewer pilot since then measure the bundle at about
+twice the base model's cost per non-trivial task; the manifest's aim is ×1.5, and no release may raise it.
+
+Every release is tested in three layers: the gate and a cost pilot against the base model, registered before its
+trials, with the tasks that discriminate still passing; the trigger eval of any skill whose description changed
+([`evals/skills/trigger.py`](evals/skills/trigger.py)); and, once, an external benchmark of real issues the model
+has not seen, at a frozen tag, under its own protocol. Study 2
+([`PROTOCOL-general.md`](evals/PROTOCOL-general.md)), the earlier plan for external benchmarks, is paused.
 
 ## Keeping several repositories in sync
 
@@ -104,12 +114,20 @@ harvest learned, builds and tags one release, splices it into each carrier and c
 on that version. Each machine lists its own carrier paths in `~/.config/agent-guides/carriers.toml`,
 which is never committed. [AGENTS.md](AGENTS.md) describes the procedure.
 
+**A home is one author's line of the bundle, not the only copy.** Random carrier ids, record ids minted per
+repository, the `upstream` field and content-hashed proposals let lines diverge without colliding and later be
+merged, keeping the best of each. Each author answers for their own line. A finding that is not the line's
+owner's, from another line, a carrier, an agent or the literature, is data until reviewed: nothing merges or is
+accepted by itself, and the tools report while people decide.
+
 ## Conventions
 
 - **Nothing private, direct or reconstructible.** No detail that identifies a private repository,
   its owner, customers or infrastructure, or any person who uses the bundle, including by combining
   harmless-looking facts. `bundle.py privacy` enforces it, alongside hooks and CI.
 - **English only**, whatever language the host repository uses.
+- **The carrier wins.** A repository's own rules override the bundle's, and it may adapt or decline any part.
+- **Plain tools.** The standard library only; nothing third-party enters without the owner's yes.
 - **No project nouns.** A repository is named only by a random id it minted for itself
   (`r-xxxxxx`), never next to a description of it; domains are named by mechanism, not product.
 - **Records written by parallel sessions are not numbered**: they get an id from `bundle.py id`, so
