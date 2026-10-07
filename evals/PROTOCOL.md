@@ -388,3 +388,8 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   only if the cost prediction holds and recall is not refuted; otherwise the index keeps its shape, and the cost
   work turns to the check phase, which the decomposition shows to be the larger lever. Both runs are reported
   apart and pooled. Analysis: `evals/review.py report`.
+- **2026-10-07, results — `review-2`.** All 120 trials have a result; none crashed or timed out. The cost
+  prediction is refuted (×1.04 by the geometric mean of 60 pairs) and so is recall (two naive diffs fewer); the
+  context at the first card holds (×0.89). Three `R2` sessions reached the registered turn limit; they are kept, as
+  the design sets the limit, and a reading without their pairs is reported beside, with the same verdict on cost
+  (`REPORT.md` §4.13). By the rule, D2 does not join a release; the owner decides.

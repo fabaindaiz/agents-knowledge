@@ -506,6 +506,43 @@ after the fact.
 saving it was designed for, the reviewer's, is not there, and it cost one named target. The decision on D2 is
 the owner's, recorded in `PROTOCOL.md`. Exploratory: 15 diffs, one model, two repetitions.
 
+*Corrected after the replication (§4.13):* the session that missed the name on the refund task had reached the
+turn limit of 30; it had opened the target card and was still reading.
+
+### 4.13 The index split, replicated for the reviewer (review-2, 2026-10-07)
+
+Registered in `PROTOCOL.md` before any trial, with cost as the primary outcome: the reviewer pilot's 15 diffs and
+two arms, four repetitions, a new seed: 120 trials, all with a result; none crashed or timed out.
+
+| Arm | Target opened, naive (24) | Target named, naive (24) | Target named, reference (24) | Cards on neutral diffs (mean of 12) | Input tokens (mean) |
+|---|---:|---:|---:|---:|---:|
+| `R0`, the current index | 23 | 24 | 21 | 1.2 | about 336,000 |
+| `R2`, the D2 split | 24 | 22 | 22 | 1.3 | about 382,000 |
+
+**Both registered predictions are refuted.** The estimated cost of `R2` against `R0` was to be at most ×0.95,
+refuted above ×1.0: it was ×1.04 by the geometric mean of the 60 paired diffs (bootstrap 95% interval ×0.93 to
+×1.15, median ×1.01). Recall was refuted if `R2` named the target on two or more fewer naive diffs: it named it on
+two fewer. The context held at the first card came out at ×0.89 against a prediction near ×0.87, refuted above
+×0.95, so it holds: the split makes the reviewer's start smaller, and the session as a whole no cheaper. The
+cumulative input was ×1.11.
+
+**Read with the first run.** Pooled over 90 pairs, the cost is ×1.00 (×0.92 to ×1.10) and `R2` names the target on
+three naive diffs fewer of 36. The first run's ×0.93 is inside the replication's interval; the replication is the
+larger, registered with cost primary, and decides.
+
+**Sessions that reached the turn limit.** Three sessions, all `R2`, two on naive diffs and one on a reference diff,
+ended at the registered limit of 30 turns (`error_max_turns`) after opening the target card and without naming it,
+each with about two and a half times the usual input; no `R0` session did. The first run's missing name (§4.12) was
+one of them. Left out with their pairs, the cost is ×1.02 in the replication and ×0.98 pooled, still above ×0.95,
+and the recall deficit falls to one: the verdict on cost does not depend on them. In the replication `R2` also took
+more turns (a mean of 18.5 against 16.0; 16 sessions of 60 at 25 turns or more, against 8). Exploratory, not
+registered: the split seems to send the reviewer looking for what the full index would have shown it.
+
+**What it decides.** By the registered rule (`d-5ed7e8-c3ebf0`) D2 does not join a release: the index keeps its
+shape, and the cost work turns to the reviewer's check phase, which the decomposition shows to be the larger lever
+(`meta/reviews/2026-10-07-reviewer-cost-decomposition.md`). The final word is the owner's. Exploratory: one model,
+15 diffs.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -598,6 +635,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-10-07** — the reviewer pilot replicated (§4.13): the index split costs the reviewer ×1.04, not at most ×0.95, and names the target twice fewer, refuting both registered predictions; three `R2` sessions reached the turn limit, and the verdict holds without them; §4.12's missing name is shown to be one of them.
 - **2026-10-07** — the reviewer pilot (§4.12): the index split saves the reviewer about a tenth of its input, not the predicted two fifths, and names the target once fewer; the registered quantity is shown to differ from the one the estimate was made for.
 - **2026-10-07** — pilot-9 (§4.11): the index split keeps every discriminating pass and costs no more than the current release (×0.97 on the other tasks); both arms sit between their cost line and its refutation; the decision on the split waits on the reviewer pilot.
 - **2026-09-28** — pilot-8 (§4.10): the changed candidate misses its cost line by a small margin and holds the other three predictions; tagged by the user's explicit decision, recorded as a deviation.
