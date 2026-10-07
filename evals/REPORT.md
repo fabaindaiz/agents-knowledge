@@ -444,6 +444,40 @@ wording fixes from a second adversarial review made after this run (the root fil
 card's check and to offer a review for irreversible changes; one trigger phrase for the reviewer); they
 were not measured.
 
+### 4.11 The index split D2 against the current release (pilot-9, 2026-10-07)
+
+Registered in `PROTOCOL.md` before any trial, on pilot-6's six tasks, two repetitions, a new seed: 36 trials,
+all valid, every bundle trial on the frozen release (`bundle_v29_d2` checked against the release it was split
+from, after the first plan's aborted run). `bundle_v29` is release 0.0.29; `bundle_v29_d2` is the same release
+with its knowledge index cut to the lookup table and the rest moved to a second file the index points at.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | Ratio | Prediction |
+|---|---:|---|
+| `bundle_v29_d2` / `minimal`, trivial tasks (2) | ×1.02 [0.96, 1.09] | at most ×1.2: **holds** |
+| `bundle_v29_d2` / `minimal`, other tasks (4) | ×2.15 [1.83, 2.58] | at most ×2.0, refuted above ×2.2: **neither** |
+| `bundle_v29` / `minimal`, trivial tasks (2) | ×1.17 [1.11, 1.23] | at most ×1.2: **holds** |
+| `bundle_v29` / `minimal`, other tasks (4) | ×2.22 [1.82, 2.70] | at most ×2.0, refuted above ×2.3: **neither** |
+| `bundle_v29_d2` / `bundle_v29`, trivial tasks | ×0.87 [0.78, 0.98] | — |
+| `bundle_v29_d2` / `bundle_v29`, other tasks | ×0.97 [0.93, 1.03] | — |
+
+**Pass rates.** The three discriminating tasks passed every time under both bundle arms (2/2 each) and
+under `minimal` 0/2, 0/2 and 1/2; the three neutral and trivial tasks passed every time in every arm. The
+pass prediction for `bundle_v29_d2` holds.
+
+**What the agents read.** On the other tasks every bundle trial opened the index (8/8 per arm) and almost
+never a card (a mean of 0.1 and 0.0); one D2 trial opened an area index; no tool call in any trial opened
+the moved file (its name appears in 8 transcripts only as the index's pointer), and none called the reviewer. On trivial tasks no trial opened the
+bundle in either arm, so D2's saving there (×0.87) is not from reading less of the index, and with two tasks
+it may be noise.
+
+**What it decides.** The registered rule (D2 joins a release only if it keeps every discriminating task
+passing as often as `bundle_v29` and costs no more) is met: equal passes, and a cost ratio whose interval
+straddles ×1 on the other tasks. The saving on the author's side is small (about 3%, not distinguishable
+from none), well under the index's measured share of the load; the larger saving the split was designed
+for is the reviewer's, measured apart (the reviewer pilot), and the decision waits on it. Neither arm meets
+the ×2.0 line on the other tasks; both sit between the line and its refutation, as pilot-8 did. Exploratory:
+six tasks, one model, two repetitions.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -536,6 +570,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-10-07** — pilot-9 (§4.11): the index split keeps every discriminating pass and costs no more than the current release (×0.97 on the other tasks); both arms sit between their cost line and its refutation; the decision on the split waits on the reviewer pilot.
 - **2026-09-28** — pilot-8 (§4.10): the changed candidate misses its cost line by a small margin and holds the other three predictions; tagged by the user's explicit decision, recorded as a deviation.
 - **2026-09-28** — pilot-7 (§4.9): the 0.0.23 candidate's reviewer subagent refutes its cost prediction; the cards reach one card per lookup; a mid-run rebuild is reported as a deviation, with figures first drafted by repetition and recomputed by the bundle each trial received.
 - **2026-09-25** — scope stated at the top: this study measures instruction transfer, because its tasks are written from the notes; the general-performance question moved to Study 2 (`PROTOCOL-general.md`, `i-5ed7e8-bf5663`).
