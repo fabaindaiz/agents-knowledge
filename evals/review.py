@@ -81,7 +81,7 @@ def prompt(diff: str) -> str:
 def outcomes(transcript: Path, ws: Path, targets: list[str]) -> dict:
     """What the reviewer opened, whether it found and named the target card, and the input it paid for."""
     trace = H.parse_transcript(transcript, ws)
-    final, usage, result = "", {}, {}
+    final, usage, result, first_card = "", {}, {}, None
     for line in transcript.read_text(errors="replace").splitlines():
         try:
             ev = json.loads(line)
@@ -89,6 +89,13 @@ def outcomes(transcript: Path, ws: Path, targets: list[str]) -> dict:
             continue
         if ev.get("type") == "result":
             final, usage, result = ev.get("result") or "", ev.get("usage") or {}, ev
+        if ev.get("type") == "assistant" and first_card is None:
+            msg = ev.get("message") or {}
+            if any(b.get("type") == "tool_use" and CARD.search(json.dumps(b.get("input", {})))
+                   for b in msg.get("content", [])):
+                # the context the reviewer held when it chose its first card: what reading the index cost it
+                u = msg.get("usage") or {}
+                first_card = sum(u.get(k, 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
     cards = []
     for read in trace["reads"]:
         m = CARD.search(read)
@@ -99,6 +106,7 @@ def outcomes(transcript: Path, ws: Path, targets: list[str]) -> dict:
             "phases_read": any(r.endswith("knowledge/PHASES.md") for r in trace["reads"]),
             "index_read": any(r.endswith("knowledge/INDEX.md") for r in trace["reads"]),
             "input_tokens": sum(usage.get(k, 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")),
+            "first_card_context": first_card,
             "output_tokens": usage.get("output_tokens", 0), "cost": result.get("total_cost_usd"),
             "turns": result.get("num_turns"), "final": final[:4000], "outside": trace["outside"]}
 

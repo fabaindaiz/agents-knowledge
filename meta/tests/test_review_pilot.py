@@ -54,3 +54,21 @@ class ReviewPilot(Base):
         self.assertTrue(out["target_named"])
         self.assertEqual(out["input_tokens"], 1000)
         self.assertFalse(out["phases_read"])
+
+    def test_the_load_before_the_first_card_is_the_context_of_the_turn_that_opens_it(self) -> None:
+        def turn(path: str, fresh: int, cached: int) -> dict:
+            return {"type": "assistant", "message": {"usage": {"input_tokens": fresh, "cache_read_input_tokens": cached,
+                                                               "cache_creation_input_tokens": 0},
+                                                     "content": [{"type": "tool_use", "name": "Read", "input": {"file_path": path}}]}}
+        events = [turn(".agents/knowledge/INDEX.md", 100, 5000),
+                  turn(".agents/knowledge/cards/derived-over-chosen-identifiers.md", 50, 9000),
+                  turn(".agents/knowledge/cards/in-process-guarantees.md", 20, 12000),
+                  {"type": "result", "result": "", "usage": {}, "total_cost_usd": 0.5, "num_turns": 3}]
+        path = self.root / "t.jsonl"
+        path.write_text("\n".join(json.dumps(e) for e in events))
+
+        out = R.outcomes(path, self.root, ["derived-over-chosen-identifiers"])
+
+        self.assertEqual(out["first_card_context"], 9050)
+        self.assertEqual(out["cost"], 0.5)
+
