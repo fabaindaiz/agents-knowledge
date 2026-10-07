@@ -20,6 +20,10 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**On 2026-10-07, everything pending was reviewed with the owner** (`d-5ed7e8-a65c26` to `d-5ed7e8-9f3502`): the next
+release's scope is `i-5ed7e8-855c42`, preceded by the index pilots and the skill trigger eval; four delivered items
+left *Next*; the compression's blocker was found shipped since 0.0.23; the other machine's work is `i-5ed7e8-61171e`.
+
 **State on 2026-10-05, at the close of 0.0.29, on a second machine.** Release 0.0.29 is tagged and **pushed with its
 tag**: the decision-record design (`meta/reviews/2026-10-05-decision-records.md`, `meta/decisions.md`), the
 owner's decisions on the research of the same day (`i-5ed7e8-54cb3f`: one deferred, the rest applied), and one
@@ -200,6 +204,17 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   rules, is done outside the bundle: it is personal, so it never enters `.agents/`. The phases and the
   items beside them:
 
+- **`i-5ed7e8-855c42` · Release 0.0.30: the decided scope, after its pilots and the trigger eval.** Decided by the
+  owner on 2026-10-07, one block at a time (`d-5ed7e8-a65c26` to `d-5ed7e8-9f3502` in `meta/decisions.md`). First,
+  with the owner's account: pilot-9's index arm and a reviewer pilot (`d-5ed7e8-220ad3`), and the skill trigger eval
+  (`i-5ed7e8-578c22`, `d-5ed7e8-07da79`). Then the meta-session: seven tool fixes (the proposals for align against the
+  tag, mint naming the home, register resolving a worktree, new entry reading a log's own format and a `log` field in
+  `carrier.toml`, plus `i-5ed7e8-29e484` and `i-5ed7e8-715654`); eight method changes under review (close stopping at
+  ready for review, a plan as a working artifact, the tracker as the roadmap's source, criteria and tasks mapped both
+  ways, carrier linters excluding the bundle, a privacy answer rewriting the proposal, and in `prompt-sync` the branch
+  question and the carrier's audit in the pre-carry review); and `i-5ed7e8-2aabb5`, `i-5ed7e8-94f262`,
+  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped). The `[Unreleased]` fixes ride with it. *Collides with:*
+  the coding session's budget (about 145 tokens left), every carrier's update, and `i-5ed7e8-16b90a`.
 - **`i-5ed7e8-578c22` · Trigger evals for `decision-review` and `user-walk`, and for `close` after its
   trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
   the close is offered before a push that ends a plan) without a trigger eval. Run `evals/skills/trigger.py`
@@ -207,19 +222,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   most one in ten; near misses "execute the plan", "write tests for this function", "push", and a plain
   bug report (which must not fire `user-walk`); and check that a
   general brainstorming skill does not shadow `decision-review` on a request to review an existing spec.
-  *Collision:* the skills' descriptions, which every carrier's `LOCAL.md` may override.
-- **`i-5ed7e8-1bc188` · Decision records and private records for 0.0.29.** The owner settled the design in a
-  decision review (`meta/reviews/2026-10-05-decision-records.md`; rows `d-5ed7e8-969802` to `d-5ed7e8-aec800`
-  in `meta/decisions.md`): a Status cell with state, date and decider, `proposed` rows only a person accepts,
-  `unconfirmed:` and `accepting:` in Why, known debt, the when-to-write criteria, `bundle.py decisions` and a
-  git-dated migration, a private folder per carrier with a sentinel, a public-repository guard and the home's
-  re-check, and privacy warnings in proposals asked of the owner. Five of this repository's proposals carry it
-  to the intake. **Implemented on `main`, unreleased** (2026-10-05): the method's originals, `bundle.py decisions`
-  and `--migrate`, the `private-record` rule, the public guard, the home's re-check, and their tests; the release,
-  the intake and each carrier's migration wait for the owner. Parts are under review until the 0.0.30 harvest. *Collides with:* artifact 6, the adoption
-  table, principle 20, the harvest, bootstrap and update prompts, the `close` skill, `bundle.py privacy`,
-  `release.py gather` and `intake`, and every carrier's `docs/decisions.md`.
-- **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05** — **decided 2026-10-05** for 0.0.29, one per turn (`d-5ed7e8-bb201c` to `d-5ed7e8-ef5760` in `meta/decisions.md`): 2, 3, 4, 5, 6 and 7's tool changes applied; **1 deferred** until pilot-9's index arm and a reviewer pilot (the reviewer has room for about three more notes); still open: bring the cost profile script into `evals/` (it is not on this machine), re-weigh `i-5ed7e8-1ac328` against `i-5ed7e8-16b90a` (the update sessions and the method's size are the bigger lever), leave and document the published attribution lines in the three carriers that hold them (from the machine that has them), and run the trigger eval (`i-5ed7e8-578c22`). Each was a decision for the owner, each
+  *Collision:* the skills' descriptions, which every carrier's `LOCAL.md` may override. **Runs before 0.0.30 and again after it** (`d-5ed7e8-07da79`).
+- **`i-5ed7e8-54cb3f` · Act on the research of 2026-10-05** — **decided 2026-10-05** for 0.0.29, one per turn (`d-5ed7e8-bb201c` to `d-5ed7e8-ef5760` in `meta/decisions.md`): 2, 3, 4, 5, 6 and 7's tool changes applied; **1 deferred** until pilot-9's index arm and a reviewer pilot (the reviewer has room for about three more notes); still open: bring the cost profile script into `evals/` (it is not on this machine), re-weigh `i-5ed7e8-1ac328` against `i-5ed7e8-16b90a` (the update sessions and the method's size are the bigger lever), leave and document the published attribution lines in the three carriers that hold them (from the machine that has them), and run the trigger eval (`i-5ed7e8-578c22`); on 2026-10-07 the index pilots and the trigger eval were set before 0.0.30,
+  and what lives on the other machine moved to `i-5ed7e8-61171e`. Each was a decision for the owner, each
   priced in its document under `meta/reviews/2026-10-05-*.md`:
   1. *Index shape* (`index-scaling`): make `INDEX.md` the lookup alone and move the phase guide to a generated
      `PHASES.md` (reviewer from about 6.6k to 3.7k tokens), measured through pilot-9 and a reviewer-only pilot; no
@@ -256,22 +261,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   what the initialisation must deliver, how deep, and which questions its research must answer; write
   research to the repository as it lands; accept by a first real task. *Collision:* the bootstrap's
   budget, and phase 5.
-- **`i-5ed7e8-191d2a` · Redesign phase 1: install the method skills, and a close skill.** A command
-  copies the method's skills into the assistant's skill folder, outside `.agents/skills/`, each as a base
-  file plus a `LOCAL.md` the repository owns, so a repository's procedure wins without editing a release
-  file; the changelog entry's template is written by a command, and *close* (every part of the request,
-  documents true again, counted frictions, local memory compared, hand-off) ships as the first skill.
-  *Collision:* `bundle.py verify`, which must tell an installed copy from an edited one.
-  **Released in 0.0.26 (2026-10-03):** `install-skills` (with `--check`, and in `verify`), `new
-  entry`, `count`, `memory-diff`, the `close` base, the update's step 3c, and `evals/skills/trigger.py`.
-  Piloted in one carrier, its old skill kept line by line as `LOCAL.md`; the trigger eval there fired on
-  every close request and on no near miss, one run each. Exit still open: entries
-  in two carriers that carry every field.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
   carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,
   planted-failure coverage) become a small library a carrier's audit imports. *Collision:* phase 1's
-  install command; each carrier's audit.
+  install command; each carrier's audit. **Next after 0.0.30** (decided 2026-10-07): six carriers now carry their own commit, verify and state-review skills to draw the bases from.
 - **`i-5ed7e8-46b707` · Redesign phase 3: the router, brief and lookup, and budgets measured by a
   pilot.** A generated block in the root file routes a request to a skill, a card or a document;
   `bundle.py brief` and `bundle.py lookup` replace hand-run greps. The new budgets are set by a pilot's
@@ -309,12 +303,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   outside the home, and have `carrier-id --mint` stop defaulting `upstream` to the home's value.
   *Collision:* every carrier's gate runs `verify`, so a carrier with a copied identity turns red on update;
   the changelog says how to fix one.
-- **`i-5ed7e8-87ffc2` · The roadmap template's ids are read by the id checker.** Offered at 0.0.24 as
-  `template-id-format-matches-the-checker`, measured by two carriers: the template writes
-  `### <id> · <idea>`, the checker counts a definition only with the id after the dot, so a duplicated id
-  in a roadmap written from the template passes. Change one of the two and test the other against it.
-  *Collision:* roadmaps already written in one form or the other.
-
 - **`i-5ed7e8-3e6760` · What makes a release productive: the criteria for the first minor release.** How the bundle is
   used decides what "ready" means: every coding session in every carrier loads its root line and, on a
   change that touches state, a contract, data, security or verification, the index and its cards; each
@@ -335,19 +323,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
      open that can lose or duplicate a carrier's record (`i-5ed7e8-d3ee51`).
   Until then every release is `0.0.z`, where any release may change what a carrier depends on, and the
   changelog says what a carrier must run. *Collides with:* nothing.
-- **`i-5ed7e8-a437c6` · Measure what the bundle weighs in real sessions on this machine: a local session
-  profile, aggregates only.** The pilots' ratios come from six small tasks in repositories smaller than
-  the index itself: the unaided arm reads a few thousand characters of code, the bundle arm about 26
-  thousand of which 23 thousand are `knowledge/INDEX.md`, so the ratio (×2.34) is a worst case for a
-  fixed overhead, and nobody has measured what that overhead is in ordinary work. A script,
-  `evals/session_profile.py`, reads the assistant's session transcripts on this machine and reports only
-  aggregates, never content, into `evals/runs/` (never committed): per session, the share of input tokens
-  that came from `.agents/` reads, how many cards and indexes were opened, subagent calls with the size of
-  what was sent and returned and their share of the session's tokens, and turns. Its own test runs it on a
-  fabricated transcript. First, and cheap: it decides how much `i-5ed7e8-1ac328` matters outside the
-  pilot. *Prediction, written before it runs:* in real sessions the bundle's reads are under a tenth of
-  the input tokens of a session that consults it, and under a fiftieth over all sessions. *Collides
-  with:* nothing; privacy of its output (aggregates only, and the output folder is ignored by git).
 - **`i-5ed7e8-1ac328` · Cut the main thread's cost of a consulting session below twice the unaided one.**
   0.0.23 was tagged at ×2.34 on the non-trivial tasks (pilot-8, `evals/REPORT.md` §4.10), past its own line
   of ×2.3, by the user's decision. **Where the extra goes** (pilot-8, per non-trivial trial, estimated from
@@ -422,7 +397,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `.claude/logs/` and skills under `.claude/skills/`, while the layout survey, *Three agents, one
   source*, and this repository treat `AGENTS.md` as the source and the logs as assistant-neutral
   documents. *Collides with:* artifacts 1, 3 and 5, the bootstrap's checklists, and every carrier's
-  `Reads:` lists that name those headings.
+  `Reads:` lists that name those headings. **Scoped for 0.0.30** (`d-5ed7e8-6d16cd`): artifacts 1 and 5 and the bootstrap's checklists, the coding session saying "root file", the log named by the `log` field with its default kept. Measured on 2026-10-07: no `Reads:` list and no carrier names those headings, and the skills path it lists is already right.
 - **`i-5ed7e8-d4f710` · Review overlapping notes as principles.** The efficacy pilots found that
   removing one note did not remove its principle: agents used `merge-by-shared-fact-not-shared-shape`
   in place of `derived-over-chosen-identifiers`, and `order-writes-by-failure-residue` in place of
@@ -450,7 +425,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   per note that has none. *Collides with:* the notes' `confidence`, which moves in both directions.
 - **`i-5ed7e8-705aa8` · Clean up the duplicated prose that remains in the method.** The worked
   examples are still long, and a few rules are still restated in more than one prompt. *Collides
-  with:* the `Reads:` lists, which name exact headings.
+  with:* the `Reads:` lists, which name exact headings. **Scoped for 0.0.30** (`d-5ed7e8-9f3502`): only rules restated in more than one prompt; long examples wait for `i-5ed7e8-16b90a`, which keeps every original whole.
 - **`i-5ed7e8-13a8be` · Keep the private-terms list of each machine complete.** `bundle.py
   privacy` checks the names in `~/.config/agent-guides/private-terms.txt`, which never travels; a
   private name missing from it is caught only by the generic rules. *Collides with:* nothing in the
@@ -464,7 +439,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   example or history (with Markdown comment markers) are left out of the release by the build, and a check
   fails if any imperative sentence, numbered rule, `Reads:` list, paste block or heading a `Reads:` names is
   missing from the release. The markings follow an inventory made by code and approved first. Grounded in
-  `sources/references.md` (SkillReducer). *Waits on:* `i-5ed7e8-c8b508`. *Collides with:* the budgets.
+  `sources/references.md` (SkillReducer). Its precondition, the method's originals in `sources/` with a release the build generates (`i-5ed7e8-c8b508`), shipped in 0.0.23, so it waits on nothing; it goes before `i-5ed7e8-1ac328` (`d-5ed7e8-4a03d2`). *Collides with:* the budgets.
 - **`i-5ed7e8-e8dc2c` · Measure release 0.0.22 against its written predictions.** Its cost half ran as
   pilot-6 on 2026-09-28 (`i-5ed7e8-c4b9c7`, *Closed by measurement*); the efficacy half stays paused with
   `i-5ed7e8-0d9b6a`.
@@ -512,6 +487,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
+- **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
+  (then 0.0.30) to the carriers only that machine holds and to the three it shares with this one, whose newer work is
+  unpushed there; bring the cost profile script into `evals/`; leave and document the published attribution lines in
+  the three carriers that hold them. *Blocked on:* a session on that machine.
+
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.26,
   every carrier but two stays on 0.0.25 (`meta/tracking/carriers.md`): the release reached only the
   ones the owner named. At the close of 0.0.25,
@@ -535,6 +515,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **Closed at the review of 2026-10-07**, each already delivered: `i-5ed7e8-1bc188` (0.0.29), `i-5ed7e8-191d2a`
+  (redesign phase 1, 0.0.26), `i-5ed7e8-a437c6` (measured on 2026-10-05, the prediction held) and `i-5ed7e8-87ffc2`
+  (the template's id after the middle dot, 0.0.27).
 - **0.0.29, 2026-10-05: decision records a tool reads, records that never leave a carrier, and the research
   decided.** `i-5ed7e8-1bc188` and `i-5ed7e8-54cb3f` (one item deferred). Described in `.agents/CHANGELOG.md`.
 - **0.0.28, 2026-10-05: the fixes of two fresh-context reviews of 0.0.27, before either was published.**
