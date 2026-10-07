@@ -478,6 +478,34 @@ for is the reviewer's, measured apart (the reviewer pilot), and the decision wai
 the ×2.0 line on the other tasks; both sit between the line and its refutation, as pilot-8 did. Exploratory:
 six tasks, one model, two repetitions.
 
+### 4.12 The index split seen by the reviewer alone (reviewer pilot, 2026-10-07)
+
+Registered in `PROTOCOL.md` before any trial: the knowledge reviewer, given its own instructions and one fixed
+diff, in a headless session with read-only tools; 15 diffs (the naive and the reference change of six tasks, one
+per target note, and the reference change of three tasks no note concerns), two arms, two repetitions: 60
+trials, all valid.
+
+| Arm | Target opened, naive (12) | Target named, naive (12) | Target named, reference (12) | Cards on neutral diffs (mean of 6) | Opened the moved file | Input tokens (mean) |
+|---|---:|---:|---:|---:|---:|---:|
+| `R0`, the current index | 12 | 12 | 12 | 0.7 | — | about 360,000 |
+| `R2`, the D2 split | 12 | 11 | 12 | 1.7 | 1 of 30 | about 330,000 |
+
+**The prediction is refuted.** `R2` was to spend at most ×0.6 of `R0`'s input tokens with the same recall. It
+spent ×0.91 by the arms' means (×0.95 by the geometric mean of the 30 paired diffs, median ×0.86), and named the
+target on one naive diff fewer: on one repetition of the refund task it opened the target card but named two
+neighbours instead. On the neutral diffs `R2` opened more cards, almost all on one task (four and four against
+one and three); with six neutral trials per arm this may be noise.
+
+**Why the saving was small.** The input counted here is the session's cumulative input, every turn re-reading
+its context, a few hundred thousand tokens; the index is a few thousand of them, so halving it moves the total
+by a few percent. The review's ×0.6 estimate was made for the reviewer's load before its first card, a different
+quantity from the one registered. That mismatch is the registration's error, stated here rather than corrected
+after the fact.
+
+**What it decides.** With pilot-9 (§4.11), D2 keeps every pass for the author and costs no more, but the
+saving it was designed for, the reviewer's, is not there, and it cost one named target. The decision on D2 is
+the owner's, recorded in `PROTOCOL.md`. Exploratory: 15 diffs, one model, two repetitions.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -570,6 +598,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-10-07** — the reviewer pilot (§4.12): the index split saves the reviewer about a tenth of its input, not the predicted two fifths, and names the target once fewer; the registered quantity is shown to differ from the one the estimate was made for.
 - **2026-10-07** — pilot-9 (§4.11): the index split keeps every discriminating pass and costs no more than the current release (×0.97 on the other tasks); both arms sit between their cost line and its refutation; the decision on the split waits on the reviewer pilot.
 - **2026-09-28** — pilot-8 (§4.10): the changed candidate misses its cost line by a small margin and holds the other three predictions; tagged by the user's explicit decision, recorded as a deviation.
 - **2026-09-28** — pilot-7 (§4.9): the 0.0.23 candidate's reviewer subagent refutes its cost prediction; the cards reach one card per lookup; a mid-run rebuild is reported as a deviation, with figures first drafted by repetition and recomputed by the bundle each trial received.
