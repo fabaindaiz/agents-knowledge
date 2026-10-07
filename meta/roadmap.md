@@ -20,6 +20,46 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Updated at the close of every meta-session.
 
+**State on 2026-10-07, evening, closing a long session for a fresh one (`d-5ed7e8-cdf1f3`).** All of it is on the
+unpublished branch `evals/pilot-9`, on top of `docs/plan-0.0.30`; neither is pushed, and the owner publishes later.
+0.0.30's focus is now **standardisation and cost without worse performance** (`d-5ed7e8-7cac23`), with a cost
+pilot against the base model in every release. Done this session:
+
+- **Pilot-9 and the reviewer pilot:** D2 keeps every pass and costs no more for the author; it saves the reviewer
+  about a tenth, not two fifths (`evals/REPORT.md` §4.11, §4.12).
+- **Running when this session closed:** a replication, `review-2` (120 trials, registered in `evals/PROTOCOL.md`,
+  cost primary). If it stopped with the session, `python3 evals/review.py run evals/runs/review-2` resumes it,
+  skipping finished trials; then `report`, and **decide D2** by its registered rule (`d-5ed7e8-c3ebf0`).
+- **The skill trigger eval:** hardened after an adversarial review (connector tools refused, failed sessions never
+  scored quiet, read-only shell allowed and recorded, canaries, a pinned model). Its cases and fixture live outside
+  the repository, in the machine's agent-guides configuration folder. Stage 1, a screen, found `close` and
+  `user-walk` firing and `decision-review` failing behind shell calls, since fixed. **Stage 2 is next:** a written
+  prediction, three runs, and an arm with a trimmed skill listing (`d-5ed7e8-4c80c1`); the listing overflows on this
+  machine (`meta/reviews/2026-10-07-trigger-eval-adversarial.md`).
+- **Decided with the owner, as proposals for 0.0.30:**
+  - the review turn's format (`p-b102eeae6f`, updated by `p-f76353b351`);
+  - the skill catalogue (`p-480f968069`, updated by `p-1070df9806`);
+  - documentation drift caught by a script, `bundle.py docs-drift` (`p-12f06b3438`);
+  - cheaper delegated work through a standard researcher agent (`d-5ed7e8-cdf1f3`).
+- **Researched, not yet decided:**
+  - cost levers: `meta/reviews/2026-10-07-cost-levers-literature.md`, `…-cost-inventory.md`, `…-reviewer-cost-decomposition.md`;
+  - script navigation, with a lookup prototype: `…-script-navigation.md`;
+  - a benchmark plan for performance and cost: `…-benchmark-measurement-plan.md`.
+
+  **The next session walks them** with the owner, in the review turn's format, before the 0.0.30 meta-session. The
+  benchmark plan needs the owner's yes on third-party harnesses, disk, budget and the subscription's terms.
+
+**What went wrong this session:**
+- a gate piped into `tail` hid its exit code, so one commit landed with the check red (rewritten before any push);
+- an edit chained with a commit in one command was refused whole by the privacy hook;
+- a renamed constant stayed referenced in the one path no test covered, which crashed stage 1 at its start, as did
+  a log folder created after its redirect;
+- a report sentence was drafted before it was checked (the second such draft, after `evals/REPORT.md`'s first);
+- a summarising web fetch contradicted the primary text it summarised;
+- ten research agents ran on the main model, unpriced.
+
+None had happened before in this log except the unchecked draft.
+
 **On 2026-10-07, everything pending was reviewed with the owner** (`d-5ed7e8-a65c26` to `d-5ed7e8-9f3502`): the next
 release's scope is `i-5ed7e8-855c42`, preceded by the index pilots and the skill trigger eval; four delivered items
 left *Next*; the compression's blocker was found shipped since 0.0.23; the other machine's work is `i-5ed7e8-61171e`.
@@ -213,7 +253,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   ready for review, a plan as a working artifact, the tracker as the roadmap's source, criteria and tasks mapped both
   ways, carrier linters excluding the bundle, a privacy answer rewriting the proposal, and in `prompt-sync` the branch
   question and the carrier's audit in the pre-carry review); and `i-5ed7e8-2aabb5`, `i-5ed7e8-94f262`,
-  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped); and the skill catalogue a complex task reads (`d-5ed7e8-0372b4`, `d-5ed7e8-4c80c1`; proposals `p-480f968069` as updated by `p-1070df9806`), whose carrier `LOCAL` lists are written in Phase 2; and the review turn's format for plans and decision walks (`d-5ed7e8-292961`, `d-5ed7e8-0fec6e`, `d-5ed7e8-d0cfa3`; proposals `p-b102eeae6f` as updated by `p-f76353b351`). The `[Unreleased]` fixes ride with it. *Collides with:*
+  `i-5ed7e8-8236cb` (scoped) and `i-5ed7e8-705aa8` (scoped); and the skill catalogue a complex task reads (`d-5ed7e8-0372b4`, `d-5ed7e8-4c80c1`; proposals `p-480f968069` as updated by `p-1070df9806`), whose carrier `LOCAL` lists are written in Phase 2; and the review turn's format for plans and decision walks (`d-5ed7e8-292961`, `d-5ed7e8-0fec6e`, `d-5ed7e8-d0cfa3`; proposals `p-b102eeae6f` as updated by `p-f76353b351`); documentation drift caught by `bundle.py docs-drift` (`d-5ed7e8-91f1be`, `p-12f06b3438`); a standard researcher agent on a cheaper model (`d-5ed7e8-cdf1f3`); and the cost levers still to be walked (`meta/reviews/2026-10-07-cost-*.md`, `…-script-navigation.md`). The `[Unreleased]` fixes ride with it. *Collides with:*
   the coding session's budget (about 145 tokens left), every carrier's update, and `i-5ed7e8-16b90a`.
 - **`i-5ed7e8-578c22` · Trigger evals for `decision-review` and `user-walk`, and for `close` after its
   trigger change.** 0.0.27 shipped both skills and changed `close`'s triggers (a push is no longer one;
