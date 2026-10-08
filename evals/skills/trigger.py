@@ -55,13 +55,16 @@ FIRE, MISFIRE = 0.8, 0.1
 ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
 # A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
 READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$|git remote( (-v|--verbose))?$|git stash list|sort)(\s|$)")
-# Flags of an allowed reader that write or run: find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls),
-# rg's --pre, and --output (a review on 2026-10-07 found the -f* and --pre holes).
-WRITING_FLAG = re.compile(r"-(exec\w*|ok\w*|delete|f[a-z]\w*)|--pre(=.*)?|--output(=.*)?")
-SORT_OUTPUT = re.compile(r"-[a-zA-Z]*o.*")  # sort -o FILE writes
+# Flags of an allowed reader that write or run another program, matched also when a long one is abbreviated:
+# find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls); rg's --pre, --hostname-bin and --search-zip (and
+# -z); sort's -o, --output and --compress-program; git's --output, --ext-diff and --textconv; tail's -f and -F,
+# which never end. Two reviews on 2026-10-07 found these holes.
+WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|f[a-z]\w*)")
+WRITING_LONG = ("output", "pre", "hostname-bin", "search-zip", "compress-program", "ext-diff", "textconv")
+SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}  # short flags dangerous only for that reader
 # Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
 SEPARATORS = {"&&", "||", ";", "|"}
-QUIET_STDERR = re.compile(r"(?<!\S)(2>&1|[12&]?>/dev/null)(?=\s|$|[;&|])")
+QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}  # the error stream merged or dropped
 PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
 CALLS = 5  # the lenient metric reads this many tool calls
 
@@ -88,33 +91,111 @@ def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN
     return calls
 
 
+def shell_words(command: str) -> list[str] | None:
+    """The command split as the shell would split it, quotes removed, operators as words of their own; None when
+    the shell would expand or substitute something first (`$`, a backtick, braces outside single quotes), or when
+    a quote is left open. Globs (`*`, `?`, `[`) stay: they only name files, and the fixture holds no file named
+    like a flag. A `#` is a plain character, so a comment can never hide what follows it."""
+    words, word, quote, started, i = [], "", None, False, 0
+    while i < len(command):
+        ch = command[i]
+        if quote == "'":
+            if ch == "'":
+                quote = None
+            else:
+                word += ch
+        elif quote == '"':
+            if ch == '"':
+                quote = None
+            elif ch in "$`":
+                return None
+            elif ch == "\\" and i + 1 < len(command):
+                i += 1
+                word += command[i]
+            else:
+                word += ch
+        elif ch in "'\"":
+            quote, started = ch, True
+        elif ch in "$`{}":
+            return None
+        elif ch == "\\":
+            if i + 1 >= len(command):
+                return None
+            i += 1
+            word += command[i]
+            started = True
+        elif ch.isspace():
+            if started:
+                words.append(word)
+            word, started = "", False
+        elif ch in ";&|<>()":
+            if started:
+                words.append(word)
+            run = ch
+            while i + 1 < len(command) and command[i + 1] in ";&|<>()":
+                i += 1
+                run += command[i]
+            words.append("\0" + run)  # an operator, marked so a quoted ";" is never one
+            word, started = "", False
+        else:
+            word += ch
+            started = True
+        i += 1
+    if quote:
+        return None
+    if started:
+        words.append(word)
+    return words
+
+
+def _writes(segment: list[str]) -> bool:
+    """Whether one reader's arguments hold a flag that writes, runs another program, or never ends."""
+    for token in segment[1:]:
+        if token.startswith("--"):
+            name = token[2:].split("=", 1)[0]
+            if name and any(option.startswith(name) for option in WRITING_LONG):
+                return True
+        elif WRITING_SHORT.fullmatch(token):
+            return True
+        elif token.startswith("-") and set(token[1:]) & set(SHORT_BY_COMMAND.get(segment[0], "")):
+            return True
+    return False
+
+
 def read_only(command: str) -> bool:
     """A shell command that only reads the repository, run so a session may look before it chooses: one read, or
     reads joined by `&&`, `||`, `;` or `|`, with the error stream merged or dropped at most. Any other redirection,
-    substitution, background job or line break refuses the whole command."""
-    command = QUIET_STDERR.sub(" ", command.strip())
-    if not command or any(mark in command for mark in ("\n", "\r", "`", "$(", "<(", ">(")):
+    an expansion or substitution, a background job or a line break refuses the whole command."""
+    if not command.strip() or any(mark in command for mark in ("\n", "\r")):
         return False
-    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
-    lexer.whitespace_split = True
-    try:
-        tokens = list(lexer)
-    except ValueError:  # an unclosed quote
+    words = shell_words(command.strip())
+    if words is None:
         return False
+    joined: list[str] = []  # the error stream merged or dropped, as one quiet word
+    k = 0
+    while k < len(words):
+        fd = words[k] if words[k] in ("1", "2") and k + 1 < len(words) and words[k + 1].startswith("\0") else ""
+        op, target = (words[k + 1], words[k + 2:k + 3]) if fd else (words[k], words[k + 1:k + 2])
+        if op.startswith("\0") and target and not target[0].startswith("\0") and fd + op[1:] + target[0] in QUIET:
+            joined.append("\0quiet")
+            k += 3 if fd else 2
+            continue
+        joined.append(words[k])
+        k += 1
     segments, current = [], []
-    for token in tokens:
-        if token in SEPARATORS:
+    for w in joined:
+        if w == "\0quiet":
+            continue
+        if w.startswith("\0"):
+            if w[1:] not in SEPARATORS:
+                return False  # a redirection, a subshell or a background job
             segments.append(current)
             current = []
-        elif set(token) <= set("();<>|&"):
-            return False  # a redirection, a subshell or a background job
         else:
-            current.append(token)
+            current.append(w)
     segments.append(current)
     segments = [s[:1] + s[3:] if s[:2] == ["git", "-C"] and len(s) > 3 else s for s in segments]  # git -C DIR reads
-    return all(segment and READ_ONLY.match(" ".join(segment)) and not any(WRITING_FLAG.fullmatch(tok) for tok in segment)
-               and not (segment[0] == "sort" and any(SORT_OUTPUT.fullmatch(tok) for tok in segment[1:]))
-               for segment in segments)
+    return all(segment and READ_ONLY.match(" ".join(segment)) and not _writes(segment) for segment in segments)
 
 
 def allowed(call: tuple[str, str]) -> bool:

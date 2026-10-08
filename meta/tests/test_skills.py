@@ -622,6 +622,21 @@ class TriggerEval(Base):
                         "grep x a | sort -o b", "git remote add o u", "git stash", "git stash pop", "ls 2>&1 > out"):
             self.assertEqual(allow("Bash", {"command": command}), 2, command)
 
+    def test_what_the_shell_would_expand_or_run_is_refused(self) -> None:
+        # every command here was accepted by the first compound classifier (a review on 2026-10-07)
+        allow = lambda command: self.T.hook_decision({"tool_name": "Bash", "tool_input": {"command": command}})  # noqa: E731
+        for command in ("find . -$Zdelete", "find . -{delete,x}", "find . $'-delete'", "echo ${A:=-delete}; find . $A",
+                        "git log --out{put,}=f", "echo a#b ; rm x", "echo a#b;rm x", "sort --out=f x", "sort --outp=f x",
+                        "git log --out=f", "git diff --ou=f", "rg --hostname-bin=sh x", "sort -S 1 --compress-program=sh x",
+                        "rg -z x", "rg -nz x", "rg --search-zip x", "git diff --ext-diff", "git diff --textconv",
+                        "git show --ext-diff", "tail -f x", "tail -F x", 'grep "$HOME" x', "ls \\$(id)",
+                        "sort --o=f x", "cat a 2>&1>f", "ls >/dev/null>f", "ls 2>/dev/nullx", "ls >| f", "ls &"):
+            self.assertEqual(allow(command), 2, command)
+        for command in ("find . -name '*.md'", "wc -l docs/*.md", "grep -rn 'a$' src", 'grep -E "a|b(c)" src',
+                        "git status --short && git log --oneline -5 2>&1; git branch -a", "grep -z x f",
+                        "cat 'a b.txt'", "ls docs\\ x"):
+            self.assertEqual(allow(command), 0, command)
+
     def test_a_long_shell_command_is_judged_whole(self) -> None:
         long = "git status --short && " + " && ".join(f"ls dir{i}" for i in range(40))
         bash = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash",

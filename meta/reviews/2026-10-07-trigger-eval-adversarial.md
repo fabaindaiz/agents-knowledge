@@ -221,3 +221,11 @@ passes the lenient gate on stage 2b's sessions (0.83 on the expected cases and o
 `decision-review` is judged by the lenient gate from now on, and 0.0.30 makes its description ask for the skill
 before reading; `user-walk`'s description is rewritten in 0.0.30. Both are measured again in that release's trigger
 layer before it ships.
+
+**The compound-read classifier, reviewed before its merge.** A second isolated review found that it checked words
+after the shell would have expanded them: a variable, braces or ANSI-C quoting could hide a writing flag, a `#`
+inside a word cut the rest of a command from the check, abbreviated long options escaped it, and a few readers'
+options run another program. The classifier now splits a command as the shell does, refuses any expansion or
+substitution outside single quotes, matches the dangerous long options by any prefix, and refuses the readers'
+options that run or never end. Re-judged under it from their recorded calls, no stage 2b session changes its
+verdict, so the results above stand.
