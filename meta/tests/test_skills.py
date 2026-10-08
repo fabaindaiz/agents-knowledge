@@ -591,6 +591,24 @@ class TriggerEval(Base):
             self.assertEqual(allow("Bash", {"command": command}), 2, command)
         for command in ("find . -name '*.md'", "git branch", "git branch --list", "git branch -a", "rg -n spec docs"):
             self.assertEqual(allow("Bash", {"command": command}), 0, command)
+        # compound reads run, as sessions look with them (stage 2, 2026-10-07): every part must read
+        for command in ("git status --short && find . -name x", "git log --oneline -5 2>&1 | head",
+                        'grep -rniE "upload|File\\(|multipart" src docs', "ls -R src | head -100 && grep -rn x src",
+                        "git status --short | head; ls", "echo --- && git log --oneline -3", "ls docs 2>/dev/null || ls",
+                        "git log -5 2>&1; git remote -v; git stash list", "ls .x 2>/dev/null; ls", "grep -rn x src | sort",
+                        "ls >/dev/null && ls"):
+            self.assertEqual(allow("Bash", {"command": command}), 0, command)
+        for command in ("ls && rm x", "git status | sh", "find . | xargs rm", "cat a 2> b", "ls & rm x", "ls\nrm x",
+                        "git log > out", "echo `id`", "ls <(rm x)", "ls 'unclosed", "ls &&", "git status && git push",
+                        "grep x a | sort -o b", "git remote add o u", "git stash", "git stash pop", "ls 2>&1 > out"):
+            self.assertEqual(allow("Bash", {"command": command}), 2, command)
+
+    def test_a_long_shell_command_is_judged_whole(self) -> None:
+        long = "git status --short && " + " && ".join(f"ls dir{i}" for i in range(40))
+        bash = json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash",
+                           "input": {"command": long}}]}})
+        self.assertEqual(self.T.tool_calls([bash]), [("Bash", long)])
+        self.assertTrue(self.T.allowed(("Bash", long)))
 
     def test_the_refusing_hook_fails_closed(self) -> None:
         import subprocess

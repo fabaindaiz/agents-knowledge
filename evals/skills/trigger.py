@@ -40,6 +40,7 @@ import argparse
 import re
 import json
 import math
+import shlex
 import shutil
 import subprocess
 import sys
@@ -53,10 +54,14 @@ FIRE, MISFIRE = 0.8, 0.1
 # "push everything" must do nothing, through any tool the machine has.
 ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
 # A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
-READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$)(\s|$)")
+READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$|git remote( (-v|--verbose))?$|git stash list|sort)(\s|$)")
 # Flags of an allowed reader that write or run: find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls),
 # rg's --pre, and --output (a review on 2026-10-07 found the -f* and --pre holes).
-SHELL_META = re.compile(r"[;&|<>`$\n\\()]|\s-(exec\w*|ok\w*|delete|f[a-z]\w*)\b|--output\b|--pre\b")
+WRITING_FLAG = re.compile(r"-(exec\w*|ok\w*|delete|f[a-z]\w*)|--pre(=.*)?|--output(=.*)?")
+SORT_OUTPUT = re.compile(r"-[a-zA-Z]*o.*")  # sort -o FILE writes
+# Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
+SEPARATORS = {"&&", "||", ";", "|"}
+QUIET_STDERR = re.compile(r"(?<!\S)(2>&1|[12&]?>/dev/null)(?=\s|$|[;&|])")
 PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
 CALLS = 5  # the lenient metric reads this many tool calls
 
@@ -76,16 +81,39 @@ def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN
             if block.get("type") == "tool_use":
                 name = block.get("name")
                 key = {"Skill": "skill", "Read": "file_path", "Bash": "command"}.get(name)
-                calls.append((name, str(block.get("input", {}).get(key, ""))[:200] if key else ""))
+                target = str(block.get("input", {}).get(key, "")) if key else ""
+                calls.append((name, target if name == "Bash" else target[:200]))  # a command is judged whole
                 if len(calls) >= limit:
                     return calls
     return calls
 
 
 def read_only(command: str) -> bool:
-    """A shell command that only reads the repository, run so a session may look before it chooses."""
-    command = command.strip()
-    return bool(READ_ONLY.match(command)) and not SHELL_META.search(command)
+    """A shell command that only reads the repository, run so a session may look before it chooses: one read, or
+    reads joined by `&&`, `||`, `;` or `|`, with the error stream merged or dropped at most. Any other redirection,
+    substitution, background job or line break refuses the whole command."""
+    command = QUIET_STDERR.sub(" ", command.strip())
+    if not command or any(mark in command for mark in ("\n", "\r", "`", "$(", "<(", ">(")):
+        return False
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:  # an unclosed quote
+        return False
+    segments, current = [], []
+    for token in tokens:
+        if token in SEPARATORS:
+            segments.append(current)
+            current = []
+        elif set(token) <= set("();<>|&"):
+            return False  # a redirection, a subshell or a background job
+        else:
+            current.append(token)
+    segments.append(current)
+    return all(segment and READ_ONLY.match(" ".join(segment)) and not any(WRITING_FLAG.fullmatch(tok) for tok in segment)
+               and not (segment[0] == "sort" and any(SORT_OUTPUT.fullmatch(tok) for tok in segment[1:]))
+               for segment in segments)
 
 
 def allowed(call: tuple[str, str]) -> bool:
