@@ -393,3 +393,21 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   context at the first card holds (×0.89). Three `R2` sessions reached the registered turn limit; they are kept, as
   the design sets the limit, and a reading without their pairs is reported beside, with the same verdict on cost
   (`REPORT.md` §4.13). By the rule, D2 does not join a release; the owner decides.
+- **2026-10-08, exploratory — pilot-10, release 0.0.30's cost pilot** (`MANIFEST.md`, `meta/method/prompt-sync.md` 7a).
+  Registered before any trial. *Arms:* `minimal`; `bundle_v30`, the 0.0.30 candidate with its wiring (0.0.29's
+  knowledge line and the root file's new fourth line, on parallel tool calls) and every agent it ships installed.
+  *Tasks, model, isolation:* pilot-9's six, its model, two repetitions, a new seed (20261010), the same degraded
+  isolation, so the ratio is read against pilot-9's `bundle_v29` / `minimal` (×1.17 trivial, ×2.22 other, upper ends
+  ×1.23 and ×2.70). *Predictions:* `bundle_v30` / `minimal` at most ×1.2 on the trivial tasks and ×2.2 on the others,
+  as 0.0.29; every discriminating task passes as often as under `bundle_v29` (2/2). *Decision rule:* 0.0.30 does not
+  ship if either ratio exceeds 0.0.29's upper end (×1.23, ×2.70) or a discriminating task passes fewer times; the
+  cost levers that made it are then re-read. Analysis: `evals/cost_smoke.py`.
+- **2026-10-08, exploratory — `review-3`, the reviewer's shorter check phase** (`d-5ed7e8-8174a8`). Registered before
+  any trial. *Arms:* `R0`, the 0.0.30 reviewer; `RC`, the same with step 5 shortened (one check per card, the first
+  reads batched, a check that needs a fault or a test returned as the test to write, a stated point to stop).
+  *Design:* the reviewer pilot's 15 diffs, two repetitions, a new seed (20261011), the same model, tools and turn
+  limit, and, from this run on, a session that timed out or ended in an error other than the turn limit is an error,
+  run again on resume. *Outcomes:* estimated cost, primary (geometric mean of `RC` / `R0` over pairs); recall, the
+  target named on the 12 naive diffs. *Predictions:* `RC` costs at most ×0.80 of `R0` (refuted above ×0.95); recall
+  equal (refuted if `RC` names the target on two or more fewer). *Decision rule:* the shorter check phase joins the
+  reviewer only if its cost prediction holds and recall is not refuted. Analysis: `evals/review.py report`.

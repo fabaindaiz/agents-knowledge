@@ -229,3 +229,15 @@ options run another program. The classifier now splits a command as the shell do
 substitution outside single quotes, matches the dangerous long options by any prefix, and refuses the readers'
 options that run or never end. Re-judged under it from their recorded calls, no stage 2b session changes its
 verdict, so the results above stand.
+
+## Stage 3: 0.0.30's two rewritten descriptions, registered 2026-10-08 before any run
+
+`decision-review` asks to be used before the session reads the material, and `user-walk` names a question about
+what a person meets when a step is slow, abandoned or cut off, both written without the cases' words. They run in
+the carrier's installed skills, the current listing, three runs per case, the same model, fixture and router, with
+the classifier as it now stands; `decision-review` under `--gate lenient` (`d-5ed7e8-018f2c`).
+
+**Prediction.** `decision-review`: lenient fire 0.8 to 0.95, strict 0.4 to 0.7, a pass. `user-walk`: strict fire 0.75
+to 0.9, about even for a pass. No misfire above 0.05 in either. **What it decides.** A description that fails its gate
+ships only if it fires at least as often as the one it replaces (stage 2b: 0.83 lenient, 0.67 strict); otherwise the
+0.0.29 wording is restored before the cut.

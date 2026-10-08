@@ -49,14 +49,14 @@ HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
 CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b",
-              "bundle_v29", "bundle_v29_d2"]
+              "bundle_v29", "bundle_v29_d2", "bundle_v30"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"],
 }
 
 ROUTING = """
@@ -102,9 +102,13 @@ for a review in a fresh context, give the diff to the `knowledge-reviewer` subag
 """
 # pilot-9 (2026-10-07): the 0.0.29 wiring is 0.0.23's word for word, so both arms take ROUTING_V23B; they differ
 # from `bundle_v23b` only in the bundle they copy, the current release, and `bundle_v29_d2` in its index (`d2_index`).
+# 0.0.30's wiring: 0.0.29's knowledge line and the root file's new fourth line (`prompt-bootstrap.md` Phase 4);
+# every agent the release ships is installed, as a carrier's update installs them (pilot-10).
+ROUTING_V30 = ROUTING_V23B + "\nMake independent tool calls in one message, in parallel.\n"
 ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23,
-            "bundle_v23b": ROUTING_V23B, "bundle_v29": ROUTING_V23B, "bundle_v29_d2": ROUTING_V23B}
-REVIEWER_ARMS = ("bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2")
+            "bundle_v23b": ROUTING_V23B, "bundle_v29": ROUTING_V23B, "bundle_v29_d2": ROUTING_V23B, "bundle_v30": ROUTING_V30}
+REVIEWER_ARMS = ("bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30")
+ALL_AGENTS_ARMS = ("bundle_v30",)
 LOOKUP_HEADING = "## By what you are about to do"
 
 
@@ -289,13 +293,16 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2"):
+    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws)
         reviewer = ws / ".agents/agents/knowledge-reviewer.md"
         if condition in REVIEWER_ARMS and reviewer.is_file():
             (ws / ".claude/agents").mkdir(parents=True, exist_ok=True)
             shutil.copyfile(reviewer, ws / ".claude/agents/knowledge-reviewer.md")
+        if condition in ALL_AGENTS_ARMS:
+            for agent in sorted((ws / ".agents/agents").glob("*.md")):
+                shutil.copyfile(agent, ws / ".claude/agents" / agent.name)
         if condition == "ablated":
             info["ablation"] = ablate(ws / ".agents", task["notes"])
         if condition == "bundle_v29_d2":

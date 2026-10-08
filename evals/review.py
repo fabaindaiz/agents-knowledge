@@ -34,6 +34,12 @@ sys.path.insert(0, str(HERE))
 import harness as H  # noqa: E402
 
 ARMS = ("R0", "R2")
+ALL_ARMS = ("R0", "R2", "RC")  # RC: the current release with the check phase shortened (d-5ed7e8-8174a8)
+SHORT_CHECKS = (
+    "5. **One check per applicable card, then stop when every card has its verdict.** Batch your first reads\n"
+    "   in one message. A check that needs a planted fault, a scratch copy or a new test is not run here: it comes back\n"
+    "   as a finding, the test the author must write. Stop when each card you opened is applied, excluded or\n"
+    "   overridden, with its evidence; do not look further for the author.\n")
 TARGET_TASKS = ("contacts-second-source-l1", "refund-webhook-l1", "delivery-email-once-l1",
                 "recommendations-kill-switch-l1", "settings-notification-preferences-l1", "api-page-size-limit-l1")
 NEUTRAL_TASKS = ("inventory-csv-export", "cli-help-typo", "report-label-rename")
@@ -72,10 +78,16 @@ def prepare(task_id: str, variant: str, arm: str, ws: Path) -> dict:
     return info
 
 
-def prompt(diff: str) -> str:
-    """The reviewer's own instructions, without the frontmatter the host reads, and the change to review."""
+def prompt(diff: str, arm: str = "R0") -> str:
+    """The reviewer's own instructions, without the frontmatter the host reads, and the change to review; for `RC`,
+    the check step shortened and nothing else changed."""
     text = (H.BUNDLE / "agents" / "knowledge-reviewer.md").read_text()
     body = text.split("\n---\n", 1)[1] if text.startswith("---") else text
+    if arm == "RC":
+        step = re.search(r"^5\. \*\*Run each applicable card's check\*\*.*?(?=^6\. )", body, re.S | re.M)
+        if step is None:
+            raise RuntimeError("the reviewer's check step was not found; the RC arm cannot be built")
+        body = body[:step.start()] + SHORT_CHECKS + body[step.end():]
     return body.strip() + "\n\nThe change to review, as `git diff` (applied, not committed, in this repository):\n\n```diff\n" \
         + diff.rstrip() + "\n```\n"
 
@@ -113,13 +125,43 @@ def outcomes(transcript: Path, ws: Path, targets: list[str]) -> dict:
             "turns": result.get("num_turns"), "final": final[:4000], "outside": trace["outside"]}
 
 
+def session_failure(invoke: dict, events: list[dict]) -> str | None:
+    """Why a session measured nothing, or None: a timeout, no result event, or an error result other than the
+    registered turn limit, which is the design's and a valid trial (`evals/REPORT.md` §4.13)."""
+    if invoke.get("timed_out"):
+        return "the session timed out"
+    results = [e for e in events if e.get("type") == "result"]
+    if not results:
+        return "no result event"
+    last = results[-1]
+    if last.get("subtype") == "error_max_turns":
+        return None
+    if last.get("is_error") or str(last.get("subtype", "")).startswith("error"):
+        return f"the session ended in {last.get('subtype') or 'an error'}"
+    return None
+
+
+def done_trials(lines: list[str]) -> set[str]:
+    """The trials a resume skips: those with a result, never one that errored, which runs again."""
+    out = set()
+    for line in lines:
+        if line.strip():
+            rec = json.loads(line)
+            if not rec.get("harness_error"):
+                out.add(rec["trial"])
+    return out
+
+
 def cmd_plan(args) -> int:
     run = Path(args.run)
     if (run / "plan.json").exists():
         raise SystemExit(f"{run}/plan.json exists: a plan is frozen once written")
     cfg = args.config_dir if args.config_dir == H.DEFAULT_CONFIG else str(Path(args.config_dir).expanduser())
     claude = H.claude_bin(None)
-    trials = [{**d, "arm": arm, "rep": rep} for rep in range(args.reps) for d in diff_set() for arm in ARMS]
+    arms = tuple(a for a in args.arms.split(",") if a) if getattr(args, "arms", None) else ARMS
+    if unknown := [a for a in arms if a not in ALL_ARMS]:
+        raise SystemExit(f"unknown arms {unknown}: one of {ALL_ARMS}")
+    trials = [{**d, "arm": arm, "rep": rep} for rep in range(args.reps) for d in diff_set() for arm in arms]
     rng = random.Random(args.seed)
     for rep in range(args.reps):
         block = [t for t in trials if t["rep"] == rep]
@@ -131,12 +173,12 @@ def cmd_plan(args) -> int:
     plan = {"created": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "model": args.model, "effort": None,
             "claude": claude, "claude_version": subprocess.run([claude, "--version"], capture_output=True, text=True).stdout.strip(),
             "config_dir": cfg, "seed": args.seed, "reps": args.reps, "max_turns": args.max_turns, "timeout_s": args.timeout,
-            "tools": REVIEWER_TOOLS, "bundle_digest": hashlib.sha256(sums.read_bytes()).hexdigest()[:12],
+            "tools": REVIEWER_TOOLS, "arms": list(arms), "bundle_digest": hashlib.sha256(sums.read_bytes()).hexdigest()[:12],
             "module_hash": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16],
             "harness_hash": hashlib.sha256((HERE / "harness.py").read_bytes()).hexdigest()[:16], "trials": trials}
     run.mkdir(parents=True, exist_ok=True)
     (run / "plan.json").write_text(json.dumps(plan, indent=1))
-    print(f"review plan: {len(trials)} trials, {len(diff_set())} diffs x {len(ARMS)} arms x {args.reps}; bundle {plan['bundle_digest']}")
+    print(f"review plan: {len(trials)} trials, {len(diff_set())} diffs x {len(arms)} arms x {args.reps}; bundle {plan['bundle_digest']}")
     return 0
 
 
@@ -147,7 +189,7 @@ def cmd_run(args) -> int:
         raise SystemExit("evals/review.py changed since the plan was frozen; write a new plan")
     done = set()
     if (run / "results.jsonl").exists():
-        done = {json.loads(l)["trial"] for l in (run / "results.jsonl").read_text().splitlines() if l.strip()}
+        done = done_trials((run / "results.jsonl").read_text().splitlines())
     pending = [t for t in plan["trials"] if t["trial"] not in done]
     print(f"{len(done)} done, {len(pending)} to run", flush=True)
     for tr in pending:
@@ -159,14 +201,18 @@ def cmd_run(args) -> int:
         try:
             info = prepare(tr["task"], tr["variant"], tr["arm"], ws)
             digest = hashlib.sha256((ws / ".agents/SHA256SUMS").read_bytes()).hexdigest()[:12]
-            if tr["arm"] == "R0" and digest != plan["bundle_digest"]:
+            if tr["arm"] in ("R0", "RC") and digest != plan["bundle_digest"]:
                 raise RuntimeError(f"the bundle is {digest}, the plan froze {plan['bundle_digest']}")
             settings = base / "settings.json"
             settings.write_text(json.dumps(H.trial_settings(ws), indent=1))
             art = run / "trials" / tr["trial"]
             art.mkdir(parents=True, exist_ok=True)
-            rec["invoke"] = H.invoke(plan, ws, prompt(info["diff"]), settings, art / "transcript.jsonl",
+            rec["invoke"] = H.invoke(plan, ws, prompt(info["diff"], tr["arm"]), settings, art / "transcript.jsonl",
                                      plan["max_turns"], plan["timeout_s"], tools=REVIEWER_TOOLS)
+            events = [json.loads(l) for l in (art / "transcript.jsonl").read_text().splitlines() if l.strip().startswith("{")] \
+                if (art / "transcript.jsonl").is_file() else []
+            if failure := session_failure(rec["invoke"], events):
+                raise RuntimeError(failure)
             rec["out"] = outcomes(art / "transcript.jsonl", ws, tr["targets"])
             rec["d2"] = info.get("d2")
         except Exception as e:  # an infrastructure failure: recorded, never dropped
@@ -228,6 +274,7 @@ def main(argv=None) -> int:
     p.add_argument("--seed", type=int, default=20261008)
     p.add_argument("--config-dir", default=H.DEFAULT_CONFIG)
     p.add_argument("--max-turns", type=int, default=30)
+    p.add_argument("--arms", default="", help=f"comma-separated, of {ALL_ARMS} (default: {','.join(ARMS)})")
     p.add_argument("--timeout", type=int, default=900)
     for name in ("run", "report"):
         sub.add_parser(name).add_argument("run")

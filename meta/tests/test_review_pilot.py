@@ -72,3 +72,25 @@ class ReviewPilot(Base):
         self.assertEqual(out["first_card_context"], 9050)
         self.assertEqual(out["cost"], 0.5)
 
+
+    def test_the_short_check_arm_changes_only_the_check_step(self) -> None:
+        # the reviewer's check phase, shorter (d-5ed7e8-8174a8): one check per card, a check that needs a fault
+        # or a test comes back as the test to write, the first reads batched, a stated point to stop
+        full, short = R.prompt("diff --git a/x b/x\n", "R0"), R.prompt("diff --git a/x b/x\n", "RC")
+        self.assertNotEqual(full, short)
+        self.assertIn("Run each applicable card's check", full)
+        self.assertNotIn("Run each applicable card's check", short)
+        self.assertIn("the test the author must write", short)
+        self.assertIn("Stop", short)
+        self.assertEqual(full.split("5. ")[0], short.split("5. ")[0])
+
+    def test_a_failed_session_is_an_error_and_a_resume_retries_it(self) -> None:
+        self.assertIsNone(R.session_failure({"rc": 0, "timed_out": False}, [{"type": "result", "subtype": "success"}]))
+        # the turn limit is the design's: a valid trial that ran out of turns
+        self.assertIsNone(R.session_failure({"rc": 1, "timed_out": False}, [{"type": "result", "subtype": "error_max_turns"}]))
+        self.assertIn("timed out", R.session_failure({"rc": -9, "timed_out": True}, []))
+        self.assertIn("no result", R.session_failure({"rc": 1, "timed_out": False}, []))
+        self.assertIn("error_during_execution", R.session_failure({"rc": 1, "timed_out": False},
+                                                                   [{"type": "result", "subtype": "error_during_execution", "is_error": True}]))
+        lines = [json.dumps({"trial": "a"}), json.dumps({"trial": "b", "harness_error": "x"})]
+        self.assertEqual(R.done_trials(lines), {"a"})
