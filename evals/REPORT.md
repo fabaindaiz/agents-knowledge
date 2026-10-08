@@ -543,6 +543,42 @@ shape, and the cost work turns to the reviewer's check phase, which the decompos
 (`meta/reviews/2026-10-07-reviewer-cost-decomposition.md`). The final word is the owner's. Exploratory: one model,
 15 diffs.
 
+### 4.14 Release 0.0.30's cost pilot (pilot-10, 2026-10-08)
+
+Registered in `PROTOCOL.md` before any trial: `minimal` against `bundle_v30` (the 0.0.30 candidate, its wiring and
+every agent it ships installed), pilot-9's six tasks, two repetitions, a new seed: 24 trials, all valid. No trial
+called an agent.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | Ratio | Registered line |
+|---|---:|---|
+| `bundle_v30` / `minimal`, trivial tasks (2) | ×1.29 [1.14, 1.45] | at most ×1.2, refuted above ×1.23: **refuted** |
+| `bundle_v30` / `minimal`, other tasks (4) | ×2.80 [2.01, 3.68] | at most ×2.2, refuted above ×2.70: **refuted** |
+
+**Pass rates.** The discriminating tasks passed 2/2, 1/2 and 2/2 under `bundle_v30` (0.0.29: 2/2 each) and 0/2 each
+under `minimal`; the neutral and trivial tasks passed every time. One pass fewer, which the rule counts.
+
+**Both predictions are refuted, and by the registered rule 0.0.30 does not ship as it stands.** A reading made after
+the run (not registered) puts the cause in the denominator: across the two pilots the bundle arm cost about the same
+in absolute terms (`bundle_v30` / `bundle_v29`: ×0.97 trivial, ×0.99 other), while `minimal` cost less this time
+(×0.89 and ×0.78; on one task, half). The rule compared a ratio with another run's interval, which carries both
+runs' noise in the base arm; a release is better measured against the previous release in the same run.
+
+### 4.15 The reviewer's shorter check phase (review-3, 2026-10-08)
+
+Registered before any trial: `R0`, the 0.0.30 reviewer, against `RC`, the same with its check step shortened (one
+check per card, the first reads batched, a check that needs a fault or a test returned as the test to write, a stated
+stop). The reviewer pilot's 15 diffs, two repetitions: 60 trials, all with a result, none in error or at the turn limit.
+
+| Arm | Target named, naive (12) | Target named, reference (12) | Cards on neutral diffs (mean) | Input tokens (mean) |
+|---|---:|---:|---:|---:|
+| `R0` | 12 | 11 | 1.3 | about 330,000 |
+| `RC` | 12 | 11 | 1.0 | about 168,000 |
+
+**The prediction holds.** `RC` costs ×0.70 of `R0` (geometric mean of 30 pairs, 95% bootstrap ×0.60 to ×0.80), within
+the registered at most ×0.80, with recall equal. By its rule the shorter check phase joins the reviewer. What it gives
+up is a check run in a scratch copy: those now come back as the test the author must write. Exploratory: one model,
+15 diffs, two repetitions.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -635,6 +671,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-10-08** — release 0.0.30's cost pilot (§4.14) refutes both registered lines (×1.29 and ×2.80 against `minimal`), with a discriminating pass fewer; read after the run, the bundle cost the same as 0.0.29 and the base arm less. The reviewer's shorter check phase (§4.15) costs ×0.70 with recall equal, and holds its prediction.
 - **2026-10-07** — the reviewer pilot replicated (§4.13): the index split costs the reviewer ×1.04, not at most ×0.95, and names the target twice fewer, refuting both registered predictions; three `R2` sessions reached the turn limit, and the verdict holds without them; §4.12's missing name is shown to be one of them.
 - **2026-10-07** — the reviewer pilot (§4.12): the index split saves the reviewer about a tenth of its input, not the predicted two fifths, and names the target once fewer; the registered quantity is shown to differ from the one the estimate was made for.
 - **2026-10-07** — pilot-9 (§4.11): the index split keeps every discriminating pass and costs no more than the current release (×0.97 on the other tasks); both arms sit between their cost line and its refutation; the decision on the split waits on the reviewer pilot.

@@ -241,3 +241,15 @@ the classifier as it now stands; `decision-review` under `--gate lenient` (`d-5e
 to 0.9, about even for a pass. No misfire above 0.05 in either. **What it decides.** A description that fails its gate
 ships only if it fires at least as often as the one it replaces (stage 2b: 0.83 lenient, 0.67 strict); otherwise the
 0.0.29 wording is restored before the cut.
+
+## Stage 3: results
+
+99 sessions, none in error, every canary fired.
+
+| Skill | Gate | Strict fire | Lenient fire | Misfire | Verdict | Predicted |
+|---|---|---:|---:|---:|---|---|
+| `decision-review` | lenient | 0.50 (0.29 to 0.71) | 0.94 (0.74 to 0.99) | 0.00 | pass | lenient 0.8 to 0.95 and strict 0.4 to 0.7: both held |
+| `user-walk` | strict | 1.00 (0.82 to 1.00) | 1.00 | 0.00 | pass | strict 0.75 to 0.9: refuted, upwards |
+
+Both rewritten descriptions pass and fire more often than the ones they replace (stage 2b: 0.83 lenient, 0.67
+strict), so both ship. `user-walk`'s two cases that read and answered without the skill now fire in every run.
