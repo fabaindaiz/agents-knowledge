@@ -81,7 +81,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   Claude-format hooks run in the Cursor CLI on Linux, does Copilot load both a `.claude/agents/` and a
   `.github/agents/` agent of one name, …), then hooks for the surfaces that lack the import; `memory-diff` and `turns`
   for the other assistants' stores; a review bot's file, if the owner uses one; each carrier's migration of its
-  hand-written rules, at its update.
+  hand-written rules, at its update; two limits the home's own copies show: the researcher's Claude model and its hook do not carry
+  over (Cursor inherits the session's model, and `readonly` may stop its `curl` downloads, leaving it the fetch tool),
+  so it is cheaper and fenced only in Claude Code. The home lists both assistants in `surfaces` since 2026-10-08.
   Level 3: an adapter per CLI in `evals/harness.py`, the same Claude model, a fresh home per trial, pilot-12's three
   tasks; Cursor documents no cost per run. *Blocked for level 3 on the owner:* installing both CLIs, a key and a
   token, and each account's terms for automated runs. *Collides with:* every carrier's update (a migration of its
