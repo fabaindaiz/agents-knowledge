@@ -803,3 +803,46 @@ class Manifest(Base):
         self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
         (root / "meta/roadmap.md").write_text("# Roadmap\n\n## Next\n")
         self.assertIn("no *Where we are*", "\n".join(R.manifest_problems(root, export_cap=10_000)))
+
+
+class Received(Base):
+    def test_only_the_last_two_releases_keep_their_verdicts(self) -> None:
+        R = release()
+        meta = self.root / "meta"
+        (meta / "tracking").mkdir(parents=True)
+        rows = [("p-aaaaaaaaaa", "0.0.9", "queued as a long verdict"), ("p-bbbbbbbbbb", "0.0.10", "admitted into x"),
+                ("p-cccccccccc", "0.0.11", "folded into y")]
+        (meta / "tracking/received.md").write_text("# Received\n\n" + B.RECEIVED_HEADER + "\n|---|---|---|\n"
+                                                   + "".join(f"| `{a}` | {b} | {c} |\n" for a, b, c in rows))
+        page = R.render_received(meta)
+        self.assertIn("| `p-aaaaaaaaaa` | 0.0.9 | — |", page)  # older: the id still prunes, the verdict stays home
+        self.assertIn("admitted into x", page)
+        self.assertIn("folded into y", page)
+        self.assertNotIn("a long verdict", page)
+
+
+class Open(Base):
+    def test_a_waiting_candidate_ships_as_its_slug_and_kind(self) -> None:
+        R = release()
+        meta = self.root / "meta"
+        (meta / "tracking").mkdir(parents=True)
+        (meta / "tracking/candidates.md").write_text(
+            "# Candidates\n\n| Candidate | Kind | Lacks | Evidence | Seen | Since |\n|---|---|---|---|---|---|\n"
+            "| a-long-slug — a claim written out at length | K | a second repository with real numbers | x | 2026-01-01 | 0.0.1 |\n")
+        page = R.render_open(meta)
+        self.assertIn("| `a-long-slug` | K |", page)
+        self.assertNotIn("a claim written out at length", page)  # recognised by slug; the home keeps the rest
+        self.assertNotIn("a second repository", page)
+
+
+class ShippedChangelog(Base):
+    def test_the_shipped_changelog_starts_at_the_oldest_carriers_version(self) -> None:
+        R = release()
+        text = ("# Changelog\n\nIntro.\n\n## [Unreleased]\n\n- next\n\n## [0.0.3] - 2026-01-03\n\n- three\n\n"
+                "## [0.0.2] - 2026-01-02\n\n- two\n\n## [0.0.1] - 2026-01-01\n\n- one\n")
+        shipped = R.trim_changelog(text, "0.0.2")
+        for kept in ("Intro.", "## [Unreleased]", "- three", "## [0.0.2]", "- two"):
+            self.assertIn(kept, shipped)
+        self.assertNotIn("- one", shipped)
+        self.assertIn("sources/bundle/CHANGELOG.md", shipped)  # where the earlier versions are
+        self.assertEqual(R.trim_changelog(text, None), text)  # no carrier registered: nothing cut

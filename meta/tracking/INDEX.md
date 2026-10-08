@@ -15,7 +15,7 @@ the notes in `sources/notes/`.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (96)
+## Candidates in the queue (111)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -113,10 +113,29 @@ the notes in `sources/notes/`.
 - `read-output-is-untrusted-input` — K, since 0.0.29 · lacks an occurrence in a carrier; the literature is strong (two measured studies of instructions planted in operational logs, where …
 - `a-session-socket-is-a-credential` — K, since 0.0.29 · lacks an occurrence; overlaps `secrets-survive-rotation` and may extend it
 - `ids-warns-where-a-host-must-fail` — K, since 0.0.29 · lacks a flag that fails on non-legacy foreign-prefix definitions; and a cited-but-undefined check, which every host also rebuilds
+- `a-carriers-audit-reads-the-release-layout` — M, since 0.0.30 · lacks a second occurrence; the step in prompt-sync's execution review
+- `the-log-path-is-a-carrier-field` — M, since 0.0.30 · lacks the key, its use in new entry and count, and a test
+- `close-stops-at-ready-for-review` — M, since 0.0.30 · lacks the wording in the close skill
+- `align-compares-against-the-tag` — M, since 0.0.30 · lacks a fix with a test
+- `a-complex-task-reads-the-skill-catalogue` — M, since 0.0.30 · lacks the rows' wording and the carrier check, in 0.0.30; the trimmed-listing arm of the trigger eval
+- `docs-drift-is-checked-not-reviewed` — M, since 0.0.30 · lacks the command, its tests and principle 16's wording, in 0.0.30; one carrier's map written first
+- `carrier-linters-exclude-the-bundle` — M, since 0.0.30 · lacks the wording in the bootstrap and update
+- `a-tracker-is-the-roadmaps-source` — M, since 0.0.30 · lacks the wording in artifact 8 and the adoption table
+- `mint-names-the-home-as-upstream` — M, since 0.0.30 · lacks a fix with a test
+- `a-plan-keeps-a-status-table` — M, since 0.0.30 · lacks a carrier outside that team
+- `a-worktree-check-needs-its-own-environment` — M, since 0.0.30 · lacks a second occurrence
+- `answering-a-privacy-warning-rewrites-the-proposal` — M, since 0.0.30 · lacks the wording in prompt-harvest and the close skill; a second occurrence
+- `criteria-and-tasks-map-both-ways` — M, since 0.0.30 · lacks a carrier outside that team
+- `new-entry-reads-the-logs-own-format` — M, since 0.0.30 · lacks a fix with a test
+- `a-plan-may-be-a-working-artifact` — M, since 0.0.30 · lacks the wording in the close skill and the plan guidance; a carrier outside that team
 
-## Offered again, to merge (0)
+## Offered again, to merge (5)
 
-None.
+- `register-resolves-a-worktree-to-its-repository` — another occurrence to merge
+- `a-complex-task-reads-the-skill-catalogue` — another occurrence to merge
+- `prompt-context` — another occurrence to merge
+- `gather-reads-a-branch-not-only-the-checkout` — another occurrence to merge
+- `prompt-context` — another occurrence to merge
 
 ## Answered: admitted, folded, refused or dropped (244)
 

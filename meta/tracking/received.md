@@ -338,3 +338,23 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-c604d1066e` | 0.0.29 | queued as `a-session-socket-is-a-credential` |
 | `p-d8c7a59ff1` | 0.0.29 | another occurrence of the note `a-check-must-be-seen-to-fail`, merged into its evidence |
 | `p-dc22c63de8` | 0.0.29 | queued as `ids-warns-where-a-host-must-fail` |
+| `p-02684c9994` | 0.0.30 | queued as `a-carriers-audit-reads-the-release-layout` |
+| `p-0728ee228d` | 0.0.30 | queued as `the-log-path-is-a-carrier-field` |
+| `p-0e598a6664` | 0.0.30 | queued as `close-stops-at-ready-for-review` |
+| `p-0f86cf7f59` | 0.0.30 | queued as `align-compares-against-the-tag` |
+| `p-1070df9806` | 0.0.30 | queued as `a-complex-task-reads-the-skill-catalogue` |
+| `p-12f06b3438` | 0.0.30 | queued as `docs-drift-is-checked-not-reviewed` |
+| `p-2804dab2bd` | 0.0.30 | queued as `carrier-linters-exclude-the-bundle` |
+| `p-2b25ab65ae` | 0.0.30 | another occurrence of `register-resolves-a-worktree-to-its-repository`, to merge |
+| `p-32c8ccbcfd` | 0.0.30 | queued as `a-tracker-is-the-roadmaps-source` |
+| `p-480f968069` | 0.0.30 | another occurrence of `a-complex-task-reads-the-skill-catalogue`, to merge |
+| `p-5720a81212` | 0.0.30 | queued as `mint-names-the-home-as-upstream` |
+| `p-80486d03e9` | 0.0.30 | queued as `a-plan-keeps-a-status-table` |
+| `p-9243a43766` | 0.0.30 | queued as `a-worktree-check-needs-its-own-environment` |
+| `p-aaea071f67` | 0.0.30 | queued as `answering-a-privacy-warning-rewrites-the-proposal` |
+| `p-b102eeae6f` | 0.0.30 | another occurrence of `prompt-context`, to merge |
+| `p-be515ef967` | 0.0.30 | another occurrence of `gather-reads-a-branch-not-only-the-checkout`, to merge |
+| `p-d8e9d86928` | 0.0.30 | queued as `criteria-and-tasks-map-both-ways` |
+| `p-de578f3f63` | 0.0.30 | queued as `new-entry-reads-the-logs-own-format` |
+| `p-f76353b351` | 0.0.30 | another occurrence of `prompt-context`, to merge |
+| `p-fc57dd0369` | 0.0.30 | queued as `a-plan-may-be-a-working-artifact` |

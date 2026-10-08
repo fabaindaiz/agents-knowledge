@@ -438,13 +438,17 @@ def render_received(meta_dir: Path) -> str:
     nothing of which carrier offered what.
     """
     rows = sorted(received_rows(meta_dir), key=lambda r: r[0])
+    versions = sorted({r[1].strip() for r in rows if B.SEMVER.match(r[1].strip())}, key=B.semver_key)
+    recent = set(versions[-2:])  # the last two releases keep their verdicts; older ids still prune
+    rows = [r[:2] + [r[2] if r[1].strip() in recent else "—"] for r in rows]
     lines = [
         "# Received — the proposals the home repository took in",
         "",
         "Generated at each release from the home's records. Each row is a proposal some carrier wrote in its own "
         "`proposals/`, and what the home did with it. A carrier that finds one of its own here removes it "
         "with `python3 .agents/tools/bundle.py proposals --prune`; one not listed yet is still waiting, and "
-        "stays. Nothing here is guidance.",
+        "stays. Verdicts older than the last two releases are kept in the home's ledger only. Nothing here is "
+        "guidance.",
         "",
         B.RECEIVED_HEADER,
         "|---|---|---|",
@@ -486,9 +490,11 @@ def render_open(meta_dir: Path) -> str:
         "",
         "## Candidates waiting for what they lack",
         "",
-        "| Candidate | Kind | Lacks |",
-        "|---|---|---|",
-        *[_row([_clip(r[0]), r[1], _clip(r[2], 120)]) for r in candidates],
+        "By slug and kind; the claim and what each lacks stay in the home's queue.",
+        "",
+        "| Candidate | Kind |",
+        "|---|---|",
+        *[_row([f"`{slug_of(r[0])}`", r[1]]) for r in candidates],
         "",
         "## Answered: admitted, folded, refused or discarded, not to offer again",
         "",
@@ -496,6 +502,30 @@ def render_open(meta_dir: Path) -> str:
     ]
     return "\n".join(lines) + "\n"
 
+
+
+def oldest_carrier_version(meta_dir: Path) -> str | None:
+    """The oldest version any registered carrier was aligned to, from `meta/tracking/carriers.md`."""
+    path = meta_dir / "tracking/carriers.md"
+    if not path.is_file():
+        return None
+    versions = [r[1].strip() for r in read_table(path, "| Carrier | Version | Aligned on |") if len(r) > 1]
+    versions = [v for v in versions if B.SEMVER.match(v)]
+    return min(versions, key=B.semver_key) if versions else None
+
+
+def trim_changelog(text: str, oldest: str | None) -> str:
+    """The changelog a release ships: the sections from the oldest registered carrier's version on, since no
+    carrier needs what changed before the version it holds; the full history stays in the home's original."""
+    if not oldest:
+        return text
+    sections = list(re.finditer(r"^## \[(\d+\.\d+\.\d+)\]", text, re.MULTILINE))
+    cut = next((m.start() for m in sections if B.semver_key(m.group(1)) < B.semver_key(oldest)), None)
+    if cut is None:
+        return text
+    return (text[:cut].rstrip("\n") + "\n\n"
+            f"Versions before {oldest}, which no registered carrier holds, are in the home repository's "
+            "`sources/bundle/CHANGELOG.md`, at any release tag.\n")
 
 # The table readers live in the carrier tool, which needs them to convert the outbox of 0.0.23.
 split_row = B.split_row
@@ -566,7 +596,10 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
             rel = path.relative_to(originals).as_posix()
             if rel in out:
                 raise BuildError(f"{ORIGINALS}/{rel}: an original for a file the build also generates")
-            out[rel] = with_banner(rel, path.read_text(encoding="utf-8"))
+            text = path.read_text(encoding="utf-8")
+            if rel == B.CHANGELOG:
+                text = trim_changelog(text, oldest_carrier_version(root / "meta"))
+            out[rel] = with_banner(rel, text)
     return out
 
 
