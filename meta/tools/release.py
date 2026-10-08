@@ -552,6 +552,14 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
     out["knowledge/OPEN.md"] = head + render_open(root / "meta")
     out[B.RECEIVED] = (RECORDS_BANNER if banner else "") + render_received(root / "meta")
     originals = root / ORIGINALS
+    for skill in sorted(originals.glob("method/skills/*/SKILL.md")):
+        try:
+            named = B.read_frontmatter(skill.read_text(encoding="utf-8"), str(skill))[0].get("model")
+        except B.FrontmatterError as e:
+            raise BuildError(str(e)) from None
+        if named:
+            raise BuildError(f"{skill.relative_to(root).as_posix()}: names a model; switching it for a turn misses the "
+                             "whole prompt cache, so a method skill never does (`prompt-context.md`, cost)")
     for path in sorted(originals.rglob("*"), key=lambda p: p.as_posix().encode()):
         if path.is_file() and "__pycache__" not in path.parts and not path.name.startswith("."):
             rel = path.relative_to(originals).as_posix()

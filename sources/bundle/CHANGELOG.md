@@ -65,6 +65,12 @@ version it holds with `bundle.py changelog --since <its version>`.
   now names a question about what a person meets when a step is slow, abandoned or cut off, which a trigger eval
   found it missing; both are measured again before this release ships.
 
+- **Cheaper turns, nothing else changed** (`prompt-context.md`, *Models, reasoning levels and cost*): the reviewer
+  agent takes the five-minute prompt cache (`experimental.cacheTtl`), as headless runs should; nothing dynamic goes in
+  what is always loaded, and the build refuses a method skill that names a model, since switching it for a turn
+  misses the whole cache; the root file gains a short fourth line asking for independent tool calls in one message.
+  Re-run the bootstrap's Phase 4 wording into the root file.
+
 ### Removed
 
 - The deprecated `bundle.py digest` alias: run `bundle.py verify`.

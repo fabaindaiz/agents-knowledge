@@ -2119,6 +2119,18 @@ stopped at <where>."*
   gate before the review; the type checker before the argument about design.
 - **Do not pay twice for the same read.** If Phase 0 listed the tree, later
   phases cite that list rather than walking it again.
+- **Keep the prompt cache whole.** A host re-reads the start of the context from
+  a cache, cheaply, until something there changes: keep what is always loaded
+  free of anything dynamic (a date, a count, a status), and never name a model
+  in a skill, since switching the model for a turn misses the whole cache. A
+  release's build refuses a method skill that names one.
+- **A headless run or a delegated agent takes the five-minute cache**: a
+  one-hour cache write costs about twice a five-minute one, and an unattended
+  run rarely idles past five minutes (`CLAUDE_CODE_PROMPT_CACHE_TTL=5m` for a
+  scripted run; a subagent's own `experimental.cacheTtl`, as the bundle's agents
+  set it). An interactive session that idles longer keeps the default.
+- **Make independent tool calls in one message**, in parallel: each extra turn
+  re-sends the whole context.
 
 ---
 

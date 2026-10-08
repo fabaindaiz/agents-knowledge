@@ -347,6 +347,14 @@ class Build(Base):
         self.R.build(self.home)
         self.assertNotIn(b"\r\n", path.read_bytes())
 
+    def test_a_method_skill_that_names_a_model_is_refused(self) -> None:
+        # switching the model for a turn misses the whole prompt cache (the cache-safety rule, 0.0.30)
+        skill = self.home / "sources/bundle/method/skills/fast/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text('---\nname: "fast"\ndescription: "A skill."\nmodel: "haiku"\n---\n\nBody.\n')
+        with self.assertRaisesRegex(self.R.BuildError, "names a model"):
+            self.R.build(self.home)
+
     def test_the_reviewer_definition_needs_its_frontmatter(self) -> None:
         template = self.home / "sources/templates/knowledge-reviewer.md"
         good = template.read_text()

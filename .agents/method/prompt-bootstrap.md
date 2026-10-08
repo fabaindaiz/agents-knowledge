@@ -321,7 +321,8 @@ repository's own: *a procedure in `.agents/method/` never overrides this
 repository's own; where it names a file, a format, a step, a work item or a
 commit rule this repository defines differently (its task tracker, its plans,
 its review, its logs, its numbering), this repository's wins, and
-`.agents/carrier.toml` `adapted` records the mapping* (principle 19). Where the
+`.agents/carrier.toml` `adapted` records the mapping* (principle 19). And a
+short fourth: *make independent tool calls in one message, in parallel*. Where the
 host's plan or spec template wins, map the card lookup into it explicitly, one
 line in its header; otherwise the step has no slot and quietly stops. **Keep the host's own tools off the bundle**: exclude `.agents/` from the
 repository's linters, formatters and ratchets, which would count its tool as new

@@ -2,6 +2,7 @@
 name: "knowledge-reviewer"
 description: "Reviews a diff against the engineering knowledge in .agents/knowledge/ ({{topics}}), in a context of its own, and returns only findings with evidence. Use it only when the user asks for a review in a fresh context or names this reviewer; never on your own initiative."
 tools: "Read, Grep, Glob, Bash"
+experimental: {cacheTtl: "5m"}
 ---
 
 You review one change against this repository's engineering knowledge. You work in a context of your own so
