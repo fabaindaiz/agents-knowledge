@@ -59,9 +59,10 @@ READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status
 # find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls); rg's --pre, --hostname-bin and --search-zip (and
 # -z); sort's -o, --output and --compress-program; git's --output, --ext-diff and --textconv; tail's -f and -F,
 # which never end. Two reviews on 2026-10-07 found these holes.
-WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|f[a-z]\w*)")
+WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|fprint\w*|fls)")  # find's, checked on find only
 WRITING_LONG = ("output", "pre", "hostname-bin", "search-zip", "compress-program", "ext-diff", "textconv")
 SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}  # short flags dangerous only for that reader
+LONG_BY_COMMAND = {"tail": ("follow", "retry")}  # long ones, by any prefix
 # Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
 SEPARATORS = {"&&", "||", ";", "|"}
 QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}  # the error stream merged or dropped
@@ -124,7 +125,7 @@ def shell_words(command: str) -> list[str] | None:
             i += 1
             word += command[i]
             started = True
-        elif ch.isspace():
+        elif ch in " \t":  # bash splits on these only
             if started:
                 words.append(word)
             word, started = "", False
@@ -153,9 +154,9 @@ def _writes(segment: list[str]) -> bool:
     for token in segment[1:]:
         if token.startswith("--"):
             name = token[2:].split("=", 1)[0]
-            if name and any(option.startswith(name) for option in WRITING_LONG):
+            if name and any(option.startswith(name) for option in WRITING_LONG + LONG_BY_COMMAND.get(segment[0], ())):
                 return True
-        elif WRITING_SHORT.fullmatch(token):
+        elif segment[0] == "find" and WRITING_SHORT.fullmatch(token):
             return True
         elif token.startswith("-") and set(token[1:]) & set(SHORT_BY_COMMAND.get(segment[0], "")):
             return True
@@ -166,7 +167,7 @@ def read_only(command: str) -> bool:
     """A shell command that only reads the repository, run so a session may look before it chooses: one read, or
     reads joined by `&&`, `||`, `;` or `|`, with the error stream merged or dropped at most. Any other redirection,
     an expansion or substitution, a background job or a line break refuses the whole command."""
-    if not command.strip() or any(mark in command for mark in ("\n", "\r")):
+    if not command.strip() or any(mark in command for mark in ("\n", "\r", "\0")):
         return False
     words = shell_words(command.strip())
     if words is None:

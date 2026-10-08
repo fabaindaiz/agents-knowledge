@@ -630,11 +630,12 @@ class TriggerEval(Base):
                         "git log --out=f", "git diff --ou=f", "rg --hostname-bin=sh x", "sort -S 1 --compress-program=sh x",
                         "rg -z x", "rg -nz x", "rg --search-zip x", "git diff --ext-diff", "git diff --textconv",
                         "git show --ext-diff", "tail -f x", "tail -F x", 'grep "$HOME" x', "ls \\$(id)",
-                        "sort --o=f x", "cat a 2>&1>f", "ls >/dev/null>f", "ls 2>/dev/nullx", "ls >| f", "ls &"):
+                        "sort --o=f x", "cat a 2>&1>f", "ls >/dev/null>f", "ls 2>/dev/nullx", "ls >| f", "ls &",
+                        "tail --follow x", "tail --follow=name x", "tail --retry x", "ls\0; rm x"):
             self.assertEqual(allow(command), 2, command)
         for command in ("find . -name '*.md'", "wc -l docs/*.md", "grep -rn 'a$' src", 'grep -E "a|b(c)" src',
                         "git status --short && git log --oneline -5 2>&1; git branch -a", "grep -z x f",
-                        "cat 'a b.txt'", "ls docs\\ x"):
+                        "cat 'a b.txt'", "ls docs\\ x", "ls -fl", "sort -fu x", "find . -follow -name x"):
             self.assertEqual(allow(command), 0, command)
 
     def test_a_long_shell_command_is_judged_whole(self) -> None:
