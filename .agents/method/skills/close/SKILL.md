@@ -29,6 +29,8 @@ free text of question answers (it overrides the options). List each part as **do
 
 ## 2. The documents, true again
 
+- Where the repository keeps a `docs-map.toml`, run `python3 .agents/tools/bundle.py docs-drift --range
+  <the session's base>..HEAD` and fix what it flags, or say why in a `docs-unchanged: <reason>` line.
 - `grep` the documents for every claim the diff made false: a number, a path, a rule, a count, a
   "nothing yet". The root instruction file's map names where each kind lives.
 - A new dated record (research, plan, spec) gets its folder's index row.

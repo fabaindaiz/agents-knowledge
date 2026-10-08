@@ -9,6 +9,16 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Added
+
+- **`bundle.py docs-drift`: documentation drift caught by a script, not by review** (*under review*). A carrier keeps
+  `docs-map.toml` at its root: each document agents load or follow, the globs it describes, a reason, and whether a
+  change without it blocks or warns. `--range BASE..HEAD` fails a blocking rule unless a commit in the range says
+  `docs-unchanged: <reason>`, a rename counting on both sides; `--staged` warns at pre-commit; `--map` and `--refs`
+  run inside `verify` when a map exists; `--report --since 7d` gives each rule's triggers, escapes and escape rate,
+  the documents left behind and the pairs history suggests, never adding one. Principle 16 and `close` point at it.
+  A carrier with no map is unaffected; writing one is the next harvest's step.
+
 ### Changed
 
 - **The release is smaller, and nothing it removed was read.** The area pages (`knowledge/areas/`) are no longer

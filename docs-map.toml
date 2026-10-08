@@ -1,0 +1,28 @@
+# The documents agents load or follow here, and the paths each describes (`bundle.py docs-drift`).
+# A blocking rule fails a range whose watched paths changed without the document, unless a commit in it says
+# `docs-unchanged: <reason>`; a warning rule only warns. Keep a rule narrow enough to block, or let it warn.
+
+[[doc]]
+path = "meta/method/prompt-sync.md"
+watches = ["meta/tools/release.py"]
+reason = "it walks release.py's commands, step by step, in the order a meta-session runs them"
+blocks = true
+
+[[doc]]
+path = "AGENTS.md"
+watches = ["meta/tools/release.py", "sources/bundle/tools/bundle.py", ".githooks/*", ".claude/settings.json"]
+reason = "its Checks section lists the commands, the hooks and what each one prints"
+blocks = false
+
+[[doc]]
+path = "sources/bundle/README.md"
+watches = ["sources/bundle/tools/bundle.py"]
+reason = "its table of the carrier's own fields mirrors what verify accepts in carrier.toml"
+blocks = false
+refs = false  # it describes a carrier's files, not this repository's
+
+[[doc]]
+path = "MANIFEST.md"
+watches = ["meta/tools/release.py"]
+reason = "its limits table states the caps release.py check enforces"
+blocks = false

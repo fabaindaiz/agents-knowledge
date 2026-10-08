@@ -18,7 +18,7 @@ import subprocess
 from unittest import mock
 from pathlib import Path
 
-from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, git, init_repo, make_bundle, old_outbox
+from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, commit, git, init_repo, make_bundle, old_outbox
 
 B = bundle
 
@@ -1605,3 +1605,117 @@ class AttributionSetting(Base):
         self.assertEqual(code, 0, out)
         self.assertIn("! repo:", out)
         self.assertIn("attribution", out)
+
+
+DOCS_MAP = """[[doc]]
+path = "docs/tools.md"
+watches = ["src/tools/**/*.py"]
+reason = "it documents every tool's flags"
+blocks = true
+
+[[doc]]
+path = "README.md"
+watches = ["src/*.py"]
+reason = "its quick start runs the main module"
+blocks = false
+"""
+
+
+class DocsDrift(Base):
+    """`bundle.py docs-drift`: a carrier's map of documents to the paths they describe, checked by a script."""
+
+    def repo(self) -> Path:
+        repo = init_repo(self.root / "r")
+        (repo / "src/tools").mkdir(parents=True)
+        (repo / "src/tools/cut.py").write_text("x = 1\n")
+        (repo / "src/main.py").write_text("y = 1\n")
+        (repo / "docs").mkdir()
+        (repo / "docs/tools.md").write_text("# Tools\n\nRun `src/tools/cut.py`; see [main](../src/main.py).\n")
+        (repo / "README.md").write_text("# R\n")
+        (repo / B.DOCS_MAP).write_text(DOCS_MAP)
+        commit(repo, "start")
+        return repo
+
+    def test_a_blocking_rule_fails_a_range_unless_a_commit_says_why(self) -> None:
+        repo = self.repo()
+        base = git(repo, "rev-parse", "HEAD").strip()
+        (repo / "src/tools/cut.py").write_text("x = 2\n")
+        commit(repo, "change the tool")
+        fails, warns = B.docs_drift_range(repo, f"{base}..HEAD")
+        self.assertEqual([f.doc for f in fails], ["docs/tools.md"])
+        (repo / "src/tools/cut.py").write_text("x = 3\n")
+        commit(repo, "again\n\ndocs-unchanged: a constant, no flag changed")
+        fails, _ = B.docs_drift_range(repo, f"{base}..HEAD")
+        self.assertEqual(fails, [])
+        commit(repo, "empty reason\n\ndocs-unchanged:")  # a trailer with no reason escapes nothing
+        self.assertEqual(B.docs_escapes(repo, f"{base}..HEAD"), ["a constant, no flag changed"])
+
+    def test_a_warning_rule_and_a_touched_document_do_not_fail(self) -> None:
+        repo = self.repo()
+        base = git(repo, "rev-parse", "HEAD").strip()
+        (repo / "src/main.py").write_text("y = 2\n")
+        (repo / "src/tools/cut.py").write_text("x = 2\n")
+        (repo / "docs/tools.md").write_text("# Tools\n\nRun `src/tools/cut.py` with no flag.\n")
+        commit(repo, "both")
+        fails, warns = B.docs_drift_range(repo, f"{base}..HEAD")
+        self.assertEqual(fails, [])
+        self.assertEqual([w.doc for w in warns], ["README.md"])
+
+    def test_a_rename_counts_on_both_sides(self) -> None:
+        repo = self.repo()
+        base = git(repo, "rev-parse", "HEAD").strip()
+        git(repo, "mv", "src/tools/cut.py", "src/cut_moved.py")
+        commit(repo, "move the tool out")
+        fails, _ = B.docs_drift_range(repo, f"{base}..HEAD")
+        self.assertEqual([f.doc for f in fails], ["docs/tools.md"])
+
+    def test_the_map_and_the_references_are_checked(self) -> None:
+        repo = self.repo()
+        self.assertEqual(B.docs_map_problems(repo), [])
+        self.assertEqual(B.docs_ref_problems(repo), [])
+        (repo / B.DOCS_MAP).write_text(DOCS_MAP + '\n[[doc]]\npath = "docs/gone.md"\nwatches = ["nothing/*.x"]\nreason = ""\nblocks = true\n')
+        problems = "\n".join(B.docs_map_problems(repo))
+        for expected in ("docs/gone.md: missing", "nothing/*.x: matches no tracked file", "a reason"):
+            self.assertIn(expected, problems)
+        (repo / "docs/tools.md").write_text("# Tools\n\nRun `src/tools/gone.py`; see [x](../src/nope.py).\n")
+        refs = "\n".join(B.docs_ref_problems(repo))
+        self.assertIn("src/tools/gone.py", refs)
+        self.assertIn("../src/nope.py", refs)
+        # a path named from a folder the document takes for granted, or a placeholder, is not a dead reference
+        (repo / "docs/tools.md").write_text("Run `tools/cut.py` on `DIR/out.md`, then `src/tools/`.\n")
+        self.assertEqual(B.docs_ref_problems(repo), [])
+        (repo / "docs/tools.md").write_text("A carrier keeps `docs/decisions.md`.\n")
+        self.assertNotEqual(B.docs_ref_problems(repo), [])
+        (repo / B.DOCS_MAP).write_text(DOCS_MAP.replace("blocks = true", "blocks = true\nrefs = false", 1))
+        self.assertEqual(B.docs_ref_problems(repo), [])
+
+    def test_staged_changes_warn_only(self) -> None:
+        repo = self.repo()
+        (repo / "src/tools/cut.py").write_text("x = 9\n")
+        git(repo, "add", "src/tools/cut.py")
+        self.assertEqual([w.doc for w in B.docs_drift_staged(repo)], ["docs/tools.md"])
+
+    def test_the_report_counts_triggers_escapes_and_stale_documents(self) -> None:
+        repo = self.repo()
+        (repo / "src/tools/cut.py").write_text("x = 2\n")
+        commit(repo, "tool\n\ndocs-unchanged: renamed a local")
+        report = B.docs_report(repo, "30d")
+        self.assertIn("docs/tools.md", report["stale"])
+        self.assertEqual(report["rules"]["docs/tools.md"]["escapes"], 1)
+        self.assertIn("renamed a local", report["rules"]["docs/tools.md"]["reasons"])
+
+    def test_the_command_and_verify_run_it(self) -> None:
+        repo = self.repo()
+        agents = make_bundle(repo)
+        commit(repo, "the bundle")
+        base = git(repo, "rev-parse", "HEAD").strip()
+        (repo / "src/tools/cut.py").write_text("x = 2\n")
+        commit(repo, "tool")
+        code, out = run("docs-drift", "--range", f"{base}..HEAD", "--repo", str(repo))
+        self.assertEqual(code, 1, out)
+        self.assertIn("docs/tools.md", out)
+        self.assertIn("docs-unchanged", out)  # the refusal says how to escape it
+        code, out = run("docs-drift", "--report", "--since", "30d", "--repo", str(repo))
+        self.assertEqual(code, 0, out)
+        (repo / "docs/tools.md").write_text("see [x](../src/nope.py)\n")
+        self.assertIn("../src/nope.py", "\n".join(B.verify_problems(agents)))

@@ -39,6 +39,8 @@ own tool, never by this one.
                                                                 the bundle's skills, each merged with the
                                                                 carrier's LOCAL.md, into .claude/skills/
     python3 .agents/tools/bundle.py new entry TITLE... [--write] a changelog entry skeleton with its minted id
+    python3 .agents/tools/bundle.py docs-drift --range BASE..HEAD   documents a change left stale (also --staged,
+                                                                --map, --refs, --report --since 7d); docs-map.toml
     python3 .agents/tools/bundle.py count SYMPTOM [FILE...]     how many entries mention a friction, by search:
                                                                 entries, not incidents; a repeated line is flagged
     python3 .agents/tools/bundle.py memory-diff                 the local memories the repository does not hold
@@ -2827,6 +2829,8 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
             problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
                             "the repository this one takes releases from (the release names it as `home` in README.md)")
         problems += installed_catalogue_problems(tree.parent, carrier.get("skills"))
+        if (tree.parent / DOCS_MAP).is_file():  # the map and its documents' references (docs-drift --map, --refs)
+            problems += docs_map_problems(tree.parent) + docs_ref_problems(tree.parent)
         problems += private_folder_problems(tree.parent, carrier)
     return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
 
@@ -3134,6 +3138,189 @@ def export(tree: Path, dest: Path) -> list[str]:
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(tree / rel, dest / rel)
     return rels
+
+
+# --- documentation drift: a carrier's map of documents to the paths they describe ---------------------
+# A document that agents load or follow goes stale when the code it describes changes without it. Review
+# misses it; this checks it from the diff, with no model (`method/prompt-context.md`, principle 16). The map
+# is the carrier's own file, `docs-map.toml` at the repository's root:
+#
+#     [[doc]]
+#     path = "docs/tools.md"            # the document
+#     watches = ["src/tools/**/*.py"]   # what it describes, globs over tracked files
+#     reason = "it documents every tool's flags"
+#     blocks = true                      # fail a range (true) or warn (false)
+#     refs = false                       # optional: skip its reference check, when it describes another repository
+#
+# A commit escapes a blocking rule with a `docs-unchanged: <reason>` line in its message.
+
+DOCS_MAP = "docs-map.toml"
+DOCS_ESCAPE = re.compile(r"^docs-unchanged:[ \t]*(\S.*)$", re.MULTILINE)
+
+
+@dataclass(frozen=True)
+class DocRule:
+    doc: str
+    watches: tuple[str, ...]
+    reason: str
+    blocks: bool
+    refs: bool = True
+
+
+@dataclass(frozen=True)
+class Drift:
+    doc: str
+    blocks: bool
+    changed: tuple[str, ...]  # the watched paths that changed without the document
+
+
+def _path_glob(pattern: str) -> re.Pattern[str]:
+    """A glob over repository paths: `**` crosses folders, `*` and `?` stay inside one."""
+    out, i = "", 0
+    while i < len(pattern):
+        if pattern.startswith("**/", i):
+            out, i = out + "(?:.*/)?", i + 3
+        elif pattern.startswith("**", i):
+            out, i = out + ".*", i + 2
+        elif pattern[i] == "*":
+            out, i = out + "[^/]*", i + 1
+        elif pattern[i] == "?":
+            out, i = out + "[^/]", i + 1
+        else:
+            out, i = out + re.escape(pattern[i]), i + 1
+    return re.compile(out + r"\Z")
+
+
+def docs_rules(repo: Path) -> list[DocRule]:
+    """The carrier's map, or no rules when it keeps none."""
+    path = repo / DOCS_MAP
+    if not path.is_file():
+        return []
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as error:
+        raise RefusedError(f"{path}: not valid TOML ({error})") from error
+    rules = []
+    for entry in data.get("doc", []):
+        watches = entry.get("watches", [])
+        rules.append(DocRule(str(entry.get("path", "")), tuple(watches) if isinstance(watches, list) else (str(watches),),
+                             str(entry.get("reason", "")), bool(entry.get("blocks", False)), bool(entry.get("refs", True))))
+    return rules
+
+
+def _drifts(rules: list[DocRule], changed: set[str]) -> list[Drift]:
+    found = []
+    for rule in rules:
+        hits = sorted(p for p in changed if any(_path_glob(g).match(p) for g in rule.watches))
+        if hits and rule.doc not in changed:
+            found.append(Drift(rule.doc, rule.blocks, tuple(hits)))
+    return found
+
+
+def _changed_in(repo: Path, rev_range: str) -> set[str]:
+    """Every path a range touched, a rename counted on both sides."""
+    out = git(repo, "diff", "--name-status", "-M", "-z", rev_range)
+    fields = [f for f in out.split("\0") if f]
+    paths, i = set(), 0
+    while i < len(fields):
+        status = fields[i]
+        width = 2 if status[:1] in ("R", "C") else 1
+        paths.update(fields[i + 1:i + 1 + width])
+        i += 1 + width
+    return paths
+
+
+def docs_escapes(repo: Path, rev_range: str) -> list[str]:
+    """The reasons the commits of a range give for leaving the documents unchanged; a bare trailer gives none."""
+    messages = git(repo, "log", "--format=%B%x00", rev_range)
+    return [m.group(1).strip() for body in messages.split("\0") for m in DOCS_ESCAPE.finditer(body)]
+
+
+def docs_drift_range(repo: Path, rev_range: str) -> tuple[list[Drift], list[Drift]]:
+    """(failures, warnings) over a range: a blocking rule whose watched paths changed without its document fails,
+    unless a commit in the range says why; a warning rule warns."""
+    drifts = _drifts(docs_rules(repo), _changed_in(repo, rev_range))
+    escaped = bool(docs_escapes(repo, rev_range))
+    return [d for d in drifts if d.blocks and not escaped], [d for d in drifts if not d.blocks or escaped]
+
+
+def docs_drift_staged(repo: Path) -> list[Drift]:
+    """What a commit of the staged changes would drift, as warnings: its message, and any escape, do not exist yet."""
+    staged = {p for p in git(repo, "diff", "--cached", "--name-only", "-z").split("\0") if p}
+    return _drifts(docs_rules(repo), staged)
+
+
+def docs_map_problems(repo: Path) -> list[str]:
+    """The map itself: every document exists, every glob matches a tracked file, every rule gives a reason."""
+    files = _git_files(repo) or set()
+    problems = []
+    for rule in docs_rules(repo):
+        if not (repo / rule.doc).is_file():
+            problems.append(f"{DOCS_MAP}: {rule.doc}: missing")
+        problems += [f"{DOCS_MAP}: {rule.doc}: {g}: matches no tracked file" for g in rule.watches
+                     if not any(_path_glob(g).match(f) for f in files)]
+        if not rule.reason.strip():
+            problems.append(f"{DOCS_MAP}: {rule.doc}: a rule needs a reason, or it cannot be narrowed or dropped later")
+    return problems
+
+
+DOC_PATH = re.compile(r"`([\w.\-/]+/[\w.\-/]*\w)`")  # a backticked path with a folder in it
+
+
+def docs_ref_problems(repo: Path) -> list[str]:
+    """In each mapped document, a relative link or a backticked repository path that does not exist."""
+    problems = []
+    files = _git_files(repo) or set()
+    for rule in docs_rules(repo):
+        doc = repo / rule.doc
+        if not doc.is_file() or not rule.refs:
+            continue
+        text = doc.read_text(encoding="utf-8")
+        for target in re.findall(r"\]\(([^)#\s]+)(?:#[^)]*)?\)", text):
+            if "://" not in target and not target.startswith("mailto:") and not (doc.parent / target).exists():
+                problems.append(f"{rule.doc}: links to {target}, which does not exist")
+        for target in DOC_PATH.findall(text):
+            if target.startswith(("http", "~", "/")) or "*" in target or re.match(r"^[A-Z][A-Z_]+/", target):
+                continue  # a URL, a home path, a glob, or a placeholder such as DIR/
+            bare = target.rstrip("/")
+            # a path is named from a folder the document takes for granted: it exists when a tracked path ends in it
+            if not any(f == bare or f.endswith("/" + bare) or f.startswith(bare + "/") or f"/{bare}/" in f"/{f}" for f in files):
+                problems.append(f"{rule.doc}: names `{target}`, which is not in the repository")
+    return problems
+
+
+def docs_report(repo: Path, since: str = "7d") -> dict:
+    """The weekly reading: each rule's triggers and escapes, with their reasons; documents whose watched paths
+    changed after the document's own last commit; pairs history suggests, never added by this."""
+    days = int(since.rstrip("d")) if since.rstrip("d").isdigit() else 7
+    log = git(repo, "log", f"--since={days}.days", "--format=%x01%H%x00%B%x00", "--name-only", "-z")
+    commits = []
+    for chunk in log.split("\x01")[1:]:
+        parts = chunk.split("\0")
+        body, files = (parts[1] if len(parts) > 1 else ""), {p.strip("\n") for p in parts[2:] if p.strip("\n")}
+        commits.append((body, files))
+    rules = docs_rules(repo)
+    report: dict = {"rules": {}, "stale": [], "suggested": []}
+    for rule in rules:
+        triggered = [(b, f) for b, f in commits if _drifts([rule], f)]
+        reasons = [m.group(1).strip() for b, _ in triggered for m in DOCS_ESCAPE.finditer(b)]
+        report["rules"][rule.doc] = {"triggered": len(triggered), "escapes": len(reasons), "reasons": reasons,
+                                     "escape_rate": round(len(reasons) / len(triggered), 2) if triggered else 0.0}
+        watched = [f for f in (_git_files(repo) or set()) if any(_path_glob(g).match(f) for g in rule.watches)]
+        code = git(repo, "log", "-1", "--format=%H", "--", *watched).strip() if watched else ""
+        doc = git(repo, "log", "-1", "--format=%H", "--", rule.doc).strip()
+        # stale by commit order, not by clock: the document's last commit comes strictly before the code's
+        if code and doc and code != doc and subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", doc, code],
+                                                            capture_output=True).returncode == 0:
+            report["stale"].append(rule.doc)
+    mapped = {r.doc for r in rules}
+    pairs: dict[tuple[str, str], int] = {}
+    for _, files in commits:
+        for doc in files & mapped:
+            for other in files - mapped:
+                pairs[(doc, other)] = pairs.get((doc, other), 0) + 1
+    report["suggested"] = sorted(([d, o, n] for (d, o), n in pairs.items() if n >= 2), key=lambda r: -r[2])[:10]
+    return report
 
 
 # --- skills, and the bookkeeping a close runs -------------------------------------------------------
@@ -3744,6 +3931,15 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
+    p = sub.add_parser("docs-drift", help="documents left stale by a change, from the carrier's docs-map.toml (exit 1 on a blocking rule)")
+    mode = p.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--staged", action="store_true", help="warn on the staged changes (a pre-commit hook)")
+    mode.add_argument("--range", metavar="BASE..HEAD", help="fail a blocking rule unless a commit says docs-unchanged: <reason>")
+    mode.add_argument("--map", action="store_true", help="the map itself: documents exist, globs match, reasons given")
+    mode.add_argument("--refs", action="store_true", help="links and backticked paths in mapped documents exist")
+    mode.add_argument("--report", action="store_true", help="triggers, escapes and their rate, stale documents, suggested pairs")
+    p.add_argument("--since", default="7d", help="with --report: a window such as 7d")
+    p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
@@ -3984,6 +4180,33 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         if added:
             print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
                   "add them to the log's format, or say there why it omits them")
+        return 0
+    if args.command == "docs-drift":
+        repo = Path(args.repo)
+        if args.staged or args.range:
+            fails, warns = ([], docs_drift_staged(repo)) if args.staged else docs_drift_range(repo, args.range)
+            for d in fails:
+                print(f"  x {d.doc}: not changed, while {', '.join(d.changed[:3])}{' …' if len(d.changed) > 3 else ''} did")
+            for d in warns:
+                print(f"  ! {d.doc}: not changed, while {', '.join(d.changed[:3])}{' …' if len(d.changed) > 3 else ''} did")
+            if fails:
+                print("update each document, or say why it stays true in a commit of the range: `docs-unchanged: <reason>`")
+            print(f"docs-drift: {len(fails)} blocking, {len(warns)} warnings")
+            return 1 if fails else 0
+        if args.map or args.refs:
+            problems = docs_map_problems(repo) if args.map else docs_ref_problems(repo)
+            for problem in problems:
+                print("  x " + problem)
+            print(f"docs-drift: {len(problems)} problems")
+            return 1 if problems else 0
+        drift = docs_report(repo, args.since)
+        for doc, row in drift["rules"].items():
+            print(f"  {doc}: triggered {row['triggered']}, escaped {row['escapes']} ({row['escape_rate']:.0%})"
+                  + (f"; reasons: {'; '.join(row['reasons'])}" if row["reasons"] else ""))
+        for doc in drift["stale"]:
+            print(f"  ! {doc}: its watched paths changed after its own last commit")
+        for doc, other, n in drift["suggested"]:
+            print(f"  ? {doc} changed with {other} {n} times; a rule to add? (never added by this)")
         return 0
     if args.command == "count":
         files = [Path(f) for f in args.files] or [carrier_log(OWN_REPO)]

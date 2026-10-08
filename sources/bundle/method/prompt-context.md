@@ -678,9 +678,18 @@ an obligation, not a tidy-up.** The moment a change lands, some sentence
 somewhere became false; the cheapest time to fix it is while you still know
 which sentence.
 
-Write down, once, the map of *what changed → what must move*. It is short, it is
+Write down, once, the map of *what changed → what must move*, as `docs-map.toml` at
+the repository's root: each document agents load or follow, the paths it describes,
+a reason, and whether a change without it blocks or warns. It is short, it is
 repo-specific, and without it the decay is invisible until a session acts on a
-document that has been wrong for a month. See the table in **The session loop**.
+document that has been wrong for a month. **A script checks it, not a review**:
+`bundle.py docs-drift --range BASE..HEAD` fails a blocking rule unless a commit says
+`docs-unchanged: <reason>`, `--staged` warns at pre-commit, `verify` checks the map
+and the references in mapped documents, and `--report --since 7d` gives each rule's
+escape rate, the documents left behind and pairs history suggests (never added by
+it). A rule escaped most of the time is narrowed or dropped. Touching a document
+proves only that it changed, not that it is true: turn a checkable fact into an
+assertion where you can.
 
 **Prevents:** the slowest and most expensive rot in an agent-assisted repo — a
 document that is still read, still believed, and no longer true.
