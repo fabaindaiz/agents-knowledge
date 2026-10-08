@@ -2,6 +2,50 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-08, late: 0.0.30 is on `origin`; the 0.0.31 intake has begun** on the branch
+`intake/0.0.31-pilot-and-carrier` (pushed, not merged). `v0.0.30` on `293766f` is the last tag.
+
+**Done since 0.0.30's close:**
+- Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one waits on a
+  release defect (`i-5ed7e8-c390fa`). The owner carried one more by hand: registered at 0.0.30 from its bundle
+  branch, whose pull request is unmerged.
+- The 0.0.31 intake (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals received.
+  - A pilot's four, entered as the home's own (`d-5ed7e8-67a443`), with their literature checked: one merged into a
+    queued candidate, one queued, one folded into §15, one refused and made an `evals/` procedure.
+  - The home's two from the 0.0.30 close: one offered again to merge, one merged into its note.
+  - Twelve of that carrier's fifteen: ten waiting under *Offered again, to merge*, two logged as runs; three held on `quote` warnings until
+    `i-5ed7e8-74d789` lands.
+- Four items for 0.0.31: `i-5ed7e8-1dd18c`, `i-5ed7e8-74d789`, `i-5ed7e8-e44264`, `i-5ed7e8-460736`.
+- The pilot's follow-up experiment, queued in `meta/tracking/experiments.md`.
+
+**Next, in order:**
+1. Merge the intake branch.
+2. **0.0.31**, tools first: `i-5ed7e8-74d789` lets the held three in, `i-5ed7e8-460736` lets researchers fetch
+   whole texts, then `i-5ed7e8-e44264` and `i-5ed7e8-1dd18c`.
+   - The rest of `i-5ed7e8-c390fa`.
+   - `i-5ed7e8-fca056`: the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3 waits on the
+     CLIs, a key, a token and each account's terms.
+   - The rest of `i-5ed7e8-8236cb`; `i-5ed7e8-94f262` at the next harvest.
+   - The verdicts on the carrier's ten rows, at the release.
+
+**Waiting on the owner:**
+- This branch's review and merge; the carriers' 0.0.30 branches; the hand-carried carrier's pull request.
+- Whether a template carries a pointer to the knowledge index before its bootstrap. Recommended: no root-file stub
+  the bootstrap would replace, but one line in each template's read-me saying to run the bootstrap before asking a
+  design question; about two lines per template. Decided with `index-unread-where-rules-absorbed-it`.
+- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
+- Judges and time for the follow-up experiment.
+- The credentials ticket; the `proposed` rows in carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`);
+  each assistant's terms for automated runs.
+
+**What went wrong**, this session; `bundle.py count` finds the words in this log, not these incidents, so each is
+its first entry:
+- **A delegation named a scratch folder the researcher's hook refuses.** Most shell fetches were refused and most
+  citations stayed at their abstracts (`i-5ed7e8-460736`).
+- **`align` at the session's start printed one line and checked nothing**, and it read as a report until the code
+  was read (`i-5ed7e8-e44264`).
+- **The worktree's isolation refused compound shell commands** reaching another repository's files; they were split.
+
 **State on 2026-10-08, night: 0.0.30 is cut, tagged and pushed.** `main` = `origin/main`, tag `v0.0.30` on
 `293766f`. Carrying it to any carrier waits for the owner, who carries it to one carrier first.
 
