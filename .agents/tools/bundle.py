@@ -290,8 +290,11 @@ def reachability_problems(tree: Path) -> list[str]:
     """
     indexes = [rel for rel in ("knowledge/INDEX.md",) if (tree / rel).exists()] + sorted(_rels(tree, "knowledge/areas/*.md"))
     linked = {resolved for index in indexes for _, resolved in _links(tree, index)}
+    # Since 0.0.30 a note is reached through its card: the index links the card, the card links the note.
+    linked |= {resolved for card in sorted(linked) if card.startswith("knowledge/cards/") and (tree / card).is_file()
+               for _, resolved in _links(tree, card)}
     problems = [
-        f"{rel}: an {rel.split('/')[2]} note that no index links to (knowledge/INDEX.md or knowledge/areas/*.md)"
+        f"{rel}: an {rel.split('/')[2]} note that no index or card links to (knowledge/INDEX.md, its cards)"
         for state in ("active", "review")
         for rel in sorted(_rels(tree, f"{NOTES}/{state}/**/*.md"), key=str.encode)
         if rel not in linked

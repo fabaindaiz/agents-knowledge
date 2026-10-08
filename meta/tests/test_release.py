@@ -42,7 +42,7 @@ INDEX = """# Index
 
 <!-- generated: about -->
 
-The checks are in [areas/one.md](areas/one.md).
+The checks are in the cards.
 """
 FULL = """---
 slug: "{slug}"
@@ -245,14 +245,11 @@ class Build(Base):
         self.assertFalse((self.agents / "knowledge/notes/retired").exists())
 
     def test_the_tables_come_from_the_notes(self) -> None:
-        area = (self.agents / "knowledge/areas/one.md").read_text()
         index = (self.agents / "knowledge/INDEX.md").read_text()
 
-        self.assertIn("| [alpha](../notes/active/alpha.md) | The claim of alpha. | When the first case holds · When the second"
-                      " case holds | a check for alpha |", area)
-        self.assertIn("| [beta](../notes/active/beta.md) | The claim of beta. | When it does not hold | a check for beta |", area)
-        self.assertIn("| Do alpha | [alpha](../notes/active/alpha.md) | the obvious fails |", area)
-        self.assertIn("| alpha | A paper — **well established** | reasoned |", area)
+        # The area pages are not shipped since 0.0.30; the index routes to the cards, which carry each note.
+        self.assertFalse((self.agents / "knowledge/areas").exists())
+        self.assertEqual(B.verify_problems(self.agents), [])
         # The phase table names each note by slug; its one link to the card is in the *about to do* table,
         # so the index the reviewer loads whole does not repeat a link per phase.
         self.assertIn("| **Plan and design** | What will this touch? | `alpha` · `beta` |", index)
@@ -274,7 +271,7 @@ class Build(Base):
         source = self.home / "sources/notes/active/beta.md"
         source.write_text(source.read_text().replace("The claim of beta.", "A new claim."))
         problems = "\n".join(self.R.build(self.home, check=True))
-        self.assertIn("knowledge/areas/one.md", problems)
+        self.assertIn("knowledge/cards/beta.md", problems)
         self.assertIn("knowledge/notes/active/beta.md", problems)
 
     def test_an_unknown_marker_or_token_is_refused(self) -> None:
@@ -316,7 +313,6 @@ class Build(Base):
         self.R.build(self.home)
 
         self.assertIn("with [beta](beta.md)", (self.agents / "knowledge/cards/alpha.md").read_text())
-        self.assertIn("| `one-idea` |", (self.agents / "knowledge/areas/one.md").read_text())
         path = self.home / "sources/notes/active/beta.md"
         path.write_text(path.read_text().replace('principle: "one-idea"\n', ""))
         with self.assertRaisesRegex(self.R.BuildError, "carried by one note only"):
@@ -339,11 +335,8 @@ class Build(Base):
             path.write_text(path.read_text().replace('confidence: "reasoned"', 'confidence: "reasoned"\nprinciple: "cross"', 1))
         self.R.build(self.home)
 
-        for area in ("one", "two"):
-            row = [l for l in (self.agents / f"knowledge/areas/{area}.md").read_text().split("\n") if l.startswith("| `cross`")]
-            self.assertEqual(len(row), 1, area)
-            self.assertIn("alpha", row[0])
-            self.assertIn("gamma", row[0])
+        self.assertIn("[gamma](gamma.md)", (self.agents / "knowledge/cards/alpha.md").read_text())
+        self.assertIn("[alpha](alpha.md)", (self.agents / "knowledge/cards/gamma.md").read_text())
 
     def test_a_release_file_with_other_line_endings_is_not_up_to_date(self) -> None:
         path = self.agents / "method/prompt-update.md"
@@ -378,7 +371,7 @@ class Build(Base):
             changes = self.R.note_state("beta", "review", self.home)
 
         self.assertIn("rewrote", " ".join(changes)) if "beta" in (self.home / "meta/roadmap.md").read_text() else None
-        self.assertIn("[beta](../notes/review/beta.md) ⚠ review", (self.agents / "knowledge/areas/one.md").read_text())
+        self.assertIn("(../notes/review/beta.md)", (self.agents / "knowledge/cards/beta.md").read_text())
         self.assertEqual(B.verify_problems(self.agents), [])
 
     def test_note_state_rewrites_the_homes_links(self) -> None:

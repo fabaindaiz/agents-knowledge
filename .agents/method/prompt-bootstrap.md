@@ -401,7 +401,7 @@ security or verification, the cards the knowledge index links (one lookup, one
 small file each). Step 3 builds, with the repository in view and no knowledge
 note. Step 4 verifies, and runs the checks of the cards the change relied on.
 Steps 5 to 8 close. Whatever enters the author's context is paid again at every
-later turn, which is why a card is read and not an area index or a note. The
+later turn, which is why a card is read and not a note. The
 card review in a fresh context (step 4) runs on request: measured, it cost
 several times a session without it and made no task pass that the cards alone
 did not. A whole-branch review is offered when a multi-task plan is done.

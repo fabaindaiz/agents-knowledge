@@ -280,10 +280,6 @@ def _link(note: Note, prefix: str) -> str:
     return f"[{note.slug}]({prefix}notes/{note.state}/{note.slug}.md)" + (REVIEW_MARK if note.state == "review" else "")
 
 
-def _rests_on(meta: dict) -> str:
-    return f"{meta['rests_on']} — **{meta['strength']}**" if meta.get("strength") else meta.get("rests_on", "")
-
-
 @dataclass
 class Order:
     """A row order other than the canonical one: used once, to reproduce the hand-ordered tables."""
@@ -302,43 +298,6 @@ def _ordered(items: list, key, override: list | None):  # noqa: ANN001, ANN202
     if unknown:
         raise BuildError(f"the given order lacks {sorted(map(str, map(key, unknown)))}")
     return sorted(items, key=lambda it: position[key(it)])
-
-
-def render_area(template: str, area: str, notes: list[Note], topics: list[str], order: Order | None = None,
-                cards: bool = True) -> str:
-    """An area index from its template: every `<!-- generated: … -->` marker replaced by its table."""
-    order = order or Order()
-    shipped = [n for n in notes if n.state in SHIPPED_STATES]
-    rank = {t: i for i, t in enumerate(topics)}
-    here = [n for n in shipped if n.topic in rank]
-
-    def table(kind: str, topic: str) -> str:
-        if kind == "cards":
-            rows = _ordered([n for n in here if n.topic == topic], lambda n: n.slug, order.cards.get(topic))
-            head = ["Note", "Claim", "Not when", "Check"] if cards else ["Note", "Claim", "Check"]
-            body = [_row([_link(n, "../"), n.meta["claim"], *([n.boundary] if cards else []), n.meta["check"]]) for n in rows]
-        elif kind == "about":
-            items = [(n, i, r) for n in here for i, r in enumerate(n.meta.get("about") or [])]
-            items = _ordered(items, lambda it: (it[0].slug, it[1]), order.about.get(area)) if order.about.get(area) \
-                else sorted(items, key=lambda it: (rank[it[0].topic], it[0].slug, it[1]))
-            head = ["…do this", "Card" if cards else "Read", "Because the default answer is wrong when"]
-            body = [_row([r["do"], _link(n, "../"), r["wrong_when"]]) for n, _, r in items]
-        elif kind == "principles":
-            # Every note that carries a principle any note here carries, wherever its area.
-            groups = {p: ns for p, ns in principles(notes).items() if any(n in here for n in ns)}
-            head = ["Principle", "Notes that carry it"]
-            body = [_row([f"`{p}`", " · ".join(_link(n, "../") for n in sorted(ns, key=lambda n: n.slug))])
-                    for p, ns in sorted(groups.items())]
-        else:
-            rows = _ordered(here, lambda n: n.slug, order.founded.get(area)) if order.founded.get(area) \
-                else sorted(here, key=lambda n: (rank[n.topic], n.slug))
-            head = ["Note", "Claim rests on", "Our evidence"]
-            body = [_row([n.slug, _rests_on(n.meta), n.meta.get("our_evidence", "")]) for n in rows]
-        if not body and kind == "principles":
-            return "No note in this area shares its principle with another yet."
-        return "\n".join([_row(head), "|" + "---|" * len(head), *body])
-
-    return GENERATED_MARKER.sub(lambda m: table(m.group(1), m.group(2)), template)
 
 
 def render_card(note: Note, siblings: list[Note] | None = None) -> str:
@@ -562,9 +521,8 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
         raise BuildError("\n".join(problems))
     head = BANNER if banner else ""
     out = {f"knowledge/notes/{n.state}/{n.slug}.md": short_note(n) for n in notes if n.state in SHIPPED_STATES}
-    for path in areas:
-        out[f"knowledge/areas/{path.name}"] = head + render_area(
-            path.read_text(encoding="utf-8"), path.stem, notes, topics_by_area[path.stem], order, cards)
+    # The area templates still place each topic in an area; their pages are not shipped since 0.0.30, as no
+    # session or step read them (`meta/decisions.md`, d-5ed7e8-da9b80): the index routes to the cards.
     out["knowledge/INDEX.md"] = head + render_index((templates / "INDEX.md").read_text(encoding="utf-8"), notes, topics, order,
                                                      link=_card_link if banner else None,
                                                      name=_card_name if banner else None)

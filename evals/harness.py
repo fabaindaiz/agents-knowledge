@@ -171,13 +171,12 @@ def _bundle_tool():
 
 
 def topic_areas() -> dict:
-    """topic -> area, read from the routing table in INDEX.md."""
+    """topic -> area, read from the area templates (their pages are not shipped since 0.0.30): the same map the
+    routing table in INDEX.md linked before, so the placebo rule picks what it picked."""
     areas = {}
-    for line in (BUNDLE / "knowledge" / "INDEX.md").read_text().splitlines():
-        m = re.search(r"\(areas/(\w+)\.md\)", line)
-        if m:
-            for topic in re.findall(r"`([\w-]+)`", line):
-                areas[topic] = m.group(1)
+    for path in sorted((ROOT / "sources" / "templates" / "areas").glob("*.md")):
+        for topic in re.findall(r"<!-- generated: cards ([\w-]+) -->", path.read_text()):
+            areas[topic] = path.stem
     return areas
 
 

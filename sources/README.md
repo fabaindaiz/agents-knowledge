@@ -12,7 +12,7 @@ A frontmatter block in YAML (strings double-quoted; `meta/tools/check_yaml.py` p
 | `topic` | one topic, which must have a `cards` marker in one area template |
 | `claim` | the heuristic in one sentence; its only wording, quoted by every table |
 | `applies_if` | optional: the precondition under which the claim holds, and where in a repository the fact that decides it is usually found; the card shows it first, so a session looks for the fact before applying the note |
-| `principle` | optional: a kebab-case name for what this note carries together with other notes (at least two); the cards and area indexes name the group, and a review or an ablation takes the group together |
+| `principle` | optional: a kebab-case name for what this note carries together with other notes (at least two); the cards name the group, and a review or an ablation takes the group together |
 | `confidence` | `measured`, `reasoned` or `inherited`: **our** evidence, never the literature's |
 | `phases` | where the phase guide lists it: any of `plan`, `dataset`, `implement`, `tests`, `review`, `verify`, `debug` |
 | `check` | what shows it holds in the change at hand; the card's *Check* |
@@ -78,7 +78,7 @@ In every case the review line is removed on the way out.
 What is bounded is **attention**, and each bound is one a check can see:
 
 - **Every shipped note is reachable**: under its topic, in at least one phase, in at least one *about to do* row. The build refuses it otherwise.
-- **Every index stays readable in one pass.** When one grows past that — a rough sign is a topic table longer than a screen — split it by area: a new template in `templates/areas/`, routed from `templates/INDEX.md`. Splitting is cheap and loses nothing; refusing a note is neither.
+- **The index stays readable in one pass.** When it grows past that, shorten its rows or move the lookup into a tool; do not split it: a split index was measured and refused, costing the reviewer more and losing names (`../evals/REPORT.md` §4.13). The area templates in `templates/areas/` only place each topic in an area; their pages are not shipped.
 - **A topic is a decision, not a label.** Prefer fitting a note into an existing topic; create one only when a set of notes shares a mechanism the others do not.
 - **A review closes every release**, and it ends in verdicts, not in a count. For every pair of notes whose claims overlap: *merge* (one claim, a sharper boundary), *supersede* (one replaces the other), or *keep both*, with the mechanism that separates them — and evidence counted in two notes is moved to one. For every note whose *Evidence* names an experiment never run: *queued*, or *downgraded*. For every note an occurrence contradicted: *boundary moved*, *revised*, *sent to review* or *retired*. For every note whose `confidence` its *Evidence* does not earn: *downgraded*, or *sent to review*. For every note in `notes/review/`: a verdict from §3, or *kept in review* with what it still awaits. The verdicts are recorded with the release, so the next one starts from them.
 - **A review never prunes what its own release admitted.** A note that arrived in this release can only be *kept* or *queued* by the review that closes it; merging, superseding or retiring it waits for a later release with its own reasoning. The moment a learning arrives is the moment it is understood least, and the worst one to judge another redundant.

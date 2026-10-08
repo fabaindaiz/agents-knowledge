@@ -27,7 +27,7 @@ class Pilot9Arms(Base):
         index = (agents / "knowledge/INDEX.md").read_text()
         phases = (agents / "knowledge/PHASES.md").read_text()
         self.assertIn("## By what you are about to do", index)
-        for moved in ("## By phase of work", "## The areas, for browsing", "## How well founded is any of this"):
+        for moved in ("## By phase of work", "## The topics", "## How well founded is any of this"):
             self.assertNotIn(moved, index)
             self.assertIn(moved, phases)
         self.assertIn("PHASES.md", index)  # the index still says where the rest went
