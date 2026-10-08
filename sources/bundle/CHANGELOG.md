@@ -8,8 +8,30 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Changed
+
+- **The release is smaller, and nothing it removed was read.** The area pages (`knowledge/areas/`) are no longer
+  shipped: the index routes to the cards, and each card links its note, which is how `verify` now reaches a note.
+  `knowledge/OPEN.md` lists waiting candidates by slug and kind, `proposals/RECEIVED.md` keeps the verdicts of the
+  last two releases (older ids still prune), and this changelog starts at the oldest registered carrier's version.
+  A carrier does nothing; a link it wrote to an area page now fails `verify`, and points at the card instead.
+- **`carrier.toml` may name the session log** (`log = "docs/agent-log.md"`); `new entry` and `count` read it, so a
+  carrier whose log lives elsewhere stops passing `--log`.
+- **`new entry` reads a log as it is**: its format under any heading, fields written as bulleted bold labels, and the
+  heading level the log's entries use.
+
+### Removed
+
+- The deprecated `bundle.py digest` alias: run `bundle.py verify`.
+
 ### Fixed
 
+- **A minted carrier names its home as `upstream`**, which the release's `README.md` now states as `home`; an empty
+  `upstream`, which marks a home, fails `verify` anywhere else. Every registered carrier already holds the home's
+  id, so none turns red; a new one gets it at `carrier-id --mint` (or `--upstream ID`).
+- `release.py align` compares a carrier with the tagged release it holds, so work built in the home after a release
+  no longer unaligns every carrier.
+- `release.py register` remembers a linked worktree as the repository it belongs to, never the scratch path.
 - `bundle.py decisions --migrate` dates a row by the author date of the commit that first wrote it, which a history
   rewrite keeps; the committer date it read was reset by one, dating every row to the rewrite.
 - An extension written alone in Enforced in (the `.mdc` rules) is no longer read as a missing file.

@@ -45,7 +45,6 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py turns [--since DATE] [PROJECT_DIR...]
                                                                 what the human said in this repository's local
                                                                 session transcripts, oldest first; read-only
-    python3 .agents/tools/bundle.py digest [TREE] --check       deprecated alias of `verify` (0.0.x only)
 
 With no REPO, the repositories are this session's workspace: `AGENT_WORKSPACE` if it is set, else the
 local manifest (see `MANIFEST`), which lists this machine's paths and never travels with the bundle.
@@ -562,7 +561,7 @@ class PrivacyRule:
     """One shape of leak: how bad it is, what finds it, and where it is not read.
 
     Attributes:
-        level: "FAIL" (a leak; `privacy` exits 1 and `digest --check` fails) or "WARN" (advisory).
+        level: "FAIL" (a leak; `privacy` exits 1 and `verify` fails) or "WARN" (advisory).
         find: The offending pieces of one line.
         evidence_only: Read only in *Where it came from* and *Evidence* sections and in `tracking/`.
         literature_exempt: Not read in *Literature* sections nor in `references.md`.
@@ -3638,12 +3637,10 @@ def _parser() -> argparse.ArgumentParser:
         prog="bundle.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     sub = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
-    for name, help_text in (("verify", "everything a carrier's gate fails on (exit 1)"),
-                            ("digest", "deprecated alias of verify, kept through 0.0.x for carriers' audits")):
-        p = sub.add_parser(name, help=help_text)
-        p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
-        p.add_argument("--check", action="store_true", help=argparse.SUPPRESS)
-        p.add_argument("--release", action="store_true", help="the tree is a release as it arrives: no carrier file, no proposals")
+    p = sub.add_parser("verify", help="everything a carrier's gate fails on (exit 1)")
+    p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
+    p.add_argument("--check", action="store_true", help=argparse.SUPPRESS)
+    p.add_argument("--release", action="store_true", help="the tree is a release as it arrives: no carrier file, no proposals")
     p = sub.add_parser("check-local", help="the carrier changed only what it owns (exit 1)")
     p.add_argument("repos", nargs="*")
     p = sub.add_parser("carrier-id", help="a repository's stored random id; --mint writes one where there is none")
@@ -3768,9 +3765,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- one branch per command
-    if args.command in ("verify", "digest"):
-        if args.command == "digest":
-            print("  . `digest` is deprecated: the bundle is verified by SHA256SUMS now; running `verify`")
+    if args.command == "verify":
         tree = Path(args.tree)
         privacy = privacy_check(tree) if not is_legacy(_a_bundle(tree)) else None
         problems = verify_problems(tree, privacy, release=args.release)

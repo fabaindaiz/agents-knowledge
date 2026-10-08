@@ -153,13 +153,11 @@ class Verify(Base):
         self.assertIn("missing or not `r-`", problems)
         self.assertIn("unknown key `adoptd`", problems)
 
-    def test_digest_is_a_deprecated_alias(self) -> None:
+    def test_the_deprecated_digest_alias_is_gone(self) -> None:
+        # removed in 0.0.30: no carrier's gate or audit called it any more (i-5ed7e8-715654)
         agents = make_bundle(self.root)
-
-        code, out = run("digest", str(agents), "--check")
-
-        self.assertEqual(code, 0)
-        self.assertIn("deprecated", out)
+        with self.assertRaises(SystemExit):
+            run("digest", str(agents), "--check")
 
 
 class LocalStep(Base):
