@@ -67,6 +67,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   repository is a reason to propose, not admission evidence; the bootstrap's step 6 names `docs-map.toml`; its
   whole-branch review carries principle 19's caveat on the evidence; `decision-review` says ten minutes, as §15
   does. Evaluate points at the ladder, the three agents and which document to run instead of restating them.
+- **What Cursor and Copilot read, checked again** (`prompt-context.md`, *What each surface can actually do*): both
+  now read `AGENTS.md` and, for compatibility, Claude Code's skill and subagent folders and most of its hooks; the
+  CLIs of both also read `CLAUDE.md`; Copilot runs hooks in VS Code too. So the one-source design reaches all three,
+  and what is generated is only what has no common place: per-area rules and a subagent's tool limit. A carrier
+  changes nothing; the tools that generate and check those surfaces come in the next release.
 - **Three rules the prompts stated differently, decided** (*under review*): evaluate runs first on every repository
   but an empty one; in adopt mode the first pass creates only what has no home, and each file the host already has
   is extended in a session of its own (principle 19); a harvest closes only its own session's work, and names the

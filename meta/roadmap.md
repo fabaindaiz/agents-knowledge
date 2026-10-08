@@ -72,6 +72,21 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
+  one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
+  0.0.30, done (`meta/reviews/2026-10-08-cursor-copilot-support.md`, and the method's capability table corrected);
+  **0.0.31 builds levels 1 and 2 and designs level 3.** In order: `bundle.py surfaces`, which generates Cursor's
+  `.mdc` rules and Copilot's instructions from `.claude/rules/` and fails a stale or hand-edited copy; the reviewer
+  and the researcher written for Cursor (`readonly`) and Copilot (its tool aliases) from their templates; a
+  generated Copilot pointer, or none; the hooks kept in git and CI, with an assistant's own hook file only where its
+  surface lacks the import; the prompts' "Claude Code" where any assistant is meant. First, the six canaries the
+  document lists (does the Cursor IDE read `CLAUDE.md`, do Claude-format hooks run in the Cursor CLI on Linux, …).
+  Level 3: an adapter per CLI in `evals/harness.py`, the same Claude model, a fresh home per trial, pilot-12's three
+  tasks; Cursor documents no cost per run. *Blocked for level 3 on the owner:* installing both CLIs, a key and a
+  token, and each account's terms for automated runs. *Collides with:* every carrier's update (a migration of its
+  hand-written rules, compared with their sources first), `install-skills`, the reviewer's template, and the
+  harness.
+
 - **The adversarial review of initialisation, the method and the bundle's organisation (2026-10-02).**
   `meta/reviews/2026-10-02-adversarial-review.md` holds the evidence, the findings and the settled
   design answers. The redesign runs in phases, one release each at most, and a phase that its pilot

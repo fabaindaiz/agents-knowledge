@@ -1608,16 +1608,25 @@ failure with an extra step.
 
 ### What each surface can actually do
 
-Checked against each vendor's documentation on 2026-09-24; the sources are in the
+Checked against each vendor's documentation on 2026-10-08; the sources are in the
 home repository's `sources/references.md`, *Writing for an agent*.
 
 | | Claude Code | Cursor | Copilot |
 |---|---|---|---|
-| Always-on file | `CLAUDE.md` at the root; `AGENTS.md` only when there is no `CLAUDE.md` | `.cursor/rules/*.mdc` with `alwaysApply: true`; `AGENTS.md`, nested ones included | `.github/copilot-instructions.md`; `AGENTS.md` (nearest wins), root `CLAUDE.md` or `GEMINI.md` on the surfaces that read agent instructions |
+| Always-on file | `CLAUDE.md` at the root; `AGENTS.md` only when there is no `CLAUDE.md` | `AGENTS.md`, nested ones included; `.cursor/rules/*.mdc` with `alwaysApply: true`; the CLI also reads a root `CLAUDE.md` | `AGENTS.md` (nearest wins); `.github/copilot-instructions.md`; the CLI, cloud agent and code review also read `CLAUDE.md` with its `@` imports; VS Code reads nested `AGENTS.md` and `CLAUDE.md` only behind settings |
 | Per-area rules | nested `CLAUDE.md` loaded **on demand** when files there are read, **and** `.claude/rules/*.md` **auto-attached by glob** via `paths:` | `.mdc` rules with `globs:` ("Apply to specific files"); nested `AGENTS.md` | `.github/instructions/*.instructions.md` with an `applyTo:` glob — **support differs by surface** (Visual Studio: chat only) |
-| On-demand procedures | skills, chosen from their `description` | rules chosen by `description` ("Apply intelligently") or by @-mention | **agent skills** (`SKILL.md` in `.github/skills/`, `.claude/skills/` or `.agents/skills/`), chosen from their `description` — cloud agent, code review, CLI and VS Code agent mode; **prompt files** (`.github/prompts/*.prompt.md`), run by hand as a slash command in VS Code, Visual Studio and JetBrains (public preview); **custom agents** (`.github/agents/`), profiles selected by hand, or used by the cloud agent from the task's context unless `disable-model-invocation: true` |
-| Deterministic enforcement | **hooks** on lifecycle events | **hooks** in `.cursor/hooks.json`; a hook can deny an action | **hooks** in `.github/hooks/*.json`, `preToolUse` can deny — **only on the cloud agent and the CLI** |
-| Path exclusion | `permissions.deny` | `.cursorignore` — **not a boundary** for the agent's terminal and MCP tools | content exclusion, set in repository or organisation **settings**, not a file; IDE agent mode does not honour it |
+| On-demand procedures | skills, chosen from their `description` | **skills** from `.cursor/skills/`, `.agents/skills/` **and `.claude/skills/`**, chosen from their `description` (the name must match its folder); rules by `description` or @-mention | **agent skills** (`SKILL.md` in `.github/skills/`, `.claude/skills/` or `.agents/skills/`), chosen from their `description` — cloud agent, code review, CLI, VS Code and JetBrains agent mode; **prompt files** (`.github/prompts/*.prompt.md`), run by hand; **custom agents** (`.github/agents/` **and `.claude/agents/`**), with a `tools` list in Copilot's own aliases |
+| A context of its own | subagents in `.claude/agents/`, limited to their `tools:` | **subagents** from `.cursor/agents/` **and `.claude/agents/`** (Cursor's wins on a shared name); limited only by `readonly: true` | custom agents run as subagents with their own context in the CLI |
+| Deterministic enforcement | **hooks** on lifecycle events | **hooks** in `.cursor/hooks.json`, **and Claude Code's hooks in `.claude/settings.json`**, mapped; a hook can deny an action; IDE yes, cloud agent command hooks only, Linux CLI **unverified** | **hooks** in `.github/hooks/*.json`, `preToolUse` can deny — cloud agent, CLI (which also reads Claude Code's hooks) and VS Code in preview (Claude Code's only behind a setting) |
+| Path exclusion | `permissions.deny` | `.cursorignore` — **not a boundary** for the agent's terminal and MCP tools; the CLI has its own `permissions.deny` | content exclusion, set in repository or organisation **settings**, not a file; VS Code agent mode does not honour it; the CLI has `--deny-tool` |
+
+**Read by column, the one-source design already reaches all three.** Both other
+assistants now read `AGENTS.md` and, for compatibility, the folders Claude Code
+uses for skills and subagents, and most of its hooks. So write once, in
+`AGENTS.md` and those folders, and generate only what has no common location:
+per-area rules (one glob in three spellings) and a subagent's tool limit. Where
+a surface's import of another assistant's files is a setting, say so in the
+repository, since it can be switched off.
 
 **ASSUMPTION beyond that date:** all three products move quickly, and this table
 is the shape rather than the specification. Verify file names, frontmatter

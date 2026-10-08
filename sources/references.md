@@ -209,6 +209,33 @@ verbatim. A source that could not be opened is either marked as unverified or le
   ignore file is not a boundary; what must not be read needs a permission or a hook.
   *Verified 2026-09-24 against both pages.*
 
+- **[Cursor Docs, "Skills"](https://cursor.com/docs/skills.md)**, **["Subagents"](https://cursor.com/docs/subagents.md)**,
+  **["Hooks"](https://cursor.com/docs/hooks.md)** with its *Third Party Hooks* page, and **["Using the
+  CLI"](https://cursor.com/docs/cli/using.md)**. Skills are read from Cursor's and the neutral folder, and also from
+  Claude's for compatibility; a skill's name must match its folder. Subagents run in a context of their own and are
+  read from Cursor's folder and also from Claude's, Cursor's winning on a shared name; their only tool restriction is
+  a read-only switch. Hooks configured for Claude Code in its project settings are loaded and mapped onto Cursor's
+  events. The CLI reads `AGENTS.md` and `CLAUDE.md` at the root, prints JSON or a stream with tool calls, and documents
+  no token or cost field.
+  **Corrected the method:** its table had Cursor reaching procedures only through rules and @-mentions, and named no
+  Claude locations. **Confirms:** writing once in `AGENTS.md` and Claude's locations reaches Cursor too. **Limits
+  it:** the reviewer's tool list does not carry over, and the import of another assistant's files is a setting that is
+  on by default. *Verified 2026-10-08 against the pages, `meta/reviews/2026-10-08-cursor-copilot-support.md`.*
+
+- **GitHub Docs, "GitHub Copilot hooks reference", "Custom agents configuration", "About agent skills", "GitHub
+  Copilot CLI command reference", "programmatic reference" and "configuration directory"** ([GitHub
+  Docs](https://docs.github.com/en/copilot), read from their published Markdown sources), with [VS Code's Copilot
+  documentation](https://code.visualstudio.com/docs/copilot) on hooks, agent skills, custom agents and custom
+  instructions.
+  Copilot's CLI reads `CLAUDE.md` and its imports as well as `AGENTS.md`, and loads hooks from Claude's project
+  settings; VS Code now runs hooks too, in preview, and reads Claude's hooks and `CLAUDE.md` only behind settings.
+  Skills and custom agents are also read from Claude's folders; a custom agent's tool list uses Copilot's own aliases.
+  The CLI runs headless, with an environment variable that replaces the user's configuration folder and a flag that
+  turns off repository instructions; billing is now usage-based credits per token.
+  **Corrected the method:** its table limited Copilot's hooks to the cloud agent and the CLI and did not say the CLI
+  reads `CLAUDE.md`. **Limits it:** the JSON output's tool-call and token fields are not documented.
+  *Verified 2026-10-08 against the sources, `meta/reviews/2026-10-08-cursor-copilot-support.md`.*
+
 - **[Anthropic, 2025, "Effective context engineering for AI agents"](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)**.
   Aim for *"the smallest possible set of high-signal tokens"*. Prefer *"diverse, canonical
   examples"* to *"a laundry list of edge cases"*. Load files just in time, through
