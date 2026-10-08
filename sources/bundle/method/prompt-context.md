@@ -592,7 +592,7 @@ charged them for the privilege. The line is not subtle:
 
 | Mode | When | Shape |
 |---|---|---|
-| **Pre-flight** | before reading or writing, once | one message (§*The pre-flight*); at most five questions, aim for three, each with the default you will take; `defaults` accepts them all; one line on what you are not asking |
+| **Pre-flight** | before reading or writing, once (a bootstrap of a repository with content: after a short look) | one message (§*The pre-flight*); at most five questions, aim for three, each with the default you will take; `defaults` accepts them all; one line on what you are not asking |
 | **Decision review** | the human asks for it, or more of the human's decisions remain after reading than one message holds | the `decision-review` skill: the inventory of every decision goes together, then the human's decisions go **one per turn** (a theme of up to four if asked), until none is left; recorded before any plan |
 | **Fact interview** | facts only the human holds | your reading stated, for them to confirm or correct; no recommendation, since the fact is theirs; one fact per question, since a two-part question gets an answer that fits either part; a reason they did not give is never recorded |
 | **Parked** | while working alone, or mid-work with no channel opened | decide what is yours; write the rest to the roadmap as questions with a recommendation; raise them all at the next report |
@@ -1755,6 +1755,11 @@ work you have not done yet.
   decided for them and can object.
 - **Ask conditionally.** A question that only matters in a monorepo is not asked
   in a repository with one package. Detect first, then ask what remains.
+- **A bootstrap asks its objectives, ordered by the repository's kind.** An empty
+  repository is asked at once; one with content gets a short look first, about
+  five minutes, so the question proposes what it is for, what the initialisation
+  delivers and how deep, and which questions its research answers, instead of
+  asking them blank (`prompt-bootstrap.md` §*Before you start*).
 - **It is one of four question modes** (§15). When the decisions that remain
   after reading are more than this block holds, they are not squeezed into it:
   say so, and propose a decision review.

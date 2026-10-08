@@ -151,7 +151,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   an existing one, a short read of at most about five minutes, then propose an objective to confirm. Ask
   what the initialisation must deliver, how deep, and which questions its research must answer; write
   research to the repository as it lands; accept by a first real task. *Collision:* the bootstrap's
-  budget, and phase 5.
+  budget, and phase 5. *Done in 0.0.30, unreleased (2026-10-08):* the paste block, *Before you start*, Phase 2,
+  the bootstrap's checklist and the pre-flight in `prompt-context.md`.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
   carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,

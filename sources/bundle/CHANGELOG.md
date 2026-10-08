@@ -53,6 +53,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   repository's linters, formatters and ratchets.
 - **A proposal answered on privacy is rewritten, not edited** (*under review*): harvest and `close` say how.
 - **A check run in a worktree** needs an environment bound to it, or its result is read as unproven (*under review*).
+- **The bootstrap asks its objectives first** (*under review*): an empty repository is asked at once, one with
+  content gets a short look of about five minutes so that the first question proposes what it is for, what the
+  initialisation delivers and how deep, and which questions its research answers. Phase 2 is scoped to those
+  answers and writes each finding as it lands to one dated research document, the only file before Phase 3; the
+  bootstrap is accepted by a first real task. The pre-flight keeps five questions: language joins readers.
 
 - **A review turn has a fixed shape** (`prompt-context.md` §15, `decision-review`): three to five short blocks of
   prose, one more answer, *review more*, opening a second level, the assumptions shown before an irreversible

@@ -14,11 +14,14 @@ You are preparing this repository to be worked on with **Claude Code**. The
 method is `prompt-bootstrap.md` and `prompt-context.md`, in `.agents/` or
 wherever they were dropped in this repo.
 
-**FIRST, before reading anything else: run the pre-flight.** Open
-`prompt-bootstrap.md` §*Before you start*, ask me those questions in one
-message, and wait for my answer. Do not read the repository, plan or write
-until I have replied. Ask fewer if the repository already answers one, and tell
-me in one line what you are not asking.
+**FIRST, run the pre-flight.** Open `prompt-bootstrap.md` §*Before you
+start*. If this repository is empty, ask me its questions at once; if it has
+content, look first, for about five minutes and no deeper (its read-me, its
+manifests, the top of its tree, any agent instructions), so that you can
+propose its objective instead of asking it blank. Then ask me those questions
+in one message and wait for my answer. Do not plan or write until I have
+replied. Ask fewer if the repository already answers one, and tell me in one
+line what you are not asking.
 
 **Once I have answered**, read only this:
 
@@ -48,7 +51,8 @@ discarded, renamed or reorganised** without my explicit approval, and every
 substitution goes in `adapted`, in `.agents/carrier.toml`.
 
 Follow its nine phases in order. **Phases 0, 1 and 2 are read-only, and you
-write no file until I approve the Phase 3 proposal.**
+write no file until I approve the Phase 3 proposal**, but for Phase 2's
+findings, written to one dated research document as each lands.
 
 - **Phase 0:** read the repository and list what you read.
 - **Phase 1:** report the ten-item state evaluation — above all **the class of
@@ -111,9 +115,13 @@ whether you want bootstrap, update, or three targeted fixes instead.
 
 ## Before you start — ask these
 
-**Ask all of them in one message, then stop.** Do not read the repository, do
-not plan, do not write. The rules behind this block are in `prompt-context.md`
-§*The pre-flight*.
+**Ask all of them in one message, then stop.** Do not plan, do not write. **The
+order depends on the repository:** an empty one is asked at once; one with
+content gets a short look first — about five minutes, its read-me, manifests,
+the top of its tree and any agent instructions, nothing deeper — so that the
+first question proposes an objective instead of asking it blank. Phase 0's full
+read comes after the answers. The rules behind this block are in
+`prompt-context.md` §*The pre-flight*.
 
 *The agent will print something like this, and then wait:*
 
@@ -121,30 +129,33 @@ not plan, do not write. The rules behind this block are in `prompt-context.md`
 Before I prepare this repository, five things — reply `defaults` to take all of
 them as proposed.
 
-1. Scope. I will prepare the whole repository, and give a nested instruction
+1. Objectives. From a short look, this repository is for <what it does>, and I
+   propose this initialisation delivers <the root file, the gate, the roadmap>
+   at <a working depth: every area read, the few rules that bite enforced>. The
+   research in Phase 2 will answer <two or three questions, e.g. which of this
+   framework's defaults are unsafe here>. Correct any of it.
+
+2. Scope. I will prepare the whole repository, and give a nested instruction
    file to each area that turns out to have rules of its own. (Monorepo? Say
    which packages, or "all".)
 
-2. Is there a place this software runs where nobody here can look? A device, a
+3. Is there a place this software runs where nobody here can look? A device, a
    customer's environment, production under load, a shipped artefact. You
    probably know this in one sentence, and it decides what has to be checked
    before shipping rather than after. If there is none, say so.
 
-3. Language. I will write this repository's own documents in the language its
-   readers use: the one its documents already state, or yours if none does.
-   Identifiers, commands, paths, and the headings and keywords a tool parses,
-   stay exactly as the tool expects them. The method documents stay in English.
+4. Readers, agents and language. I will set up a surface for each assistant
+   configured here (Claude Code, Cursor and Copilot are the common set), all
+   generated from ONE source so they cannot drift, and assume the readers are
+   you and those agents. Tell me if there is a team or external contributors —
+   it changes how strict the rules are worth making. I will write this
+   repository's own documents in the language its documents already state, or
+   yours if none does; identifiers, commands, paths, and what a tool parses stay
+   as the tool expects them, and the method documents stay in English.
 
-4. Off limits. I will not touch anything you name here, and I will not run
+5. Off limits. I will not touch anything you name here, and I will not run
    installs, migrations, or anything that reaches the network. I will run the
    existing gate if it writes nothing.
-
-5. Agents and readers. I will detect which assistants are already configured
-   here and set up a surface for each — Claude Code, Cursor and Copilot are the
-   common set — all generated from ONE source so they cannot drift. I will
-   assume the readers are you and those agents. Tell me if an assistant is not
-   in use or another is, and if there is a team or external contributors — it
-   changes how strict the rules are worth making.
 
 Not asking, because the repository answers them: the stack, the real commands,
 the structure, the conventions already in use, and which assistants have
@@ -153,7 +164,7 @@ that is where you tell me which of those conventions are decisions and which are
 accidents — I cannot tell from the outside.
 ~~~
 
-**Ask fewer when the repository answers one.** Drop question 1 in a
+**Ask fewer when the repository answers one.** Drop question 2 in a
 single-package repo rather than asking it and answering it yourself.
 
 **This is not the only checkpoint.** Questions that cannot be asked before
@@ -174,8 +185,9 @@ block names what its job reads on its `Reads:` line; on a small model, read
 
 ## The process
 
-Nine phases. **Write nothing until Phase 3 is approved.** Phases 0 to 2 are
-read-only, and they are the ones that decide whether the rest is any good.
+Nine phases. **Write nothing until Phase 3 is approved**, but for Phase 2's
+research document. Phases 0 to 2 are read-only, and they are the ones that
+decide whether the rest is any good.
 
 ### Phase 0 — Read the repository (read-only)
 
@@ -232,11 +244,15 @@ inferred rather than read.
 | Is `docs/` true? | keep it in step | Phase 7 becomes real work |
 | Is there history to mine? | build troubleshooting from it | item 7 above |
 
-### Phase 2 — Research the outside (read-only). Report before proposing anything.
+### Phase 2 — Research the outside (read-only but for its findings). Report before proposing anything.
 
 This is the phase most bootstraps skip, and it is what makes the rest
-non-generic. **Three searches, and nothing enters the repo unless it changed or
-confirmed a decision.**
+non-generic. **Three searches, scoped to the questions the owner confirmed at
+the pre-flight, and nothing enters the repo unless it changed or confirmed a
+decision.** Each finding is written as it lands to one dated research document
+(`docs/research/<date>-bootstrap.md`, or where the repository keeps research),
+the only file written before Phase 3, so a session cut short keeps what it
+found; what answers no confirmed question is marked so.
 
 1. **The domain.** The recognised references for this kind of software —
    the canonical paper, talk, book chapter or engineering blog post that the
@@ -908,6 +924,10 @@ first checks that its target resolves inside that directory.
       test discipline, the strictness level types are set to, what a docstring
       owes, and the domain's non-negotiables.
 - [ ] Nothing existing was renamed or reorganised without explicit approval.
+- [ ] Each objective confirmed at the pre-flight is delivered, or reported as
+      not, with its reason.
+- [ ] Accepted by a first real task: the owner names one, it runs through the
+      session loop, and what it found missing is fixed or in the roadmap.
 
 ### Done — every change after that
 
