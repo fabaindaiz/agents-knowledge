@@ -2,6 +2,51 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-08, night: 0.0.30 is cut, tagged and pushed.** `main` = `origin/main`, tag `v0.0.30` on
+`293766f`. Carrying it to any carrier waits for the owner, who carries it to one carrier first.
+
+**What 0.0.30 is** (`.agents/CHANGELOG.md` [0.0.30]):
+- The tool fixes, `docs-drift`, `close`, `lookup` and the `researcher` agent.
+- The method changes under review.
+- The bootstrap asking its objectives first, and `AGENTS.md` as the root artifact.
+- The prompts' disagreements decided (`d-5ed7e8-1f2a69`, `-f12c89`, `-8e6a07`).
+- A large plan's estimate.
+- **Experimental support for Cursor and Copilot** (`d-5ed7e8-1e7a9a`): `bundle.py surfaces` generates and checks their
+  copies of `.claude/rules/` and `.claude/agents/`, for a carrier listing them in `carrier.toml`. The home does.
+
+**Measured:** beside 0.0.29 in one run, about ×0.8 of its cost and the same discriminating passes over two runs
+(`evals/REPORT.md` §4.14 to §4.16). The changes made after the run were not measured again.
+
+**Reviewed** twice in a fresh context (`surfaces`, the whole branch); every finding fixed or answered.
+
+**Next, in order:**
+1. **Phase 2 carried on 2026-10-08** (`meta/reviews/2026-10-08-carrying-0.0.30.md`): nine carriers on new branches,
+   aligned; one waits on a release defect (`i-5ed7e8-c390fa`); the owner carries one by hand and merges each branch.
+   No carrier lists `surfaces` yet: their Cursor rules are hand-written sources, to fold first. The four proposals
+   refused on privacy were already removed on that carrier's 0.0.29 branch.
+2. **0.0.31** (`i-5ed7e8-fca056`): the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3, the
+   measurement, waits on the CLIs, a key, a token and each account's terms.
+   - The rest of `i-5ed7e8-8236cb`, the `CLAUDE.md` mentions outside its scope.
+   - `i-5ed7e8-94f262`, at the next harvest.
+
+**Waiting on the owner:**
+- The carriers' 0.0.30 branches to review and merge (they supersede the unmerged 0.0.29 ones).
+- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
+- The credentials ticket.
+- The `proposed` rows in carriers' logs.
+- The other machine's checklist (`i-5ed7e8-61171e`).
+- Each assistant's terms for automated runs.
+
+**What went wrong**, counted by `bundle.py count` over this log where a symptom recurs:
+- **An edit chained with `git`**, about four times in the session's first part. This is its fourth entry in the log,
+  and `i-5ed7e8-bd65a0` is the fix.
+- **A cut before the owner closed the version**, reverted (`7f6d8fc`). Its rule now heads `prompt-sync.md` step 8.
+- **A renamed heading that a tool reads by name broke `new entry`**, silently, because a fixture copied the old
+  heading. Fixed with a test that reads the shipped document; proposed as knowledge.
+- **A search that missed existing code** led me to tell the owner a check was absent. `carrier_ids` held it all along.
+- **A delegated inventory overstated duplicates about sevenfold**; checking the files found it.
+- **A review found a data-loss path in `surfaces`**, fixed before release.
+
 **State on 2026-10-07, night: 0.0.30 is being built** on the branch `release/0.0.30` (pushed, not merged; check
 it out first). `main` holds everything before it; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository.
 

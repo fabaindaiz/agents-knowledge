@@ -81,9 +81,9 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
    records the release under *Done* and rewrites *Where we are* within 500 words, after adding the one it
    replaces to `meta/archive/roadmap-states.md`; one commit per carrier, following that
    repository's own commit rules. Push, with the tag.
-7. **Template:** when the template repository a new project starts from is open on this machine, refresh
-   its `.agents/` from the tag (`meta/method/prompt-sync.md`, Phase 3 step 6). It is not a carrier and
-   holds no `carrier.toml`; a repository started from it mints its own id at its bootstrap.
+7. **Templates:** when a template repository a new project starts from is open on this machine, refresh
+   each one's `.agents/` from the tag (`meta/method/prompt-sync.md`, Phase 3 step 6). Templates are not carriers and
+   hold no `carrier.toml`; a repository started from one mints its own id at its bootstrap.
 
 The tools report what they found; they decide nothing. Read what `gather` and `lost` print.
 

@@ -358,3 +358,21 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-de578f3f63` | 0.0.30 | queued as `new-entry-reads-the-logs-own-format` |
 | `p-f76353b351` | 0.0.30 | another occurrence of `prompt-context`, to merge |
 | `p-fc57dd0369` | 0.0.30 | queued as `a-plan-may-be-a-working-artifact` |
+| `p-03af58edfc` | 0.0.31 | folded into `prompt-context` §15 as an occurrence (`history.md`) |
+| `p-d9a96d5862` | 0.0.31 | queued as `a-card-enters-an-answer-as-a-mechanism` |
+| `p-7954a4c123` | 0.0.31 | another occurrence of `prompt-context`, to merge |
+| `p-6a1060aa5b` | 0.0.31 | merged into `index-unread-where-rules-absorbed-it` |
+| `p-b90ef8c317` | 0.0.31 | merged into the note `derived-copy-goes-stale-silently`, *Evidence* |
+| `p-ec397a675e` | 0.0.31 | refused as a learning; a procedure in `evals/README.md` |
+| `p-11a3b4d7c5` | 0.0.31 | another occurrence of `a-shared-rule-has-one-enforcer-per-copy`, to merge |
+| `p-38a48d40f6` | 0.0.31 | another occurrence of `prompt-update`, to merge |
+| `p-6fc1a0ee2d` | 0.0.31 | another occurrence of `changelog-order-is-checked`, to merge |
+| `p-b10b689423` | 0.0.31 | another occurrence of `refusal-must-not-read-like-an-answer`, to merge |
+| `p-b5ed4535bd` | 0.0.31 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-c5ccb46250` | 0.0.31 | another occurrence of `best-effort-side-channels`, to merge |
+| `p-c986101c49` | 0.0.31 | another occurrence of `a-surviving-guard-mutation-means-a-missing-input`, to merge |
+| `p-cc620f4084` | 0.0.31 | another occurrence of `prompt-update`, to merge |
+| `p-cd7569810c` | 0.0.31 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
+| `p-f23391f5cc` | 0.0.31 | another occurrence of `order-writes-by-failure-residue`, to merge |
+| `p-f692458588` | 0.0.31 | run logged against `copied-instruction-claims-its-origin` |
+| `p-f94bec8bcc` | 0.0.31 | run logged against `a-check-must-be-seen-to-fail` |

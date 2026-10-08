@@ -20,50 +20,49 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-08, night: 0.0.30 is cut, tagged and pushed.** `main` = `origin/main`, tag `v0.0.30` on
-`293766f`. Carrying it to any carrier waits for the owner, who carries it to one carrier first.
+**State on 2026-10-08, late: 0.0.30 is on `origin`; the 0.0.31 intake has begun** on the branch
+`intake/0.0.31-pilot-and-carrier` (pushed, not merged). `v0.0.30` on `293766f` is the last tag.
 
-**What 0.0.30 is** (`.agents/CHANGELOG.md` [0.0.30]):
-- The tool fixes, `docs-drift`, `close`, `lookup` and the `researcher` agent.
-- The method changes under review.
-- The bootstrap asking its objectives first, and `AGENTS.md` as the root artifact.
-- The prompts' disagreements decided (`d-5ed7e8-1f2a69`, `-f12c89`, `-8e6a07`).
-- A large plan's estimate.
-- **Experimental support for Cursor and Copilot** (`d-5ed7e8-1e7a9a`): `bundle.py surfaces` generates and checks their
-  copies of `.claude/rules/` and `.claude/agents/`, for a carrier listing them in `carrier.toml`. The home does.
-
-**Measured:** beside 0.0.29 in one run, about ×0.8 of its cost and the same discriminating passes over two runs
-(`evals/REPORT.md` §4.14 to §4.16). The changes made after the run were not measured again.
-
-**Reviewed** twice in a fresh context (`surfaces`, the whole branch); every finding fixed or answered.
+**Done since 0.0.30's close:**
+- Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one waits on a
+  release defect (`i-5ed7e8-c390fa`). The owner carried one more by hand: registered at 0.0.30 from its bundle
+  branch, whose pull request is unmerged.
+- The 0.0.31 intake (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals received.
+  - A pilot's four, entered as the home's own (`d-5ed7e8-67a443`), with their literature checked: one merged into a
+    queued candidate, one queued, one folded into §15, one refused and made an `evals/` procedure.
+  - The home's two from the 0.0.30 close: one offered again to merge, one merged into its note.
+  - Twelve of that carrier's fifteen: ten waiting under *Offered again, to merge*, two logged as runs; three held on `quote` warnings until
+    `i-5ed7e8-74d789` lands.
+- Four items for 0.0.31: `i-5ed7e8-1dd18c`, `i-5ed7e8-74d789`, `i-5ed7e8-e44264`, `i-5ed7e8-460736`.
+- The pilot's follow-up experiment, queued in `meta/tracking/experiments.md`.
 
 **Next, in order:**
-1. **Phase 2 carried on 2026-10-08** (`meta/reviews/2026-10-08-carrying-0.0.30.md`): nine carriers on new branches,
-   aligned; one waits on a release defect (`i-5ed7e8-c390fa`); the owner carries one by hand and merges each branch.
-   No carrier lists `surfaces` yet: their Cursor rules are hand-written sources, to fold first. The four proposals
-   refused on privacy were already removed on that carrier's 0.0.29 branch.
-2. **0.0.31** (`i-5ed7e8-fca056`): the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3, the
-   measurement, waits on the CLIs, a key, a token and each account's terms.
-   - The rest of `i-5ed7e8-8236cb`, the `CLAUDE.md` mentions outside its scope.
-   - `i-5ed7e8-94f262`, at the next harvest.
+1. Merge the intake branch.
+2. **0.0.31**, tools first: `i-5ed7e8-74d789` lets the held three in, `i-5ed7e8-460736` lets researchers fetch
+   whole texts, then `i-5ed7e8-e44264` and `i-5ed7e8-1dd18c`.
+   - The rest of `i-5ed7e8-c390fa`.
+   - `i-5ed7e8-fca056`: the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3 waits on the
+     CLIs, a key, a token and each account's terms.
+   - The rest of `i-5ed7e8-8236cb`; `i-5ed7e8-94f262` at the next harvest.
+   - The verdicts on the carrier's ten rows, at the release.
 
 **Waiting on the owner:**
-- The carriers' 0.0.30 branches to review and merge (they supersede the unmerged 0.0.29 ones).
+- This branch's review and merge; the carriers' 0.0.30 branches; the hand-carried carrier's pull request.
+- Whether a template carries a pointer to the knowledge index before its bootstrap. Recommended: no root-file stub
+  the bootstrap would replace, but one line in each template's read-me saying to run the bootstrap before asking a
+  design question; about two lines per template. Decided with `index-unread-where-rules-absorbed-it`.
 - Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
-- The credentials ticket.
-- The `proposed` rows in carriers' logs.
-- The other machine's checklist (`i-5ed7e8-61171e`).
-- Each assistant's terms for automated runs.
+- Judges and time for the follow-up experiment.
+- The credentials ticket; the `proposed` rows in carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`);
+  each assistant's terms for automated runs.
 
-**What went wrong**, counted by `bundle.py count` over this log where a symptom recurs:
-- **An edit chained with `git`**, about four times in the session's first part. This is its fourth entry in the log,
-  and `i-5ed7e8-bd65a0` is the fix.
-- **A cut before the owner closed the version**, reverted (`7f6d8fc`). Its rule now heads `prompt-sync.md` step 8.
-- **A renamed heading that a tool reads by name broke `new entry`**, silently, because a fixture copied the old
-  heading. Fixed with a test that reads the shipped document; proposed as knowledge.
-- **A search that missed existing code** led me to tell the owner a check was absent. `carrier_ids` held it all along.
-- **A delegated inventory overstated duplicates about sevenfold**; checking the files found it.
-- **A review found a data-loss path in `surfaces`**, fixed before release.
+**What went wrong**, this session; `bundle.py count` finds the words in this log, not these incidents, so each is
+its first entry:
+- **A delegation named a scratch folder the researcher's hook refuses.** Most shell fetches were refused and most
+  citations stayed at their abstracts (`i-5ed7e8-460736`).
+- **`align` at the session's start printed one line and checked nothing**, and it read as a report until the code
+  was read (`i-5ed7e8-e44264`).
+- **The worktree's isolation refused compound shell commands** reaching another repository's files; they were split.
 
 ## Standing rules and facts
 
@@ -76,8 +75,10 @@ checkout and its remote disagree after a rewrite, the remote is the record. Carr
 the ones named; a session never offers to update another repository's `.agents/` on its own. Questions run in
 modes (principle 15): a decision review one decision per turn, everything at once before the owner leaves.
 
-**The template repository** a new project starts from holds 0.0.28 on its `main`, pushed with its tag, with no
-`carrier.toml`; it is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its clone is open here.
+**Templates** (not carriers, no `carrier.toml`): two template repositories are open on this machine; both were
+refreshed to 0.0.30 and tagged `v0.0.30` on 2026-10-08, the knowledge template from 0.0.28 and a second one
+scaffolded the same day from empty. Each is refreshed from the tag by `prompt-sync.md` Phase 3 step 6, when its
+clone is open here.
 
 **This machine's record of its carriers** is the local manifest (`~/.config/agent-guides/carriers.toml`),
 never committed; the names of private carriers are in the local private-terms list. The history before
@@ -100,6 +101,35 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
   stable `bundle.py knowledge-check --json` they can call. *Estimate:* a proposal in 0.0.31, then one change per
   carrier at its update; small each. *Collides with:* six carriers' audits and their tests.
+- **`i-5ed7e8-1dd18c` · The update names how the release is replaced where edits are denied, and one checked command
+  replaces a release-only folder.** From a carrier's first update to 0.0.30 (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`,
+  findings 6 and 7): a carrier's edit denies leave a shell copy as the only way to replace `.agents/`, which
+  `prompt-update.md` never says, and `bundle.py export` refuses a non-empty folder, so a template refresh is three
+  steps by hand. `export --replace` removes exactly the files the previous `SHA256SUMS` lists, refuses anything else
+  there, and serves both. *Estimate:* about 3 hours with three tests (replace clean, refuse a foreign file, drop a file
+  the new release no longer lists) and five lines of `prompt-update.md`. *Collides with:* `p-de14564c12`, held in its
+  carrier until `i-5ed7e8-74d789` lands.
+- **`i-5ed7e8-74d789` · `privacy` recognises a quote of the bundle's own text or a tool message, and an owner's
+  answer reaches intake.** A proposal about the bundle quotes its procedure or its tool's messages, and each quote is a
+  WARN; an owner who answers them in the carrier's log leaves the proposals held, since intake reads only
+  `privacy-allow:` on the line. The `quote` rule stops warning on a quote that appears verbatim in a shipped file or a
+  tool message. *Estimate:* about 3 hours with tests. *Collides with:* three of one carrier's proposals held at the
+  0.0.31 intake, which enter at the next gather once this lands, with no edit in the carrier.
+- **`i-5ed7e8-e44264` · `align` names a listed carrier with no bundle on disk and checks the rest instead of
+  stopping.** With no argument, `align` takes the manifest's list and stops at the first path without `.agents/`
+  (`no bundle in [...]`), so a carrier whose bundle sits on an unmerged branch hides every other carrier's state;
+  given that carrier's worktree instead, it reports it aligned although its integration branch has no bundle yet.
+  It should report such a carrier as not aligned with the branches that hold a bundle (`bundle_branches`), and go
+  on. *Estimate:* about an hour with a test. *Collides with:* `B.workspace`, which other commands share.
+- **`i-5ed7e8-460736` · The researcher's refusal names its scratch folder and the command shape it accepts, and a
+  host's job scratch is accepted too.** At the 0.0.31 intake, four delegated researchers had all but two of their
+  shell calls refused: the delegating session named a scratch folder outside the system temporary folder the hook accepts, and
+  the agents wrote loops, variables and `mkdir`, which the shell parser refuses; the refusal names neither the
+  folder nor the shape, so three of the four fell back to summarising fetches and most citations stayed at their
+  abstracts. Keep the hook's limits (reads, and `curl` with no upload flags into a scratch outside the repository);
+  print the resolved folder and the accepted shape on refusal; accept the host's job scratch folder when one is set
+  and lies outside the repository; tell the delegating session, in `agents/researcher.md`, not to name another
+  folder. *Estimate:* about 2 hours with tests. *Collides with:* `research_allowed` and its tests.
 
 - **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
   one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
@@ -419,7 +449,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   **At the close of 0.0.29** (on the second machine), not reached: three carriers whose newer work is
   unpushed on the first machine, three the owner left out of that session after their review, and every
   carrier only the first machine holds. **At the close of 0.0.30**, none was reached: the owner deferred
-  phase 2. Which carrier is which lives in each machine's local manifest, never here.
+  phase 2. Which carrier is which lives in each machine's local manifest, never here. **On 2026-10-08** the owner
+  carried 0.0.30 by hand into one carrier: registered at 0.0.30 from its bundle branch, whose pull request is
+  unmerged, so its integration branch holds no bundle yet and `align` over the manifest stops at it
+  (`i-5ed7e8-e44264`).
 
 ## Closed by measurement
 

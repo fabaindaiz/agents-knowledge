@@ -6,6 +6,19 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue, or merged into a note, at the intake for 0.0.31
+
+The home's proposals from a four-arm pilot run in a repository with no carrier id, entered as the home's own
+(`d-5ed7e8-67a443`), with their literature checked (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`), and
+one of the home's proposals from the 0.0.30 close.
+
+| Candidate | Where it went |
+|---|---|
+| `consult-knowledge-through-the-index` | **merged** into `index-unread-where-rules-absorbed-it` as its second repository, by another mechanism: the rule that wires the index in (`prompt-bootstrap.md`, the root map's line) reaches no session before a bootstrap writes the root file, so this is that rule not reaching a session, not a new learning |
+| `ask-the-design-decisions-before-designing` | **folded** into `prompt-context.md` §15 as an occurrence, its text unchanged: the decision-review mode already covers more decisions than one message holds, and §15 already says a recommendation listed first acts as a default. Not the pre-flight, which asks facts that cannot be read. The literature supports asking before answering under ambiguity, bounded by the cost of interrupting; nothing compares this format with a complete answer, and its claim to be the only form that contains those risks is an argument, not a finding |
+| `counterbalance-positions-in-a-blind-comparison` | **refused** as a learning: position effects in choice and in model judges are an established result. Taken as a procedure for the home's own comparisons, `evals/README.md` §*Blind comparisons* |
+| `derived-copy-goes-stale-silently` | **extended**: a section looked up by its exact heading, with a test fixture repeating the old heading, into its *Evidence* |
+
 ## Taken out of the queue by the release 0.0.29
 
 The decision-record review settled by the owner (`meta/reviews/2026-10-05-decision-records.md`, rows in

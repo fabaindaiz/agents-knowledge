@@ -254,6 +254,17 @@ verbatim. A source that could not be opened is either marked as unverified or le
   following, and used models older than the ones this bundle is used with. It is indirect
   evidence. *Verified 2026-09-23 against the abstract.*
 
+- **[Horvitz, 1999, "Principles of Mixed-Initiative User Interfaces"](https://erichorvitz.com/chi99horvitz.pdf)**
+  (CHI 1999). An agent should use dialogue to resolve its key uncertainties while weighing the cost of
+  bothering the user; an expected-utility argument gives two thresholds, between doing nothing and asking
+  and between asking and acting, so a question pays only when the goal is uncertain and a wrong action
+  costs more than the interruption.
+  **Confirms:** principle 15's test for what earns a question, and its decision-review mode for an open
+  design question with several decisions the human holds (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`).
+  **Limits it:** a theory with no user data on this question, written for interface agents; it says
+  nothing about the format of the questions. *Verified 2026-10-08 against the author's copy, read whole by a delegated reader;
+  the venue's page numbers were not seen there.*
+
 ## Evidence on context files, skills and sessions
 
 Read for the research route after 0.0.22. Each entry was checked against its abstract on the date

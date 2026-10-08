@@ -15,7 +15,7 @@ the notes in `sources/notes/`.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (111)
+## Candidates in the queue (112)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -96,7 +96,7 @@ the notes in `sources/notes/`.
 - `data-location-is-part-of-the-deploy` — K, since 0.0.27 · lacks a second occurrence
 - `a-new-case-must-reach-every-classifier` — K, since 0.0.27 · lacks a second repository (a loud, weak occurrence from another carrier at 0.0.27 does not count); the literature (shotgun surgery …
 - `decide-which-side-is-wrong-from-a-trace` — M, since 0.0.27 · lacks a second repository, unless the refused `expected-value-copied-from-a-wrong-comment` came from another carrier; the test-oracle …
-- `index-unread-where-rules-absorbed-it` — M, since 0.0.27 · lacks an interpretation: whether this is step 0 of the index working as intended, or the trigger missing work that is mostly verification …
+- `index-unread-where-rules-absorbed-it` — M, since 0.0.27 · lacks an interpretation: whether both occurrences show that one claim (rules absorbed into the root file; no root file yet, before a …
 - `conversation-language-drifts-after-compaction` — M, since 0.0.27 · lacks a second occurrence; whether it is specific to one host's context compaction
 - `a-batch-child-gets-no-terminal` — K, since 0.0.27 · lacks a decision between a refusal as textbook and one *Working safely* sentence (a command an agent runs is non-interactive: standard …
 - `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); a second repository; one sentence in principle 7 or 18
@@ -128,17 +128,33 @@ the notes in `sources/notes/`.
 - `criteria-and-tasks-map-both-ways` — M, since 0.0.30 · lacks a carrier outside that team
 - `new-entry-reads-the-logs-own-format` — M, since 0.0.30 · lacks a fix with a test
 - `a-plan-may-be-a-working-artifact` — M, since 0.0.30 · lacks the wording in the close skill and the plan guidance; a carrier outside that team
+- `a-card-enters-an-answer-as-a-mechanism` — M, since 0.0.31 · lacks more questions and more judges, none of whom has read an answer before; the same concern written as a principle and as a mechanism at …
 
-## Offered again, to merge (5)
+## Offered again, to merge (16)
 
 - `register-resolves-a-worktree-to-its-repository` — another occurrence to merge
 - `a-complex-task-reads-the-skill-catalogue` — another occurrence to merge
 - `prompt-context` — another occurrence to merge
 - `gather-reads-a-branch-not-only-the-checkout` — another occurrence to merge
 - `prompt-context` — another occurrence to merge
+- `prompt-context` — another occurrence to merge
+- `a-shared-rule-has-one-enforcer-per-copy` — another occurrence to merge
+- `prompt-update` — another occurrence to merge
+- `changelog-order-is-checked` — another occurrence to merge
+- `refusal-must-not-read-like-an-answer` — another occurrence to merge
+- `reproduce-the-checkout-not-only-the-environment` — another occurrence to merge
+- `best-effort-side-channels` — another occurrence to merge
+- `a-surviving-guard-mutation-means-a-missing-input` — another occurrence to merge
+- `prompt-update` — another occurrence to merge
+- `ratchet-in-a-pinned-environment` — another occurrence to merge
+- `order-writes-by-failure-residue` — another occurrence to merge
 
-## Answered: admitted, folded, refused or dropped (244)
+## Answered: admitted, folded, refused or dropped (248)
 
+- `consult-knowledge-through-the-index` — **merged** into `index-unread-where-rules-absorbed-it` as its second repository, by another mechanism: the rule that wires the index in …
+- `ask-the-design-decisions-before-designing` — **folded** into `prompt-context.md` §15 as an occurrence, its text unchanged: the decision-review mode already covers more decisions than …
+- `counterbalance-positions-in-a-blind-comparison` — **refused** as a learning: position effects in choice and in model judges are an established result. Taken as a procedure for the home's …
+- `derived-copy-goes-stale-silently` — **extended**: a section looked up by its exact heading, with a test fixture repeating the old heading, into its *Evidence*
 - `decision-log-status-decider-and-why` — **admitted into the method**, artifact 6: the Status cell, proposed rows only a person accepts, `unconfirmed:` and `accepting:`; the …
 - `decision-log-known-debt-and-criteria` — **admitted into the method**, artifact 6: *Looks deliberate, is not* and the criteria for a row
 - `decisions-check-and-migration` — **admitted into the tools**: `bundle.py decisions` and `--migrate`, tried read-only against every reachable carrier's log before release

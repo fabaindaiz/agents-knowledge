@@ -94,3 +94,25 @@ misses (its docstring says how). The protocol, set on 2026-10-05 (`meta/reviews/
    reported with its interval and the capture table read for which competitor took each missed case.
 
 The run itself waits on `i-5ed7e8-578c22`; cost (assumption) a couple of hours of headless sessions.
+
+## Blind comparisons
+
+Any comparison where a judge, a person or a model, picks between answers shown side by side follows these
+rules, taken in at 0.0.31 from a pilot whose middle label was picked three times in four
+(`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`). Position effects are widely reported: people favour the
+centre of a simultaneous array (Valenzuela & Raghubir 2009, [10.1016/j.jcps.2009.02.011](https://doi.org/10.1016/j.jcps.2009.02.011);
+and test makers and takers the middle answer, Attali & Bar-Hillel 2003,
+[10.1111/j.1745-3984.2003.tb01099.x](https://doi.org/10.1111/j.1745-3984.2003.tb01099.x); both read at their abstracts), and model judges
+change verdicts when two answers swap places (Wang et al. 2023, [arXiv 2305.17926](https://arxiv.org/abs/2305.17926);
+Zheng et al. 2023, [arXiv 2306.05685](https://arxiv.org/abs/2306.05685)). The direction varies by setting, so none is assumed.
+
+1. **Shuffle the answer behind each label, and the position of each label.** A label kept in a fixed place
+   keeps position and label confounded.
+2. **Counterbalance positions**: every arm sits in every position equally often, by a Latin square of the
+   arms' order, so the number of problems is a multiple of the number of arms.
+3. **A model judge runs in both orders**, as both papers do; the home's stricter choice is that a win counts only
+   when both orders agree, otherwise a tie.
+4. **Report each position's rate beside the result**, and score by arm only after the balancing.
+5. **An option list with a recommendation puts it in a random position**, or the rate it is taken cannot be
+   told from a first-position or default effect.
+6. **A judge has read no answer before the comparison.** Rules 5 and 6 come from the pilot's threats, not from a source.
