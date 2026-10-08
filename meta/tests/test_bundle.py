@@ -1011,6 +1011,18 @@ class PrivacyTracked(Base):
         self.assertEqual(run("privacy", "--tracked", "--repo", str(repo))[0], 0)
         self.assertEqual(run("privacy", "--tracked", "--paths", "README.md", "--repo", str(repo))[0], 2)
 
+    def test_nothing_tracked_outside_the_bundle_reads_no_tree_instead(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / ".agents").mkdir()
+        (repo / ".agents" / "notes.md").write_text(Privacy.PLANTED["email"] + "\n")
+        git_commit(repo, "docs: only the bundle")
+
+        code, out = run("privacy", "--tracked", "--repo", str(repo))
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("0 files tracked outside .agents/", out)
+        self.assertNotIn("FAIL", out)
+
 
 class PrivacyCommits(Base):
     """A leak in a commit message, or in a line a commit adds, is published by the push, whatever the tree holds."""

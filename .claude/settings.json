@@ -26,22 +26,22 @@
   },
   "permissions": {
     "deny": [
-      "Edit(./.agents/SHA256SUMS)"
+      "Edit(/.agents/SHA256SUMS)"
     ],
     "ask": [
-      "Edit(./.claude/hooks/**)",
-      "Edit(./.claude/settings.json)",
-      "Edit(./.githooks/**)",
-      "Edit(./.agents/tools/**)",
-      "Edit(./.agents/agents/**)",
-      "Edit(./.agents/method/**)",
-      "Edit(./.agents/knowledge/**)",
-      "Edit(./.agents/README.md)",
-      "Edit(./.agents/CHANGELOG.md)",
-      "Edit(./.agents/proposals/README.md)",
-      "Edit(./.agents/proposals/RECEIVED.md)",
-      "Edit(./.claude/skills/*/SKILL.md)",
-      "Edit(./.claude/agents/**)"
+      "Edit(/.claude/hooks/**)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.githooks/**)",
+      "Edit(/.agents/tools/**)",
+      "Edit(/.agents/agents/**)",
+      "Edit(/.agents/method/**)",
+      "Edit(/.agents/knowledge/**)",
+      "Edit(/.agents/README.md)",
+      "Edit(/.agents/CHANGELOG.md)",
+      "Edit(/.agents/proposals/README.md)",
+      "Edit(/.agents/proposals/RECEIVED.md)",
+      "Edit(/.claude/skills/*/SKILL.md)",
+      "Edit(/.claude/agents/**)"
     ]
   },
   "attribution": {

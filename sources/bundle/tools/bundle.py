@@ -4622,6 +4622,9 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             if args.paths or args.commits:
                 raise RefusedError("privacy: --tracked reads what git tracks; give it alone, not with --paths or --commits")
             args.paths = [str(f) for f in tracked_files(Path(args.repo))]
+            if not args.paths:  # an empty list would read the tree instead, and pass on files it never meant to read
+                print("privacy over 0 files tracked outside .agents/: nothing to read")
+                return 0
         result = privacy_check(Path(args.tree), [Path(f) for f in args.paths] if args.paths else None,
                                Path(args.terms) if args.terms else None,
                                (Path(args.repo), args.commits) if args.commits else None)

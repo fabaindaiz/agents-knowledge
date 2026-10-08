@@ -6,7 +6,7 @@ files, may identify a private repository, its owner, organisation, customers or 
 any person who uses the bundle. A rule the agent has to remember is a rule it forgets the first time
 it did not load the file that states it; this script makes the rule reach every session anyway.
 
-    privacy_guard.py remind   SessionStart / UserPromptSubmit: print the rule into the session
+    privacy_guard.py remind   SessionStart (which fires again after a compaction): print the rule into the session
     privacy_guard.py gate     PreToolUse on Bash: block `git commit` / `git push` while
                               `bundle.py privacy` fails (exit 2 feeds the reason back to the agent)
 
