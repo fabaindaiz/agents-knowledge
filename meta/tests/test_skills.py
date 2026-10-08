@@ -230,7 +230,49 @@ that prompted it.
 """
 
 
+LOG_BULLETED = """# Agent log
+
+## How to log
+
+```
+### YYYY-MM-DD · s-<repo6>-<content6> — <title>
+- **What:** what changed.
+- **Why:** the reason.
+```
+
+### 2026-01-02 · s-abcdef-111111 — An earlier session
+
+- **What:** something.
+"""
+
+
 class NewEntry(Base):
+    def test_a_bulleted_format_under_any_heading_keeps_the_log_s_shape(self) -> None:
+        # two carriers' logs (2026-10-07): a how-to heading without "format", bold labels in bullets, level-three entries
+        template = B.entry_template_text(LOG_BULLETED)
+        self.assertIsNotNone(template)
+        entry = B.new_entry("A new session", "r-abcdef", "2026-01-03", template, level=B.entry_level(LOG_BULLETED))
+        self.assertTrue(entry.startswith("### 2026-01-03 · "), entry)
+        self.assertIn("- **What:** <!-- what changed. -->", entry)
+        self.assertIn("- **Why:** <!-- the reason. -->", entry)
+        text = B.insert_entry(LOG_BULLETED, entry)
+        self.assertLess(text.index("A new session"), text.index("An earlier session"))
+        self.assertGreater(text.index("A new session"), text.index("```\n\n"))
+
+    def test_the_log_path_is_the_carrier_s_own_field(self) -> None:
+        repo, agents = a_carrier(self.root)
+        own = B.read_carrier(agents)
+        B.write_carrier(agents, {**own, "log": "docs/agent-log.md"})
+        log = repo / "docs/agent-log.md"
+        log.parent.mkdir(parents=True)
+        log.write_text(LOG)
+
+        code, out = run("new", "entry", "T", "--repo", str(repo), "--bundle", str(agents), "--write")
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("— T", log.read_text())
+        self.assertNotIn("unknown key `log`", "\n".join(B.verify_problems(agents)))
+
     def test_the_log_s_own_format_is_the_template(self) -> None:
         log = self.root / "log.md"
         log.write_text(LOG)

@@ -1917,7 +1917,7 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 # never listed in `SHA256SUMS`, a release never writes it, and it holds everything that used to be the
 # "repository's own fields" of several headers. TOML, read by `tomllib`.
 CARRIER_FILE = "carrier.toml"
-CARRIER_KEYS = ("carrier", "adopted", "upstream", "harvested_through", "adapted", "declined", "visibility",
+CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "harvested_through", "adapted", "declined", "visibility",
                "private_folder")
 VISIBILITIES = ("public", "private")
 
@@ -3213,7 +3213,7 @@ def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) ->
     return problems
 
 
-ENTRY_HEADING = re.compile(r"^## \d{4}-\d{2}-\d{2}\b")
+ENTRY_HEADING = re.compile(r"^(#{2,3}) \d{4}-\d{2}-\d{2}\b")  # a log may keep its entries at level two or three
 FORMAT_HEADING = re.compile(r"^#{2,6} .*\bformat\b", re.IGNORECASE)
 CHANGELOG_ARTIFACT = "5. `.claude/logs/agent-changelog.md`"
 
@@ -3229,14 +3229,38 @@ def _first_fence(text: str) -> str | None:
 
 
 def entry_template_text(log: str) -> str | None:
-    """The entry format a log states for itself: the first fenced block under a heading that names a format."""
+    """The entry format a log states for itself: the first fenced block under a heading that names a format,
+    or else the first fenced block holding at least two fields, whatever its heading is called (2026-10-07)."""
     lines = log.split("\n")
     prose = _prose(lines)
     at = next((i for i, line in enumerate(lines) if prose[i] and FORMAT_HEADING.match(line)), None)
-    return None if at is None else _first_fence("\n".join(lines[at + 1:]))
+    if at is not None:
+        return _first_fence("\n".join(lines[at + 1:]))
+    start = 0
+    while (block := _first_fence("\n".join(lines[start:]))) is not None:
+        if sum(bool(ENTRY_FIELD.match(line)) for line in block.split("\n")) >= 2:
+            return block
+        rest = lines[start:]
+        fences = [i for i, line in enumerate(rest) if line.startswith("```")]
+        if len(fences) < 2:
+            return None
+        start += fences[1] + 1
+    return None
 
 
-ENTRY_FIELD = re.compile(r"^\*\*(.+?)\*\*\s*(.*)$")
+def entry_level(log: str) -> int:
+    """The heading level a log's entries use: its newest entry's, else its format's, else two."""
+    lines = log.split("\n")
+    prose = _prose(lines)
+    for i, line in enumerate(lines):
+        if prose[i] and (m := ENTRY_HEADING.match(line)):
+            return len(m.group(1))
+    template = entry_template_text(log) or ""
+    heading = next((line for line in template.split("\n") if line.startswith("#")), "")
+    return len(heading) - len(heading.lstrip("#")) if heading.startswith(("## ", "### ")) else 2
+
+
+ENTRY_FIELD = re.compile(r"^(?:\s*[-*]\s+)?\*\*(.+?)\*\*\s*(.*)$")  # bold labels, bulleted or not
 FROM_METHOD = "from the method's entry format, which this log's lacks:"
 
 
@@ -3278,18 +3302,29 @@ def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
     return entry_format(log, tree)[0]
 
 
-def new_entry(title: str, carrier: str, today: str, template: str) -> str:
-    """An entry skeleton: the heading with its minted id, then each field of the template with its description
-    in a comment, which the writer replaces."""
+def new_entry(title: str, carrier: str, today: str, template: str, level: int = 2) -> str:
+    """An entry skeleton: the heading with its minted id at the log's own level, then each field of the template
+    with its description in a comment, which the writer replaces; bulleted when the template's fields are."""
+    bullet = "- " if any(re.match(r"^\s*[-*]\s+\*\*", line) for line in template.split("\n")) else ""
     fields: list[list[str]] = []
     for line in template.split("\n"):
         if m := ENTRY_FIELD.match(line):
             fields.append([m.group(1), m.group(2).strip()])
         elif fields and line.strip() and not line.startswith("#"):
             fields[-1][1] = (fields[-1][1] + " " + line.strip()).strip()
-    heading = f"## {today} · {record_id('s', title, carrier)} — {title}"
-    return heading + "\n\n" + "\n\n".join(f"**{label}** <!-- {text} -->" if text else f"**{label}**"
-                                          for label, text in fields) + "\n"
+    heading = f"{'#' * level} {today} · {record_id('s', title, carrier)} — {title}"
+    joiner = "\n" if bullet else "\n\n"
+    return heading + "\n\n" + joiner.join(f"{bullet}**{label}** <!-- {text} -->" if text else f"{bullet}**{label}**"
+                                           for label, text in fields) + "\n"
+
+
+def carrier_log(repo: Path) -> Path:
+    """A carrier's session log: the `log` its carrier file names, relative to the repository, or the default."""
+    try:
+        named = (read_carrier(repo / ".agents") or {}).get("log")
+    except RefusedError:
+        named = None
+    return repo / named if isinstance(named, str) and named.strip() else repo / ".claude/logs/agent-changelog.md"
 
 
 def insert_entry(log: str, entry: str) -> str:
@@ -3684,14 +3719,14 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("kind", choices=["entry"])
     p.add_argument("parts", nargs="+", metavar="TITLE")
     p.add_argument("--repo", default=str(OWN_REPO))
-    p.add_argument("--log", help="the changelog (default: REPO/.claude/logs/agent-changelog.md); its own format wins, "
+    p.add_argument("--log", help="the changelog (default: the carrier file's `log`, else REPO/.claude/logs/agent-changelog.md); its own format wins, "
                    "and the method's fields it lacks are appended, marked")
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
-    p.add_argument("files", nargs="*", metavar="FILE", help="default: this repository's .claude/logs/agent-changelog.md")
+    p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
@@ -3918,10 +3953,11 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 0
     if args.command == "new":
         repo = Path(args.repo)
-        log = Path(args.log) if args.log else repo / ".claude/logs/agent-changelog.md"
+        log = Path(args.log) if args.log else carrier_log(repo)
         title = " ".join(args.parts)
         template, added = entry_format(log, Path(args.bundle))
-        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template)
+        entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template,
+                          level=entry_level(log.read_text(encoding="utf-8")) if log.is_file() else 2)
         if not args.write:
             print(entry, end="")
         else:
@@ -3932,7 +3968,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
                   "add them to the log's format, or say there why it omits them")
         return 0
     if args.command == "count":
-        files = [Path(f) for f in args.files] or [OWN_REPO / ".claude/logs/agent-changelog.md"]
+        files = [Path(f) for f in args.files] or [carrier_log(OWN_REPO)]
         hits, repeats = count_report(args.symptom, files)
         for hit in hits:
             print(f"  {'=' if hit in repeats else ' '} {hit.file}:{hit.line}  {hit.where}"
