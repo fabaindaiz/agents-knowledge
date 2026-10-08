@@ -109,6 +109,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   trigger eval's cases for `next` and the other skills in several languages, in the pilot carrier. **A local copy of `next` sits at the owner's user level until 0.0.31 is installed there: delete it
   then**, since it is a derived copy that goes stale. *Estimate:* about a day, with the trigger cases.
   *Collides with:* `skills/README.md`, `install-skills`, the skill trigger eval.
+- **`i-5ed7e8-cce629` · A test that reads `argparse` help fails under Python 3.14's coloured help.**
+  `test_skills.Count.test_a_line_repeated_word_for_word_is_counted_and_flagged_never_subtracted` filters help lines
+  by `startswith("count ")`, which colour codes break; the suite passes with `NO_COLOR=1`, and fails on `main` too.
+  Strip the codes in the test, or build the parser with colour off. *Estimate:* minutes. *Collides with:* nothing.
 - **`i-5ed7e8-1dd18c` · The update names how the release is replaced where edits are denied, and one checked command
   replaces a release-only folder.** From a carrier's first update to 0.0.30 (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`,
   findings 6 and 7): a carrier's edit denies leave a shell copy as the only way to replace `.agents/`, which
