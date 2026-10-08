@@ -206,7 +206,7 @@ uncommitted diff is their work.
 | When | Why |
 |---|---|
 | Before a release, in every carrier | the release gathers the proposals; a carrier that has not harvested contributes nothing |
-| When a friction is hit a second time here | the second occurrence is the evidence admission asks for, and it is available now |
+| When a friction is hit a second time here | it is worth proposing while the evidence is fresh; admission still counts occurrences across carriers |
 | When a repository has run for a while without one | the changelog still holds the numbers; a year later it holds the summaries |
 
 ## What the local step must never do

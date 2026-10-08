@@ -317,7 +317,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   per note that has none. *Collides with:* the notes' `confidence`, which moves in both directions.
 - **`i-5ed7e8-705aa8` · Clean up the duplicated prose that remains in the method.** The worked
   examples are still long, and a few rules are still restated in more than one prompt. *Collides
-  with:* the `Reads:` lists, which name exact headings. **Scoped for 0.0.30** (`d-5ed7e8-9f3502`): only rules restated in more than one prompt; long examples wait for `i-5ed7e8-16b90a`, which keeps every original whole.
+  with:* the `Reads:` lists, which name exact headings. **Scoped for 0.0.30** (`d-5ed7e8-9f3502`): only rules restated in more than one prompt; long examples wait for `i-5ed7e8-16b90a`, which keeps every original whole. *Scope done in 0.0.30, unreleased (2026-10-08):* `meta/reviews/2026-10-08-duplicated-rules.md`; three restatements removed from evaluate, four disagreeing copies fixed, and three disagreements (N4, N6, N7) wait on the owner.
 - **`i-5ed7e8-13a8be` · Keep the private-terms list of each machine complete.** `bundle.py
   privacy` checks the names in `~/.config/agent-guides/private-terms.txt`, which never travels; a
   private name missing from it is caught only by the generic rules. *Collides with:* nothing in the

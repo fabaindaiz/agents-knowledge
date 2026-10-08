@@ -229,18 +229,13 @@ Claude Code, Cursor and Copilot are the common set — and answer:
 
 - Which of the three has a surface here, and which has none? An agent someone
   uses with no instructions at all is working from the code alone.
-- **Is there one source, or three hand-maintained documents?** One source with
-  pointers or generated copies is healthy. Three independent files are three
-  versions of the architecture, and the one that is true today is whichever
-  editor is open.
-- **Do they contradict each other?** Quote the contradiction. This is the most
-  valuable single finding this evaluation produces, because nobody sees it from
-  the inside: no human reads more than one of those files.
+- **Is there one source, or three hand-maintained documents?** (`prompt-context.md`
+  §*Three agents, one source*.)
+- **Do they contradict each other?** Quote the contradiction: the most valuable
+  single finding this evaluation produces, since nobody sees it from the inside.
 - Does any rule depend on one agent's machinery — a hook, a glob, an exclusion
-  setting? Each exists in a different shape per agent, and on some surfaces not
-  at all (`prompt-context.md` §*Three agents, one source*). Then it does not hold
-  for the others, and that is either a deviation to record or a rule to push up
-  the ladder.
+  setting? Then it does not hold for the others: a deviation to record, or a rule
+  to push up the ladder.
 
 ### 2. Is the bundle here, and is it intact?
 
@@ -257,10 +252,8 @@ The contents of `adapted` and `declined` are the most informative lines in the
 bundle: they are this repository's own record of what it changed and what it
 refused, and they are what stops the next update re-proposing both.
 
-This answer decides what the reader does next: no bundle means bootstrap, an
-older version means update, a copy on the layout before 0.0.22 (a README header
-with `lineage:`) means an update from a release through the home repository,
-and a `carrier.toml` with absent artifacts means repair.
+This answer decides what the reader does next (`prompt-context.md` §*Which
+document to run*).
 
 If `carrier.toml` claims `adopted` but the artifacts it names do not exist, say
 so plainly: **the files were copied without the work.** That is a specific and
@@ -268,15 +261,8 @@ common state, and it is worth its own sentence.
 
 ### 3. Does every rule name its consequence and its enforcer?
 
-Take the rules as written and classify each on the enforcement ladder:
-
-| Rung | Form |
-|---|---|
-| 0 | an unwritten habit |
-| 1 | prose only — "the agent usually honours it" |
-| 2 | prose **plus a named enforcer** — "checked in X" |
-| 3 | an automated check that runs in the gate |
-| 4 | impossible by construction — a type, a schema, a format |
+Take the rules as written and classify each on the enforcement ladder
+(`prompt-context.md` §*The enforcement ladder*, rungs 0 to 4).
 
 Report the distribution as a count, and name the three rules where **promotion
 is cheapest**: a rung-1 rule that a ten-line script would move to rung 3 is the

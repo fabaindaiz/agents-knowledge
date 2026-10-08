@@ -25,7 +25,7 @@ one that others depend on comes first. Tag each:
 
 - **Theirs**: different answers give materially different work; or it is what the user sees, the
   stack, or content the human authored.
-- **Yours**: a convention, already answered, or reversible in minutes and invisible to the user.
+- **Yours**: a convention, already answered, or reversible in ten minutes and invisible to the user.
   Decide it now, one line each.
 
 Show the inventory whole, with how many are theirs, and ask whether to proceed or re-tag. The human

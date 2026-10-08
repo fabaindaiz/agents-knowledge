@@ -64,6 +64,10 @@ version it holds with `bundle.py changelog --since <its version>`.
   `CLAUDE.md`; artifact 5 is the session log, at `.claude/logs/agent-changelog.md` unless `log` names another path;
   the bootstrap's checklist, Phase 3 and the session loop say "the root file". A carrier whose rules live in
   `CLAUDE.md` changes nothing.
+- **Copies that disagreed now agree, and evaluate stops restating what it loads**: a second friction in one
+  repository is a reason to propose, not admission evidence; the bootstrap's step 6 names `docs-map.toml`; its
+  whole-branch review carries principle 19's caveat on the evidence; `decision-review` says ten minutes, as §15
+  does. Evaluate points at the ladder, the three agents and which document to run instead of restating them.
 
 - **A review turn has a fixed shape** (`prompt-context.md` §15, `decision-review`): three to five short blocks of
   prose, one more answer, *review more*, opening a second level, the assumptions shown before an irreversible

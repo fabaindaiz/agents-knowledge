@@ -616,7 +616,8 @@ ask in one question whether a fresh agent should review the whole branch, given
 the plan and its decisions as intent, and give the cost: in five repositories
 each took four to twenty minutes (about a hundred thousand tokens where
 counted), and nearly every one found a defect that the green gate, and any
-per-task review, had passed. Not for one small commit.
+per-task review, had passed, with no control and no precision recorded
+(`prompt-context.md` principle 19). Not for one small commit.
 
 - **Fix the findings and nothing else**, then send only what changed for a
   second review. **At most two re-reviews**: what is still open after them goes
@@ -665,7 +666,9 @@ them in a branch that predated the change by months.
 
 ### 6. Put the documents back to true — in this change, not later
 
-Write this table once for your repo, in Phase 4, and follow it every session:
+Write this table once for your repo, in Phase 4, and follow it every session;
+what a script can check goes in `docs-map.toml` too (principle 16), where
+`bundle.py docs-drift` checks it:
 
 | What you changed | What must move, in the same change |
 |---|---|
@@ -916,7 +919,8 @@ first checks that its target resolves inside that directory.
 - [ ] `.editorconfig` aligned to the linter, one block per language.
 - [ ] `docs/` audited against the code; no pointer to a file that does not exist.
 - [ ] The *what changed → what must move* table exists, in the root file or in
-      the review skill. Without it, step 6 of the loop is left to memory.
+      the review skill, and what a script can check is in `docs-map.toml`.
+      Without it, step 6 of the loop is left to memory.
 - [ ] `.agents/carrier.toml` is filled in: every substitution in `adapted` and
       every refusal in `declined`, each with its reason.
 - [ ] In a repo that already had conventions: the guarantee → existing-file
