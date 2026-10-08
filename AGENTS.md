@@ -106,6 +106,10 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
 
 ## Rules that are easy to break here
 
+- **Ask the user's decisions as principle 15 says** ([`prompt-context.md`](.agents/method/prompt-context.md) §15):
+  one message, each option shown by example with its price, the recommendation first, and *review more*; when
+  more remain than one message holds, run `decision-review`.
+
 - **The release is never edited by hand**: every file in `.agents/` but this repository's own
   (`carrier.toml`, `proposals/p-*.md`, `incoming/` contents) is generated. Edit its original in `sources/`, then
   run `release.py build`. Move a note between states

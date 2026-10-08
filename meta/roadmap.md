@@ -449,7 +449,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
   (then 0.0.30) to the carriers only that machine holds and to the three it shares with this one, whose newer work is
   unpushed there; bring the cost profile script into `evals/`; leave and document the published attribution lines in
-  the three carriers that hold them. *Blocked on:* a session on that machine.
+  the three carriers that hold them; add to that machine's user-level instruction file the four conversation lines
+  added here on 2026-10-08 (record ids with a name table; interaction designed as a flow with the owner; delegation
+  priced, on the cheapest model; findings reported as they fall). *Blocked on:* a session on that machine.
 
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.26,
   every carrier but two stays on 0.0.25 (`meta/tracking/carriers.md`): the release reached only the

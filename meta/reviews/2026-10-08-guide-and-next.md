@@ -56,3 +56,11 @@ Read back whole and walked one decision per turn:
 - **R3** (`d-5ed7e8-7334f6`): every cost is the user's time and the model's tokens, both estimates.
 - **R4** (`d-5ed7e8-503ddc`, superseding `d-5ed7e8-6f0b81`): a long procedure also starts from a phrase, the
   agent following its paste box.
+
+## Reaching every carrier, the same day
+
+The owner asked that a session in any repository with the export ask the way this one did. An audit of where each
+behaviour lives found most of it in principle 15 and `decision-review`, which a carrier's ordinary session reaches
+only through a method prompt, the session loop's box or a triggered skill; the rest lived in this repository's local
+memory. Decided one per turn: a line in the root file's map (`d-5ed7e8-8369d1`); the owner's four habits into their
+own user-level instructions; two of them offered as the home's proposals (`d-5ed7e8-9ac045`).

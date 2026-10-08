@@ -1188,7 +1188,7 @@ authentication offers one in its report when none was asked for. Another row: a
 procedure in `.agents/method/` never overrides this repository's own; where it
 names a file, a format, a step, a work item or a commit rule this repository
 defines differently, this repository's wins, and `.agents/carrier.toml`
-`adapted` records the mapping.
+`adapted` records the mapping. Another: when decisions are the user's, ask as `.agents/method/prompt-context.md` §15 says: one message, each option shown by example with its price, the recommendation first, and *review more*; when more remain than one message holds, run `decision-review`.
 ```
 
 **What does not go here:** any number that has an owner document, anything the

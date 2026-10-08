@@ -323,7 +323,7 @@ repository and say so. Only when the user asks for a review in a fresh context o
 names the reviewer, give the diff to the `knowledge-reviewer` subagent and wait
 for its answer; when a change deletes or rewrites stored data, moves money or
 touches authentication and none was asked for, offer one in the report, in one
-line.* **Install the agents**: copy every file of `.agents/agents/` (the
+line.* It gets a second: *when decisions are the user's, ask as `.agents/method/prompt-context.md` §15 says: one message, each option shown by example with its price, the recommendation first, and *review more*; when more remain than one message holds, run `decision-review`.* **Install the agents**: copy every file of `.agents/agents/` (the
 reviewer, and the researcher a session delegates research to) into the
 assistant's agent folder (Claude Code: `.claude/agents/`); every release
 regenerates them, and the update copies them again. **Where Cursor or Copilot
@@ -913,6 +913,8 @@ first checks that its target resolves inside that directory.
       security or verification to `.agents/knowledge/INDEX.md` and the cards it
       links, and a review on request to the reviewer, installed from
       `.agents/agents/knowledge-reviewer.md` in the assistant's agent folder.
+- [ ] The root file's map sends the user's decisions to principle 15's way of
+      asking, and to `decision-review` when one message cannot hold them.
 - [ ] `docs/references.md`: only entries that changed or confirmed a decision,
       each stating what you do differently on purpose.
 - [ ] `docs/roadmap.md`: collisions, what must be decided first, closed-by-
