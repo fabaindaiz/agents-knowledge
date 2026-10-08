@@ -558,6 +558,25 @@ class TriggerEval(Base):
         self.assertTrue(verdict["passed"])
         self.assertFalse(self.T.verdict(results + [{"expect": False, "fired": True}])["passed"])
 
+    def test_a_lenient_gate_counts_a_fire_after_reads_on_both_sides(self) -> None:
+        # a skill whose requests point at material a session reads first (decision-review, stage 2b)
+        looked = [{"expect": True, "fired": False, "lenient": True}] * 8 + [{"expect": True, "fired": False, "lenient": False}] * 2
+        quiet = [{"expect": False, "fired": False, "lenient": False}] * 10
+        self.assertFalse(self.T.verdict(looked + quiet)["passed"])
+        lenient = self.T.verdict(looked + quiet, gate="lenient")
+        self.assertTrue(lenient["passed"])
+        self.assertEqual(lenient["gate"], "lenient")
+        # a near miss that fires after a look is a misfire under the lenient gate
+        late = [{"expect": False, "fired": False, "lenient": True}] * 2
+        self.assertFalse(self.T.verdict(looked + quiet[:8] + late, gate="lenient")["passed"])
+
+    def test_a_read_with_git_dash_c_is_a_read(self) -> None:
+        allow = lambda command: self.T.hook_decision({"tool_name": "Bash", "tool_input": {"command": command}})  # noqa: E731
+        self.assertEqual(allow("git -C /tmp/x status --short -uall"), 0)
+        self.assertEqual(allow("git -C /tmp/x log --oneline -5"), 0)
+        self.assertEqual(allow("git -C /tmp/x push"), 2)
+        self.assertEqual(allow("git -C /tmp/x branch new"), 2)
+
     @staticmethod
     def call(name: str, skill: str = "") -> str:
         block = {"type": "tool_use", "name": name, "input": {"skill": skill} if skill else {}}

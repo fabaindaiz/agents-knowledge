@@ -209,3 +209,9 @@ most after one to three reads; of the lenient misses, two sessions began with `g
 classifier does not list as a read, and one filled the five-call window reading. **`user-walk` misses for its
 description:** on two expected cases every session read the code and the plan, then answered without the skill (in stage 2 they had been cut short at a refused command). By the rule written above, `decision-review` reaches lenient fire at 0.8 while strict fire
 does not, a question for the owner; `user-walk`'s description is rewritten before 0.0.30 ships it.
+
+**The lenient gate, added at the owner's word and read back on stage 2b (post hoc).** `trigger.py --gate lenient`
+counts a fire after reads and before any write on both sides, and a shell read with `git -C <dir>` now runs. On
+stage 2b's stored sessions `decision-review` reaches 0.83 on its expected cases but misfires at 0.13 against at most
+0.1: one near miss, a request to plan changes and continue a spec, fired after four reads in two runs of three. The
+fixture's spec holds open questions, so the label may be what is wrong; that is the owner's call.
