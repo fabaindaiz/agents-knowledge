@@ -38,18 +38,18 @@ something else depends on — because that is what decides its order.
 **Reviewed** twice in a fresh context (`surfaces`, the whole branch); every finding fixed or answered.
 
 **Next, in order:**
-1. **Phase 2: the owner carries 0.0.30 to one carrier first**, then hands the rest to a session. Each gets a new branch, `splice`, `proposals --prune`, its own gate, and
-   one commit.
-   - Where Cursor or Copilot is in use, `surfaces` follows, after folding in the carrier's hand-written rules.
-   - One carrier holds four proposals refused on privacy, which its owner answers or prunes.
+1. **Phase 2 carried on 2026-10-08** (`meta/reviews/2026-10-08-carrying-0.0.30.md`): nine carriers on new branches,
+   aligned; one waits on a release defect (`i-5ed7e8-c390fa`); the owner carries one by hand and merges each branch.
+   No carrier lists `surfaces` yet: their Cursor rules are hand-written sources, to fold first. The four proposals
+   refused on privacy were already removed on that carrier's 0.0.29 branch.
 2. **0.0.31** (`i-5ed7e8-fca056`): the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3, the
    measurement, waits on the CLIs, a key, a token and each account's terms.
    - The rest of `i-5ed7e8-8236cb`, the `CLAUDE.md` mentions outside its scope.
    - `i-5ed7e8-94f262`, at the next harvest.
 
 **Waiting on the owner:**
-- The first carrier's phase 2, then the carriers for the rest.
-- The six carriers' 0.0.29 pull requests.
+- The carriers' 0.0.30 branches to review and merge (they supersede the unmerged 0.0.29 ones).
+- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
 - The credentials ticket.
 - The `proposed` rows in carriers' logs.
 - The other machine's checklist (`i-5ed7e8-61171e`).
@@ -86,6 +86,20 @@ never committed; the names of private carriers are in the local private-terms li
 ## Next
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
+
+- **`i-5ed7e8-c390fa` · Fix what carrying 0.0.30 found.** From `meta/reviews/2026-10-08-carrying-0.0.30.md`:
+  the product noun in one note's lookup cues (and a build scan of the cues for product nouns); a changelog heading
+  for layout changes a carrier's audit reads, and `prompt-sync.md`'s run of each carrier's audit made a precondition
+  of the cut; `prompt-update.md` 3b naming the fourth Phase 4 line; `new entry` across languages and with
+  ` / `-separated labels; `install-skills` honouring `declined`; the base-branch rules and side-by-side worktrees in
+  `prompt-sync.md`; `log` set by the update. *Estimate:* a patch release before 0.0.31 if the owner wants the one
+  waiting carrier unblocked (the cue alone, under an hour), the rest in 0.0.31: about half a day and 1e5 to 1e6
+  tokens, with tests. *Collides with:* the one carrier whose branch waits on the cue.
+- **`i-5ed7e8-307d02` · Carriers stop re-checking the release's internals in their own audits.** Six carrier audits
+  re-check the index and note layout that `bundle.py verify` owns, and each layout change breaks them all. Offer
+  each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
+  stable `bundle.py knowledge-check --json` they can call. *Estimate:* a proposal in 0.0.31, then one change per
+  carrier at its update; small each. *Collides with:* six carriers' audits and their tests.
 
 - **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
   one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
