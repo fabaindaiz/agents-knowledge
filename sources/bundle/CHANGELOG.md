@@ -6,7 +6,7 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
-## [Unreleased]
+## [0.0.30] - 2026-10-08
 
 ### Added
 
@@ -73,7 +73,8 @@ version it holds with `bundle.py changelog --since <its version>`.
   agent takes the five-minute prompt cache (`experimental.cacheTtl`), as headless runs should; nothing dynamic goes in
   what is always loaded, and the build refuses a method skill that names a model, since switching it for a turn
   misses the whole cache; the root file gains a short fourth line asking for independent tool calls in one message.
-  Re-run the bootstrap's Phase 4 wording into the root file.
+  Re-run the bootstrap's Phase 4 wording into the root file. Measured beside 0.0.29 in one run: about eight tenths
+  of its cost, and over two runs the same discriminating passes (the home's `evals/REPORT.md` §4.16).
 
 ### Removed
 

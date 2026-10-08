@@ -617,7 +617,9 @@ that opened the target card passed 31 times; the two that failed were `bundle_v2
 pilot. The three that did not open it all failed: two under `bundle_v30` in pilot-11 and one under `bundle_v30np` in
 pilot-12. Skipping the card is the failure, and it happened with the line and without it, so pilot-11's suspect is
 not supported. Pooled, `contacts-second-source-l2` passed 5/7 under `bundle_v30`, 7/7 under `bundle_v29tag` and 3/4
-under `bundle_v30np`: at these sizes no two are distinguishable. The cost saving may come from the line, since
+under `bundle_v30np`: at these sizes no two are distinguishable. The L1 task runs the other way (7/7 under
+`bundle_v30`, 5/7 under `bundle_v29tag`), so over both contacts tasks the two releases tie, 12 of 14 each. The owner
+chose to ship on pilot-12's rule (`d-5ed7e8-577df8`). The cost saving may come from the line, since
 the arm without it cost the same as 0.0.29; one run, three tasks.
 
 **What a reader should weigh.** The release ships on the second of two registered rules, and the second was written
