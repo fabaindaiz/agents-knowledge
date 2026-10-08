@@ -1365,9 +1365,19 @@ def register(repos: list[Path], date: str | None = None, root: Path = ROOT, mani
 # manifest, outside every repository, and never written anywhere that travels.
 
 
+def main_repository(repo: Path) -> Path:
+    """The repository a linked worktree belongs to, or the repository itself: a scratch worktree is deleted after
+    the session, so the manifest must never remember its path (proposal `register-resolves-a-worktree-…`)."""
+    shown = subprocess.run(["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                           capture_output=True, text=True)
+    common = Path(shown.stdout.strip()) if shown.returncode == 0 and shown.stdout.strip() else None
+    return common.parent.resolve() if common is not None and common.name == ".git" else repo.resolve()
+
+
 def local_record(repo: Path, date: str | None = None) -> dict:
     """What this machine knows of one carrier: its id, name, path, version and when it was last seen."""
     tree = repo / ".agents"
+    main = main_repository(repo)
     carrier = B.stored_carrier_id(repo)
     legacy = B.is_legacy(tree)
     if carrier is None and legacy:
@@ -1375,7 +1385,7 @@ def local_record(repo: Path, date: str | None = None) -> dict:
             carrier = legacy_own_fields(tree).get("carrier")
         except RefusedError:
             carrier = None
-    return {"carrier": carrier or "", "name": repo.name, "path": str(repo),
+    return {"carrier": carrier or "", "name": main.name, "path": str(main),
             "version": B.bundle_version(tree) or ("the layout before 0.0.22" if legacy else ""),
             "seen": date or datetime.date.today().isoformat()}
 

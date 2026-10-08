@@ -469,6 +469,25 @@ class Carry(Base):
         B.write_checksums(self.home / ".agents")
         self.assertEqual(self.R.align([repo], self.home), [])
 
+    def test_a_worktree_is_remembered_as_its_repository(self) -> None:
+        import tomllib
+
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
+        self.splice(repo)
+        commit(repo, "bundle")
+        tree = self.root / "scratch-worktree"
+        git(repo, "worktree", "add", "-q", str(tree), "-b", "elsewhere")
+        manifest = self.root / "config/agent-guides/carriers.toml"
+        manifest.parent.mkdir(parents=True)
+
+        self.R.register([tree], "2026-01-07", self.home, manifest=manifest)
+
+        data = tomllib.loads(manifest.read_text())
+        self.assertEqual(data["carriers"], [str(repo.resolve())])
+        self.assertEqual([r["path"] for r in data["carrier"]], [str(repo.resolve())])
+        self.assertEqual(data["carrier"][0]["name"], "one")
+
     def test_register_remembers_names_and_paths_only_in_the_local_manifest(self) -> None:
         import tomllib
 
