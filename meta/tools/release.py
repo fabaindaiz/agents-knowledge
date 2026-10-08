@@ -801,7 +801,7 @@ def queue_problems(root: Path = ROOT) -> list[str]:
 
 # `MANIFEST.md`'s checked limits. The export's cap is 0.0.29's shipped bytes; it is raised only with a decision row.
 EXPORT_CAP = 913_167
-DESCRIPTIONS_CAP = 2_600  # characters of the skill and agent descriptions a carrier loads on every turn
+DESCRIPTIONS_CAP = 2_776  # characters of the skill and agent descriptions a carrier loads on every turn; raised once, for next only (meta/decisions.md)
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 
 

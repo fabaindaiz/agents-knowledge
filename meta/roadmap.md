@@ -101,6 +101,14 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
   stable `bundle.py knowledge-check --json` they can call. *Estimate:* a proposal in 0.0.31, then one change per
   carrier at its update; small each. *Collides with:* six carriers' audits and their tests.
+- **`i-5ed7e8-7d64ee` · A user guide to activating each process in any language, and a `next` skill that advises
+  the session's next actions.** Designed with the owner in a decision walk (`d-5ed7e8-7c51a7` to
+  `d-5ed7e8-befd29`): `method/guide.md` in four blocks, each entry its intent phrase, command or paste box, what
+  happens and its cost; `method/skills/next/SKILL.md` reading git, the hand-off, the last log entry and the
+  seconds-long checks, then three ranked actions with *review more* opening the full menu. **Still to write:** the
+  trigger eval's cases for `next` and the other skills in several languages, in the pilot carrier. **A local copy of `next` sits at the owner's user level until 0.0.31 is installed there: delete it
+  then**, since it is a derived copy that goes stale. *Estimate:* about a day, with the trigger cases.
+  *Collides with:* `skills/README.md`, `install-skills`, the skill trigger eval.
 - **`i-5ed7e8-1dd18c` · The update names how the release is replaced where edits are denied, and one checked command
   replaces a release-only folder.** From a carrier's first update to 0.0.30 (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`,
   findings 6 and 7): a carrier's edit denies leave a shell copy as the only way to replace `.agents/`, which

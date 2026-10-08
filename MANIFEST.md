@@ -57,7 +57,7 @@ The checked ones fail `release.py check`; the measured one is read from the rele
 | Limit | Today | Cap | How |
 |---|---:|---:|---|
 | Export, shipped bytes | about 910 KB | does not grow without a decision; aim 550 KB | checked |
-| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens) | about 2,550 characters | 2,600 characters | checked |
+| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens) | about 2,776 characters | 2,776 characters, raised once for `next` only (`meta/decisions.md`) | checked |
 | A coding session's reads | about 10k tokens (estimate) | 10,100 | checked (existing) |
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |
 | One card | at most 360 | 360 | checked (existing) |

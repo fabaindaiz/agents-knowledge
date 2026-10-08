@@ -1,0 +1,58 @@
+# Guide: starting each process
+
+What to say to start each of the method's processes, by the situation you are in. **Say it in any language**:
+a skill starts on what you mean, not on the words; its command is the fallback when it does not. A long
+procedure starts from its paste box, the block under *▶ Paste this to start* in its file. Not sure which one fits?
+Ask what to do next, or type `/next`.
+
+## Decide and design
+
+| When | Say, or run | What happens | Cost |
+|---|---|---|---|
+| A new idea, nothing written | "let's brainstorm this" (a brainstorming skill, if installed) | questions until a first design exists | a few turns |
+| A design or spec has open decisions | "walk me through the decisions", or `/decision-review` | every decision listed and tagged yours or the agent's, then yours one per turn, each with examples and prices, recommended first | about one turn per decision |
+| The design has a flow a person goes through | "walk the user flow", or `/user-walk` | the ideal path, then every delay, interruption, setback, failure and misuse, priced; kept cases become failing tests | a few turns, plus the tests |
+| The decisions are recorded | "write the plan" (a planning skill, or the repository's plan format) | tasks, each with its test | one turn to read it |
+
+## Build and verify
+
+| When | Say, or run | What happens | Cost |
+|---|---|---|---|
+| Writing any code | "test first" (principle 18, or a test-driven skill) | a test that fails before the code | built into the work |
+| A failure whose cause is unknown | "debug this systematically" (a debugging skill) | reproduce, isolate, then fix | varies |
+| A change to look over | "review this diff" | findings with evidence | minutes |
+| A branch at its end, or a risky change | "review it in a fresh context" | the `knowledge-reviewer` agent checks the diff against the knowledge cards and returns only findings | a separate context, minutes |
+| About to say it is done | "verify before you say done" | the checks run, and their output is shown | minutes |
+
+## The repository and the bundle
+
+| When | Run | What happens | Cost |
+|---|---|---|---|
+| A repository without the method yet | the box in `method/prompt-bootstrap.md` | it asks its objectives first, then wires the bundle in | a session |
+| How well the method fits this repository | the box in `method/prompt-evaluate.md` | a read-only report | under an hour |
+| A newer release is waiting | the box in `method/prompt-update.md` | the deltas triaged, the release replaced, this repository's own fields kept | about an hour |
+| Learnings worth sending back | the box in `method/prompt-harvest.md` | proposals written for the home to take in | under an hour |
+
+## The session
+
+| When | Say, or run | What happens | Cost |
+|---|---|---|---|
+| Not sure what to do now | "what's next?", or `/next` | one line of what it read, three actions with cost and why now, one question; nothing runs until you choose | seconds, of the order of 1e4 tokens |
+| Ending a session, a phase or a hand-off | "close the session", or `/close` | every part of the request accounted for, documents true again, the log entry, the hand-off, then gate, commit and push | about fifteen minutes |
+| A question to answer from sources | "research this from primary sources" | the `researcher` agent, on a cheaper model, reads whole texts and returns each claim with its source | of the order of 1e5 tokens |
+| Independent parts of one task | "do these in parallel" (a parallel-dispatch skill) | one agent per part | one agent's cost each |
+
+**A host without skills** (an assistant that does not load them) gets the advisor from its own file:
+
+~~~text
+Follow .agents/method/skills/next/SKILL.md: read this repository's state and propose the actions worth taking now.
+~~~
+
+## Your own shortcuts
+
+Two places, neither in the bundle:
+
+- **For one repository**, in its `.claude/skills/<name>/LOCAL.md`: add your phrasings as `when_to_use`
+  (`skills/README.md`), and the skill starts on them there.
+- **For every repository**, in your user-level instruction file: one line per shortcut, such as "when I say *ns*,
+  run `/next`". It lives on one machine only; copy it to the others yourself.

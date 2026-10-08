@@ -32,6 +32,7 @@ named), then install with `--force`.
 | Skill | When |
 |---|---|
 | `close` | closing a session, a phase, or a hand-off to another machine; offered in one question before a push or deploy that ends a plan |
+| `next` | the user asks what to do now or next, or which process fits: what was read, three actions with cost and why now, one question; the processes and how to start each are in `../guide.md` |
 | `decision-review` | before planning: every decision of a spec or design listed, then the human's walked one per turn, each shown by example (`prompt-context.md` §15) |
 | `user-walk` | before building a user-facing flow: the ideal path, then every delay, interruption, setback, failure and misuse, as failing tests; and a batch of observations from real use |
 
