@@ -39,10 +39,9 @@ reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is th
 - Three home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`, `p-7e912173fa`.
 
 **Next, in order:**
-1. **0.0.31's tools:** `i-5ed7e8-74d789` (lets the held three in), `i-5ed7e8-460736` (researchers fetch whole
-   texts), `i-5ed7e8-e44264`, `i-5ed7e8-1dd18c`, `i-5ed7e8-cce629`.
-2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then
-   `i-5ed7e8-c390fa`'s rest and `i-5ed7e8-fca056`.
+1. **Execute `meta/reviews/2026-10-08-plan-0.0.31-tools.md`** subagent-driven: ten tasks, a branch each; the
+   tool items and `i-5ed7e8-c390fa`'s rest (`d-5ed7e8-b99290` to `d-5ed7e8-6e5d82`). About ten hours.
+2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
 3. At the release: the verdicts on the carrier's ten rows and the three new proposals.
 
 **Waiting on the owner:**
