@@ -21,6 +21,19 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **`new entry` reads a log as it is**: its format under any heading, fields written as bulleted bold labels, and the
   heading level the log's entries use.
 
+- **Closing for a host that reserves merging to a person** (*under review*): `close` knows *ready for review*: it
+  prepares the evidence, moves the item to review and stops; after approval it merges, removes the worktree before
+  the branch, and closes the item.
+- **A plan may be a working artifact** (*under review*): kept local and removed with its worktree, provided each kind
+  of content first moves to the record that survives it (`close` §8 has the table). A plan's ledger is a status
+  table (task, state, commit), and a plan of several tasks maps its criteria to its tasks both ways.
+- **An external tracker can be the roadmap's source** (*under review*): the roadmap then holds only what the tracker
+  cannot, each item citing its key (artifact 8 and the adoption table).
+- **The host's own tools stay off the bundle** (*under review*): bootstrap and update exclude `.agents/` from the
+  repository's linters, formatters and ratchets.
+- **A proposal answered on privacy is rewritten, not edited** (*under review*): harvest and `close` say how.
+- **A check run in a worktree** needs an environment bound to it, or its result is read as unproven (*under review*).
+
 ### Removed
 
 - The deprecated `bundle.py digest` alias: run `bundle.py verify`.

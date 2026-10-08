@@ -54,7 +54,9 @@ users — and `bundle.py privacy` passes before the commit. The private folder
 (`.private/`) is never read. Every warning the check prints on a proposal
 is a question for me, "is this private?", defaulting to generalise it; only my
 yes writes `privacy-allow: <reason>`, and the home refuses a warning left
-unanswered.
+unanswered. A proposal already written cannot be edited, since its id seals
+its content: an answer deletes it while it is unreceived and writes a new one,
+generalised or carrying the allowance, before the next gather.
 
 Finish with `python3 .agents/tools/bundle.py verify` and
 `python3 .agents/tools/bundle.py check-local .`, which must report nothing, and a

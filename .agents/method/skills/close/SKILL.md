@@ -37,7 +37,9 @@ free text of question answers (it overrides the options). List each part as **do
   names another): each `proposed` row is a decision for
   the human, and each `unconfirmed:` reason a fact question; ask them in the hand-off, never decide them.
 - A proposal written this session that `bundle.py privacy` warns on is a question too: "is this
-  private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`.
+  private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`. A proposal
+  cannot be edited, since its id seals its content: answering means deleting it while it is unreceived and
+  writing a new one, generalised or carrying the allowance, before the next gather.
 
 ## 3. The changelog entry
 
@@ -87,8 +89,21 @@ sibling repositories) and the first concrete step.
 
 ## 8. Ledgers travel
 
-A plan's execution ledger is committed with the plan's work and never deleted at the end, whatever a
-plan tool says: it holds the rulings and the task results the changelog summarises.
+A plan's execution ledger holds the rulings and the task results the changelog summarises: a status table
+(task, state, the commit that landed it), updated as each task lands, with a task found wrong marked and
+its reason, never dropped. It is committed with the plan's work and never deleted at the end, whatever a
+plan tool says, **unless the plan is kept as a working artifact**: local, outside git, removed with its
+worktree. Then, before its folder goes, each kind of content moves to the record that survives it:
+
+| In the plan | Goes to |
+|---|---|
+| why the change was made | the changelog entry |
+| what was delivered | the work item |
+| how it was verified | the pull request |
+| anything deferred | a new tracker item |
+| a lasting decision | the decisions log |
+
+The rulings are read from wherever the plan kept them; never assume the plan persists.
 
 ## 9. Gate, commits, and only then the remote
 
@@ -101,3 +116,7 @@ plan tool says: it holds the rulings and the task results the changelog summaris
 - The human's own uncommitted changes go in only when the human says so, in a commit of their own,
   as left.
 - Push, or merge into the main branch, only when the human asks.
+- **Ready for review is a state of its own.** Where the host reserves merging and closing to a person, prepare
+  the evidence (gates green, the pull request's body, the summary for the work item's author), move the item
+  to review, and stop. After a person approves: merge, remove the worktree before deleting its branch, close
+  the item. The repository's own closing procedure, where it has one, wins.

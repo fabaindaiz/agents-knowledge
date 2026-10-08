@@ -321,7 +321,11 @@ commit rule this repository defines differently (its task tracker, its plans,
 its review, its logs, its numbering), this repository's wins, and
 `.agents/carrier.toml` `adapted` records the mapping* (principle 19). Where the
 host's plan or spec template wins, map the card lookup into it explicitly, one
-line in its header; otherwise the step has no slot and quietly stops. Mint the repository's carrier id once with
+line in its header; otherwise the step has no slot and quietly stops. **Keep the host's own tools off the bundle**: exclude `.agents/` from the
+repository's linters, formatters and ratchets, which would count its tool as new
+violations the moment it is committed, and where an editor's permission rules
+cannot deny a folder while allowing files inside it, list the release's paths
+from `SHA256SUMS` instead. Mint the repository's carrier id once with
 `bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, and seed
 the decisions log, the roadmap and the changelog with ids from `bundle.py id
 d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
@@ -490,6 +494,10 @@ Sort every candidate into one of three buckets, and say which:
 **Also name what you would not take, and why**: the reason usually outlives
 the session.
 
+**A plan of several tasks maps criteria to tasks both ways**: each criterion a
+fact that is true or false, verified by a task; a task serving none is its own
+work item.
+
 > **Example.** "Any variant on demand" looked ready: the limit is an interface
 > constant, not a platform one. But **no data definition declares more variants
 > than the limit already allows**: interface for a problem that does not exist
@@ -557,6 +565,8 @@ Two habits that carry the reasoning forward:
 
 Before claiming done, run the check of every card this change relied on (its
 *Check* line, in `.agents/knowledge/cards/`), and say in the report which ran.
+In a git worktree, run a check from an environment bound to that worktree, or
+read its result as unproven.
 
 **A document that tells a reader what to run is verified by running it.** When
 the change alters what a procedure, a runbook, an invocation, a checklist or a

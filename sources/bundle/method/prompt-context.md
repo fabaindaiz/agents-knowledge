@@ -1431,6 +1431,11 @@ Ideas retired by a number, with the number, so they stay retired.
 | Idea | Does it break <the core invariant>? |
 ```
 
+**When the repository keeps its pending work in an external tracker**, the roadmap
+does not copy it: it holds only what the tracker cannot (where the work stands,
+collisions between items, process and tooling items, what is blocked outside), and
+every item names the tracker key it belongs to.
+
 Each item's `i-` id goes after the middle dot, where `bundle.py ids` reads a
 heading's id. It is minted once with `bundle.py id i "<idea>"` when the item is
 written, and it does not change when the item's state or wording does.
@@ -1785,6 +1790,7 @@ produce this table and **show it**. It is the entire negotiation:
 | Settled decisions, with enforcers | `docs/decisions.md` | `docs/adr/*.md` | **keep ADRs**: an index row per record in the five columns, its status mapped (`rejected` → `declined`, `pending` → `proposed`), supersession both ways; the mapping in `adapted` |
 | External research, annotated | `docs/references.md` | a Notion page | **out of reach** — add a pointer, record in `adapted` |
 | Planned work with collisions | `docs/roadmap.md` | `PLANNING.md` | **add the missing sections** to it; do not rename |
+| Planned work kept in a tracker | `docs/roadmap.md` | tickets in an external tracker | **keep the tracker**; the roadmap holds only what it cannot, each item citing its key; record in `adapted` |
 | Per-change log | `.claude/logs/agent-changelog.md` | Conventional Commits, squashed | **new file** — commit subjects cannot carry the *why* at this length |
 | One command that runs everything | task runner entry | `make check` exists but skips types | **extend the existing target**, do not add a second |
 | Structural rules, executable | `tools/audit_*.py` | nothing | **new file** — no home exists |

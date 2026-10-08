@@ -216,6 +216,10 @@ repository's own artifacts, which do not take the practice up.
    every release regenerates it; adapt it through the root file, and record the adaptation in
    `adapted`.
 
+   **3b'. Keep the host's tools off the bundle**: if a linter, formatter or ratchet of this repository
+   now reads `.agents/`, exclude it (`prompt-bootstrap.md` Phase 4); a permission rule written as a list of
+   paths takes the new release's list from its `SHA256SUMS`.
+
    **3c. Install the skills again**: `python3 .agents/tools/bundle.py install-skills`, which merges
    each base in `method/skills/` with the carrier's `LOCAL.md` (`method/skills/README.md`). A skill
    the carrier wrote itself under the same name is refused, never overwritten: move its rules into

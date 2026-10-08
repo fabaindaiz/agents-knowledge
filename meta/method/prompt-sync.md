@@ -61,7 +61,10 @@ Before I cut a release and bring every carrier onto it, four things — reply
 1. The carriers. I will use the manifest's list and compare it with
    `meta/tracking/carriers.md`. A carrier registered there with no path here
    stays out and is named as not reached. Say if any path is missing or should
-   be left out.
+   be left out. For each carrier, I will read from its own rules which branch an
+   update starts from (its integration branch, not the bundle branch a last
+   meta-session left) and how it lands (a ticket branch and a pull request, or a
+   direct commit); say where I read it wrong.
 
 2. Uncommitted work. Where a carrier's `.agents/` has uncommitted changes, I
    will stop on that carrier and ask, unless you tell me now that they are
@@ -136,11 +139,14 @@ In the home, never in a carrier.
 5. **Rows taken in between releases wait outside the build's inputs.** A row a carrier added over its release that is neither a candidate nor a run (a queued experiment, say) is held in `meta/roadmap.md` until the release, never in a tracking file that generates a shipped page: taking it into `experiments.md` between releases makes `knowledge/OPEN.md` stale against its sources. At the release, move each such row to where it belongs.
 6. **No empty releases**: if nothing a carrier reads changed, cut none and say so; a version history of empty releases teaches the next reader that versions mean nothing. Otherwise **write the changelog**: a `## [X.Y.Z] - YYYY-MM-DD` section in `sources/bundle/CHANGELOG.md` (Keep a Changelog), saying what a reader does differently, not what was edited. While the version is `0.0.z`, any release may break.
 7. **`release.py build`, then `release.py check`**, which passes (and the tests, when a tool changed); every privacy allowance it lists was given by the user, explicitly.
+7a. **Test the release in its three layers before cutting it** (`MANIFEST.md`, `d-5ed7e8-7cac23`): the gate above; a cost pilot of the candidate against `minimal` on the pilot tasks, registered in `evals/PROTOCOL.md` before its first trial, which fails the release if the cost rises past the previous release's interval or a discriminating task stops passing; and `evals/skills/trigger.py` for every skill whose description changed, with `--gate lenient` where `meta/decisions.md` says so. About an hour, more when skills changed. The external benchmark is run once, not here (`d-5ed7e8-d47ee1`). One release a month carries what accumulated; a privacy or data-loss fix is a patch at any time.
 8. **`release.py release X.Y.Z`.** It refuses a version not newer than every tag, or one the changelog does not describe, then writes the version and date and builds. **Commit** (Conventional Commits; `!` when it breaks), then run the tag command it printed: `git tag -a vX.Y.Z -m "agent-guides X.Y.Z"`. Splice refuses anything but the tagged release.
 
 ## Phase 2 — Apply, in each carrier by itself
 
 **First, when the release changes wording an agent follows or a path a carrier references, review each carrier in execution**: one read-only agent per carrier reads that carrier's own definitions of work (its task tracker, plans, review, commits, logs, gate, audit) beside what the release makes an agent do there, and classifies every meeting point as a conflict in execution, a broken reference, an unstated precedence, or wording only. The tool tests and each carrier's `verify` prove the files; only this reading proves the carrier still works as it defines itself. A conflict found is fixed in the bundle before the release is carried, or named for that carrier's own commit. (The queued `dry-run-a-procedure-by-an-agent-before-release` is the same reading applied to the procedure itself.)
+
+**Then run each carrier's own audit over the new release in a scratch copy**: a carrier's audit that reads a file the release generates by its layout breaks when the layout changes while `bundle.py verify` stays green, and only running it finds that.
 
 For each carrier, and **with that carrier as today's repository** (`prompt-context.md` §*Workspaces*):
 
@@ -154,7 +160,7 @@ For each carrier, and **with that carrier as today's repository** (`prompt-conte
 ## Phase 3 — Align, and close
 
 1. **`release.py register REPO...`** writes each reached carrier's row, by its stored id, at the release.
-2. **`release.py align REPO...`.** It fails on a carrier that does not verify, whose `SHA256SUMS` is not the home's, or that is missing from `meta/tracking/carriers.md` or registered at another version. **The meta-session is not closed while it reports anything.**
+2. **`release.py align REPO...`.** It fails on a carrier that does not verify, whose `SHA256SUMS` is not the tagged release's, or that is missing from `meta/tracking/carriers.md` or registered at another version. **The meta-session is not closed while it reports anything.**
 3. **Empty every `incoming/`** this session triaged.
 4. **Name what was not reached**: every registered carrier with no path here goes into `meta/roadmap.md`, *Blocked outside*, by its id alone.
 5. **Close**: the home's own learnings as its proposals (`prompt-harvest.md`), the release under *Done* in `meta/roadmap.md`, *Where we are* rewritten there for the next session, and one commit in the home (Conventional Commits), pushed with the tag. The closing report gives, per carrier, its branch, its commit, the gate selection that ran and what it declined; the verdict counts; every *divergent* item and how it was reconciled; every *undecidable* one, which is the agenda for the next meta-session; and where the backups are.
