@@ -507,8 +507,7 @@ Four rules for the brief, each learned from its opposite:
 Do not start with the most interesting item. Survey what is available and rank
 it on two axes the repo can actually see — **what it costs the core invariant**
 (the roadmap's own table) and **whether this repo can verify it** — then report
-the ranking before building. It is a cheap message, and a human who disagrees
-will reorder it in one line.
+the ranking before building.
 
 Sort every candidate into one of three buckets, and say which:
 
@@ -524,6 +523,10 @@ the session.
 **A plan of several tasks maps criteria to tasks both ways**: each criterion a
 fact that is true or false, verified by a task; a task serving none is its own
 work item.
+
+**A large plan carries its estimate** (over a session, or about 1e5 tokens): the
+release it lands in and its time and token cost, with their basis, in its header
+or roadmap item; the close compares it with the outcome.
 
 > **Example.** "Any variant on demand" looked ready: the limit is an interface
 > constant, not a platform one. But **no data definition declares more variants
@@ -623,8 +626,8 @@ ask in one question whether a fresh agent should review the whole branch, given
 the plan and its decisions as intent, and give the cost: in five repositories
 each took four to twenty minutes (about a hundred thousand tokens where
 counted), and nearly every one found a defect that the green gate, and any
-per-task review, had passed, with no control and no precision recorded
-(`prompt-context.md` principle 19). Not for one small commit.
+per-task review, had passed (thin evidence: principle 19). Not for one small
+commit.
 
 - **Fix the findings and nothing else**, then send only what changed for a
   second review. **At most two re-reviews**: what is still open after them goes
@@ -674,8 +677,7 @@ them in a branch that predated the change by months.
 ### 6. Put the documents back to true — in this change, not later
 
 Write this table once for your repo, in Phase 4, and follow it every session;
-what a script can check goes in `docs-map.toml` too (principle 16), where
-`bundle.py docs-drift` checks it:
+what a script can check goes in `docs-map.toml` too (principle 16):
 
 | What you changed | What must move, in the same change |
 |---|---|

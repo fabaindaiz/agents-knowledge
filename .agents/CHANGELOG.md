@@ -41,6 +41,10 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ### Changed
 
+- **A large plan carries its estimate** (*under review*): one that takes more than a session or about 1e5 tokens or
+  more says, before it starts, the release it is cut into and its cost in time and tokens (money where the human pays
+  per token), with what each rests on; the roadmap's item format has an *Estimate* line, and `close` compares the
+  estimate with what it took. The session loop's step 1 states it.
 - **The release is smaller, and nothing it removed was read.** The area pages (`knowledge/areas/`) are no longer
   shipped: the index routes to the cards, and each card links its note, which is how `verify` now reaches a note.
   `knowledge/OPEN.md` lists waiting candidates by slug and kind, `proposals/RECEIVED.md` keeps the verdicts of the

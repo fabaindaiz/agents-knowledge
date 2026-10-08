@@ -53,6 +53,8 @@ states none). Replace each comment, and beyond the format:
 - **Rulings:** every decision taken on the human's behalf, copied from the plan's ledger.
 - **Learned:** general (the harvest's) and local (where each was routed).
 - **What went wrong** includes the lessons this session found false: a recorded lesson is a claim.
+- **Measured:** for a large plan, its estimate beside what it took (sessions, release, time, tokens); a miss
+  of more than about twice is a learning, and its reason goes in it.
 
 ## 4. Count, never remember
 

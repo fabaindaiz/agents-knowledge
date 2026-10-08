@@ -1469,6 +1469,7 @@ What it is, in two lines.
 **What it collides with.** The rule, by its id, and why the collision is real.
 **What is already in its favour.** The mechanisms that exist.
 **What must be decided first.** Questions, not tasks.
+**Estimate**, for a large item: the release it is cut into, and its cost in time and tokens, with what it rests on.
 
 ## Closed by measurement
 Ideas retired by a number, with the number, so they stay retired.
