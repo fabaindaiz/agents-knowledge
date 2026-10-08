@@ -123,7 +123,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
   about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
   `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
-- **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** An isolated review of
+- **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** *Half done on 2026-10-08:* `review.py` now records a failed session as an error and retries it on resume; a command is judged whole. Left: standard error not drained, canaries all errored, a stopped run's verdict, the harness hash on resume. An isolated review of
   the code merged that night (a mid-size model) found, besides the three fixed before the merge: `evals/review.py`
   scores a session that exited in error as a valid trial and never retries an errored one on resume (high, medium;
   checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but three, all `R2`, reached
@@ -187,7 +187,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   (and was pushed, because the check that failed was piped through a filter; proposal
   `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
   it refuse. *Collision:* every commit here gets slower by one build check.
-- **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** Offered at 0.0.24 as
+- **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** *Half done in 0.0.30:* `verify` fails an empty `upstream` outside a home and `carrier-id --mint` names the home; the cross-repository id check stays in `align` and `register`, since `verify` reads one tree. Offered at 0.0.24 as
   `verify-enforces-the-carrier-record`, and confirmed in that meta-session: three carriers reached there
   held the empty `upstream` that means "this is the home", and the function that refuses a carrier id held
   by two repositories in scope is defined and never called. Call it from `verify`, flag an empty `upstream`
@@ -274,7 +274,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700
   estimated tokens); the bootstrap states the minting instructions twice; `knowledge/OPEN.md` is about
   half of a harvest's load. *Collides with:* the `Reads:` lists and `report --check` budgets.
-- **`i-5ed7e8-715654` · Remove the one-time migration and the deprecated `digest` alias.** The migration
+- **`i-5ed7e8-715654` · Remove the one-time migration and the deprecated `digest` alias.** *Done in 0.0.30:* the alias is gone (no carrier's gate or audit called it); the migration went in 0.0.23. The migration
   (`meta/migrations/`) and its CI step are deleted in 0.0.23, the tag keeps them; `bundle.py digest
   --check` goes once every carrier's audit calls `verify`. *Collides with:* carriers' audits.
 - **`i-5ed7e8-d65a4c` · An `applies_if` precondition per note, naming where its fact is usually
