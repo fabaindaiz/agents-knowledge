@@ -1,8 +1,8 @@
 ---
 bundle: "agent-guides"
 home: "r-5ed7e8"
-version: "0.0.30"
-released: "2026-10-08"
+version: "0.0.29"
+released: "2026-10-05"
 ---
 
 # Agent guides
