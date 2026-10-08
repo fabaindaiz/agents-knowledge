@@ -10,6 +10,7 @@ about:
 rests_on: "Pennarun 2018 on mtime"
 strength: "practitioner"
 our_evidence: "measured in four repositories; occurrences in three more"
+cues: ["cache", "mtime", "timestamp", "precompressed", ".gz", "build artifact", "stale cache", "invalidate", "make target", "etag", "if modified", "baked", "generated file", "cache key", "newer than"]
 ---
 
 # A derived copy goes stale silently

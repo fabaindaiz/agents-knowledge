@@ -10,6 +10,7 @@ about:
 rests_on: "Heckman 1979; Kaufman et al. 2012"
 strength: "well established"
 our_evidence: "measured in one repository"
+cues: ["train test split", "filter rows", "resample", "balance classes", "evaluation set", "cohort", "where outcome", "exclude users", "filter by result", "oversample", "undersample", "selection bias", "dataset filter", "survivors"]
 ---
 
 # Population by outcome

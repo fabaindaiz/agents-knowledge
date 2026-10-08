@@ -10,6 +10,7 @@ about:
 rests_on: "Sato's ParallelChange (martinfowler.com)"
 strength: "named practice since 2014"
 our_evidence: "reasoned; one design occurrence"
+cues: ["migration", "rolling deploy", "rollback", "schema change", "rename column", "enum value", "api shape", "message format", "old reader", "new reader", "backward compat", "add column", "drop column", "serialization format", "deploy order"]
 ---
 
 # No simultaneous deploy

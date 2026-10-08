@@ -367,6 +367,8 @@ def render_index(template: str, notes: list[Note], topics: list[str], order: Ord
 def short_note(note: Note) -> str:
     """The note a carrier ships: the card fields, and the body up to the evidence."""
     meta = {k: (note.boundary if k == "boundary" else note.meta.get(k)) for k in SHIPPED_FIELDS}
+    if note.meta.get("cues"):  # what a change or its diff would contain, read by `bundle.py lookup` (0.0.30)
+        meta["cues"] = note.meta["cues"]
     return B.dump_frontmatter(meta, NOTE_BANNER) + short_body(note.body)
 
 

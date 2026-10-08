@@ -13,6 +13,7 @@ about:
 rests_on: "the semipredicate problem (Norvig 1992); Shore 2004, fail fast; Hampel 1971, the breakdown point"
 strength: "well established"
 our_evidence: "occurrences in four repositories; no rate"
+cues: ["return default", "return none", "return 0", "raise error", "exit status", "subprocess.run", "stderr", "stdout parse", "median", "vote", "lookup not found", "empty list", "first item", "hash of empty", "check=true"]
 ---
 
 # A refusal must not read like an answer

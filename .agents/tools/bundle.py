@@ -65,6 +65,7 @@ if sys.version_info < (3, 11):
 
 import argparse
 import builtins
+import collections
 import datetime
 import functools
 import hashlib
@@ -3324,6 +3325,102 @@ def docs_report(repo: Path, since: str = "7d") -> dict:
     return report
 
 
+# --- lookup: the index's rows a change matches --------------------------------------------------------
+# Reading the whole index costs a session several thousand tokens on every later turn; a change usually needs one
+# to three of its rows. `bundle.py lookup` ranks the *By what you are about to do* rows by a change's words, files
+# or diff, against each row, its card and the note's `cues` (what such a change would contain). It prints the rows
+# and says where the index is when nothing matches; the wiring decides when to trust it (0.0.30, behind a gate).
+
+LOOKUP_STOP = set("""a an the and or of to in on for with by from as at is are be been being it its this that these
+those which who what when where how why not no do does did done any all each every some such than then there their
+them they you your we our us can could would should will may might must one two more most less only own same so very
+just into out over under up down off about again once here both few other too now if else because while during before
+after above below between through until make makes made add adds added use uses used using new also way like via per
+get gets set sets let take takes""".split())
+
+
+def _stem(word: str) -> str:
+    for suffix in ("ingly", "edly", "ing", "ers", "ies", "ied", "ed", "es", "er", "ly", "s"):
+        if len(word) > len(suffix) + 3 and word.endswith(suffix):
+            return word[: -len(suffix)] + ("y" if suffix in ("ies", "ied") else "")
+    return word
+
+
+def _lookup_tokens(text: str) -> list[str]:
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)  # camelCase splits
+    return [_stem(w) for w in (m.lower() for m in re.findall(r"[A-Za-z][A-Za-z0-9]*", text.replace("_", " ")))
+            if w not in LOOKUP_STOP and len(w) >= 3]
+
+
+@dataclass(frozen=True)
+class LookupHit:
+    slug: str
+    do: str
+    card: str
+    wrong_when: str
+    score: float
+
+
+def _bm25(docs: list[list[str]]) -> tuple[list[collections.Counter], list[int], float, dict[str, float]]:
+    counts = [collections.Counter(d) for d in docs]
+    lengths = [len(d) for d in docs]
+    df = collections.Counter(w for c in counts for w in c)
+    n = len(docs)
+    return counts, lengths, (sum(lengths) / n if n else 0.0), {w: math.log(1 + (n - c + 0.5) / (c + 0.5)) for w, c in df.items()}
+
+
+def lookup(tree: Path, text: str, top: int = 3, floor: float = 0.5) -> list[LookupHit]:
+    """The index's rows that match a change, best first, at most `top`, dropping hits under `floor` of the best."""
+    index = (tree / "knowledge/INDEX.md").read_text(encoding="utf-8")
+    section = index.split("## By what you are about to do", 1)[-1].split("\n## ", 1)[0]
+    rows = [m.groups() for m in re.finditer(r"^\| (.+?) \| \[([^\]]+)\]\((cards/[^)]+)\)[^|]*\| (.+?) \|$", section, re.M)]
+    if not rows:
+        return []
+    def cues(slug: str) -> list[str]:
+        for state in ("active", "review"):
+            path = tree / f"{NOTES}/{state}/{slug}.md"
+            if path.is_file():
+                try:
+                    return list(read_frontmatter(path.read_text(encoding="utf-8"))[0].get("cues") or [])
+                except FrontmatterError:
+                    return []
+        return []
+    def card(rel: str) -> str:
+        path = tree / "knowledge" / rel
+        return " ".join(re.findall(r"\*\*(?:Claim|Applies if|Not when|Check)\.\*\* (.+)", path.read_text(encoding="utf-8"))) \
+            if path.is_file() else ""
+    layers = [(_bm25([_lookup_tokens(do + " " + wrong) for do, _, _, wrong in rows]), 1.0),
+              (_bm25([_lookup_tokens(card(rel)) for _, _, rel, _ in rows]), 0.6),
+              (_bm25([_lookup_tokens(" ".join(cues(slug))) for _, slug, _, _ in rows]), 1.0)]
+    query = collections.Counter(_lookup_tokens(text))
+    best: dict[str, tuple[float, int]] = {}
+    for i, (_, slug, _, _) in enumerate(rows):
+        score = 0.0
+        for (counts, lengths, avg, idf), weight in layers:
+            for word, qf in query.items():
+                if word in counts[i]:
+                    f = counts[i][word]
+                    score += weight * idf[word] * f * 2.2 / (f + 1.2 * (0.25 + 0.75 * lengths[i] / avg)) * min(qf, 3) ** 0.5
+        if slug not in best or score > best[slug][0]:
+            best[slug] = (score, i)
+    ranked = sorted(best.values(), key=lambda pair: -pair[0])
+    if not ranked or ranked[0][0] <= 0:
+        return []
+    return [LookupHit(rows[i][1], rows[i][0], rows[i][2], rows[i][3], round(s, 2))
+            for s, i in ranked[:top] if s >= floor * ranked[0][0]]
+
+
+def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | None = None) -> str:
+    """A change as words: its description, its files' names and contents, a diff with changed lines counted twice."""
+    parts = [text]
+    for path in files or []:
+        parts.append(path.name + " " + (path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""))
+    for line in (diff or "").split("\n"):
+        changed = line.startswith(("+", "-")) and not line.startswith(("+++", "---"))
+        parts.append(line[1:] + " " + line[1:] if changed else line[4:] if line.startswith(("+++", "---")) else line)
+    return "\n".join(parts)
+
+
 # --- the close's deterministic part ----------------------------------------------------------------
 # A close is mostly judgement (the entry's words, what went wrong, the hand-off); the checks around it are not,
 # and were run by hand one by one. `bundle.py close` runs them in order and fails on any (`method/skills/close`).
@@ -3973,6 +4070,13 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
+    p = sub.add_parser("lookup", help="the index's rows a change matches, from its words, files or diff; nothing when none")
+    p.add_argument("words", nargs="*", help="what the change does, in words")
+    p.add_argument("--files", nargs="*", type=Path, help="files the change will touch")
+    p.add_argument("--diff", nargs="?", const="", metavar="RANGE", help="the working diff, or `git diff RANGE`")
+    p.add_argument("--top", type=int, default=3)
+    p.add_argument("--cards", action="store_true", help="also print each card's Not when and Check")
+    p.add_argument("--bundle", default=str(OWN_BUNDLE))
     p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory (exit 1 on any)")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--base", help="the session's first commit's parent: trailers and docs-drift read BASE..HEAD")
@@ -4225,6 +4329,22 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         if added:
             print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
                   "add them to the log's format, or say there why it omits them")
+        return 0
+    if args.command == "lookup":
+        tree = Path(args.bundle)
+        diff = None
+        if args.diff is not None:
+            diff = git(tree.parent, "diff", *([args.diff] if args.diff else []))
+        hits = lookup(tree, lookup_query(" ".join(args.words), args.files, diff), args.top)
+        for hit in hits:
+            print(f"- {hit.do} -> .agents/knowledge/{hit.card}")
+            print(f"  wrong when: {hit.wrong_when}")
+            if args.cards and (tree / "knowledge" / hit.card).is_file():
+                card = (tree / "knowledge" / hit.card).read_text(encoding="utf-8")
+                for key in ("Not when", "Check"):
+                    if m := re.search(rf"\*\*{key}\.\*\* (.+)", card):
+                        print(f"  {key.lower()}: {m.group(1)}")
+        print("Not matched, or not sure? Read .agents/knowledge/INDEX.md, *By what you are about to do*.")
         return 0
     if args.command == "close":
         steps = close_report(Path(args.repo), args.base)

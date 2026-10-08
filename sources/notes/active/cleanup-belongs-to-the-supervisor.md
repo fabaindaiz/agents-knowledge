@@ -10,6 +10,7 @@ about:
 rests_on: "Candea & Fox 2003, crash-only software"
 strength: "established"
 our_evidence: "measured in one repository"
+cues: ["finally", "teardown", "atexit", "subprocess timeout", "probe", "temp state", "restore state", "kill child", "hang", "tearDown", "cleanup", "lockfile", "shared state", "fixture restore", "timeout kill"]
 ---
 
 # Cleanup belongs to the supervisor

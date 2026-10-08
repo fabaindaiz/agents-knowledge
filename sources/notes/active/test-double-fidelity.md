@@ -11,6 +11,7 @@ rests_on: "*Software Engineering at Google* ch. 13; Fowler's ContractTest"
 strength: "practice"
 our_evidence: "occurrences; no rate"
 boundary: "Pure-function tests with no double · doubles generated from the real implementation, or contract-tested against it on the same cases"
+cues: ["mock", "stub", "fake", "monkeypatch", "patch", "magicmock", "responses", "vcr", "contract test", "network access", "socket", "test fixture", "httpx mock", "return_value", "side_effect"]
 ---
 
 # Test double fidelity

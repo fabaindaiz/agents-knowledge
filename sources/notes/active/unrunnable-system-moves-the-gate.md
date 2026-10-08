@@ -10,6 +10,7 @@ about:
 rests_on: "hardware-in-the-loop practice; Xu et al. 2016 on latent configuration errors"
 strength: "practice and one empirical study"
 our_evidence: "reasoned; two repositories arriving at one arrangement, and the composition rig run once in a third"
+cues: ["hardware", "needs device", "cannot run locally", "no credentials", "startup wiring", "composition", "dependency injection", "unit tests pass", "boot error", "embedded", "production only", "wiring", "integration", "can't boot"]
 ---
 
 # An unrunnable system moves the gate

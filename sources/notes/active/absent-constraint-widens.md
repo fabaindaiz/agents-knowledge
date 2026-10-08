@@ -10,6 +10,7 @@ about:
 rests_on: "Saltzer & Schroeder on permission over exclusion"
 strength: "fifty years old"
 our_evidence: "measured in one repository; occurrences in three more"
+cues: ["where clause", "tenant_id", "owner_id", "filter by status", "date range", "query filter", "drop the filter", "simplify query", "remove condition", "scope to user", "superset", "list all rows", "date bound", "queryset filter"]
 ---
 
 # An absent constraint widens

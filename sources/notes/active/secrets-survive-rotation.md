@@ -10,6 +10,7 @@ about:
 rests_on: "none known"
 our_evidence: "design decisions in one repository; one rotation incident, reproduced, in a second"
 boundary: "Tokens meant to expire with the key, such as sessions and short-lived capabilities, and caches meant to be invalidated by rotation, where invalidation is intended"
+cues: ["rotate secret", "secret key", "jwt", "signing key", "api key", "token cache", "hmac", "credential", "fingerprint", "key rotation", "stored token", "session token", "verify signature", "env secret", "cache key"]
 ---
 
 # Persisted state survives secret rotation

@@ -11,6 +11,7 @@ about:
 rests_on: "Fowler's Event Sourcing; platform user-defaults design (registration domain)"
 strength: "practice"
 our_evidence: "design occurrences in three repositories"
+cues: ["is_blocked", "is_eligible", "high_risk flag", "stored flag", "user preference", "default setting", "settings table", "derived at read", "recompute", "boolean column", "opt in", "preferences", "policy change", "persist default"]
 ---
 
 # Persist inputs, derive verdicts

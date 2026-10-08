@@ -6,6 +6,7 @@ claim: "A gate, audit, filter or count earns trust only after it has been seen t
 confidence: "measured"
 check: "each new check was seen red once on a plant of the defect it exists for, in the real artefact, and that is recorded; its count of examined subjects matches the subjects known to exist"
 boundary: "Checks whose detection an external conformance suite already proves · even then, the local wiring that runs them still owes one plant-and-watch"
+cues: ["ci step", "add a gate", "lint rule", "audit check", "grep in script", "exit code", "always green", "pre-commit hook", "check script", "planted violation", "assert count", "workflow yaml", "set -e", "stderr redirect"]
 ---
 
 # A check must be seen to fail

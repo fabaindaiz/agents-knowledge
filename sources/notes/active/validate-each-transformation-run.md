@@ -10,6 +10,7 @@ about:
 rests_on: "Pnueli et al. 1998, translation validation"
 strength: "established"
 our_evidence: "reasoned; losses caught in three repositories, planted losses rejected"
+cues: ["formatter", "codegen", "generator", "translate", "bulk refactor", "sed -i", "black", "prettier", "codemod", "lost comment", "diff check", "round trip", "idempotent formatting", "tokens preserved", "regenerate"]
 ---
 
 # Validate each transformation run

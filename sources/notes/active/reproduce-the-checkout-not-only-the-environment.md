@@ -10,6 +10,7 @@ about:
 rests_on: "hermetic builds (Bazel); reproducible-builds.org on locales"
 strength: "practice"
 our_evidence: "measured in two repositories; the permissive direction met in three more"
+cues: ["ci passes locally", "works on my machine", "clean checkout", "git archive", "untracked files", "docker image", "python version", "locale", "collation", "lockfile", "gitignored", "env differs", "flaky ci", "git stash", "reproduce failure"]
 ---
 
 # Reproduce the checkout, not only the environment

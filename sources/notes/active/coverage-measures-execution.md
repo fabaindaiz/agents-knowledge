@@ -9,6 +9,7 @@ about:
   - {do: "Set a coverage target, or read a coverage report as a measure of test quality", wrong_when: "the number rises when tests run code without asserting on it — and falls silent entirely against buggy code"}
 rests_on: "**two empirical studies**: Inozemtseva & Holmes 2014 and a 2026 replication on LLM-generated tests — **strong**"
 our_evidence: "per-change mutation only; no suite-wide score"
+cues: ["coverage", "coverage target", "codecov", "fail_under", "80% coverage", "line coverage", "lcov", "test quality", "mutation score", "assertions", "coverage report", "branch coverage", "pytest-cov"]
 ---
 
 # Coverage measures execution

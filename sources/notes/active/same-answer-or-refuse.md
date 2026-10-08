@@ -12,6 +12,7 @@ about:
 rests_on: "Zinkevich; Breck et al. 2017; Humble & Farley 2010, build once"
 strength: "well established"
 our_evidence: "measured in two repositories, occurrences in several more; the removal half reasoned"
+cues: ["cache", "fast path", "second source", "optimization", "preview", "validator", "reimplement", "equivalence test", "tolerance", "approx", "fallback source", "duplicate logic", "separate loader", "shipped artefact", "measure script"]
 ---
 
 # Same answer, or refuse

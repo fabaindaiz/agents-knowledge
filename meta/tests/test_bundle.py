@@ -1743,3 +1743,37 @@ class CloseCommand(Base):
         code, out = run("close", "--repo", str(repo), "--base", base)
         self.assertEqual(code, 1, out)
         self.assertIn("not run here", out)  # what stays the writer's: the entry's words, the counts, the hand-off
+
+
+class Lookup(Base):
+    """`bundle.py lookup`: the index's rows a change matches, from its words, its files or its diff."""
+
+    def tree(self) -> Path:
+        agents = self.root / ".agents"
+        (agents / "knowledge/cards").mkdir(parents=True)
+        (agents / "knowledge/notes/active").mkdir(parents=True)
+        (agents / "knowledge/INDEX.md").write_text(
+            "# Index\n\n## By what you are about to do\n\n| …do this | Card | Because the default answer is wrong when |\n|---|---|---|\n"
+            "| Retry a payment call | [retry-once](cards/retry-once.md) | the call has an effect you cannot undo |\n"
+            "| Add a config default | [fail-closed](cards/fail-closed.md) | a missing value should refuse to run |\n\n## Next\n")
+        for slug, claim, cues in (("retry-once", "Retrying an irreversible effect repeats it.", ["idempotency key", "webhook", "retry"]),
+                                  ("fail-closed", "A fallback should refuse to run.", ["os.environ.get", "default value", "fallback"])):
+            (agents / f"knowledge/cards/{slug}.md").write_text(f"# {slug}\n\n**Claim.** {claim}\n\n**Not when.** Never.\n\n**Check.** run it\n")
+            (agents / f"knowledge/notes/active/{slug}.md").write_text(B.dump_frontmatter({"slug": slug, "cues": cues}) + "\nBody.\n")
+        return agents
+
+    def test_the_words_of_a_change_find_its_card(self) -> None:
+        agents = self.tree()
+        hits = B.lookup(agents, "send the webhook again with the same idempotency key")
+        self.assertEqual(hits[0].slug, "retry-once")
+        hits = B.lookup(agents, "PORT = os.environ.get('PORT', '8080')  # a default value")
+        self.assertEqual(hits[0].slug, "fail-closed")
+        self.assertEqual(B.lookup(agents, "fix a typo in the readme"), [])  # nothing to match: read the index
+
+    def test_the_command_prints_the_rows_and_the_way_back_to_the_index(self) -> None:
+        agents = self.tree()
+        code, out = run("lookup", "retry", "the", "webhook", "--bundle", str(agents))
+        self.assertEqual(code, 0, out)
+        self.assertIn("knowledge/cards/retry-once.md", out)
+        self.assertIn("wrong when: the call has an effect you cannot undo", out)
+        self.assertIn("INDEX.md", out)

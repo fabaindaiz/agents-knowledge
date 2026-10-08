@@ -10,6 +10,7 @@ about:
 rests_on: "Kaufman et al. 2012"
 strength: "well established"
 our_evidence: "enforced; detection power shown by a planted leak, no real leak counted"
+cues: ["point in time", "as of", "data leakage", "leak", "feature timestamp", "snapshot", "backfill", "event time", "knowable at", "time travel", "training data", "join asof", "valid_from", "lookahead", "historical features"]
 ---
 
 # Truncate the world to test as-of

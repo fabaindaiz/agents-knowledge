@@ -6,6 +6,7 @@ claim: "Rewriting published history removes a line only from what branches and t
 confidence: "reasoned"
 check: "before any rewrite: every machine has pushed, the server's refs and a mirror are saved, the range starts at the first offending commit, each branch is pushed with a lease on its old hash, and every other clone rebases or re-clones instead of merging"
 boundary: "A repository nobody else has cloned and the forge has not shown · a secret, which is rotated first and purged through the forge's own procedure, whatever the cost"
+cues: ["git rebase", "filter-branch", "force push", "force-with-lease", "amend", "rewrite history", "remove trailer", "co-authored-by", "git reset", "commit message", "published commits", "filter-repo", "reflog", "pushed branch"]
 ---
 
 # A rewrite cleans only what refs reach

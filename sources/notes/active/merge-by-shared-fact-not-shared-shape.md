@@ -13,6 +13,7 @@ about:
 rests_on: "DRY (Hunt & Thomas); Metz 2016; for the dual, control coupling and connascence of meaning"
 strength: "practice, and in tension"
 our_evidence: "occurrences in two repositories, and the dual's in two; no regression rate"
+cues: ["duplicate code", "dedupe", "extract helper", "refactor", "shared function", "copy paste", "reuse style", "reuse constant", "dry", "similar functions", "consolidate", "common util", "tone", "kind field"]
 ---
 
 # Merge by shared fact, not by shared shape

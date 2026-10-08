@@ -9,6 +9,7 @@ about:
   - {do: "Compute windows or recency over an extract, cache or batch store", wrong_when: "the data ends before now, and every window reads the gap as silence"}
 rests_on: "none specific"
 our_evidence: "measured in one repository"
+cues: ["datetime.now", "now()", "recency", "last 7 days", "window", "extract", "snapshot", "days since last", "batch export", "as of", "rolling window", "last event", "stale data", "current_date"]
 ---
 
 # Read a snapshot at its own end

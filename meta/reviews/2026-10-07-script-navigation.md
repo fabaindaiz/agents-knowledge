@@ -64,3 +64,22 @@ decide.
    refuted above ×0.95; discriminating passes equal; adherence counted from the transcripts.
 3. **Optionally a hook arm**, and **a reviewer arm** with the lookup by diff and the scratch command, cost primary,
    recall as the guard.
+
+## The offline gate, run on 2026-10-08
+
+`bundle.py lookup` shipped in 0.0.30 (`d-5ed7e8-90786d`), ranking the index's rows, their cards and a `cues` list
+per note. The cues were written by a delegated agent on a mid-size model that read only the full notes'
+frontmatter (claim, check, the *about to do* rows) and nothing under `evals/`, so the pilots' prompts and diffs are
+held out from them. The registered gate was the target note in the top three for at least nine in ten queries.
+
+| Query | No cues | Blind cues |
+|---|---:|---:|
+| The task's prompt (26) | 8 | 16 |
+| The task's diff (52) | 25 | 36 |
+| All (78) | 0.42 | 0.67 |
+
+**The gate fails.** Blind cues raise recall by about a half, but a third of the queries still miss their card in
+the top three; the contaminated cues of the prototype had reached about nine in ten. So the wiring keeps reading the
+index, the lookup ships as a tool an agent may use beside it, and the cost pilot's lookup arm does not run. What
+would move it: cues written from the notes' bodies as well as their frontmatter, or a lookup that returns the action
+list for the model to choose from (the no-recall-risk variant above).

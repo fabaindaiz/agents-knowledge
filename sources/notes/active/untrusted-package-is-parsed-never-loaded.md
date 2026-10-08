@@ -10,6 +10,7 @@ about:
 rests_on: "OWASP File Upload Cheat Sheet; Fifield 2019; Zip Slip 2018"
 strength: "established practice"
 our_evidence: "measured in one repository, one reader"
+cues: ["zip", "tar", "extract", "upload", "archive", "pickle", "yaml.load", "path traversal", "zip bomb", "file upload", "import package", "manifest hash", "max size", "mime type", "eval", "plugin load"]
 ---
 
 # An untrusted package is parsed, never loaded

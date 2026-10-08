@@ -10,6 +10,7 @@ about:
 rests_on: "anti-structuring rules (AML)"
 strength: "regulatory practice"
 our_evidence: "design occurrences; no live abuse observed"
+cues: ["rate limit", "max_count", "threshold", "cap", "ceiling", "per-ip limit", "skip above", "truncate window", "abuse", "spam filter", "fraud check", "limit exceeded", "bypass", "max_requests"]
 ---
 
 # An exemption the abuser controls

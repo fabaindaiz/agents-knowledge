@@ -10,6 +10,7 @@ about:
 rests_on: "functional reactive animation, Elliott & Hudak 1997; Fiedler 2004"
 strength: "established, verified"
 our_evidence: "measured in one repository; occurrences in a second"
+cues: ["delta time", "dt", "tick", "requestanimationframe", "timestamp", "animation", "scheduler", "elapsed", "clock", "timer", "setinterval", "duration clamp", "monotonic", "frame time", "simulation step"]
 ---
 
 # Derive state from one clock

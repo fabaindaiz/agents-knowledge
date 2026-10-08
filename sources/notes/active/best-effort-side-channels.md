@@ -10,6 +10,7 @@ about:
 rests_on: "Nygard on integration points and cascading failure"
 strength: "canonical"
 our_evidence: "occurrences; no ratio"
+cues: ["webhook", "notification", "send email", "analytics event", "cache invalidation", "try except", "swallow error", "log and continue", "metrics call", "callback", "slack alert", "fire and forget", "audit log call", "outbound call"]
 ---
 
 # Best-effort side channels

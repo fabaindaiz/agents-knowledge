@@ -12,6 +12,7 @@ about:
 rests_on: "reverse-DNS convention"
 strength: "settled practice"
 our_evidence: "one drift caught; one probe: declared identifiers resolved under half the artefacts, a digest all of them"
+cues: ["unique id", "uuid", "slug", "namespace", "name collision", "derive id", "hash of", "package name", "bucket name", "global identifier", "id format", "naming scheme", "client_id", "prefix"]
 ---
 
 # Derived over chosen identifiers

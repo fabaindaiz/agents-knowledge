@@ -17,6 +17,10 @@ version it holds with `bundle.py changelog --since <its version>`.
   run inside `verify` when a map exists; `--report --since 7d` gives each rule's triggers, escapes and escape rate,
   the documents left behind and the pairs history suggests, never adding one. Principle 16 and `close` point at it.
   A carrier with no map is unaffected; writing one is the next harvest's step.
+- **`bundle.py lookup WORDS` (also `--files`, `--diff RANGE`)** ranks the index's *about to do* rows against a
+  change, with a `cues` list now in each note, and prints one to three rows with their cards. It is an aid beside
+  the index, not a replacement: its offline recall (two in three at the top three) is under the nine in ten the
+  wiring would need, so the root file's knowledge line still reads the index.
 - **`bundle.py close --base REF`**: the closing checklist's deterministic part in one command (verify, trailers,
   record ids, decisions, docs-drift, local memory), failing on any, with what stays the writer's named.
 

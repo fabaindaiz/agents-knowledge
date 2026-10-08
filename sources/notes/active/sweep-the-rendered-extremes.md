@@ -9,6 +9,7 @@ about:
   - {do: "Change layout, text, fonts, sizes or anything drawn on screen", wrong_when: "it is checked at the default size, language and aspect, and the extremes are where it breaks"}
 rests_on: "pseudolocalization — **practice**; boundary-value analysis — **textbook**"
 our_evidence: "measured in one repository; occurrences in others"
+cues: ["layout", "font size", "overflow", "long string", "translation", "i18n", "locale", "aspect ratio", "screenshot test", "css", "text truncation", "accessibility", "dark mode", "responsive", "viewport"]
 ---
 
 # Sweep the rendered extremes

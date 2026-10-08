@@ -10,6 +10,7 @@ about:
 rests_on: "Kaplan & Meier 1958; Cox 1972"
 strength: "foundational statistics"
 our_evidence: "enforced by tests; the cost of the naive labelling unmeasured"
+cues: ["label", "churn", "not yet happened", "maturity horizon", "survival", "time to event", "negative class", "unresolved", "fillna", "label window", "default label 0", "newest rows", "conversion within", "outcome window"]
 ---
 
 # Censoring is information

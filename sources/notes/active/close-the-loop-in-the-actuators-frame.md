@@ -10,6 +10,7 @@ about:
 rests_on: "Schmitt 1938, hysteresis"
 strength: "foundational"
 our_evidence: "measured in two repositories"
+cues: ["control loop", "hysteresis", "pid", "chatter", "follow camera", "steer", "threshold switch", "mode change", "deadband", "setpoint", "feedback", "target position", "error correction", "oscillate"]
 ---
 
 # Close the loop in the actuator's frame

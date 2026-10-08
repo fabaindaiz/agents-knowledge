@@ -10,6 +10,7 @@ about:
 rests_on: "Rabkin & Katz 2011, static extraction of configuration options"
 strength: "measured at research scale"
 our_evidence: "measured in three repositories; occurrences in a fourth"
+cues: ["config reference", "default value", "env var table", "readme settings", "config keys", "document option", "settings.py", "yaml config", "renamed key", "docs table", "optional keys", "config schema", "defaults documented", "os.environ.get"]
 ---
 
 # Documented defaults drift from code

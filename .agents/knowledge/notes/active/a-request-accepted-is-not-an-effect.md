@@ -6,6 +6,7 @@ claim: "A request that a subsystem with its own policy accepts without error —
 confidence: "reasoned"
 check: "the resulting state (what runs, the route taken, the value loaded) is read back after each event that re-runs the policy, and the read-back was seen red on a planted diversion"
 boundary: "Acceptance means completion by contract · Every request creates new state by construction"
+cues: ["returns 200", "reload config", "sighup", "systemctl", "docker compose up", "read back", "session manager", "daemon", "orchestrator", "applied config", "restart service", "verify state", "route table", "accepted 202"]
 ---
 
 # A request accepted is not an effect

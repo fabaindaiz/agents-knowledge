@@ -11,6 +11,7 @@ rests_on: "mutation testing, DeMillo et al. 1978"
 strength: "well established"
 our_evidence: "measured in four repositories, two of them by an executed census"
 boundary: "Checks whose detection an external conformance suite already proves · even then, the local wiring that runs them still owes one plant-and-watch"
+cues: ["ci step", "add a gate", "lint rule", "audit check", "grep in script", "exit code", "always green", "pre-commit hook", "check script", "planted violation", "assert count", "workflow yaml", "set -e", "stderr redirect"]
 ---
 
 # A check must be seen to fail

@@ -10,6 +10,7 @@ about:
 rests_on: "end-to-end argument, Saltzer, Reed & Clark 1984; RFC 9110 on 202 Accepted"
 strength: "established"
 our_evidence: "occurrences in two repositories; no rate"
+cues: ["returns 200", "reload config", "sighup", "systemctl", "docker compose up", "read back", "session manager", "daemon", "orchestrator", "applied config", "restart service", "verify state", "route table", "accepted 202"]
 ---
 
 # A request accepted is not an effect

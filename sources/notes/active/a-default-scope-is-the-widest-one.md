@@ -10,6 +10,7 @@ about:
 rests_on: "Saltzer & Schroeder 1975, fail-safe defaults"
 strength: "fifty years old"
 our_evidence: "measured in one tool, seen in a second"
+cues: ["no target given", "delete all", "deploy all", "default targets", "dry run", "--all", "infer targets", "glob all", "not reached", "scope argument", "list of services", "environments", "force flag", "fallback to all"]
 ---
 
 # A default scope is the widest one

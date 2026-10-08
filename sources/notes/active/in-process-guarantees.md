@@ -10,6 +10,7 @@ about:
 rests_on: "Kleppmann on efficiency vs correctness locks"
 strength: "well established"
 our_evidence: "reasoned; the premise has never been broken"
+cues: ["threading.lock", "mutex", "semaphore", "singleton", "asyncio lock", "race condition", "second worker", "replicas", "gunicorn workers", "in-memory", "advisory lock", "select for update", "distributed lock", "dedupe in memory"]
 ---
 
 # In-process guarantees

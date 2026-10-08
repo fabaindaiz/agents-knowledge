@@ -10,6 +10,7 @@ about:
 rests_on: "Saltzer & Schroeder 1975, principle 2"
 strength: "fifty years old"
 our_evidence: "reasoned for the claim; the shape check and its boundaries from occurrences"
+cues: ["os.getenv", "environ.get", "default value", "fallback", "unset variable", "placeholder", "secret key default", "refuse to start", "boot check", "config missing", "production default", "required env", "changeme", "default password"]
 ---
 
 # Fail-closed defaults

@@ -10,6 +10,7 @@ about:
 rests_on: "MDN on feature detection"
 strength: "settled practice"
 our_evidence: "design occurrences; one flag read beside the observed geometry, on an emulator"
+cues: ["platform check", "sys.platform", "build flag", "is_mobile", "user agent", "device class", "feature detection", "capability", "ifdef", "debug build", "navigator", "os.name", "target arch", "touch support"]
 ---
 
 # Detect by observation, not by build flag

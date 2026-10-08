@@ -10,6 +10,7 @@ about:
 rests_on: "none known"
 our_evidence: "measured in three repositories; the list form met again since"
 boundary: "Reports whose input schema is enforced upstream, so every row is evaluable by construction"
+cues: ["scan report", "audit report", "no findings", "zero results", "evaluated n of m", "reconciliation", "data quality", "empty filter", "misspelled field", "summary line", "checked count", "validator", "items examined", "report header"]
 ---
 
 # Report coverage before findings

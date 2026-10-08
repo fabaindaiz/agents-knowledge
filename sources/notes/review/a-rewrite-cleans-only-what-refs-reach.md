@@ -11,6 +11,7 @@ rests_on: "git-filter-repo's manual and the forge's documentation on removing da
 strength: "documented behaviour, tried in a sandbox"
 our_evidence: "one repository rewritten once to this rule; the rest of the procedure from a sandbox, no second rewrite"
 boundary: "A repository nobody else has cloned and the forge has not shown · a secret, which is rotated first and purged through the forge's own procedure, whatever the cost"
+cues: ["git rebase", "filter-branch", "force push", "force-with-lease", "amend", "rewrite history", "remove trailer", "co-authored-by", "git reset", "commit message", "published commits", "filter-repo", "reflog", "pushed branch"]
 ---
 
 # A rewrite cleans only what refs reach

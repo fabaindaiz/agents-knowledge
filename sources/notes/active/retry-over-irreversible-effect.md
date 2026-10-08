@@ -12,6 +12,7 @@ about:
 rests_on: "Two Generals / FLP; Stripe and Brandur on keys in practice"
 strength: "well established"
 our_evidence: "occurrences in three repositories; no rate"
+cues: ["retry", "idempotency_key", "idempotent", "backoff", "webhook handler", "send the email once", "charge", "payment", "duplicate", "at least once", "replay", "max_retries", "dedupe key", "consumer", "tenacity"]
 ---
 
 # Retry over an irreversible effect

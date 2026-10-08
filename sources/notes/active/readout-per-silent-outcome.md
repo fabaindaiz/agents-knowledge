@@ -13,6 +13,7 @@ about:
 rests_on: "Prometheus instrumentation practice; Ewaschuk 2016, *Site Reliability Engineering* ch. 6"
 strength: "practice"
 our_evidence: "occurrences in two repositories, one read on the real device; no rate"
+cues: ["startup log", "build id", "git sha", "version readout", "remote tester", "device build", "handler refused", "empty store", "dropped input", "debug overlay", "log state", "not wired", "build identity", "diagnostics screen", "dirty flag"]
 ---
 
 # A readout per silent outcome

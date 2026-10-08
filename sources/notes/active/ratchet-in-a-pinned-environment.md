@@ -11,6 +11,7 @@ rests_on: "baseline files in static analysers"
 strength: "practice"
 our_evidence: "measured in two repositories"
 boundary: "A greenfield codebase that can hold zero from day one · hermetic builds, which already pay the pinning half · a backlog small enough to clear in the same change · a rule with legitimate exceptions, which needs an exemption mechanism instead · a rule with no correct, portable zero, which stays out of the blocking gate · a dedicated pinned measurement machine · a timeout, which is not a threshold"
+cues: ["lint baseline", "existing violations", "ratchet", "noqa", "disable rule", "warnings count", "allowlist of violations", "pin version", "ruff", "eslint", "type check errors", "new rule", "advisory", "mypy baseline", "requirements pin"]
 ---
 
 # Ratchet in a pinned environment

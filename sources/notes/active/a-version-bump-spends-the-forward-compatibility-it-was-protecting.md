@@ -10,6 +10,7 @@ about:
 rests_on: "must-ignore and version substitution, W3C TAG 2007, RFC 6709; TLS version intolerance, RFC 8446"
 strength: "established"
 our_evidence: "occurrences in two repositories; no rate"
+cues: ["schema_version", "version bump", "format version", "add field", "unknown fields", "ignore unknown", "version equality", "older reader", "record format", "backward compatible", "protocol version", "json field", "unsupported version", "once-only"]
 ---
 
 # A version bump spends the forward compatibility it was protecting

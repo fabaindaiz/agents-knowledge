@@ -10,6 +10,7 @@ about:
 rests_on: "complete mediation (1975), reference monitor (1972)"
 strength: "fifty years old"
 our_evidence: "measured in one repository, its boundary included"
+cues: ["read_only", "readonly flag", "read-only mode", "database client", "write gate", "insert", "update statement", "delete call", "external store", "production database", "dry_run", "exploration script", "audit writes", "env switch"]
 ---
 
 # One write gate makes read-only real

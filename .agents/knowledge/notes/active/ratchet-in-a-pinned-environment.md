@@ -6,6 +6,7 @@ claim: "Introduce a rule against an existing backlog as a ratchet that can only 
 confidence: "measured"
 check: "the baseline has one home and lives inside the check; the counting tools are pinned"
 boundary: "A greenfield codebase that can hold zero from day one · hermetic builds, which already pay the pinning half · a backlog small enough to clear in the same change · a rule with legitimate exceptions, which needs an exemption mechanism instead · a rule with no correct, portable zero, which stays out of the blocking gate · a dedicated pinned measurement machine · a timeout, which is not a threshold"
+cues: ["lint baseline", "existing violations", "ratchet", "noqa", "disable rule", "warnings count", "allowlist of violations", "pin version", "ruff", "eslint", "type check errors", "new rule", "advisory", "mypy baseline", "requirements pin"]
 ---
 
 # Ratchet in a pinned environment
