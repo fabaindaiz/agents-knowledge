@@ -148,3 +148,32 @@ in both arms, its description is rewritten before 0.0.30 ships it, and its cases
 classifier let through readers' flags that write or run (`find`'s `-f…` and `-okdir`, `rg --pre`, `tree -o`, and
 `git branch` with a name), and that the refusing hook let a call through when it raised. Both were fixed under tests
 before stage 2 started, so stage 2 refuses a few commands stage 1 would have run; no stage 1 session ran one.
+
+## Stage 2: results, against the registered prediction
+
+Both arms, three runs per case, the owner's default model, the router looked past: 171 sessions per arm, none in
+error, every canary fired (three of three per skill and arm), so every run is valid.
+
+| Skill | Arm | Strict fire | Misfire | Gate | Expected cases passed by majority |
+|---|---|---:|---:|---|---:|
+| `close` | current | 1.00 (0.88 to 1.00) | 0.00 | pass | 9 of 9 |
+| `close` | trimmed | 0.96 (0.82 to 0.99) | 0.00 | pass | 9 of 9 |
+| `decision-review` | current | 0.33 (0.16 to 0.56) | 0.00 | fail | 2 of 6 |
+| `decision-review` | trimmed | 0.44 (0.25 to 0.66) | 0.00 | fail | 3 of 6 |
+| `user-walk` | current | 0.72 (0.49 to 0.88) | 0.00 | fail | 4 of 6 |
+| `user-walk` | trimmed | 0.67 (0.44 to 0.84) | 0.00 | fail | 4 of 6 |
+
+Every near miss stayed quiet by majority in every arm. **The prediction held on every strict figure** (`close` at
+0.85 or more; `decision-review` between 0.3 and 0.6, the trimmed arm 0.11 higher; `user-walk` between 0.7 and
+0.9, the trimmed arm 0.06 lower) **and failed on one:** `decision-review`'s lenient fire was predicted at 0.5 to
+0.8 and equalled its strict fire. **The trimmed listing lowered no strict fire by more than 0.1 and raised no
+misfire**, so by its rule the advice of `d-5ed7e8-4c80c1` stands on the listing's size.
+
+**Why the misses are not yet a verdict on the descriptions.** Every expected case that did not fire, in both
+arms, began with a shell command that only reads but is compound: two reads chained with `&&` or `;`, or a read
+piped into `head`, or its error stream merged. The classifier refuses any chaining or pipe, so the session's window
+ended at that first call, before it could choose. The stage-1 fix allowed simple reads only; the model looks with
+compound ones. What stage 2 measured for `decision-review` and `user-walk` is "fires before any compound shell
+call", not whether the description fires once the session has looked. By the registered rule, a skill failing its
+gate in both arms has its description rewritten before 0.0.30 ships it; whether to apply it as it stands, or first
+let compound reads run and measure the two skills again, is the owner's call.
