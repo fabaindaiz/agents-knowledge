@@ -579,6 +579,51 @@ the registered at most ×0.80, with recall equal. By its rule the shorter check 
 up is a check run in a scratch copy: those now come back as the test the author must write. Exploratory: one model,
 15 diffs, two repetitions.
 
+### 4.16 0.0.30 beside 0.0.29 in one run, and the parallel-calls line isolated (pilot-11 and pilot-12, 2026-10-08)
+
+**pilot-11.** Registered before any trial, under the rule §4.14 led to (`d-5ed7e8-86df04`): `minimal`, `bundle_v29tag`
+(release 0.0.29 taken whole from its tag, with its wiring and its reviewer) and `bundle_v30` (the candidate, now with
+§4.15's reviewer), pilot-9's six tasks, three repetitions: 54 trials, all valid. No trial called an agent.
+
+| Estimated cost, geometric mean of per-task ratios (95% bootstrap over tasks) | Ratio | Registered line |
+|---|---:|---|
+| `bundle_v30` / `bundle_v29tag`, trivial tasks (2) | ×0.84 [0.74, 0.95] | ×0.90 to ×1.10 predicted; at most ×1.10 to ship: **holds**, cheaper than predicted |
+| `bundle_v30` / `bundle_v29tag`, other tasks (4) | ×0.85 [0.73, 1.04] | the same: **holds**, cheaper than predicted |
+| `bundle_v30` / `minimal`, trivial tasks | ×1.03 [0.91, 1.18] | reported toward the ×1.5 aim |
+| `bundle_v30` / `minimal`, other tasks | ×2.74 [2.14, 3.57] | reported toward the ×1.5 aim (0.0.29: ×3.22) |
+
+The discriminating tasks passed 3/3, 1/3 and 3/3 under `bundle_v30`, 2/3, 3/3 and 3/3 under `bundle_v29tag`, and
+0/3 each under `minimal`. **`contacts-second-source-l2` passed twice fewer, so by the rule 0.0.30 did not ship as it
+stood.** Both failing `bundle_v30` sessions read the index and never opened the task's target card; the wiring's new
+line asking for independent tool calls in one message was suspected, since it was the change nearest that step.
+
+**pilot-12.** Registered before any trial, after pilot-11: `bundle_v29tag`, `bundle_v30` and `bundle_v30np` (the
+candidate without that line), the three discriminating tasks, four repetitions, a new seed: 36 trials, all valid. The
+rule: the wiring is the arm that passes every discriminating task at least as often as `bundle_v29tag`;
+`bundle_v30np` if both do; neither, and 0.0.30 is held.
+
+| Task | `bundle_v30` | `bundle_v29tag` | `bundle_v30np` |
+|---|---:|---:|---:|
+| `contacts-second-source-l1` | 4/4 | 3/4 | 4/4 |
+| `contacts-second-source-l2` | 4/4 | 4/4 | 3/4 |
+| `refund-webhook-l2` | 4/4 | 4/4 | 4/4 |
+
+**The prediction is refuted on both parts**: the arm without the line passed `contacts-second-source-l2` once fewer,
+and the arm with it did not. By the rule, 0.0.30 ships with its wiring as built. On these three tasks `bundle_v30`
+cost ×0.81 [0.72, 0.95] of `bundle_v29tag`, and `bundle_v30np` ×0.99 [0.81, 1.15].
+
+**Read after both runs, not registered.** In the two pilots, 36 bundle sessions ran the two contacts tasks. The 33
+that opened the target card passed 31 times; the two that failed were `bundle_v29tag` on the L1 task, one in each
+pilot. The three that did not open it all failed: two under `bundle_v30` in pilot-11 and one under `bundle_v30np` in
+pilot-12. Skipping the card is the failure, and it happened with the line and without it, so pilot-11's suspect is
+not supported. Pooled, `contacts-second-source-l2` passed 5/7 under `bundle_v30`, 7/7 under `bundle_v29tag` and 3/4
+under `bundle_v30np`: at these sizes no two are distinguishable. The cost saving may come from the line, since
+the arm without it cost the same as 0.0.29; one run, three tasks.
+
+**What a reader should weigh.** The release ships on the second of two registered rules, and the second was written
+after the first had failed: 0.0.30 had two chances where a release under `d-5ed7e8-86df04` has one. Both runs are
+exploratory, on one model, a few tasks and three or four repetitions.
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
@@ -671,6 +716,7 @@ Seeds used: pilot-1 20260924, pilot-2 20260925, pilot-3 20260926, pilot-4 202609
 
 ## Changelog of this report
 
+- **2026-10-08** — 0.0.30 beside 0.0.29 in one run (§4.16): pilot-11 holds the cost line (×0.84 and ×0.85) and fails on a discriminating pass; pilot-12 isolates the parallel-calls line and refutes its own prediction, so 0.0.30 keeps it; read after both, the failure is a skipped card, with the line and without it; the release's second chance is stated.
 - **2026-10-08** — release 0.0.30's cost pilot (§4.14) refutes both registered lines (×1.29 and ×2.80 against `minimal`), with a discriminating pass fewer; read after the run, the bundle cost the same as 0.0.29 and the base arm less. The reviewer's shorter check phase (§4.15) costs ×0.70 with recall equal, and holds its prediction.
 - **2026-10-07** — the reviewer pilot replicated (§4.13): the index split costs the reviewer ×1.04, not at most ×0.95, and names the target twice fewer, refuting both registered predictions; three `R2` sessions reached the turn limit, and the verdict holds without them; §4.12's missing name is shown to be one of them.
 - **2026-10-07** — the reviewer pilot (§4.12): the index split saves the reviewer about a tenth of its input, not the predicted two fifths, and names the target once fewer; the registered quantity is shown to differ from the one the estimate was made for.

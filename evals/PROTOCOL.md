@@ -428,6 +428,13 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   *Decision rule:* the 0.0.30 wiring is the arm that passes every discriminating task at least as often as
   `bundle_v29tag` (pilot-11 already holds its cost); `bundle_v30np` if both do, since the line has no measured gain;
   if neither, 0.0.30 is held. Analysis: `evals/cost_smoke.py` (pass rates).
+- **2026-10-08, results — pilot-12.** 36 trials, all valid. Passes (`bundle_v30`, `bundle_v29tag`, `bundle_v30np`):
+  `contacts-second-source-l1` 4/4, 3/4, 4/4; `contacts-second-source-l2` 4/4, 4/4, 3/4; `refund-webhook-l2` 4/4 each.
+  The prediction is refuted on both parts: `bundle_v30np` passed `contacts-second-source-l2` once fewer and
+  `bundle_v30` did not. By the rule, the 0.0.30 wiring is `bundle_v30`, the line kept. Read after the run: every bundle
+  session in the two pilots that skipped the target card failed (three, with and without the line) and those that
+  opened it passed 31 of 33, so pilot-11's suspect is not supported. The rule was registered after pilot-11 had failed
+  d-5ed7e8-86df04's; that the release had a second chance is stated in `REPORT.md` §4.16.
 - **2026-10-08, exploratory — `review-3`, the reviewer's shorter check phase** (`d-5ed7e8-8174a8`). Registered before
   any trial. *Arms:* `R0`, the 0.0.30 reviewer; `RC`, the same with step 5 shortened (one check per card, the first
   reads batched, a check that needs a fault or a test returned as the test to write, a stated point to stop).
