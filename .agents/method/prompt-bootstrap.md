@@ -68,8 +68,8 @@ findings, written to one dated research document as each lands.
   includes the line that sends a change touching state, a contract, data,
   security or verification to `.agents/knowledge/INDEX.md` and the cards it
   links (and a review in a fresh context, on request, to the
-  `knowledge-reviewer` subagent installed from `.agents/agents/`), and a
-  one-line privacy reminder; make the rules executable — the gate runs `bundle.py
+  `knowledge-reviewer` subagent installed from `.agents/agents/`), a one-line
+  privacy reminder, and the other lines Phase 4 names; make the rules executable — the gate runs `bundle.py
   verify` — and report how many were already being violated; remove
   duplication; audit `docs/` against the code; write the roadmap; add the
   recurring review skill.
@@ -324,7 +324,7 @@ repository and say so. Only when the user asks for a review in a fresh context o
 names the reviewer, give the diff to the `knowledge-reviewer` subagent and wait
 for its answer; when a change deletes or rewrites stored data, moves money or
 touches authentication and none was asked for, offer one in the report, in one
-line.* It gets a second: *when decisions are the user's, ask as `.agents/method/prompt-context.md` §15 says: one message, each option shown by example with its price, the recommendation first, and *review more*; when more remain than one message holds, run `decision-review`.* **Install the agents**: copy every file of `.agents/agents/` (the
+line.* **Install the agents**: copy every file of `.agents/agents/` (the
 reviewer, and the researcher a session delegates research to) into the
 assistant's agent folder (Claude Code: `.claude/agents/`); every release
 regenerates them, and the update copies them again. **Where Cursor or Copilot
@@ -345,7 +345,10 @@ repository's own; where it names a file, a format, a step, a work item or a
 commit rule this repository defines differently (its task tracker, its plans,
 its review, its logs, its numbering), this repository's wins, and
 `.agents/carrier.toml` `adapted` records the mapping* (principle 19). And a
-short fourth: *make independent tool calls in one message, in parallel*. Where the
+short fourth: *make independent tool calls in one message, in parallel*. And a fifth: *when decisions are the user's,
+ask as `.agents/method/prompt-context.md` §15 says: one message, each option shown by
+example with its price, the recommendation first, and a "review more" answer; when more
+remain than one message holds, run `decision-review`* (principle 15). Where the
 host's plan or spec template wins, map the card lookup into it explicitly, one
 line in its header; otherwise the step has no slot and quietly stops. **Keep the host's own tools off the bundle**: exclude `.agents/` from the
 repository's linters, formatters and ratchets, which would count its tool as new
