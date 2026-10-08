@@ -76,8 +76,8 @@ summary says.
 
 ---
 
-**This is the front door.** Run it before anything else, on any repository,
-including one you did not write and do not own. The report it produces is what
+**This is the front door.** Run it before anything else, on every repository but
+an empty one, including one you did not write and do not own. The report it produces is what
 tells you which of the other documents you need — and sometimes the answer is
 none of them.
 

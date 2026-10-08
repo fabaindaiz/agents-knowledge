@@ -76,8 +76,8 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
    change against what that repo already adapted and turned down
    (`carrier.toml`).
 2. Open the agent at the repository root.
-3. **Run `prompt-evaluate.md` first.** It writes one report and changes nothing,
-   so it is safe on any repository. Its report says which document you need
+3. **Run `prompt-evaluate.md` first, on every repository but an empty one.** It
+   writes one report and changes nothing, so it is safe on any repository. Its report says which document you need
    next, and sometimes the answer is none.
 4. Paste the invocation it points at — each executable prompt carries its block
    **at the top of its own file**. *Which document to run* below covers the
@@ -90,7 +90,9 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
    that already works, **read the guarantee → existing-file table carefully**:
    it is where a helpful adoption turns into an unwanted rewrite.
 
-The first pass is a long session and produces roughly: a root `CLAUDE.md` under
+The first pass is a long session (in adopt mode, it creates only what has no
+home, and the host's own files follow one per session: principle 19) and
+produces roughly: a root `CLAUDE.md` under
 200 lines, one nested file per natural area, two to four skills, a permissions
 file, a decisions log, a references register, a roadmap, a changelog, and — the
 part most people skip — **a script that checks the structural rules the prose
@@ -872,9 +874,11 @@ Three rules that keep this from becoming drift:
 1. **Map before you write.** Produce the guarantee → existing-file table
    (*Adopting into a repository that already works*) and show it before creating
    any file. A new file is only created for a guarantee that has **no** home.
-2. **One artifact per session, never a big-bang.** Adoption is incremental by
-   construction. A session that reorganises four things has made itself
-   unreviewable.
+2. **One existing file per session, never a big-bang.** Adoption is incremental by
+   construction: the first pass proposes everything, but creates in one session
+   only the artifacts that have no home, and each file the host already has is
+   extended in a session of its own. A session that reorganises four things has
+   made itself unreviewable.
 3. **Record every substitution in `carrier.toml`.** An adaptation that is not
    written down will be re-proposed by the next update, and re-declined, forever.
 

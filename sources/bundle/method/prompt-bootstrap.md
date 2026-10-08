@@ -47,7 +47,8 @@ an existing gate — you are in **adopt mode**: read principle 19 and *Adopting
 into a repository that already works* before anything else, and produce the
 guarantee → existing-file table as part of Phase 3. **Nothing existing is
 discarded, renamed or reorganised** without my explicit approval, and every
-substitution goes in `adapted`, in `.agents/carrier.toml`.
+substitution goes in `adapted`, in `.agents/carrier.toml`. This session creates
+only what has no home; each existing file is extended in a session of its own.
 
 Follow its nine phases in order. **Phases 0, 1 and 2 are read-only, and you
 write no file until I approve the Phase 3 proposal**, but for Phase 2's
@@ -103,8 +104,8 @@ Start with Phase 0 and Phase 1, and report before proposing anything.
 
 ---
 
-**Run `prompt-evaluate.md` before this one** unless you already know the
-repository has nothing. It is read-only, it takes minutes, and its report says
+**Run `prompt-evaluate.md` before this one**, on every repository but an empty
+one. It is read-only, it takes minutes, and its report says
 whether you want bootstrap, update, or three targeted fixes instead.
 
 **What you will be asked for, and what it produces:** `prompt-context.md`,

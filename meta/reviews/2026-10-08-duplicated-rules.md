@@ -36,10 +36,10 @@ more context than the copy. Copies within one file are outside the scope.
 | N1 | The harvest's *when* table took a second hit in one repository as the admission evidence; its own rule counts across carriers | **Fixed**: a second hit is a reason to propose now; admission still counts across carriers |
 | N2 | Principle 16 writes `docs-map.toml`; the bootstrap's step 6 and checklist never named it | **Fixed**: both name it for what a script can check |
 | N3 | Reports follow the reader; evaluate writes its report in the repository's language | Not a contradiction: one is a conversation, the other a file in the repository |
-| N4 | Evaluate first: always (context and evaluate), unless the repository is known empty (bootstrap), only when unsure (update) | **The owner's** |
+| N4 | Evaluate first: always (context and evaluate), unless the repository is known empty (bootstrap), only when unsure (update) | **Decided** (`d-5ed7e8-1f2a69`): every repository but an empty one, in all four |
 | N5 | The bootstrap stated the whole-branch review's evidence without principle 19's caveat | **Fixed**: the caveat and its pointer added |
-| N6 | Principle 19: one artifact per session in adopt mode; the first pass generates every artifact in one session, adopt mode included | **The owner's** |
-| N7 | The harvest closes an in-flight session by default, and never closes somebody else's without being told | **The owner's**: which wins when the tree holds work the harvester did not do |
+| N6 | Principle 19: one artifact per session in adopt mode; the first pass generates every artifact in one session, adopt mode included | **Decided** (`d-5ed7e8-f12c89`): the first pass creates only what has no home; each existing file gets a session of its own |
+| N7 | The harvest closes an unfinished session by default, and never closes somebody else's without being told | **Decided** (`d-5ed7e8-8e6a07`): the harvest closes only its own work, names the rest in its opening question and leaves it by default |
 | N8 | `decision-review` said "reversible in minutes"; §15 says ten | **Fixed** |
 
 ## What it saved

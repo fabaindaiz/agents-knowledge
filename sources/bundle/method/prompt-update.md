@@ -103,8 +103,8 @@ about this repository, and the prune deletes things.
 
 **╚══════════════════ END OF WHAT YOU COPY ══════════════════╝**
 
-**Run `prompt-evaluate.md` first** if you are not sure this repository needs an
-update. It is read-only, and its report says which document you want.
+**Run `prompt-evaluate.md` first**, as on every repository but an empty one. It
+is read-only, and its report says which document you want.
 
 ---
 

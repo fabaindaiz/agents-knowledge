@@ -67,6 +67,10 @@ version it holds with `bundle.py changelog --since <its version>`.
   repository is a reason to propose, not admission evidence; the bootstrap's step 6 names `docs-map.toml`; its
   whole-branch review carries principle 19's caveat on the evidence; `decision-review` says ten minutes, as §15
   does. Evaluate points at the ladder, the three agents and which document to run instead of restating them.
+- **Three rules the prompts stated differently, decided** (*under review*): evaluate runs first on every repository
+  but an empty one; in adopt mode the first pass creates only what has no home, and each file the host already has
+  is extended in a session of its own (principle 19); a harvest closes only its own session's work, and names the
+  uncommitted work it did not do in its opening question, leaving it alone unless told otherwise.
 
 - **A review turn has a fixed shape** (`prompt-context.md` §15, `decision-review`): three to five short blocks of
   prose, one more answer, *review more*, opening a second level, the assumptions shown before an irreversible

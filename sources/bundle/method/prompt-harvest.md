@@ -28,10 +28,11 @@ Reads:
 - knowledge/OPEN.md
 - proposals/README.md
 
-**Close what is open before reading anything.** In each repository, finish the
-session that is in flight — its closing review, its documents put back to true,
-its changelog entry, its gate — or, if I tell you to leave it, say so and
-harvest only what is already recorded.
+**Close what is open before reading anything**, if it is this session's own work:
+its closing review, its documents put back to true, its changelog entry, its
+gate. Uncommitted work this session did not do is named in your opening
+question and, unless I say otherwise, left alone: harvest only what is already
+recorded.
 
 Then read what this repository recorded since `harvested_through` in
 `.agents/carrier.toml`, and what the human said in that period's session
@@ -88,10 +89,10 @@ as proposed.
    they showed as proposals of kind `experiment`; the rest stay queued. Say if
    you want none run, or a specific one run whatever it costs.
 
-3. Work in flight. Where a repository has an unclosed session — uncommitted
-   work, a changelog entry not written, documents a change made false — I will
-   close it first and then harvest it. Say if you want it left alone instead,
-   and I will harvest only what is already recorded and name what I skipped.
+3. Work in flight. Where a repository holds uncommitted work, a changelog entry
+   not written or documents a change made false, and this session did not do
+   it, I will leave it alone, harvest only what is already recorded and name
+   what I skipped. Say if you want me to close it first.
    Closing and harvesting end in commits only as this repository's own commit
    rules allow: where they say commits are offered, or made only when asked,
    I offer them and stop.
@@ -142,9 +143,9 @@ this repository's own: list them with `bundle.py proposals`, commit them as they
 proposal is never rewritten; a wrong one is deleted before it is committed, and the report says so), and
 propose nothing they already say.
 
-**If the maintainer says to leave work in flight alone**, harvest only what is already recorded, and
-name in the report what was skipped. Never close somebody else's session without being told: the
-uncommitted diff is their work.
+**Work in flight this session did not do is left alone** unless the maintainer says to close it: harvest
+only what is already recorded, and name in the report what was skipped. Never close somebody else's
+session without being told: the uncommitted diff is their work.
 
 ## Phase 1 — the harvest, per repository
 
