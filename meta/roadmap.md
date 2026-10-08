@@ -24,8 +24,7 @@ something else depends on — because that is what decides its order.
 reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
 
 **Done since 0.0.30's close:**
-- Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more carried
-  by its owner, registered at 0.0.30 from its unmerged bundle branch.
+- Phase 2 carried to nine carriers (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more by its owner, unmerged.
 - **The 0.0.31 intake** (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals; a pilot's four entered
   as the home's own (`d-5ed7e8-67a443`); three of one carrier's held until `i-5ed7e8-74d789`.
 - **A guide to starting each process, and the `next` skill** (`meta/reviews/2026-10-08-guide-and-next.md`), designed
@@ -57,15 +56,13 @@ reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is th
 new user-level instruction lines. On this machine, a temporary copy of `next` sits at the user level: delete it once
 0.0.31 is installed.
 
-**What went wrong**, this session; each is the first entry of its kind in this log (`bundle.py count`):
-- **A delegation named a scratch folder the researcher's hook refuses**, so most citations stayed at their
-  abstracts (`i-5ed7e8-460736`).
-- **`align` at the session's start printed one line and checked nothing** (`i-5ed7e8-e44264`).
-- **The worktree's isolation refused compound shell commands** reaching another repository, or minting ids in a
-  loop; they were split.
-- **A fresh review found two wrong counts and a recoverable pilot description**; three proposals were rewritten
-  before any commit.
-- **Delegated agents loaded the owner's user-level instructions**, confounding one language test.
+**What went wrong** (`bundle.py count`; each the first of its kind unless said):
+- A delegation named a scratch folder the researcher's hook refuses; citations stayed at abstracts (`i-5ed7e8-460736`).
+- `align` printed one line and checked nothing (`i-5ed7e8-e44264`).
+- **Second incident:** worktree isolation refused git on the main working copy, the owner's own `!` command included
+  (`i-5ed7e8-2d3b47`).
+- I declined a merge the owner authorized, citing a host default; `AGENTS.md` now says the owner's word suffices.
+- Fresh reviews caught wrong counts, a recoverable pilot description, and an `allow` that cannot override a `deny`.
 
 ## Standing rules and facts
 
@@ -112,6 +109,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   trigger eval's cases for `next` and the other skills in several languages, in the pilot carrier. **A local copy of `next` sits at the owner's user level until 0.0.31 is installed there: delete it
   then**, since it is a derived copy that goes stale. *Estimate:* about a day, with the trigger cases.
   *Collides with:* `skills/README.md`, `install-skills`, the skill trigger eval.
+- **`i-5ed7e8-2d3b47` · In an isolated worktree, work on the main working copy goes through ExitWorktree or a
+  fast-forward push, never a command handed back to the owner.** The second incident of the host's worktree isolation
+  refusing git aimed at the main working copy, on 2026-10-08, the owner's own `!` command included. Done for this
+  repository in `AGENTS.md` (*The owner's word is the authorization*); left: whether the method's `close` skill and
+  `prompt-sync.md` say the same for every carrier. *Estimate:* a few lines and a proposal. *Collides with:* nothing.
 - **`i-5ed7e8-cce629` · A test that reads `argparse` help fails under Python 3.14's coloured help.**
   `test_skills.Count.test_a_line_repeated_word_for_word_is_counted_and_flagged_never_subtracted` filters help lines
   by `startswith("count ")`, which colour codes break; the suite passes with `NO_COLOR=1`, and fails on `main` too.

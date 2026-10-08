@@ -111,6 +111,9 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
 - **Ask the user's decisions as principle 15 says** ([`prompt-context.md`](.agents/method/prompt-context.md) §15):
   one message, each option shown by example with its price, the recommendation first, and *review more*; when
   more remain than one message holds, run `decision-review`.
+- **The owner's word is the authorization to merge or push**: when the owner asks for it, do it yourself, a
+  fast-forward with the gate and the trailers checked, never forced. From an isolated worktree, push `HEAD:main`
+  or leave the worktree first; never hand the command back for the owner to run.
 - **The release is never edited by hand**: every file in `.agents/` but this repository's own
   (`carrier.toml`, `proposals/p-*.md`, `incoming/` contents) is generated. Edit its original in `sources/`, then
   run `release.py build`. Move a note between states
