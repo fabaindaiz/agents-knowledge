@@ -215,3 +215,9 @@ counts a fire after reads and before any write on both sides, and a shell read w
 stage 2b's stored sessions `decision-review` reaches 0.83 on its expected cases but misfires at 0.13 against at most
 0.1: one near miss, a request to plan changes and continue a spec, fired after four reads in two runs of three. The
 fixture's spec holds open questions, so the label may be what is wrong; that is the owner's call.
+
+**Decided by the owner (`d-5ed7e8-018f2c`).** That near miss runs as ambiguous; with it set apart, `decision-review`
+passes the lenient gate on stage 2b's sessions (0.83 on the expected cases and on the owner's words, no misfire).
+`decision-review` is judged by the lenient gate from now on, and 0.0.30 makes its description ask for the skill
+before reading; `user-walk`'s description is rewritten in 0.0.30. Both are measured again in that release's trigger
+layer before it ships.

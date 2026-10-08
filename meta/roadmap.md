@@ -20,25 +20,27 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-07, at the close.** The home's branches are merged into `main` by fast-forward and pushed, at
-the owner's request, after an isolated code review; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository
+**State on 2026-10-07, late.** `main` is pushed with the session's first part; D2 and the trigger eval's results
+are on the branch `evals/d2-decision`, not yet merged; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository
 (`d-5ed7e8-b4c23f`): read it first. 0.0.30 takes everything pending, then one release a month; 0.1.0 keeps its five
 criteria (`i-5ed7e8-3e6760`).
 
-**Running when this session closed, outside the repository:**
-- The skill trigger eval's stage 2, detached, started after `review-2`: `~/.config/agent-guides/trigger-stage2/run.sh`
-  (its inputs beside it), results in `~/.config/agent-guides/trigger-results/stage2/`, per-case majorities with
-  `stage2_majority.py` in that folder. Its prediction and a deviation are in `meta/reviews/2026-10-07-trigger-eval-adversarial.md`.
+**Running:**
+- Nothing. The trigger eval's runners, inputs and results stay outside the repository, in
+  `~/.config/agent-guides/trigger-stage2/` and `trigger-results/stage2*/`; the decision-review cases file has a backup
+  beside it from before one case was relabelled.
 
 **Next, in order:**
 1. **D2 is decided: it does not join** (`d-5ed7e8-323ea2`). The replication refuted its cost (×1.04) and its
    recall; three split-index sessions reached the turn limit, and the verdict holds without them (`evals/REPORT.md`
    §4.13). The reviewer's cost work goes to the check-phase arm and the lookup.
-2. **Report stage 2**: both arms, the gate per skill, per-case majorities, against the prediction.
+2. **The trigger eval is reported** (stages 2 and 2b in `meta/reviews/2026-10-07-trigger-eval-adversarial.md`):
+   `close` passes; trimming the listing lowered no fire (`d-5ed7e8-4c80c1` stands); `decision-review` passes the
+   lenient gate and `user-walk`'s description is rewritten in 0.0.30 (`d-5ed7e8-018f2c`).
 3. **The 0.0.30 meta-session**, with the owner's yes (`i-5ed7e8-855c42`); the export may not grow, so additions are
    paid by cuts (`meta/reviews/2026-10-07-adversarial-shrink-review.md`).
 
-**Decided this session:** `d-5ed7e8-8174a8`, `-90786d`, `-d47ee1` (`i-5ed7e8-d60fb0`), `-79b1cd`, `-b4c23f`;
+**Decided this session:** `d-5ed7e8-8174a8`, `-90786d`, `-d47ee1` (`i-5ed7e8-d60fb0`), `-79b1cd`, `-b4c23f`, `-323ea2`, `-018f2c`;
 docs-drift as proposed. **Reviewed:** a mid-size model, isolated, over the code merged; three findings fixed, the
 rest deferred to `i-5ed7e8-e09738`.
 
@@ -47,7 +49,8 @@ carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`); the subscript
 
 **What went wrong:** a gate piped into `tail` and an edit chained with `git`, again (`i-5ed7e8-bd65a0`); a `pkill`
 whose pattern matched its own command; a first check of the overlays read the wrong folders and found nothing,
-caught before it was reported.
+caught before it was reported; a session count and a claim about stage 2 were first written wrong and corrected
+before commit; one more edit was chained with `git` in a single command (it landed, but breaks the rule).
 
 ## Standing rules and facts
 
