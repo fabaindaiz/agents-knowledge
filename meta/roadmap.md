@@ -20,9 +20,8 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-08, night: 0.0.30 is cut and tagged, not pushed.** `release/0.0.30` holds it, tag `v0.0.30` on
-`293766f`; `main` and `origin` are still at 0.0.29. Push and merge wait for the owner's word, and so does carrying it
-to any carrier.
+**State on 2026-10-08, night: 0.0.30 is cut, tagged and pushed.** `main` = `origin/main`, tag `v0.0.30` on
+`293766f`. Carrying it to any carrier waits for the owner, who carries it to one carrier first.
 
 **What 0.0.30 is** (`.agents/CHANGELOG.md` [0.0.30]):
 - The tool fixes, `docs-drift`, `close`, `lookup` and the `researcher` agent.
@@ -39,19 +38,17 @@ to any carrier.
 **Reviewed** twice in a fresh context (`surfaces`, the whole branch); every finding fixed or answered.
 
 **Next, in order:**
-1. **The owner's word on the push**: fast-forward `main` to `release/0.0.30`, push with the tag.
-2. **Phase 2, when the owner names carriers.** Each gets a new branch, `splice`, `proposals --prune`, its own gate, and
+1. **Phase 2: the owner carries 0.0.30 to one carrier first**, then hands the rest to a session. Each gets a new branch, `splice`, `proposals --prune`, its own gate, and
    one commit.
    - Where Cursor or Copilot is in use, `surfaces` follows, after folding in the carrier's hand-written rules.
    - One carrier holds four proposals refused on privacy, which its owner answers or prunes.
-3. **0.0.31** (`i-5ed7e8-fca056`): the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3, the
+2. **0.0.31** (`i-5ed7e8-fca056`): the six canaries, then hooks for the surfaces that lack Claude Code's. Level 3, the
    measurement, waits on the CLIs, a key, a token and each account's terms.
    - The rest of `i-5ed7e8-8236cb`, the `CLAUDE.md` mentions outside its scope.
    - `i-5ed7e8-94f262`, at the next harvest.
 
 **Waiting on the owner:**
-- The push.
-- The carriers for phase 2.
+- The first carrier's phase 2, then the carriers for the rest.
 - The six carriers' 0.0.29 pull requests.
 - The credentials ticket.
 - The `proposed` rows in carriers' logs.
