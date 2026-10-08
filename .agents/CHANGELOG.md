@@ -48,7 +48,7 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The release is smaller, and nothing it removed was read.** The area pages (`knowledge/areas/`) are no longer
   shipped: the index routes to the cards, and each card links its note, which is how `verify` now reaches a note.
   `knowledge/OPEN.md` lists waiting candidates by slug and kind, `proposals/RECEIVED.md` keeps the verdicts of the
-  last two releases (older ids still prune), and this changelog starts at the oldest registered carrier's version.
+  last two releases (older ids still prune), and the changelog a release ships starts at the oldest registered carrier's version (the home keeps the whole).
   A carrier does nothing; a link it wrote to an area page now fails `verify`, and points at the card instead.
 - **`carrier.toml` may name the session log** (`log = "docs/agent-log.md"`); `new entry` and `count` read it, so a
   carrier whose log lives elsewhere stops passing `--log`.

@@ -3892,7 +3892,9 @@ def write_surfaces(repo: Path, kinds: list[str], *, force: bool = False) -> tupl
     if broken:
         raise RefusedError("these sources do not parse, so nothing is written: "
                            + "; ".join(f"{s} ({why})" for s, why in broken.items()))
-    links = sorted(rel for rel in expected if (repo / rel).is_symlink())
+    root = repo.resolve()
+    links = sorted(rel for rel in expected if (repo / rel).is_symlink()
+                   or not (repo / rel).parent.resolve().is_relative_to(root))
     if links:
         raise RefusedError("a link where a generated copy belongs, never written through: " + ", ".join(links))
     own = set(hand_written_surfaces(repo, kinds))
@@ -4704,8 +4706,11 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 1 if problems else 0
     if args.command == "surfaces":
         repo = Path(args.repo)
-        kinds = args.only or (read_carrier(repo / ".agents") or {}).get("surfaces") or []
-        kinds = [k for k in kinds if k in SURFACE_KINDS]
+        named = args.only or (read_carrier(repo / ".agents") or {}).get("surfaces") or []
+        if not isinstance(named, list):
+            print(f"  x {CARRIER_FILE}: `surfaces` must be a list of assistants ({', '.join(SURFACE_KINDS)})")
+            return 1
+        kinds = [k for k in named if k in SURFACE_KINDS]
         if not kinds:
             print(f'no assistant named: list them in .agents/{CARRIER_FILE} (`surfaces = ["cursor", "copilot"]`) or give --only')
             return 0

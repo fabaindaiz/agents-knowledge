@@ -86,7 +86,8 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
    judgement enters and it cannot be automated:** you know which of the repo's
    conventions are decisions and which are accidents; the agent cannot tell
    from the outside, and assumes they are decisions until you say otherwise.
-6. Approve the Phase 3 proposal; nothing is written before it. In a repository
+6. Approve the Phase 3 proposal; nothing but Phase 2's research document is
+   written before it. In a repository
    that already works, **read the guarantee → existing-file table carefully**:
    it is where a helpful adoption turns into an unwanted rewrite.
 

@@ -188,6 +188,26 @@ class Surfaces(Base):
             B.write_surfaces(repo, ["cursor"], force=True)
         self.assertEqual(outside.read_text(), "someone else's\n")
 
+    def test_a_folder_that_is_a_link_is_never_written_through(self) -> None:
+        # the final review of 2026-10-08: a linked file was refused, a linked folder was not
+        repo = self.a_repo()
+        outside = self.root / "elsewhere"
+        outside.mkdir()
+        (repo / ".cursor").mkdir()
+        (repo / ".cursor/rules").symlink_to(outside, target_is_directory=True)
+
+        with self.assertRaises(B.RefusedError):
+            B.write_surfaces(repo, ["cursor"])
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_a_carrier_file_naming_one_assistant_as_a_string_is_an_error_not_silence(self) -> None:
+        repo = self.a_repo()
+        B.write_carrier(repo / ".agents", {**B.read_carrier(repo / ".agents"), "surfaces": "cursor"})
+
+        code, out = run("surfaces", "--repo", str(repo))
+        self.assertEqual(code, 1, out)
+        self.assertIn("must be a list", out)
+
     def test_the_command_writes_what_the_carrier_names(self) -> None:
         repo = self.a_repo(["cursor"])
 

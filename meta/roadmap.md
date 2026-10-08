@@ -412,13 +412,14 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-b83f16` · Offer the current release to the carriers not reached.** At the close of 0.0.26,
   every carrier but two stays on 0.0.25 (`meta/tracking/carriers.md`): the release reached only the
   ones the owner named. At the close of 0.0.25,
-  one registered carrier, `r-a2f271` at 0.0.20, found on no branch of any repository on the machine that
-  ran it. It gets the release from a session where it is open, or through its own `incoming/`, converted
-  by hand first if its release has no tag, as 0.0.24's changelog says; then it adds the three root-file
-  lines of the bootstrap's Phase 4 and installs the reviewer. *Blocked on:* a session with it open.
-  **At the close of 0.0.29** (on the second machine), not reached: `r-419136`, `r-098980` and `r-7c8794`, whose
-  newer work is on the first machine and unpushed; `r-1190d3`, `r-81be2b` and `r-cef56f`, reviewed against the
-  release but left out of this session by the owner; and every carrier only the first machine holds.
+  one registered carrier was found on no branch of any repository on the machine that ran it. Each gets
+  the release from a session where it is open, or through its own `incoming/`, converted by hand first if
+  its release has no tag, as 0.0.24's changelog says; then it adds the three root-file lines of the
+  bootstrap's Phase 4 and installs the reviewer. *Blocked on:* a session with it open.
+  **At the close of 0.0.29** (on the second machine), not reached: three carriers whose newer work is
+  unpushed on the first machine, three the owner left out of that session after their review, and every
+  carrier only the first machine holds. **At the close of 0.0.30**, none was reached: the owner deferred
+  phase 2. Which carrier is which lives in each machine's local manifest, never here.
 
 ## Closed by measurement
 
