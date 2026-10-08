@@ -26,17 +26,14 @@ the owner's request, after an isolated code review; `v0.0.29` is the last tag. `
 criteria (`i-5ed7e8-3e6760`).
 
 **Running when this session closed, outside the repository:**
-- `review-2`, the D2 replication (about seventy of 120 trials done). If it stopped, `python3 evals/review.py run
-  evals/runs/review-2` resumes it; then `python3 evals/review.py report evals/runs/review-2`.
-- The skill trigger eval's stage 2, detached, starting when `review-2` ends: `~/.config/agent-guides/trigger-stage2/run.sh`
+- The skill trigger eval's stage 2, detached, started after `review-2`: `~/.config/agent-guides/trigger-stage2/run.sh`
   (its inputs beside it), results in `~/.config/agent-guides/trigger-results/stage2/`, per-case majorities with
   `stage2_majority.py` in that folder. Its prediction and a deviation are in `meta/reviews/2026-10-07-trigger-eval-adversarial.md`.
 
 **Next, in order:**
-1. **Decide D2** by the rule registered in `evals/PROTOCOL.md` (cost at most ×0.95 by the geometric mean of pairs;
-   recall refuted if `R2` names the target on two or more fewer naive diffs). Read each run apart and pooled, and with
-   and without the one `R2` session per run that exited with code 1 (`i-5ed7e8-e09738`): find why it ended. Write
-   `evals/REPORT.md` §4.13 and both changelogs, then ask the owner (`d-5ed7e8-c3ebf0`).
+1. **D2 is decided: it does not join** (`d-5ed7e8-323ea2`). The replication refuted its cost (×1.04) and its
+   recall; three split-index sessions reached the turn limit, and the verdict holds without them (`evals/REPORT.md`
+   §4.13). The reviewer's cost work goes to the check-phase arm and the lookup.
 2. **Report stage 2**: both arms, the gate per skill, per-case majorities, against the prediction.
 3. **The 0.0.30 meta-session**, with the owner's yes (`i-5ed7e8-855c42`); the export may not grow, so additions are
    paid by cuts (`meta/reviews/2026-10-07-adversarial-shrink-review.md`).
@@ -128,9 +125,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** An isolated review of
   the code merged that night (a mid-size model) found, besides the three fixed before the merge: `evals/review.py`
   scores a session that exited in error as a valid trial and never retries an errored one on resume (high, medium;
-  checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but one per run, both `R2` on a
-  naive diff, exited with code 1 after several times the usual input and did not name the target, so D2 is read
-  with and without them); `trigger.py` judges a command cut to 200 characters, does not drain standard error,
+  checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but three, all `R2`, reached
+  the turn limit without naming the target; D2 was read with and without them, `evals/REPORT.md` §4.13); `trigger.py` judges a command cut to 200 characters, does not drain standard error,
   calls a run valid when every canary errored, and prints a verdict for a run stopped by errors (low); the
   harness's frozen hash is not checked when a run resumes (low). A possible gap, an overlay's new file missing from
   the reviewer's diff, was checked: no diff adds a file. *Remedy:* each under a test, before the next pilot run.
