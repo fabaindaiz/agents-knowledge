@@ -42,3 +42,17 @@ not written into the skill.
   baseline's language could not be tested. With the skill, S2 answered in the user's language over that file.
 - The trigger itself, whether a phrase in another language starts the skill, is not tested here. It needs the
   skill trigger eval's cases in the pilot carrier (`i-5ed7e8-7d64ee`).
+
+## The guide reviewed with the owner, the same day
+
+Read back whole and walked one decision per turn:
+
+- **R1** (`d-5ed7e8-c60682`): the guide opens *Decide and design* with consulting the knowledge index, and `next`
+  proposes that look-up for a design decision. Test first: a fifth scenario, a design decision on a change that
+  writes to a store, proposed the decision without the look-up in both runs with the previous skill, and with it in
+  both runs with the new line; S1 rerun once, unchanged.
+- **R2** (`d-5ed7e8-1cc865`, superseding `d-5ed7e8-c0ce32`): one paste box runs any of the method's skills in a host
+  without skills.
+- **R3** (`d-5ed7e8-7334f6`): every cost is the user's time and the model's tokens, both estimates.
+- **R4** (`d-5ed7e8-503ddc`, superseding `d-5ed7e8-6f0b81`): a long procedure also starts from a phrase, the
+  agent following its paste box.

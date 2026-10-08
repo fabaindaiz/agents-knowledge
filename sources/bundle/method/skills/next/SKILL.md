@@ -25,7 +25,9 @@ the answer is three actions, each tied to a fact just read, and one question; th
 
 From the hand-off's next items and what waits on the user, the moments in `skills/README.md` (*Skills from
 elsewhere, and the moment each fits*), and what the reads found: a red check, unpushed or unmerged work, a long
-session with no close. A step this repository's own procedure does differently is proposed its way.
+session with no close. A step this repository's own procedure does differently is proposed its way. A design
+decision on a change that touches state, a contract, data, security or verification is proposed as: look it up in
+`knowledge/INDEX.md` (or `bundle.py lookup`) and open the cards it links, then decide.
 
 ## 3. Rank
 
