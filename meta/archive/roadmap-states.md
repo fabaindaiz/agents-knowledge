@@ -2,6 +2,50 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-08, close: `main` holds the 0.0.31 intake and the guide with `next`**, merged by fast-forward
+and pushed with this close. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
+
+**Done since 0.0.30's close:**
+- Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more carried
+  by its owner, registered at 0.0.30 from its unmerged bundle branch.
+- **The 0.0.31 intake** (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals; a pilot's four entered
+  as the home's own (`d-5ed7e8-67a443`); three of one carrier's held until `i-5ed7e8-74d789`.
+- **A guide to starting each process, and the `next` skill** (`meta/reviews/2026-10-08-guide-and-next.md`), designed
+  with the owner and tested first; the description cap raised by exactly `next`'s description (`d-5ed7e8-afb297`).
+- **Every carrier's root map** gains a line sending the user's decisions to principle 15 (`d-5ed7e8-8369d1`); it
+  reaches each carrier at its next update.
+- Two home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`.
+
+**Next, in order:**
+1. **0.0.31's tools:** `i-5ed7e8-74d789` (lets the held three in), `i-5ed7e8-460736` (researchers fetch whole
+   texts), `i-5ed7e8-e44264`, `i-5ed7e8-1dd18c`, `i-5ed7e8-cce629`.
+2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then
+   `i-5ed7e8-c390fa`'s rest and `i-5ed7e8-fca056`.
+3. At the release: the verdicts on the carrier's ten rows and the two new proposals.
+
+**Waiting on the owner:**
+- The twelve `unconfirmed:` reasons in `meta/decisions.md`.
+- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: one line in each
+  template's read-me).
+- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
+- Judges and time for the follow-up experiment.
+- The carriers' 0.0.30 branches; the hand-carried carrier's pull request; the credentials ticket; the `proposed` rows
+  in carriers' logs; each assistant's terms for automated runs.
+
+**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which now also copies the owner's four
+new user-level instruction lines. On this machine, a temporary copy of `next` sits at the user level: delete it once
+0.0.31 is installed.
+
+**What went wrong**, this session; each is the first entry of its kind in this log (`bundle.py count`):
+- **A delegation named a scratch folder the researcher's hook refuses**, so most citations stayed at their
+  abstracts (`i-5ed7e8-460736`).
+- **`align` at the session's start printed one line and checked nothing** (`i-5ed7e8-e44264`).
+- **The worktree's isolation refused compound shell commands** reaching another repository, or minting ids in a
+  loop; they were split.
+- **A fresh review found two wrong counts and a recoverable pilot description**; three proposals were rewritten
+  before any commit.
+- **Delegated agents loaded the owner's user-level instructions**, which confounded one scenario's language test.
+
 **State on 2026-10-08, late: 0.0.30 is on `origin`; the 0.0.31 intake has begun** on the branch
 `intake/0.0.31-pilot-and-carrier` (pushed, not merged). `v0.0.30` on `293766f` is the last tag.
 

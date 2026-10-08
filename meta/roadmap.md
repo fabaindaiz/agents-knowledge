@@ -20,8 +20,8 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-08, close: `main` holds the 0.0.31 intake and the guide with `next`**, merged by fast-forward
-and pushed with this close. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
+**State on 2026-10-08, close: `main` holds the 0.0.31 intake, the guide with `next`, and the home's `.claude/`
+reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
 
 **Done since 0.0.30's close:**
 - Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more carried
@@ -32,14 +32,18 @@ and pushed with this close. `v0.0.30` on `293766f` is the last tag; 0.0.31 is op
   with the owner and tested first; the description cap raised by exactly `next`'s description (`d-5ed7e8-afb297`).
 - **Every carrier's root map** gains a line sending the user's decisions to principle 15 (`d-5ed7e8-8369d1`); it
   reaches each carrier at its next update.
-- Two home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`.
+- **The home's `.claude/` reviewed with the owner:** the method's skills installed (`d-5ed7e8-482d59`); privacy over
+  every tracked file through `bundle.py privacy --tracked`, used by the hook and CI (`d-5ed7e8-cb5a1f`); the reminder at
+  start and after compaction (`d-5ed7e8-6f0e89`); permissions that catch accidental edits only, from the next session
+  (`d-5ed7e8-2ca3ef`).
+- Three home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`, `p-7e912173fa`.
 
 **Next, in order:**
 1. **0.0.31's tools:** `i-5ed7e8-74d789` (lets the held three in), `i-5ed7e8-460736` (researchers fetch whole
    texts), `i-5ed7e8-e44264`, `i-5ed7e8-1dd18c`, `i-5ed7e8-cce629`.
 2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then
    `i-5ed7e8-c390fa`'s rest and `i-5ed7e8-fca056`.
-3. At the release: the verdicts on the carrier's ten rows and the two new proposals.
+3. At the release: the verdicts on the carrier's ten rows and the three new proposals.
 
 **Waiting on the owner:**
 - The twelve `unconfirmed:` reasons in `meta/decisions.md`.
@@ -62,7 +66,7 @@ new user-level instruction lines. On this machine, a temporary copy of `next` si
   loop; they were split.
 - **A fresh review found two wrong counts and a recoverable pilot description**; three proposals were rewritten
   before any commit.
-- **Delegated agents loaded the owner's user-level instructions**, which confounded one scenario's language test.
+- **Delegated agents loaded the owner's user-level instructions**, confounding one language test.
 
 ## Standing rules and facts
 
