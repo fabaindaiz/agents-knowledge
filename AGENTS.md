@@ -68,7 +68,7 @@ This repository is always one of its carriers (`r-5ed7e8`). The order:
 2. **Phase 1, read-only:** `bundle.py check-local` in each carrier, then `release.py gather --out DIR`.
    Give every item a verdict and **ask for approval of the one table**
    before writing anything.
-3. **Build the release:** `release.py intake DIR --version X.Y.Z`, edit the originals in `sources/`,
+3. **Build the release** (cut only when the owner says the version is closed): `release.py intake DIR --version X.Y.Z`, edit the originals in `sources/`,
    account for every line `gather` reported lost, check the ledger `meta/tracking/INDEX.md`, add the dated `## [X.Y.Z] - DATE`
    section to `sources/bundle/CHANGELOG.md`, `release.py build` and `check`, then `release.py release X.Y.Z`,
    commit, and create the tag it prints. The full order is `meta/method/prompt-sync.md`.
