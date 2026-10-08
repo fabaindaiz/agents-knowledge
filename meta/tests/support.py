@@ -131,7 +131,7 @@ def make_bundle(root: Path, version: str = "0.0.1") -> Path:
     (agents / "proposals/RECEIVED.md").write_text(f"# Received\n\n{bundle.RECEIVED_HEADER}\n|---|---|---|\n")
     (agents / "incoming/README.md").write_text("# Incoming\n")
     (agents / "tools/bundle.py").write_text("print('same everywhere')\n")
-    bundle.write_carrier(agents, {"carrier": "r-abcdef", "adopted": "2026-01-01", "upstream": "", "adapted": [], "declined": []})
+    bundle.write_carrier(agents, {"carrier": "r-abcdef", "adopted": "2026-01-01", "upstream": "r-0a0a0a", "adapted": [], "declined": []})
     bundle.write_checksums(agents)
     return agents
 

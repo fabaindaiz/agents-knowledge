@@ -309,6 +309,24 @@ class CarrierIds(Base):
         with self.assertRaises(B.RefusedError):
             B.mint_carrier_id(repo)
 
+    def test_a_minted_carrier_names_the_home_as_its_upstream(self) -> None:
+        # an empty `upstream` is what marks the home, so a new carrier never gets one (2026-10-07)
+        repo = self.root / "one"
+        agents = make_bundle(repo)
+        readme = agents / "README.md"
+        readme.write_text(readme.read_text().replace("version:", 'home: "r-abcdef"\nversion:', 1))
+        (agents / B.CARRIER_FILE).unlink()
+        B.mint_carrier_id(repo, today="2026-01-01")
+        self.assertEqual(B.read_carrier(agents)["upstream"], "r-abcdef")
+
+    def test_an_empty_upstream_outside_the_home_fails_verify(self) -> None:
+        repo = self.root / "one"
+        agents = make_bundle(repo)
+        B.write_carrier(agents, {"carrier": "r-123456", "upstream": ""})
+        self.assertIn("upstream", "\n".join(B.verify_problems(agents)))
+        (repo / "sources/bundle").mkdir(parents=True)  # a home: it writes the release from its originals
+        self.assertNotIn("upstream", "\n".join(B.verify_problems(agents)))
+
     def test_a_missing_or_malformed_id_is_refused_with_what_to_do(self) -> None:
         repo = self.root / "one"
         agents = make_bundle(repo)

@@ -120,7 +120,7 @@ def make_home(root: Path) -> Path:
     original = home / "sources/bundle"
     for folder in ("method", "knowledge", "tools", "incoming", "proposals"):
         (original / folder).mkdir(parents=True, exist_ok=True)
-    (original / "README.md").write_text(B.dump_frontmatter({"bundle": "agent-guides", "version": "0.0.0", "released": "2026-01-01"})
+    (original / "README.md").write_text(B.dump_frontmatter({"bundle": "agent-guides", "home": "r-aaaaaa", "version": "0.0.0", "released": "2026-01-01"})
                                       + "\n# Guides\n\n## The fields that are this repository's\n\nThey are in carrier.toml.\n\n"
                                         "Reads:\n- knowledge/INDEX.md\n")
     (original / "CHANGELOG.md").write_text("# Changelog\n\n## [Unreleased]\n\n## [0.0.1] - 2026-01-02\n\n### Added\n\n- The start.\n")
@@ -173,7 +173,7 @@ version:   1
 forked_at: null
 digest:    "000000000000"
 released:  2026-01-01
-upstream:  ""
+upstream:  "r-aaaaaa"
 contains:
   method:    m-aaaaaa v1
   knowledge: k-aaaaaa v1
@@ -193,7 +193,7 @@ method:    test
 set:       [context]
 lineage:   m-aaaaaa/main
 version:   1
-upstream:  ""
+upstream:  "r-aaaaaa"
 adopted:   "2025-12-01"
 adapted:                        # local
   - "Spanish in the conversation, English in the repository; technical terms
@@ -407,7 +407,7 @@ class Carry(Base):
 
     def test_a_new_carrier_receives_the_release_and_keeps_its_own_files(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo, today="2026-01-05")
+        B.mint_carrier_id(repo, today="2026-01-05", upstream="r-aaaaaa")
         (repo / ".agents/evaluation-2026-01-05-abcdef.md").write_text("mine\n")
 
         self.splice(repo)
@@ -435,7 +435,7 @@ class Carry(Base):
 
     def test_gather_intake_splice_register_align_round_trip(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         agents = repo / ".agents"
         new = a_proposal(agents, "Seen in a repository of this kind.", target="new-idea")
@@ -464,12 +464,16 @@ class Carry(Base):
         commit(repo, "prune")
         self.R.register([repo], "2026-01-10", self.home)
         self.assertEqual(self.R.align([repo], self.home), [])
+        # work built in the home after the release does not unalign a carrier that equals its tag
+        (self.home / ".agents/method/prompt-update.md").write_text("built after the release\n")
+        B.write_checksums(self.home / ".agents")
+        self.assertEqual(self.R.align([repo], self.home), [])
 
     def test_register_remembers_names_and_paths_only_in_the_local_manifest(self) -> None:
         import tomllib
 
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         manifest = self.root / "config/agent-guides/carriers.toml"
         manifest.parent.mkdir(parents=True)
@@ -490,7 +494,7 @@ class Carry(Base):
         import tomllib
 
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         paused = make_carrier(self.root, "paused")  # started from the template: a release, no carrier.toml yet
         (paused / ".agents/README.md").write_text(README.format(version="0.0.1"))
@@ -514,7 +518,7 @@ class Carry(Base):
 
     def test_a_fork_with_rewritten_checksums_is_still_named_by_gather(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         note = repo / ".agents/knowledge/notes/active/alpha.md"
         note.write_text(note.read_text() + "\na local edit\n")
@@ -527,7 +531,7 @@ class Carry(Base):
 
     def test_intake_keeps_another_occurrence_and_refuses_what_does_not_read_whole(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         agents = repo / ".agents"
         a_proposal(agents, "A second repository.", target="old-idea", action="extends", claim="Seen again here.", lacks="nothing")
@@ -550,7 +554,7 @@ class Carry(Base):
 
     def test_gather_names_and_intake_refuses_a_proposal_that_fails_privacy_or_warns_unanswered(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         agents = repo / ".agents"
         count = "about " + "4," + "812" + " rows a day"
@@ -588,7 +592,7 @@ class Carry(Base):
 
     def test_a_forked_carrier_is_named_by_gather(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         note = repo / ".agents/knowledge/notes/active/alpha.md"
         note.write_text(note.read_text() + "\na local edit\n")
@@ -600,7 +604,7 @@ class Carry(Base):
 
     def test_an_old_outbox_becomes_proposals_with_the_ids_gather_gave_them(self) -> None:
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         old_outbox(repo / ".agents", ["| kept-idea — never gathered | K | nothing | a repository | 2026-01-06 |"])
         commit(repo, "harvest on 0.0.23")
@@ -703,7 +707,7 @@ class Carry(Base):
         import tarfile
 
         repo = make_carrier(self.root, "one")
-        B.mint_carrier_id(repo)
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
         path = a_proposal(repo / ".agents", "Seen once.")
         pack = self.root / "pack.tar"

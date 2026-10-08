@@ -1,5 +1,6 @@
 ---
 bundle: "agent-guides"
+home: "r-5ed7e8"
 version: "0.0.29"
 released: "2026-10-05"
 ---
@@ -120,7 +121,7 @@ which no release writes and `SHA256SUMS` does not list:
 |---|---|
 | `carrier` | this repository's random id, `r-` and six hex, minted once by `bundle.py carrier-id --mint` |
 | `adopted` | the date it took the bundle |
-| `upstream` | where it takes releases from; empty in the home repository |
+| `upstream` | the id of the repository it takes releases from, which this README names as `home`; empty only in a home, and `verify` fails an empty one anywhere else |
 | `harvested_through` | the last date its harvest read; the next harvest starts there |
 | `adapted` | its renamings and substitutions, one line each |
 | `declined` | what it refused, each with a reason written for a stranger |

@@ -34,6 +34,7 @@ import argparse
 import datetime
 import importlib.util
 import re
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -1456,8 +1457,13 @@ def align(repos: list[Path], root: Path = ROOT) -> list[str]:
     """Phase 3: every carrier verifies, holds the home's release byte for byte, and is registered at it."""
     problems = []
     ids = B.carrier_ids(repos)
-    reference = (root / ".agents" / B.CHECKSUMS).read_text(encoding="utf-8")
     version = B.bundle_version(root / ".agents")
+    # The tagged release, not the working one: work built in the home after a release would otherwise unalign
+    # every carrier that still equals its tag file for file (proposal `align-compares-against-the-tag`).
+    shown = subprocess.run(["git", "-C", str(root), "show", f"v{version}:.agents/{B.CHECKSUMS}"], capture_output=True, text=True)
+    if shown.returncode:
+        return [f"the home has no tag v{version}: cut the release before aligning to it"]
+    reference = shown.stdout
     table = (root / "meta/tracking/carriers.md").read_text(encoding="utf-8")
     for repo, name in zip(repos, _names(repos)):
         tree = repo / ".agents"

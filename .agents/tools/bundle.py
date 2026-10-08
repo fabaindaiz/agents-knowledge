@@ -1227,7 +1227,7 @@ def repo_carrier_id(repo: Path) -> str:
     return value
 
 
-def mint_carrier_id(repo: Path, today: str | None = None) -> str:
+def mint_carrier_id(repo: Path, today: str | None = None, upstream: str | None = None) -> str:
     """Writes a new random id into a repository's carrier file, creating the file if needed, and returns it.
 
     Refused when one is already stored, never replaced: records carry the id as their prefix
@@ -1238,7 +1238,12 @@ def mint_carrier_id(repo: Path, today: str | None = None) -> str:
     if present is not None:
         raise RefusedError(f"{repo}: already stores {present}; an id is minted once and never replaced")
     tree = repo / ".agents"
-    data = read_carrier(tree) or {"adopted": today or datetime.date.today().isoformat(), "upstream": "",
+    # The release names its home; an empty `upstream` is what marks the home itself (2026-10-07).
+    try:
+        home = read_frontmatter((tree / "README.md").read_text(encoding="utf-8"))[0].get("home") if (tree / "README.md").is_file() else None
+    except FrontmatterError:
+        home = None
+    data = read_carrier(tree) or {"adopted": today or datetime.date.today().isoformat(), "upstream": upstream or home or "",
                                    "adapted": [], "declined": []}
     minted = "r-" + secrets.token_hex(3)
     write_carrier(tree, {CARRIER_FIELD: minted, **data})
@@ -2811,6 +2816,9 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
         problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
                      if k in carrier and not isinstance(carrier[k], list)]
+        if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():  # a home writes releases from there
+            problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
+                            "the repository this one takes releases from (the release names it as `home` in README.md)")
         problems += private_folder_problems(tree.parent, carrier)
     return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
 
@@ -3607,6 +3615,8 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("carrier-id", help="a repository's stored random id; --mint writes one where there is none")
     p.add_argument("repo", nargs="?", default=str(OWN_REPO))
     p.add_argument("--mint", action="store_true", help=f"write a new random id into .agents/{CARRIER_FILE}; refused if one is stored")
+    p.add_argument("--upstream", help="with --mint: the id of the repository this one takes releases from "
+                                      "(default: the home the release's README names)")
     p = sub.add_parser("id", help="a record id: decision, roadmap item or session entry (d|i|s TEXT...)")
     p.add_argument("kind", choices=list(RECORD_KINDS))
     p.add_argument("parts", nargs="+", metavar="TEXT")
@@ -3753,7 +3763,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 1 if found else 0
     if args.command == "carrier-id":
         if args.mint:
-            print(f"minted {mint_carrier_id(Path(args.repo))} in {Path(args.repo) / '.agents' / CARRIER_FILE}; commit it")
+            print(f"minted {mint_carrier_id(Path(args.repo), upstream=args.upstream)} in {Path(args.repo) / '.agents' / CARRIER_FILE}; commit it")
         else:
             print(repo_carrier_id(Path(args.repo)))
         return 0
