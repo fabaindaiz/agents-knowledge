@@ -1,4 +1,4 @@
-# Bootstrap a repository for Claude Code
+# Bootstrap a repository for coding agents
 
 ## ▶ Paste this to start
 
@@ -9,7 +9,8 @@ need to read it first.
 **╔══════════ COPY EVERYTHING INSIDE THE BOX BELOW ══════════╗**
 
 ~~~text
-You are preparing this repository to be worked on with **Claude Code**. The
+You are preparing this repository to be worked on with coding agents: **Claude
+Code**, and Cursor or Copilot where they are in use (experimental). The
 method is `prompt-bootstrap.md` and `prompt-context.md`, in `.agents/` or
 wherever they were dropped in this repo.
 
@@ -325,7 +326,11 @@ touches authentication and none was asked for, offer one in the report, in one
 line.* **Install the agents**: copy every file of `.agents/agents/` (the
 reviewer, and the researcher a session delegates research to) into the
 assistant's agent folder (Claude Code: `.claude/agents/`); every release
-regenerates them, and the update copies them again. The researcher's hook,
+regenerates them, and the update copies them again. **Where Cursor or Copilot
+is in use** (experimental), list them in `carrier.toml` (`surfaces = ["cursor",
+"copilot"]`) and run `bundle.py surfaces --write`: it writes their copies of
+`.claude/rules/` and of those agents, and Copilot's pointer to `AGENTS.md`, and
+`verify` then fails a copy that is stale or edited. The researcher's hook,
 which keeps its shell to reads and fetches into a temporary folder, runs only
 in a folder the host trusts. Without the line the knowledge
 base is a folder nobody opens. The same map gets a second line, also in the

@@ -147,6 +147,7 @@ python3 .agents/tools/bundle.py privacy                # nothing private, direct
 python3 .agents/tools/bundle.py privacy --commits @{u}..HEAD   # the same, over what a push sends
 python3 .agents/tools/bundle.py trailers               # no commit message credits an assistant
 python3 .agents/tools/bundle.py docs-drift --range origin/main..HEAD   # documents a change left stale (docs-map.toml)
+python3 .agents/tools/bundle.py surfaces --only cursor copilot   # Cursor's and Copilot's copies of .claude/ (experimental)
 python3 .agents/tools/bundle.py close --base origin/main   # a close's deterministic checks in one command
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates
 python3 .agents/tools/bundle.py decisions meta/decisions.md   # the home's decisions log: status, supersession, a person over an agent

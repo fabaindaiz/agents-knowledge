@@ -11,6 +11,15 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ### Added
 
+- **Experimental support for Cursor and GitHub Copilot: `bundle.py surfaces`.** A carrier that lists them in
+  `carrier.toml` (`surfaces = ["cursor", "copilot"]`) runs `bundle.py surfaces --write`, which writes their copies
+  of what Claude Code reads: each `.claude/rules/` file as a Cursor `.mdc` rule and a Copilot instructions file (its
+  `paths:` as their globs), each `.claude/agents/` file as a Cursor subagent (read-only when it cannot edit) and a
+  Copilot custom agent (its tools in Copilot's names), and a Copilot pointer to `AGENTS.md` where none was written by
+  hand. Each copy names its source; `verify` fails a copy that is stale, edited or orphaned, and a file written by hand
+  is never overwritten without `--force`. The update says how to fold a carrier's hand-written rules into their
+  sources first. Not yet: hooks for the surfaces that do not import Claude Code's, which stay in git hooks and CI, and
+  any measurement in those assistants. A carrier that lists nothing changes nothing.
 - **`bundle.py docs-drift`: documentation drift caught by a script, not by review** (*under review*). A carrier keeps
   `docs-map.toml` at its root: each document agents load or follow, the globs it describes, a reason, and whether a
   change without it blocks or warns. `--range BASE..HEAD` fails a blocking rule unless a commit in the range says
@@ -72,7 +81,7 @@ version it holds with `bundle.py changelog --since <its version>`.
   now read `AGENTS.md` and, for compatibility, Claude Code's skill and subagent folders and most of its hooks; the
   CLIs of both also read `CLAUDE.md`; Copilot runs hooks in VS Code too. So the one-source design reaches all three,
   and what is generated is only what has no common place: per-area rules and a subagent's tool limit. A carrier
-  changes nothing; the tools that generate and check those surfaces come in the next release.
+  changes nothing unless it lists them in `surfaces` (above).
 - **Three rules the prompts stated differently, decided** (*under review*): evaluate runs first on every repository
   but an empty one; in adopt mode the first pass creates only what has no home, and each file the host already has
   is extended in a session of its own (principle 19); a harvest closes only its own session's work, and names the

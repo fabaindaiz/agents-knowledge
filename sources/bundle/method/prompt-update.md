@@ -214,7 +214,10 @@ repository's own artifacts, which do not take the practice up.
    knowledge line, its privacy line and its line that this repository's procedures win the ones
    `prompt-bootstrap.md` Phase 4 words, in this repository's own words. The installed copy is never edited:
    every release regenerates it; adapt it through the root file, and record the adaptation in
-   `adapted`.
+   `adapted`. **Where `carrier.toml` lists `surfaces`** (Cursor, Copilot; experimental), run `bundle.py surfaces
+   --write` after the copy. The first time, it refuses a file written by hand at a copy's path, and lists the
+   others it leaves alone: compare each with the source it parallels, move what only it says into that source,
+   then delete it or run with `--force`; report what moved.
 
    **3b'. Keep the host's tools off the bundle**: if a linter, formatter or ratchet of this repository
    now reads `.agents/`, exclude it (`prompt-bootstrap.md` Phase 4); a permission rule written as a list of

@@ -1628,6 +1628,18 @@ per-area rules (one glob in three spellings) and a subagent's tool limit. Where
 a surface's import of another assistant's files is a setting, say so in the
 repository, since it can be switched off.
 
+**Generated, and checked (experimental since 0.0.30).** A carrier that lists
+Cursor or Copilot in `carrier.toml` (`surfaces`) runs `bundle.py surfaces
+--write`: each `.claude/rules/*.md` becomes a Cursor `.mdc` rule (`paths:` to
+`globs:`) and a Copilot instructions file (`applyTo:`), each `.claude/agents/`
+file a Cursor subagent (`readonly` when it cannot edit) and a Copilot custom
+agent (its tools in Copilot's aliases), and Copilot gets a pointer to
+`AGENTS.md` where none was written by hand. Each copy names its source, and
+`verify` fails a copy that is stale, edited, or left behind by its source. A file
+written by hand is never overwritten without `--force`. What it does not do yet:
+hooks for the surfaces that do not import Claude Code's (the guarantee stays in
+git hooks and CI), and any measurement of the other assistants.
+
 **ASSUMPTION beyond that date:** all three products move quickly, and this table
 is the shape rather than the specification. Verify file names, frontmatter
 fields and loading behaviour against the versions actually installed, and mark

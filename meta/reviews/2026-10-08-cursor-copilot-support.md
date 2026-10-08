@@ -1,6 +1,8 @@
 # What supporting Cursor and Copilot takes (2026-10-08)
 
-Roadmap item `i-5ed7e8-fca056`; scope decided by the owner (`d-5ed7e8-0ff9eb`). **Level 1:** the method says what to
+Roadmap item `i-5ed7e8-fca056`; scope decided by the owner (`d-5ed7e8-0ff9eb`, then `d-5ed7e8-1e7a9a`: levels 1
+and 2 joined 0.0.30 as experimental support, and level 2's items 1 to 3 and 5 were built that day, as
+`bundle.py surfaces`). **Level 1:** the method says what to
 write for each assistant. **Level 2:** the bundle generates and checks each assistant's surfaces from one source.
 **Level 3:** the bundle's efficacy is measured with each assistant's own CLI. Levels 1 and 2 are built and level 3
 is designed in 0.0.30's successor; 0.0.30 closes with this document, the item and the method's table corrected.

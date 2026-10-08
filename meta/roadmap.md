@@ -74,13 +74,14 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 - **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
   one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
-  0.0.30, done (`meta/reviews/2026-10-08-cursor-copilot-support.md`, and the method's capability table corrected);
-  **0.0.31 builds levels 1 and 2 and designs level 3.** In order: `bundle.py surfaces`, which generates Cursor's
-  `.mdc` rules and Copilot's instructions from `.claude/rules/` and fails a stale or hand-edited copy; the reviewer
-  and the researcher written for Cursor (`readonly`) and Copilot (its tool aliases) from their templates; a
-  generated Copilot pointer, or none; the hooks kept in git and CI, with an assistant's own hook file only where its
-  surface lacks the import; the prompts' "Claude Code" where any assistant is meant. First, the six canaries the
-  document lists (does the Cursor IDE read `CLAUDE.md`, do Claude-format hooks run in the Cursor CLI on Linux, …).
+  0.0.30 (`meta/reviews/2026-10-08-cursor-copilot-support.md`). **Levels 1 and 2 shipped in 0.0.30 as experimental**
+  (`d-5ed7e8-1e7a9a`, superseding `d-5ed7e8-0ff9eb`): the capability table corrected, the bootstrap neutral,
+  `bundle.py surfaces` generating and checking Cursor's and Copilot's copies of `.claude/rules/` and `.claude/agents/`
+  and Copilot's pointer. **Left:** the six canaries the document lists (does the Cursor IDE read `CLAUDE.md`, do
+  Claude-format hooks run in the Cursor CLI on Linux, does Copilot load both a `.claude/agents/` and a
+  `.github/agents/` agent of one name, …), then hooks for the surfaces that lack the import; `memory-diff` and `turns`
+  for the other assistants' stores; a review bot's file, if the owner uses one; each carrier's migration of its
+  hand-written rules, at its update.
   Level 3: an adapter per CLI in `evals/harness.py`, the same Claude model, a fresh home per trial, pilot-12's three
   tasks; Cursor documents no cost per run. *Blocked for level 3 on the owner:* installing both CLIs, a key and a
   token, and each account's terms for automated runs. *Collides with:* every carrier's update (a migration of its
