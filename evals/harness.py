@@ -49,14 +49,14 @@ HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
 CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b",
-              "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"]
+              "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag", "bundle_v30np"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag", "bundle_v30np"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag", "bundle_v30np"],
 }
 
 ROUTING = """
@@ -108,12 +108,14 @@ ROUTING_V30 = ROUTING_V23B + "\nMake independent tool calls in one message, in p
 ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "bundle_v23": ROUTING_V23,
             "bundle_v23b": ROUTING_V23B, "bundle_v29": ROUTING_V23B, "bundle_v29_d2": ROUTING_V23B, "bundle_v30": ROUTING_V30}
 REVIEWER_ARMS = ("bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30")
-ALL_AGENTS_ARMS = ("bundle_v30",)
+ALL_AGENTS_ARMS = ("bundle_v30", "bundle_v30np")
 # pilot-11 (2026-10-08): a release is measured against the previous one in the same run, the previous one taken
 # whole from its tag with its own wiring, so both share one base arm's noise.
 TAG_BUNDLES = {"bundle_v29tag": "v0.0.29"}
 ROUTINGS["bundle_v29tag"] = ROUTING_V23B
-REVIEWER_ARMS = REVIEWER_ARMS + ("bundle_v29tag",)
+REVIEWER_ARMS = REVIEWER_ARMS + ("bundle_v29tag", "bundle_v30np")
+# pilot-12 (2026-10-08): 0.0.30 without its parallel-calls line, the suspect for a discriminating pass lost.
+ROUTINGS["bundle_v30np"] = ROUTING_V23B
 LOOKUP_HEADING = "## By what you are about to do"
 
 
@@ -315,7 +317,7 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     if condition == "minimal":
         agents_md = task["agents_minimal"]
     elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30",
-                       *TAG_BUNDLES):
+                       "bundle_v30np", *TAG_BUNDLES):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
         copy_bundle(ws, tag_bundle(TAG_BUNDLES[condition]) if condition in TAG_BUNDLES else None)
         reviewer = ws / ".agents/agents/knowledge-reviewer.md"

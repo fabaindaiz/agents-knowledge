@@ -415,6 +415,19 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   every discriminating task passes under `bundle_v30` at least as often as under `bundle_v29tag`. *Decision rule:*
   0.0.30 ships if both ratios are at most ×1.10 and no discriminating task passes fewer times; `bundle_v30` /
   `minimal` is reported toward the ×1.5 aim. Analysis: `evals/cost_smoke.py`.
+- **2026-10-08, results — pilot-11.** 54 trials, all valid. `bundle_v30` / `bundle_v29tag` cost ×0.84 trivial and
+  ×0.85 other, within the line; but `contacts-second-source-l2` passed 1/3 under `bundle_v30` against 3/3 under
+  `bundle_v29tag` (pilot-10: 1/2), so by d-5ed7e8-86df04 0.0.30 does not ship as it stands. Read from the transcripts
+  after the run: every failing `bundle_v30` session read the index and never opened the target card, several reading
+  in bulk through the shell; the suspect is the wiring's new line on parallel tool calls (`REPORT.md` §4.16).
+- **2026-10-08, exploratory — pilot-12, the parallel-calls line isolated.** Registered before any trial. *Arms:*
+  `bundle_v29tag`; `bundle_v30`; `bundle_v30np`, the same candidate without the parallel-calls line. *Tasks:* the three
+  discriminating ones (`contacts-second-source-l1`, `contacts-second-source-l2`, `refund-webhook-l2`), four
+  repetitions, a new seed (20261013), pilot-11's model and isolation: 36 trials. *Prediction:* `bundle_v30np` passes
+  as often as `bundle_v29tag` on every task, and `bundle_v30` passes `contacts-second-source-l2` fewer times.
+  *Decision rule:* the 0.0.30 wiring is the arm that passes every discriminating task at least as often as
+  `bundle_v29tag` (pilot-11 already holds its cost); `bundle_v30np` if both do, since the line has no measured gain;
+  if neither, 0.0.30 is held. Analysis: `evals/cost_smoke.py` (pass rates).
 - **2026-10-08, exploratory — `review-3`, the reviewer's shorter check phase** (`d-5ed7e8-8174a8`). Registered before
   any trial. *Arms:* `R0`, the 0.0.30 reviewer; `RC`, the same with step 5 shortened (one check per card, the first
   reads batched, a check that needs a fault or a test returned as the test to write, a stated point to stop).

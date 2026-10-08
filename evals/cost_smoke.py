@@ -39,7 +39,7 @@ PREDICTIONS = {
     "bundle_v30": {"trivial": (1.2, 1.23), "normal": (2.2, 2.70)},
 }
 METRICS = ("cost", "turns", "out_tokens")
-ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag")
+ARMS = ("minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag", "bundle_v30np")
 CHECK_MENTION = re.compile(r"(?i)\b(verify by|the check|its check|card)\b")
 
 
@@ -113,7 +113,7 @@ def main(argv: list[str] | None = None) -> int:
          "| Group | Contrast | Metric | Ratio | 95% CI | Tasks | Prediction | Verdict |",
          "|---|---|---|---:|---|---:|---|---|"]
     for group, tasks in groups.items():
-        for a_arm, b_arm in (("bundle_v30", "bundle_v29tag"), ("bundle_v29tag", "minimal"), ("bundle_v30", "minimal"), ("bundle_v29_d2", "minimal"), ("bundle_v29", "minimal"), ("bundle_v29_d2", "bundle_v29"),
+        for a_arm, b_arm in (("bundle_v30np", "bundle_v29tag"), ("bundle_v30", "bundle_v29tag"), ("bundle_v29tag", "minimal"), ("bundle_v30", "minimal"), ("bundle_v29_d2", "minimal"), ("bundle_v29", "minimal"), ("bundle_v29_d2", "bundle_v29"),
                              ("bundle_v23b", "minimal"), ("bundle_v23", "minimal"), ("bundle_v22", "minimal"), ("bundle", "minimal"), ("bundle_v22", "bundle")):
             for metric in METRICS:
                 cell: dict = {}
@@ -142,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
           "| Group | Arm | Trials | Read the bundle | Index | Area index | Notes opened (mean) | Mentions a check | Called the reviewer |",
           "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
     for group, tasks in groups.items():
-        for arm in ("bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"):
+        for arm in ("bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag", "bundle_v30np"):
             rs = [adherence(run, r) for r in valid if r["task"] in tasks and r["condition"] == arm]
             if not rs:
                 continue
