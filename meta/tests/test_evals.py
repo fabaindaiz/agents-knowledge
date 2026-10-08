@@ -45,3 +45,22 @@ class Pilot9Arms(Base):
             ws = self.root / arm
             info = H.prepare(H.load_task("cli-help-typo"), arm, ws)
             self.assertEqual(H.release_digest(ws, info), frozen, arm)
+
+
+class TaggedReleaseArm(Base):
+    """pilot-11: the previous release, taken whole from its tag, beside the candidate in the same run."""
+
+    def test_the_tagged_arm_holds_the_release_its_tag_holds(self) -> None:
+        import subprocess
+        if subprocess.run(["git", "-C", str(ROOT), "rev-parse", "-q", "--verify", "refs/tags/v0.0.29"], capture_output=True).returncode:
+            self.skipTest("the tag v0.0.29 is not in this clone")
+        H = _load("harness", ROOT / "evals/harness.py")
+        tree = H.tag_bundle("v0.0.29")
+        self.assertEqual(H._bundle_tool().bundle_version(tree), "0.0.29")
+        ws = self.root / "ws"
+        task = H.load_task("cli-help-typo")
+        info = H.prepare(task, "bundle_v29tag", ws)
+        self.assertEqual(H._bundle_tool().bundle_version(ws / ".agents"), "0.0.29")
+        self.assertIn(H.ROUTING_V23B.strip(), (ws / "AGENTS.md").read_text())
+        self.assertTrue((ws / ".claude/agents/knowledge-reviewer.md").is_file())
+        self.assertEqual(info["condition"], "bundle_v29tag")

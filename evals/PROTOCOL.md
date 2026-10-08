@@ -402,6 +402,19 @@ to `meta/roadmap.md` or `meta/tracking/candidates.md`.
   as 0.0.29; every discriminating task passes as often as under `bundle_v29` (2/2). *Decision rule:* 0.0.30 does not
   ship if either ratio exceeds 0.0.29's upper end (×1.23, ×2.70) or a discriminating task passes fewer times; the
   cost levers that made it are then re-read. Analysis: `evals/cost_smoke.py`.
+- **2026-10-08, results — pilot-10.** Both registered lines refuted (×1.29 and ×2.80 against `minimal`) and a
+  discriminating pass fewer (1/2): by its rule 0.0.30 does not ship as it stood. Read after the run, the bundle cost
+  the same as 0.0.29 in absolute terms and the base arm less, so the owner chose to measure again in one run with the
+  previous release beside it (`REPORT.md` §4.14, `meta/decisions.md` d-5ed7e8-86df04).
+- **2026-10-08, exploratory — pilot-11, 0.0.30 beside 0.0.29 in one run** (d-5ed7e8-86df04). Registered before any
+  trial. *Arms:* `minimal`; `bundle_v29tag`, release 0.0.29 taken whole from its tag (digest `53522b869add`; pilot-9's
+  `bundle_v29` was the home's working copy, `61942017fec6`) with its wiring and its reviewer; `bundle_v30`, the 0.0.30
+  candidate now with the reviewer's shorter check phase, its wiring and every agent it ships. *Tasks, model,
+  isolation:* pilot-9's six, its model, three repetitions, a new seed (20261012), the same degraded isolation: 54
+  trials. *Predictions:* `bundle_v30` / `bundle_v29tag` within ×0.90 to ×1.10 on the trivial and on the other tasks;
+  every discriminating task passes under `bundle_v30` at least as often as under `bundle_v29tag`. *Decision rule:*
+  0.0.30 ships if both ratios are at most ×1.10 and no discriminating task passes fewer times; `bundle_v30` /
+  `minimal` is reported toward the ×1.5 aim. Analysis: `evals/cost_smoke.py`.
 - **2026-10-08, exploratory — `review-3`, the reviewer's shorter check phase** (`d-5ed7e8-8174a8`). Registered before
   any trial. *Arms:* `R0`, the 0.0.30 reviewer; `RC`, the same with step 5 shortened (one check per card, the first
   reads batched, a check that needs a fault or a test returned as the test to write, a stated point to stop).

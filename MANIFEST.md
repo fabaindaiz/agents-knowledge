@@ -62,7 +62,7 @@ The checked ones fail `release.py check`; the measured one is read from the rele
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |
 | One card | at most 360 | 360 | checked (existing) |
 | The roadmap's hand-off, *Where we are* | about 2,900 words | 500 words | checked |
-| Cost against `minimal`, non-trivial tasks | about ×2.1 to ×2.3 | no release raises it; aim ×1.5 | measured, every release |
+| Cost against `minimal`, non-trivial tasks | about ×2.1 to ×2.3 | no release costs more than ×1.10 of the previous, in the same run; aim ×1.5 | measured, every release |
 
 ## Direction
 

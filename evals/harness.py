@@ -49,14 +49,14 @@ HIDDEN_DIR = "_hidden_eval_tests"
 
 # The conditions, and which task families run them. See PROTOCOL.md, "Conditions".
 CONDITIONS = ["none", "minimal", "bundle", "ablated", "oracle", "oracle_placebo", "bundle_v22", "bundle_v23", "bundle_v23b",
-              "bundle_v29", "bundle_v29_d2", "bundle_v30"]
+              "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"]
 FAMILY_CONDITIONS = {
     "judgment": CONDITIONS,
     "boundary": CONDITIONS,
-    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"],
+    "neutral": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"],
     # A change that touches no state, contract, data, security or verification: the case the 0.0.22 wiring
     # tells the agent not to consult the knowledge for (pilot-6, the cost smoke test).
-    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"],
+    "trivial": ["none", "minimal", "bundle", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30", "bundle_v29tag"],
 }
 
 ROUTING = """
@@ -109,6 +109,11 @@ ROUTINGS = {"bundle": ROUTING, "ablated": ROUTING, "bundle_v22": ROUTING_V22, "b
             "bundle_v23b": ROUTING_V23B, "bundle_v29": ROUTING_V23B, "bundle_v29_d2": ROUTING_V23B, "bundle_v30": ROUTING_V30}
 REVIEWER_ARMS = ("bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30")
 ALL_AGENTS_ARMS = ("bundle_v30",)
+# pilot-11 (2026-10-08): a release is measured against the previous one in the same run, the previous one taken
+# whole from its tag with its own wiring, so both share one base arm's noise.
+TAG_BUNDLES = {"bundle_v29tag": "v0.0.29"}
+ROUTINGS["bundle_v29tag"] = ROUTING_V23B
+REVIEWER_ARMS = REVIEWER_ARMS + ("bundle_v29tag",)
 LOOKUP_HEADING = "## By what you are about to do"
 
 
@@ -229,16 +234,32 @@ def note_text(slug: str) -> str:
 
 # ---------------------------------------------------------------- conditions
 
-def copy_bundle(dst: Path) -> None:
+def tag_bundle(tag: str) -> Path:
+    """A release as its tag holds it, extracted once into a temporary folder outside every repository."""
+    import io, tarfile, tempfile
+    root = Path(tempfile.gettempdir()) / f"agent-guides-bundle-{tag}"
+    if not (root / ".agents/SHA256SUMS").is_file():
+        shutil.rmtree(root, ignore_errors=True)
+        data = subprocess.run(["git", "archive", "--format=tar", tag, ".agents"], cwd=ROOT, capture_output=True, check=True).stdout
+        with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+            archive.extractall(root, filter="data")
+    return root / ".agents"
+
+
+def tag_digest(tag: str) -> str:
+    return hashlib.sha256((tag_bundle(tag) / "SHA256SUMS").read_bytes()).hexdigest()[:12]
+
+
+def copy_bundle(dst: Path, source: Path | None = None) -> None:
     def ignore(d, names):
         skip = {"__pycache__"}
         if Path(d).name == "incoming":
             skip |= {n for n in names if n != "README.md"}
         if Path(d).name == "proposals":
             skip |= {n for n in names if n.startswith("p-")}
-        skip |= {"tracking"} if Path(d) == BUNDLE else set()
+        skip |= {"tracking"} if Path(d) == (source or BUNDLE) else set()
         return skip & set(names) | {n for n in names if n.startswith("evaluation-")}
-    shutil.copytree(BUNDLE, dst / ".agents", ignore=ignore)
+    shutil.copytree(source or BUNDLE, dst / ".agents", ignore=ignore)
     # A carrier holds its own carrier file; the workspace gets a neutral one, not the home's.
     _bundle_tool().write_carrier(dst / ".agents", {"carrier": "r-000000", "adopted": "2026-01-01", "upstream": "",
                                                   "adapted": [], "declined": []})
@@ -293,9 +314,10 @@ def prepare(task: dict, condition: str, ws: Path) -> dict:
     agents_md = None
     if condition == "minimal":
         agents_md = task["agents_minimal"]
-    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30"):
+    elif condition in ("bundle", "ablated", "bundle_v22", "bundle_v23", "bundle_v23b", "bundle_v29", "bundle_v29_d2", "bundle_v30",
+                       *TAG_BUNDLES):
         agents_md = task["agents_minimal"].rstrip() + "\n" + ROUTINGS[condition]
-        copy_bundle(ws)
+        copy_bundle(ws, tag_bundle(TAG_BUNDLES[condition]) if condition in TAG_BUNDLES else None)
         reviewer = ws / ".agents/agents/knowledge-reviewer.md"
         if condition in REVIEWER_ARMS and reviewer.is_file():
             (ws / ".claude/agents").mkdir(parents=True, exist_ok=True)
@@ -636,6 +658,7 @@ def cmd_plan(args) -> int:
         "workspace_base": args.workspace_base,
         "max_turns": args.max_turns, "timeout_s": args.timeout, "seed": args.seed, "reps": args.reps,
         "bundle_digest": digest[0] if digest else None, "bundle_version": bundle_version, "repo_head": head, "repo_dirty": dirty,
+        "tag_digests": {c: tag_digest(TAG_BUNDLES[c]) for c in sorted({tr["condition"] for tr in ordered}) if c in TAG_BUNDLES},
         "routing": ROUTINGS,
         "tools": TOOLS + (["Agent"] if args.subagents else []),
         "tasks": {t["id"]: {"family": t["family"], "level": t.get("level", "L0"), "trap": t.get("trap", t["id"]),
@@ -677,8 +700,9 @@ def run_trial(plan: dict, tr: dict, run: Path, dry: bool) -> dict:
     # (pilot-7, 2026-09-28): each trial records the digest it got, and one that differs is not run.
     if (ws / ".agents/SHA256SUMS").exists():
         info["bundle_digest"] = release_digest(ws, info)
-        if plan.get("bundle_digest") and info["bundle_digest"] != plan["bundle_digest"]:
-            raise RuntimeError(f"the bundle is {info['bundle_digest']}, the plan froze {plan['bundle_digest']}; "
+        frozen = (plan.get("tag_digests") or {}).get(tr["condition"], plan.get("bundle_digest"))
+        if frozen and info["bundle_digest"] != frozen:
+            raise RuntimeError(f"the bundle is {info['bundle_digest']}, the plan froze {frozen}; "
                                "restore it or write a new plan")
     settings_path = tdir / "settings.json"
     settings_path.write_text(json.dumps(trial_settings(ws), indent=1))
