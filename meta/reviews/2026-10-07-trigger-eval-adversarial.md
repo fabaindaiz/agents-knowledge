@@ -177,3 +177,20 @@ compound ones. What stage 2 measured for `decision-review` and `user-walk` is "f
 call", not whether the description fires once the session has looked. By the registered rule, a skill failing its
 gate in both arms has its description rewritten before 0.0.30 ships it; whether to apply it as it stands, or first
 let compound reads run and measure the two skills again, is the owner's call.
+
+## Stage 2b: the two failing skills measured again, prediction written before any run
+
+The owner chose to fix the instrument first: compound reads now run, each part checked as a read, with the error
+stream merged or dropped; any other redirection, substitution, background job, line break or network tool (`gh`)
+is still refused, and a command is judged whole. Of the shell calls stage 2 recorded, the new classifier lets 184 of
+215 through; the rest call the network or were recorded cut short. `decision-review` and `user-walk` run again in
+the current arm only (the trimmed arm's question is settled), three runs per case, the same model, cases, fixture
+and router.
+
+**Prediction.** Strict fire, the gate's measure, counts only a skill chosen as the first call, so a session that
+looks first still misses: `decision-review` 0.3 to 0.5 and `user-walk` 0.65 to 0.8, both failing. Lenient fire,
+the skill chosen within the first five calls before any write, rises: `decision-review` 0.6 to 0.9 and `user-walk`
+0.8 to 0.95. Misfire stays at 0.05 or less. **What it decides:** if lenient fire reaches 0.8 while strict fire does
+not, the descriptions find the skill but only after a look; whether 0.0.30 then asks for the skill before reading,
+or the gate counts a fire after reads only, is the owner's call. If lenient fire stays under 0.8, the description is
+rewritten, as the registered rule says.
