@@ -3323,6 +3323,47 @@ def docs_report(repo: Path, since: str = "7d") -> dict:
     return report
 
 
+# --- the close's deterministic part ----------------------------------------------------------------
+# A close is mostly judgement (the entry's words, what went wrong, the hand-off); the checks around it are not,
+# and were run by hand one by one. `bundle.py close` runs them in order and fails on any (`method/skills/close`).
+
+@dataclass(frozen=True)
+class CloseStep:
+    name: str
+    failed: bool
+    lines: tuple[str, ...]
+
+
+def close_report(repo: Path, base: str | None = None) -> list[CloseStep]:
+    """Every check a close runs that needs no judgement, over the session's range when `base` is given."""
+    tree = repo / ".agents"
+    steps = []
+    problems = verify_problems(tree) if tree.is_dir() else [f"{tree}: no bundle"]
+    steps.append(CloseStep("verify", bool(problems), tuple(problems)))
+    rev = f"{base}..HEAD" if base else None
+    found, read, _ = trailer_problems(repo, rev)
+    steps.append(CloseStep("trailers", bool(found), tuple(found) or (f"no attribution line over {read}",)))
+    records = [p for p in (carrier_log(repo), repo / "docs/decisions.md", repo / "docs/roadmap.md",
+                           repo / "meta/decisions.md", repo / "meta/roadmap.md") if p.is_file()]
+    carrier = stored_carrier_id(repo) if (tree / CARRIER_FILE).is_file() else None
+    errors, warnings, _ = record_id_check(records, carrier) if records else ([], [], {})
+    steps.append(CloseStep("ids", bool(errors), tuple(errors + warnings) or (f"{len(records)} records read",)))
+    logs = [p for p in (repo / "docs/decisions.md", repo / "meta/decisions.md") if p.is_file()]
+    d_errors, d_warnings, _ = decision_check(logs) if logs else ([], [], {})
+    steps.append(CloseStep("decisions", bool(d_errors), tuple(d_errors + d_warnings) or ("no proposed or unconfirmed row",)))
+    if (repo / DOCS_MAP).is_file() and rev:
+        fails, warns = docs_drift_range(repo, rev)
+        steps.append(CloseStep("docs-drift", bool(fails), tuple(f"{d.doc}: not changed, while {', '.join(d.changed[:3])} did"
+                                                                for d in fails + warns) or ("no document left behind",)))
+    else:
+        steps.append(CloseStep("docs-drift", False, ("no docs-map.toml, or no base given",)))
+    memory = memory_dir(repo.resolve())
+    lone = [m for m in memory_report(memory, repo.resolve()) if m.searched and not m.found_in and not m.partly] \
+        if memory.is_dir() else []
+    steps.append(CloseStep("memory", False, tuple(f"only on this machine: {m.name}" for m in lone) or ("nothing only on this machine",)))
+    return steps
+
+
 # --- skills, and the bookkeeping a close runs -------------------------------------------------------
 # The method's procedures ship as skills: a base in `method/skills/<name>/SKILL.md`, installed into the
 # carrier's assistant folder merged with the carrier's own `LOCAL.md` beside it. The repository's
@@ -3931,6 +3972,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
+    p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory (exit 1 on any)")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--base", help="the session's first commit's parent: trailers and docs-drift read BASE..HEAD")
     p = sub.add_parser("docs-drift", help="documents left stale by a change, from the carrier's docs-map.toml (exit 1 on a blocking rule)")
     mode = p.add_mutually_exclusive_group(required=True)
     mode.add_argument("--staged", action="store_true", help="warn on the staged changes (a pre-commit hook)")
@@ -4181,6 +4225,17 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
                   "add them to the log's format, or say there why it omits them")
         return 0
+    if args.command == "close":
+        steps = close_report(Path(args.repo), args.base)
+        for step in steps:
+            print(f"  {'x' if step.failed else '.'} {step.name}")
+            for line in step.lines[:12]:
+                print(f"      {line}")
+        print("not run here, the writer's part: the changelog entry's words, frictions counted by symptom "
+              "(`bundle.py count`), local memory moved into the repository, the hand-off")
+        failed = [s.name for s in steps if s.failed]
+        print("close: " + (f"{len(failed)} checks failed ({', '.join(failed)})" if failed else "every check passed"))
+        return 1 if failed else 0
     if args.command == "docs-drift":
         repo = Path(args.repo)
         if args.staged or args.range:

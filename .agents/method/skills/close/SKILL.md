@@ -109,6 +109,9 @@ The rulings are read from wherever the plan kept them; never assume the plan per
 
 ## 9. Gate, commits, and only then the remote
 
+- `python3 .agents/tools/bundle.py close --base <the session's base>` runs every check of this close that needs
+  no judgement (verify, trailers, record ids, decisions, docs-drift, local memory) in one command, and fails on
+  any; it passes before the commit.
 - The repository's gate, chained to the commit (`<gate> && git commit …`), split by dependency. The
   commit runs on the gate's own exit status: never through a filter (`<gate> | tail`), or only under
   `set -o pipefail`.

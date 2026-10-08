@@ -17,6 +17,8 @@ version it holds with `bundle.py changelog --since <its version>`.
   run inside `verify` when a map exists; `--report --since 7d` gives each rule's triggers, escapes and escape rate,
   the documents left behind and the pairs history suggests, never adding one. Principle 16 and `close` point at it.
   A carrier with no map is unaffected; writing one is the next harvest's step.
+- **`bundle.py close --base REF`**: the closing checklist's deterministic part in one command (verify, trailers,
+  record ids, decisions, docs-drift, local memory), failing on any, with what stays the writer's named.
 
 ### Changed
 

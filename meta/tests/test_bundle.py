@@ -1719,3 +1719,27 @@ class DocsDrift(Base):
         self.assertEqual(code, 0, out)
         (repo / "docs/tools.md").write_text("see [x](../src/nope.py)\n")
         self.assertIn("../src/nope.py", "\n".join(B.verify_problems(agents)))
+
+
+class CloseCommand(Base):
+    """`bundle.py close`: the closing checklist's deterministic part, in one command."""
+
+    def test_it_runs_every_check_and_fails_on_any(self) -> None:
+        repo = init_repo(self.root / "r")
+        agents = make_bundle(repo)
+        commit(repo, "start")
+        base = git(repo, "rev-parse", "HEAD").strip()
+        (repo / "notes.md").write_text("x\n")
+        commit(repo, "work")
+        steps = B.close_report(repo, base)
+        names = [s.name for s in steps]
+        for expected in ("verify", "trailers", "ids", "decisions", "docs-drift", "memory"):
+            self.assertIn(expected, names)
+        self.assertFalse([s for s in steps if s.failed], steps)
+        (repo / "more.md").write_text("y\n")
+        commit(repo, "more\n\nGenerated with Claude Code")
+        failed = [s.name for s in B.close_report(repo, base) if s.failed]
+        self.assertEqual(failed, ["trailers"])
+        code, out = run("close", "--repo", str(repo), "--base", base)
+        self.assertEqual(code, 1, out)
+        self.assertIn("not run here", out)  # what stays the writer's: the entry's words, the counts, the hand-off
