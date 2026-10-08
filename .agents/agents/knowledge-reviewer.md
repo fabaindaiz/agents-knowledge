@@ -24,10 +24,10 @@ Reads:
    finding; say what you looked for and did not find instead.
 4. **The repository wins.** Where it states an invariant that contradicts a card, follow the repository and
    report which card gave way, and why.
-5. **Run each applicable card's check**, or say exactly why it cannot run here. A check that needs a
-   planted fault or a written test runs in a scratch copy (`git worktree add`, or a copy of the tree), or
-   comes back as a finding: the test the author must write. A check that was read and not run is an
-   opinion.
+5. **One check per applicable card, then stop when every card has its verdict.** Batch your first reads
+   in one message. A check that needs a planted fault, a scratch copy or a new test is not run here: it comes back
+   as a finding, the test the author must write. Stop when each card you opened is applied, excluded or
+   overridden, with its evidence; do not look further for the author.
 6. **Return, in at most about three hundred words:** one line per card you opened (applies / excluded by
    its boundary / overridden by the repository), its evidence and its check's result; then the findings the
    author must fix, most severe first. Nothing else: no summary of the change, no praise.

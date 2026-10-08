@@ -83,7 +83,7 @@ def prompt(diff: str, arm: str = "R0") -> str:
     the check step shortened and nothing else changed."""
     text = (H.BUNDLE / "agents" / "knowledge-reviewer.md").read_text()
     body = text.split("\n---\n", 1)[1] if text.startswith("---") else text
-    if arm == "RC":
+    if arm == "RC" and SHORT_CHECKS not in body:  # since 0.0.30 the reviewer ships it, and RC is R0
         step = re.search(r"^5\. \*\*Run each applicable card's check\*\*.*?(?=^6\. )", body, re.S | re.M)
         if step is None:
             raise RuntimeError("the reviewer's check step was not found; the RC arm cannot be built")

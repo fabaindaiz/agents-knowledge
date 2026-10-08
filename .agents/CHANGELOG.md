@@ -66,6 +66,10 @@ version it holds with `bundle.py changelog --since <its version>`.
   now names a question about what a person meets when a step is slow, abandoned or cut off, which a trigger eval
   found it missing; both are measured again before this release ships.
 
+- **The reviewer checks once per card and stops** (`agents/knowledge-reviewer.md`, step 5): the first reads batched,
+  a check that needs a planted fault, a scratch copy or a new test returned as the test the author must write, and
+  a stated point to stop. Measured before it shipped: about seven tenths of the reviewer's cost, recall equal
+  (the home's `evals/REPORT.md` §4.15). The update copies the reviewer again, as it does every release.
 - **Cheaper turns, nothing else changed** (`prompt-context.md`, *Models, reasoning levels and cost*): the reviewer
   agent takes the five-minute prompt cache (`experimental.cacheTtl`), as headless runs should; nothing dynamic goes in
   what is always loaded, and the build refuses a method skill that names a model, since switching it for a turn

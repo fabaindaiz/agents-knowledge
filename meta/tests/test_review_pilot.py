@@ -73,16 +73,12 @@ class ReviewPilot(Base):
         self.assertEqual(out["cost"], 0.5)
 
 
-    def test_the_short_check_arm_changes_only_the_check_step(self) -> None:
-        # the reviewer's check phase, shorter (d-5ed7e8-8174a8): one check per card, a check that needs a fault
-        # or a test comes back as the test to write, the first reads batched, a stated point to stop
+    def test_the_short_check_step_ships_and_the_rc_arm_is_then_the_release(self) -> None:
+        # the reviewer's shorter check phase held its prediction (review-3) and ships from 0.0.30 on
         full, short = R.prompt("diff --git a/x b/x\n", "R0"), R.prompt("diff --git a/x b/x\n", "RC")
-        self.assertNotEqual(full, short)
-        self.assertIn("Run each applicable card's check", full)
-        self.assertNotIn("Run each applicable card's check", short)
-        self.assertIn("the test the author must write", short)
-        self.assertIn("Stop", short)
-        self.assertEqual(full.split("5. ")[0], short.split("5. ")[0])
+        self.assertIn(R.SHORT_CHECKS.strip(), full)
+        self.assertIn("the test the author must write", full)
+        self.assertEqual(full, short)
 
     def test_a_failed_session_is_an_error_and_a_resume_retries_it(self) -> None:
         self.assertIsNone(R.session_failure({"rc": 0, "timed_out": False}, [{"type": "result", "subtype": "success"}]))
