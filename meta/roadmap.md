@@ -97,7 +97,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   rules, is done outside the bundle: it is personal, so it never enters `.agents/`. The phases and the
   items beside them:
 
-- **`i-5ed7e8-855c42` · Release 0.0.30: the decided scope, after its pilots and the trigger eval.** *Progress, 2026-10-07:* phase 1, the table (`d-5ed7e8-da9b80`), intake and the four export cuts are done on `release/0.0.30`; the rest is listed in *Where we are*. **Focus (`d-5ed7e8-7cac23`): standardisation and cost reduction without worse performance, with a cost pilot against the base model in every release from this one on.** Decided by the
+- **`i-5ed7e8-855c42` · Release 0.0.30: the decided scope, after its pilots and the trigger eval.** *Scope complete, 2026-10-08:* on `release/0.0.30`, measured (pilots 10 to 12, `evals/REPORT.md` §4.14 to §4.16), with experimental Cursor and Copilot support added (`d-5ed7e8-1e7a9a`); `i-5ed7e8-94f262` waits for a harvest, and the rest of `i-5ed7e8-8236cb` for 0.0.31. Cut when the owner says it is closed. **Focus (`d-5ed7e8-7cac23`): standardisation and cost reduction without worse performance, with a cost pilot against the base model in every release from this one on.** Decided by the
   owner on 2026-10-07, one block at a time (`d-5ed7e8-a65c26` to `d-5ed7e8-9f3502` in `meta/decisions.md`). First,
   with the owner's account: pilot-9's index arm and a reviewer pilot (`d-5ed7e8-220ad3`), and the skill trigger eval
   (`i-5ed7e8-578c22`, `d-5ed7e8-07da79`). Then the meta-session: seven tool fixes (the proposals for align against the
@@ -159,7 +159,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-94f262` · Review the method changes published on one carrier's evidence (0.0.26 and 0.0.27).**
   Each is marked *one carrier's evidence* in `.agents/CHANGELOG.md` and `meta/tracking/history.md`: keep it
   where a second carrier's entries or harvest show it acting, rework it where they show friction, withdraw
-  it where nothing used it. *When:* at the next release that takes in harvests from carriers on 0.0.27.
+  it where nothing used it. *When:* at the next release that takes in harvests from carriers on 0.0.27. *Not
+  triggered in 0.0.30* (2026-10-08): no carrier's harvest was taken in; it waits for 0.0.31's.
   *Collision:* the coding session's budget, if any is withdrawn from the session loop.
 - **`i-5ed7e8-cc0b86` · Queue the experiments the five other new 0.0.27 notes name.** Only two of the
   seven admitted notes had their experiment queued in `meta/tracking/experiments.md`. *Collision:* none.
@@ -206,7 +207,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   (and was pushed, because the check that failed was piped through a filter; proposal
   `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
   it refuse. *Collision:* every commit here gets slower by one build check.
-- **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** *Half done in 0.0.30:* `verify` fails an empty `upstream` outside a home and `carrier-id --mint` names the home; the cross-repository id check stays in `align` and `register`, since `verify` reads one tree. Offered at 0.0.24 as
+- **`i-5ed7e8-29e484` · `bundle.py verify` enforces the carrier record.** *Done in 0.0.30:* `verify` fails an empty `upstream` outside a home and `carrier-id --mint` names the home; the cross-repository id check is `carrier_ids`, which `register` and `align` call and a test covers, since `verify` reads one tree. Moves to *Done* at 0.0.30's close. Offered at 0.0.24 as
   `verify-enforces-the-carrier-record`, and confirmed in that meta-session: three carriers reached there
   held the empty `upstream` that means "this is the home", and the function that refuses a carrier id held
   by two repositories in scope is defined and never called. Call it from `verify`, flag an empty `upstream`
@@ -307,7 +308,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `.claude/logs/` and skills under `.claude/skills/`, while the layout survey, *Three agents, one
   source*, and this repository treat `AGENTS.md` as the source and the logs as assistant-neutral
   documents. *Collides with:* artifacts 1, 3 and 5, the bootstrap's checklists, and every carrier's
-  `Reads:` lists that name those headings. **Scoped for 0.0.30** (`d-5ed7e8-6d16cd`): artifacts 1 and 5 and the bootstrap's checklists, the coding session saying "root file", the log named by the `log` field with its default kept. Measured on 2026-10-07: no `Reads:` list and no carrier names those headings, and the skills path it lists is already right. *Scope done in 0.0.30, unreleased (2026-10-08):* artifacts 1 and 5, the bootstrap's checklist and Phase 3, and the session loop saying "the root file". Left outside the scope: principles 1, 2, 4 and 5, the first-pass summary, the ids paragraph, the audit's header, the adoption table and the harvest examples still say `CLAUDE.md` (about a dozen lines of `prompt-context.md`).
+  `Reads:` lists that name those headings. **Scoped for 0.0.30** (`d-5ed7e8-6d16cd`): artifacts 1 and 5 and the bootstrap's checklists, the coding session saying "root file", the log named by the `log` field with its default kept. Measured on 2026-10-07: no `Reads:` list and no carrier names those headings, and the skills path it lists is already right. *Scope done in 0.0.30, unreleased (2026-10-08):* artifacts 1 and 5, the bootstrap's checklist and Phase 3, and the session loop saying "the root file". Left outside the scope: principles 1, 2, 4 and 5, the first-pass summary, the ids paragraph, the audit's header, the adoption table and the harvest examples still say `CLAUDE.md` (about a dozen lines of `prompt-context.md`), left for 0.0.31 by the owner on 2026-10-08.
 - **`i-5ed7e8-d4f710` · Review overlapping notes as principles.** The efficacy pilots found that
   removing one note did not remove its principle: agents used `merge-by-shared-fact-not-shared-shape`
   in place of `derived-over-chosen-identifiers`, and `order-writes-by-failure-residue` in place of

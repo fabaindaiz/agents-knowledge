@@ -626,6 +626,11 @@ the arm without it cost the same as 0.0.29; one run, three tasks.
 after the first had failed: 0.0.30 had two chances where a release under `d-5ed7e8-86df04` has one. Both runs are
 exploratory, on one model, a few tasks and three or four repetitions.
 
+**Changes after the run, not measured again.** After pilot-12 the release gained method changes (the bootstrap's
+objectives, the root artifact, the prompts' disagreements decided) and the generated copies for Cursor and Copilot.
+None touches the root file's wiring or the knowledge the trials consult, and across pilots 11 and 12 one session in
+90 opened a method or skill file at all; the owner chose not to run the pilot again (2026-10-08).
+
 ## 5. Discussion
 
 **Where this pilot agrees with the prior studies.** On tasks whose requirements are visible where the
