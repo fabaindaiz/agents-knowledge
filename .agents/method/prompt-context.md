@@ -1109,11 +1109,12 @@ written in.
 Build them in this order; each one assumes the ones above it.
 
 ```
-CLAUDE.md                        invariants + the map          < 200 lines, every session
+AGENTS.md                        invariants + the map          < 200 lines, every session
+CLAUDE.md                        the bridge: `@AGENTS.md`      one line, for Claude Code
 <area>/CLAUDE.md                 local depth                   on demand, when reading there
 .claude/skills/<name>/SKILL.md   procedures                    on demand, by description
 .claude/settings.json            permissions, env, hooks       always active
-.claude/logs/agent-changelog.md  what changed and why          written every session
+.claude/logs/agent-changelog.md  what changed and why          written every session (`log` may name another)
 docs/decisions.md                every decision + enforcer     read when a rule is questioned
 docs/references.md               external research, annotated  read before touching that area
 docs/roadmap.md                  collisions and progress       read before starting something new
@@ -1123,12 +1124,17 @@ README.md                        what this is, for a newcomer
 .editorconfig                    one block per language, matching the linter
 ```
 
-### 1. Root `CLAUDE.md` — under 200 lines
+### 1. Root `AGENTS.md` — under 200 lines
 
-The only file loaded on every request. Sections, in this order:
+The one source every assistant reads, loaded on every request. Claude Code loads
+`CLAUDE.md` and reads `AGENTS.md` only when there is none, so a root `CLAUDE.md`
+holds `@AGENTS.md` as its first line and only what Claude Code alone needs
+(*Three agents, one source*). A repository whose rules already live in
+`CLAUDE.md` keeps them there: nothing moves, and it is not a substitution to
+record. Sections, in this order:
 
 ```markdown
-# CLAUDE.md
+# AGENTS.md
 One paragraph: what this project is, who it is for, the one thing that is unusual about it.
 
 ## Non-negotiable constraints
@@ -1298,7 +1304,10 @@ fails on an attribution trailer: a `commit-msg` hook, or the gate over
 Commit this file; keep `settings.local.json` out of git. The `.claude/`
 directory is how the repo explains itself — it belongs to the team.
 
-### 5. `.claude/logs/agent-changelog.md`
+### 5. The session log — `.claude/logs/agent-changelog.md` by default
+
+A repository that keeps it elsewhere names the path in `carrier.toml` (`log`), and
+`bundle.py new entry` and `count` read it there. The log belongs to no assistant.
 
 ```markdown
 ## YYYY-MM-DD · s-<repo6>-<content6> — <one-line title>

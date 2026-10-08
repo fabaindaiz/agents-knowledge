@@ -58,6 +58,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   initialisation delivers and how deep, and which questions its research answers. Phase 2 is scoped to those
   answers and writes each finding as it lands to one dated research document, the only file before Phase 3; the
   bootstrap is accepted by a first real task. The pre-flight keeps five questions: language joins readers.
+- **The root artifact is `AGENTS.md`** (*under review*): artifact 1 is the one source every assistant reads, with a
+  root `CLAUDE.md` whose first line is `@AGENTS.md`, since Claude Code reads `AGENTS.md` only when there is no
+  `CLAUDE.md`; artifact 5 is the session log, at `.claude/logs/agent-changelog.md` unless `log` names another path;
+  the bootstrap's checklist, Phase 3 and the session loop say "the root file". A carrier whose rules live in
+  `CLAUDE.md` changes nothing.
 
 - **A review turn has a fixed shape** (`prompt-context.md` §15, `decision-review`): three to five short blocks of
   prose, one more answer, *review more*, opening a second level, the assumptions shown before an irreversible

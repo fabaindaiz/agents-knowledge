@@ -293,10 +293,11 @@ Rules for this phase:
 
 ### Phase 3 — Propose (still do not write)
 
-The full topology: root `CLAUDE.md` with its section list, each nested
-`CLAUDE.md` with its area and contents, each skill with name/trigger/contents,
-permissions, hooks, the decisions to seed, the references to register, the
-roadmap items, and the audit script's check list.
+The full topology: the root file (`AGENTS.md`, imported by `CLAUDE.md`) with
+its section list, each nested `CLAUDE.md` with its area and contents, each
+skill with name/trigger/contents, permissions, hooks, the decisions to seed,
+the references to register, the roadmap items, and the audit script's check
+list.
 
 Say explicitly **what will be cut** from any existing file and where each piece
 goes. Justify the slicing. **Then wait.**
@@ -395,7 +396,7 @@ Bootstrapping is not the end; the system rots without a ritual. Add a
 - Does every rule still have an enforcer, and did any of them fire this period?
 - What changed that should have become a decision row and did not?
 - What in the roadmap is now closed — by being built, or by a measurement?
-- Has the root `CLAUDE.md` drifted past its budget, and which section grew?
+- Has the root file drifted past its budget, and which section grew?
 - Which rules are still on rung 1 and could cheaply be promoted?
 - **What friction has been recorded more than once and not yet fixed?** Price
   each one and rank it against the product work in the same sitting.
@@ -769,7 +770,7 @@ that dies with the context window.
 | A number, and how you got it | the document that owns that number |
 | An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
 | A rule a script could check | the audit script, and note the rung it moved to |
-| A trap that will be hit again | root `CLAUDE.md` if it is always relevant, the area file if it is local |
+| A trap that will be hit again | the root file if it is always relevant, the area file if it is local |
 | A procedure done by hand that an earlier session also did | a skill, proposed with its cost |
 | Friction, hit for the second time | the roadmap's process area, with the arithmetic |
 | A fact or rule only in this machine's memory or user-level file, an ignored ledger or a scratch file | the repository document that owns it; a rule also into a hook or the gate where checkable, or other machines silently revert it |
@@ -875,8 +876,9 @@ first checks that its target resolves inside that directory.
 
 ### Done — the bootstrap
 
-- [ ] Root `CLAUDE.md` under 200 lines: invariants, guardrails, real commands,
-      the gate, the commit bar, the logging obligation, the document map.
+- [ ] Root `AGENTS.md` under 200 lines: invariants, guardrails, real commands,
+      the gate, the commit bar, the logging obligation, the document map; a
+      root `CLAUDE.md` whose first line is `@AGENTS.md`.
 - [ ] Every rule in it names a consequence **and** an enforcer.
 - [ ] Invariants pass the *survives a file move* test: classes, constants and
       contracts, not paths. Every inference marked **ASSUMPTION**.
@@ -909,7 +911,8 @@ first checks that its target resolves inside that directory.
 - [ ] `.claude/settings.json`: permissions, hooks for what must not be left to
       judgement, and commit attribution off, with a check that fails on an
       attribution trailer.
-- [ ] `.claude/logs/agent-changelog.md` with the format and the obligation.
+- [ ] The session log (`.claude/logs/agent-changelog.md`, or the path `log`
+      names in `carrier.toml`) with the format and the obligation.
 - [ ] `.editorconfig` aligned to the linter, one block per language.
 - [ ] `docs/` audited against the code; no pointer to a file that does not exist.
 - [ ] The *what changed → what must move* table exists, in the root file or in
@@ -1090,7 +1093,7 @@ Nothing is committed unless I ask.
 
 **Why the second one is short.** Everything it leaves out is in the files the
 bootstrap produced. If a normal session needs a long prompt, the bootstrap did
-not take — and the fix is in `CLAUDE.md`, not in the prompt.
+not take — and the fix is in the root file, not in the prompt.
 
 ### Updating a repository to a newer method
 

@@ -289,7 +289,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `.claude/logs/` and skills under `.claude/skills/`, while the layout survey, *Three agents, one
   source*, and this repository treat `AGENTS.md` as the source and the logs as assistant-neutral
   documents. *Collides with:* artifacts 1, 3 and 5, the bootstrap's checklists, and every carrier's
-  `Reads:` lists that name those headings. **Scoped for 0.0.30** (`d-5ed7e8-6d16cd`): artifacts 1 and 5 and the bootstrap's checklists, the coding session saying "root file", the log named by the `log` field with its default kept. Measured on 2026-10-07: no `Reads:` list and no carrier names those headings, and the skills path it lists is already right.
+  `Reads:` lists that name those headings. **Scoped for 0.0.30** (`d-5ed7e8-6d16cd`): artifacts 1 and 5 and the bootstrap's checklists, the coding session saying "root file", the log named by the `log` field with its default kept. Measured on 2026-10-07: no `Reads:` list and no carrier names those headings, and the skills path it lists is already right. *Scope done in 0.0.30, unreleased (2026-10-08):* artifacts 1 and 5, the bootstrap's checklist and Phase 3, and the session loop saying "the root file". Left outside the scope: principles 1, 2, 4 and 5, the first-pass summary, the ids paragraph, the audit's header, the adoption table and the harvest examples still say `CLAUDE.md` (about a dozen lines of `prompt-context.md`).
 - **`i-5ed7e8-d4f710` · Review overlapping notes as principles.** The efficacy pilots found that
   removing one note did not remove its principle: agents used `merge-by-shared-fact-not-shared-shape`
   in place of `derived-over-chosen-identifiers`, and `order-writes-by-failure-residue` in place of
