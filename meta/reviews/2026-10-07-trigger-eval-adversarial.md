@@ -194,3 +194,18 @@ the skill chosen within the first five calls before any write, rises: `decision-
 not, the descriptions find the skill but only after a look; whether 0.0.30 then asks for the skill before reading,
 or the gate counts a fire after reads only, is the owner's call. If lenient fire stays under 0.8, the description is
 rewritten, as the registered rule says.
+
+## Stage 2b: results
+
+99 sessions, none in error, every canary fired.
+
+| Skill | Strict fire | Lenient fire | Misfire | Gate | Predicted strict / lenient |
+|---|---:|---:|---:|---|---|
+| `decision-review` | 0.33 (0.16 to 0.56) | 0.83 (0.61 to 0.94) | 0.00 | fail | 0.3 to 0.5 / 0.6 to 0.9: both held |
+| `user-walk` | 0.67 (0.44 to 0.84) | 0.67 (0.44 to 0.84) | 0.00 | fail | 0.65 to 0.8 held / 0.8 to 0.95 refuted |
+
+**`decision-review` is found after a look.** Five of its six expected cases fire within the window in most runs,
+most after one to three reads; of the lenient misses, two sessions began with `git -C <dir> status`, which the
+classifier does not list as a read, and one filled the five-call window reading. **`user-walk` misses for its
+description:** on two expected cases every session read the code and the plan, then answered without the skill (in stage 2 they had been cut short at a refused command). By the rule written above, `decision-review` reaches lenient fire at 0.8 while strict fire
+does not, a question for the owner; `user-walk`'s description is rewritten before 0.0.30 ships it.
