@@ -3745,7 +3745,7 @@ def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) ->
 
 ENTRY_HEADING = re.compile(r"^(#{2,3}) \d{4}-\d{2}-\d{2}\b")  # a log may keep its entries at level two or three
 FORMAT_HEADING = re.compile(r"^#{2,6} .*\bformat\b", re.IGNORECASE)
-CHANGELOG_ARTIFACT = "5. `.claude/logs/agent-changelog.md`"
+CHANGELOG_ARTIFACT = "5. The session log — `.claude/logs/agent-changelog.md` by default"  # its heading, exactly
 
 
 def _first_fence(text: str) -> str | None:

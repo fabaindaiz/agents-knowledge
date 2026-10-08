@@ -247,6 +247,13 @@ LOG_BULLETED = """# Agent log
 
 
 class NewEntry(Base):
+    def test_the_method_s_entry_format_is_found_in_the_shipped_reference(self) -> None:
+        # renaming artifact 5's heading once left the method's format unfound, silently, with every test green
+        from meta.tests.support import ROOT
+        method = B.section(ROOT / "sources/bundle/method/prompt-context.md", B.CHANGELOG_ARTIFACT)
+        self.assertIsNotNone(method)
+        self.assertIn("**What.**", B._first_fence(method) or "")
+
     def test_a_bulleted_format_under_any_heading_keeps_the_log_s_shape(self) -> None:
         # two carriers' logs (2026-10-07): a how-to heading without "format", bold labels in bullets, level-three entries
         template = B.entry_template_text(LOG_BULLETED)
@@ -289,7 +296,7 @@ class NewEntry(Base):
         log.write_text("# Log\n")
         agents = make_bundle(self.root)
         (agents / "method/prompt-context.md").write_text(
-            "# Context\n\n### 5. `.claude/logs/agent-changelog.md`\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
+            "# Context\n\n### " + B.CHANGELOG_ARTIFACT + "\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
             "**What.** What changed.\n**Learned.** General and local.\n```\n")
 
         entry = B.new_entry("T", "r-abcdef", "2026-01-03", B.entry_template(log, agents))
@@ -299,7 +306,7 @@ class NewEntry(Base):
     def test_fields_a_newer_method_added_reach_a_log_with_its_own_format_and_are_named(self) -> None:
         repo, agents = a_carrier(self.root)
         (agents / "method/prompt-context.md").write_text(
-            "# Context\n\n### 5. `.claude/logs/agent-changelog.md`\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
+            "# Context\n\n### " + B.CHANGELOG_ARTIFACT + "\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
             "**What.** What changed.\n**Why.** The reason.\n**Not verified.** What could not be checked.\n**Learned** General and local.\n```\n")
         log = repo / ".claude/logs/agent-changelog.md"
         log.parent.mkdir(parents=True)
