@@ -15,6 +15,7 @@ own tool, never by this one.
                                                                 nothing that identifies a private repository,
                                                                 its people or its infrastructure
     python3 .agents/tools/bundle.py privacy --commits RANGE [--repo R]
+    python3 .agents/tools/bundle.py privacy --tracked [--repo R]
                                                                 the same rules over a range's commit messages
                                                                 and added lines: what a push publishes
     python3 .agents/tools/bundle.py trailers [RANGE] [--repo R] no commit message in the range credits an assistant
@@ -1196,6 +1197,13 @@ def git(repo: Path, *args: str, binary: bool = False) -> str | bytes:
     result = subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=not binary,
                             **({} if binary else {"encoding": "utf-8", "errors": "surrogateescape"}))
     return result.stdout
+
+
+def tracked_files(repo: Path) -> list[Path]:
+    """Every file git tracks in `repo` but the bundle's `.agents/`: what a public repository publishes, read
+    without a list that a new file would fall outside of."""
+    listed = str(git(repo, "ls-files", "-z")).split("\0")
+    return [repo / rel for rel in listed if rel and not rel.startswith(".agents/") and (repo / rel).is_file()]
 
 
 def stored_carrier_id(repo: Path) -> str | None:
@@ -4386,7 +4394,9 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--terms", metavar="FILE", help="the private terms file (default: $XDG_CONFIG_HOME or ~/.config, agent-guides/private-terms.txt)")
     p.add_argument("--commits", metavar="RANGE", help="read the messages of a git range and the lines its commits add instead "
                    "(`@{u}..HEAD`; words separated by spaces, as `git rev-list` takes them): what a push publishes")
-    p.add_argument("--repo", default=str(OWN_REPO), help="with --commits: the repository (default: this tool's)")
+    p.add_argument("--tracked", action="store_true", help="read every file git tracks in --repo but the bundle's "
+                   "`.agents/`, which the tree run reads: whatever is published, with no list to keep")
+    p.add_argument("--repo", default=str(OWN_REPO), help="with --commits or --tracked: the repository (default: this tool's)")
     p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
     p.add_argument("range", nargs="*", metavar="RANGE", help="a git range, as `git log` takes it, options included "
                    "(`--all`, `main..feature`, `HEAD --not --remotes`), in one argument or several "
@@ -4609,6 +4619,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
               f"{len(errors)} errors, {len(warnings)} warnings")
         return 1 if errors else 0
     if args.command == "privacy":
+        if args.tracked:
+            if args.paths or args.commits:
+                raise RefusedError("privacy: --tracked reads what git tracks; give it alone, not with --paths or --commits")
+            args.paths = [str(f) for f in tracked_files(Path(args.repo))]
         result = privacy_check(Path(args.tree), [Path(f) for f in args.paths] if args.paths else None,
                                Path(args.terms) if args.terms else None,
                                (Path(args.repo), args.commits) if args.commits else None)

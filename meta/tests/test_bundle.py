@@ -985,6 +985,33 @@ def git_commit(repo: Path, message: str) -> None:
     git(repo, "commit", "-q", "--no-verify", "-m", message)
 
 
+class PrivacyTracked(Base):
+    """`--tracked` reads every file git tracks but the bundle, so a new published file needs no list to be checked."""
+
+    def test_a_tracked_file_is_read_and_untracked_or_bundle_files_are_not(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "MANIFEST.md").write_text("# Manifest\n\n" + Privacy.PLANTED["home-path"] + "\n")
+        (repo / ".agents").mkdir()
+        (repo / ".agents" / "notes.md").write_text(Privacy.PLANTED["email"] + "\n")
+        git_commit(repo, "docs: start")
+        (repo / "scratch.md").write_text(Privacy.PLANTED["email"] + "\n")  # untracked
+
+        code, out = run("privacy", "--tracked", "--repo", str(repo))
+
+        failed = [line for line in out.split("\n") if line.startswith("  x FAIL ")]
+        self.assertEqual(code, 1, out)
+        self.assertEqual(len(failed), 1, out)
+        self.assertIn("MANIFEST.md", failed[0], out)
+
+    def test_a_clean_repository_passes_and_tracked_refuses_another_source(self) -> None:
+        repo = init_repo(self.root / "repo")
+        (repo / "README.md").write_text("# A plain read-me\n")
+        git_commit(repo, "docs: start")
+
+        self.assertEqual(run("privacy", "--tracked", "--repo", str(repo))[0], 0)
+        self.assertEqual(run("privacy", "--tracked", "--paths", "README.md", "--repo", str(repo))[0], 2)
+
+
 class PrivacyCommits(Base):
     """A leak in a commit message, or in a line a commit adds, is published by the push, whatever the tree holds."""
 

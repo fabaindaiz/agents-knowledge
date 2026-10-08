@@ -35,10 +35,12 @@ that is itself public is not secret. The full rule is principle 20 in
 You do not have to remember this for it to hold:
 
 - `python3 .agents/tools/bundle.py privacy` checks generic rules plus this machine's private terms
-  (`~/.config/agent-guides/private-terms.txt`, never committed); `--paths FILE...` checks files outside
-  `.agents/`. `bundle.py verify` and `release.py check` run it.
-- A Claude Code hook (`.claude/settings.json`) states the rule at the start of every session and on
-  every prompt, and blocks `git commit` and `git push` while the check fails.
+  (`~/.config/agent-guides/private-terms.txt`, never committed); `--tracked` checks every other file git
+  tracks, and `--paths FILE...` the files named. `bundle.py verify` and `release.py check` run it.
+- A Claude Code hook (`.claude/settings.json`) states the rule at the start of every session and after
+  every compaction, and blocks `git commit` and `git push` while the check fails over the bundle and every
+  tracked file. Its permission rules refuse a hand edit of `.agents/SHA256SUMS` and ask before one of a
+  generated file or a guard (`d-5ed7e8-2ca3ef`).
 - Git hooks block any commit while it fails (`.githooks/pre-commit`) and any push whose commits leak a
   private term or credit an assistant (`.githooks/pre-push`: `privacy --commits` and `trailers`). Enable them once
   per clone: `git config core.hooksPath .githooks`.

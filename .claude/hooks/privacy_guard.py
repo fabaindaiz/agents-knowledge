@@ -30,8 +30,6 @@ ROOT = Path(__file__).resolve().parents[2]
 # because it is what a machine's default interpreter runs, and it looks for a newer one to run them.
 MINIMUM = (3, 11)
 TOOL = ROOT / ".agents/tools/bundle.py"
-# The repository's own files that are published with it, checked with the same rules as the bundle.
-ROOT_FILES = ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", ".github/workflows/check.yml"]
 
 REMINDER = (
     "PRIVACY RULE (enforced; applies whether or not you loaded AGENTS.md): nothing written to this "
@@ -78,20 +76,14 @@ def gate() -> int:
         print("privacy gate: .agents/tools/bundle.py is missing, so nothing can be checked; "
               "refusing the commit rather than letting it through unchecked.", file=sys.stderr)
         return 2
-    # Two runs: `--paths` checks the named files instead of the bundle, not in addition to it, so a
-    # single call with both silently skipped the bundle (seen 2026-09-24, "privacy over 6 files").
-    paths = [str(ROOT / f) for f in ROOT_FILES if (ROOT / f).exists()]
-    # The experiment, the release records and the full notes are published with the repository too; the
-    # experiment's run outputs are ignored and never checked in.
-    for folder in ("evals", "meta", "sources"):
-        paths += [str(f) for f in sorted((ROOT / folder).rglob("*"))
-                  if f.is_file() and "runs" not in f.relative_to(ROOT / folder).parts and "__pycache__" not in f.parts]
+    # Two runs: the bundle as a tree, and every other file git tracks (`--tracked`), so a new published file
+    # is checked without a list to keep; one call with both would read only the files.
     python = modern_python()
     if python is None:
         print(f"privacy gate: the tools need Python {MINIMUM[0]}.{MINIMUM[1]} or newer and none was found; "
               "refusing the commit rather than letting it through unchecked.", file=sys.stderr)
         return 2
-    runs = [[str(ROOT / ".agents")], ["--paths", *paths]]
+    runs = [[str(ROOT / ".agents")], ["--tracked", "--repo", str(ROOT)]]
     results = [subprocess.run([python, str(TOOL), "privacy", *args], capture_output=True, text=True)
                for args in runs]
     if all(r.returncode == 0 for r in results):
