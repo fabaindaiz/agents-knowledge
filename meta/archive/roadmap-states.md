@@ -2,6 +2,36 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-07, night: 0.0.30 is being built** on the branch `release/0.0.30` (pushed, not merged; check
+it out first). `main` holds everything before it; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository.
+
+**Done in the build:**
+- Phase 1, read-only: 13 carriers listed, 11 verified and unforked, none harvested since its last release; one
+  table approved (`d-5ed7e8-da9b80`).
+- Intake: the home's 20 proposals received. Four copies a carrier still holds were refused by their privacy
+  warning; that carrier's owner answers or prunes them in phase 2.
+- The four cuts: the area pages no longer ship, waiting candidates by slug and kind, received verdicts for the last
+  two releases, the shipped changelog from the oldest carrier's version on. The export went from 913 to 809 KB;
+  what enters must fit the cap.
+
+**Next, in order, each block with tests and a commit on the gate:**
+1. The tool fixes of `i-5ed7e8-855c42` (align against the tag, mint naming the home, register resolving a worktree,
+   `new entry` reading a log's format, the `log` field, `i-5ed7e8-29e484`, `i-5ed7e8-715654`).
+2. The method changes, the review turn's format and the skill catalogue, a worktree's own environment, a plan's
+   status table; `user-walk` rewritten and `decision-review` made direct (`d-5ed7e8-018f2c`).
+3. `bundle.py docs-drift` and the home's map; `bundle.py close` and `lookup` with blind cues behind the recall gate;
+   the researcher agent and its hook; the cache levers; the cost step in `prompt-sync.md`; `[Unreleased]`.
+4. Test in three layers (`MANIFEST.md`): gate, a cost pilot registered before its trials, the three skills' trigger
+   eval (`decision-review` with `--gate lenient`). Then changelog, `release 0.0.30`, tag; phase 2 with one commit
+   per carrier on a new branch; phase 3.
+
+**Waiting on the owner:** the six carriers' 0.0.29 pull requests; the credentials ticket; the `proposed` rows in
+carriers' logs; the other machine's checklist (`i-5ed7e8-61171e`); the subscription's terms for automated runs.
+
+**What went wrong:** an edit chained with `git` twice more and a gate filtered once (`i-5ed7e8-bd65a0`); the trigger
+eval's first compound classifier had holes two isolated reviews found, fixed before any merge; a count and a claim
+were first written wrong and corrected before commit.
+
 **State on 2026-10-07, late.** `main` is pushed with the session's first part; D2 and the trigger eval's results
 are on the branch `evals/d2-decision`, not yet merged; `v0.0.29` is the last tag. `MANIFEST.md` frames the repository
 (`d-5ed7e8-b4c23f`): read it first. 0.0.30 takes everything pending, then one release a month; 0.1.0 keeps its five
