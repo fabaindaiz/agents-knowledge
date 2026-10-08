@@ -623,6 +623,29 @@ and is asked in the human's language and plain words.
 - **A mockup or a throwaway prototype only for a question about how it looks or
   feels**; a scenario walked through each option for an irreversible one.
 
+**A review turn has a fixed shape**, because the human is its final reviewer: the
+one who holds the knowledge to decide, but not your context.
+
+- **Three to five short blocks of about three lines of prose**: what is decided,
+  why it matters, the options, the recommendation, the question. An option's
+  case, price and what it forecloses go in the option or a table and are never
+  cut to fit, since cutting them unevenly is the nudge this principle forbids.
+- **Every decision question carries one more answer, *review more***, which opens
+  a second level: *I do not understand it* (another example, smaller), *something
+  is wrong* (your assumptions listed, for the human to mark), *options are
+  missing* (others, or a middle ground) and *I need context* (where it comes from
+  and what depends on it). Each returns to the question; in a batch it re-asks
+  only that question and the ones that depend on it. Not on the pre-flight's
+  questions, nor on a fact question.
+- **Before an irreversible decision, show your assumptions unasked**; after a
+  costly or irreversible one, or a long explanation, a one-click check of what will
+  happen: its wrong answers are the other real options' consequences, plus *none
+  of these*, and a wrong pick or *none* reopens the decision rather than
+  re-explaining it.
+- **Before a plan is written**, the skills that fit it (`skills/README.md`) are
+  offered as a short table, each with what it does here and its cost, then one
+  multi-select question.
+
 > **Example.** Adding user-made lists to a small fixed-height screen came down to
 > three questions: whose the lists are, where the selector goes, and how one is
 > edited. The second was presented as three layouts priced in the unit that

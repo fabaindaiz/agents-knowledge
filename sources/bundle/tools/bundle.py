@@ -1916,7 +1916,8 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 # never listed in `SHA256SUMS`, a release never writes it, and it holds everything that used to be the
 # "repository's own fields" of several headers. TOML, read by `tomllib`.
 CARRIER_FILE = "carrier.toml"
-CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "harvested_through", "adapted", "declined", "visibility",
+CARRIER_TABLES = ("skills",)  # a role of the skill catalogue to the name installed here (method/skills/README.md)
+CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "harvested_through", "adapted", "declined", "visibility",
                "private_folder")
 VISIBILITIES = ("public", "private")
 
@@ -1940,14 +1941,21 @@ def _toml_str(value: str) -> str:
 def dump_carrier(data: dict) -> str:
     """The carrier file's TOML: known keys first in their order, strings and arrays of strings only."""
     lines = ["# This repository's own fields. Carrier-owned: never listed in SHA256SUMS, never written by a release."]
+    tables = {k: v for k, v in data.items() if k in CARRIER_TABLES and isinstance(v, dict)}
     for key in [*[k for k in CARRIER_KEYS if k in data], *sorted(k for k in data if k not in CARRIER_KEYS)]:
         value = data[key]
+        if key in tables:
+            continue
         if isinstance(value, str):
             lines.append(f"{key} = {_toml_str(value)}")
         elif isinstance(value, list) and all(isinstance(v, str) for v in value):
             lines.append(f"{key} = []" if not value else f"{key} = [\n" + "".join(f"  {_toml_str(v)},\n" for v in value) + "]")
         else:
             raise RefusedError(f"{CARRIER_FILE}: `{key}` must be a string or a list of strings")
+    for key, table in tables.items():  # TOML tables come after every top-level key
+        if not all(isinstance(k, str) and isinstance(v, str) for k, v in table.items()):
+            raise RefusedError(f"{CARRIER_FILE}: `[{key}]` maps names to strings")
+        lines += ["", f"[{key}]", *[f"{k} = {_toml_str(v)}" for k, v in table.items()]]
     return "\n".join(lines) + "\n"
 
 
@@ -1960,7 +1968,8 @@ def read_carrier(tree: Path) -> dict | None:
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError as error:
         raise RefusedError(f"{path}: not valid TOML ({error})") from error
-    bad = [k for k, v in data.items() if not (isinstance(v, str) or (isinstance(v, list) and all(isinstance(i, str) for i in v)))]
+    bad = [k for k, v in data.items() if not (isinstance(v, str) or (isinstance(v, list) and all(isinstance(i, str) for i in v))
+                                              or (k in CARRIER_TABLES and isinstance(v, dict) and all(isinstance(i, str) for i in v.values())))]
     if bad:
         raise RefusedError(f"{path}: {', '.join(bad)} must be strings or lists of strings")
     return data
@@ -2817,8 +2826,22 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():  # a home writes releases from there
             problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
                             "the repository this one takes releases from (the release names it as `home` in README.md)")
+        problems += installed_catalogue_problems(tree.parent, carrier.get("skills"))
         problems += private_folder_problems(tree.parent, carrier)
     return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
+
+
+def installed_catalogue_problems(repo: Path, skills: object) -> list[str]:
+    """The catalogue's roles a carrier says it has: each name must be installed in the repository's skill folder,
+    so the catalogue never offers a skill this machine lacks. A plugin's or a user's skill (`plugin:name`,
+    `user:name`) lives outside the repository and is listed, not checked."""
+    if skills is None:
+        return []
+    if not isinstance(skills, dict):
+        return [f"{CARRIER_FILE}: `skills` must be a table from a role to an installed skill's name (`[skills]`)"]
+    return [f"{CARRIER_FILE}: `skills.{role}` names `{name}`, which is not installed in .claude/skills/"
+            for role, name in skills.items()
+            if ":" not in name and not (repo / ".claude/skills" / name / "SKILL.md").is_file()]
 
 
 def check_local(repo: Path) -> list[str]:

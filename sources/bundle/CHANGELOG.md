@@ -33,6 +33,17 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **A proposal answered on privacy is rewritten, not edited** (*under review*): harvest and `close` say how.
 - **A check run in a worktree** needs an environment bound to it, or its result is read as unproven (*under review*).
 
+- **A review turn has a fixed shape** (`prompt-context.md` §15, `decision-review`): three to five short blocks of
+  prose, one more answer, *review more*, opening a second level, the assumptions shown before an irreversible
+  decision and a check of what will happen after a costly one, and the fitting skills offered before a plan.
+- **A complex task is routed by its signals** (*under review*): one signal goes straight to its skill, two or more
+  read the catalogue in `method/skills/README.md`, now one row per role with what separates neighbours, and at most
+  three are offered. A carrier lists the roles it has installed in `carrier.toml` (`[skills]`), and `verify` fails a
+  name that is not installed; the README also advises trimming the host's skill listing.
+- **`decision-review` and `user-walk` ask to be invoked before the session reads the material**, and `user-walk`
+  now names a question about what a person meets when a step is slow, abandoned or cut off, which a trigger eval
+  found it missing; both are measured again before this release ships.
+
 ### Removed
 
 - The deprecated `bundle.py digest` alias: run `bundle.py verify`.

@@ -413,7 +413,8 @@ did not. A whole-branch review is offered when a multi-task plan is done.
 
 **Do this before answering, before planning, and before agreeing that the
 request makes sense.** A session that starts by reading only the request is
-working from the one source that has no memory.
+working from the one source that has no memory. A complex task is routed by
+its signals (`.agents/method/skills/README.md`).
 
 Gather, in this order, stopping as soon as a source has nothing to add:
 

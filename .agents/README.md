@@ -123,6 +123,7 @@ which no release writes and `SHA256SUMS` does not list:
 | `carrier` | this repository's random id, `r-` and six hex, minted once by `bundle.py carrier-id --mint` |
 | `adopted` | the date it took the bundle |
 | `upstream` | the id of the repository it takes releases from, which this README names as `home`; empty only in a home, and `verify` fails an empty one anywhere else |
+| `skills` | optional: a table from a role of the skill catalogue (`method/skills/README.md`) to the name installed here; `verify` fails a name not under `.claude/skills/` |
 | `log` | optional: its session log, relative to the repository, when it is not `.claude/logs/agent-changelog.md`; `new entry` and `count` read it |
 | `harvested_through` | the last date its harvest read; the next harvest starts there |
 | `adapted` | its renamings and substitutions, one line each |

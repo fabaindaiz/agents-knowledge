@@ -325,6 +325,21 @@ class CarrierIds(Base):
         (repo / "sources/bundle").mkdir(parents=True)  # a home: it writes the release from its originals
         self.assertNotIn("upstream", "\n".join(B.verify_problems(agents)))
 
+    def test_a_skill_the_carrier_lists_must_be_installed(self) -> None:
+        repo = self.root / "one"
+        agents = make_bundle(repo)
+        own = B.read_carrier(agents)
+        B.write_carrier(agents, {**own, "skills": {"debugging": "systematic-debugging", "planning": "plugin:write-plan"}})
+        self.assertIn("systematic-debugging", "\n".join(B.verify_problems(agents)))
+        skill = repo / ".claude/skills/systematic-debugging/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text("---\nname: systematic-debugging\ndescription: x\n---\n")
+        problems = "\n".join(B.verify_problems(agents))
+        self.assertNotIn("systematic-debugging", problems)
+        self.assertNotIn("write-plan", problems)  # a plugin's skill is listed, not checked
+        B.write_carrier(agents, {**own, "skills": ["not", "a", "table"]})
+        self.assertIn("`skills` must be a table", "\n".join(B.verify_problems(agents)))
+
     def test_a_missing_or_malformed_id_is_refused_with_what_to_do(self) -> None:
         repo = self.root / "one"
         agents = make_bundle(repo)

@@ -1,6 +1,6 @@
 ---
 name: decision-review
-description: "Walks the human through the decisions of an existing spec, design or plan before anything is built - lists every decision, decides the minor ones, then asks the human's one per turn, recommendation first, each option shown by a concrete example and priced, and records the answers. Use when asked to review a spec or design, go through the decisions or open questions one at a time, say what is left to decide, help decide before planning, or ask the questions a plan needs. Not for a new idea with nothing written yet (brainstorm first), approving or executing a plan, one quick question, or the few facts and permissions a run needs at its start (the pre-flight)."
+description: "Walks the human through the decisions of an existing spec, design or plan before anything is built: lists every decision, decides the minor ones, asks the human's one per turn with a recommendation, examples and prices, and records the answers. Use it first, before reading the material, when asked to review a spec or design, go through its decisions or open questions, say what is left to decide, or decide before planning. Not for a new idea with nothing written (brainstorm first), approving or executing a plan, one quick question, or a run's opening questions (the pre-flight)."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
@@ -41,6 +41,8 @@ themes):
   price in the repository's units, and what it forecloses;
 - the recommendation first, with its reason, and a reason for every other option;
 - "or tell me otherwise": a free-text answer overrides the options, read literally.
+- §15's review turn: three to five short blocks of prose, *review more* as one more answer, the
+  assumptions shown before an irreversible decision, and the check of what will happen after a costly one.
 
 A question about how something looks or feels gets a mockup or a throwaway prototype first. Use the
 assistant's question tool when there is one, with previews for visual options.
