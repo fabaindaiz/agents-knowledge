@@ -1739,6 +1739,12 @@ class _Scanner:
         value = self.text[start : self.at].strip(" ")
         if value in ("", "~", "null"):
             return None
+        # A plain decimal integer and true or false read alike in every YAML parser: a subagent's maxTurns and
+        # omitClaudeMd need them (0.0.30). Everything else that YAML would type stays refused.
+        if re.fullmatch(r"(?:0|[1-9][0-9]*)", value):
+            return int(value)
+        if value in ("true", "false"):
+            return value == "true"
         if value[:1] in "&*!|>@`%-?:,=<[]{}#'\"" or PLAIN_REFUSED.search(value) or PLAIN_TYPED.fullmatch(value):
             raise self.fail(f"the plain scalar {value[:30]!r} is read differently by YAML parsers; quote it")
         return value
@@ -3325,6 +3331,183 @@ def docs_report(repo: Path, since: str = "7d") -> dict:
     return report
 
 
+# --- a shell command that only reads -----------------------------------------------------------------
+# Moved here from the trigger eval in 0.0.30 so the researcher agent's hook and the eval share one classifier,
+# reviewed adversarially twice (`meta/reviews/2026-10-07-trigger-eval-adversarial.md` in the home).
+
+# A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
+READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$|git remote( (-v|--verbose))?$|git stash list|sort)(\s|$)")
+# Flags of an allowed reader that write or run another program, matched also when a long one is abbreviated:
+# find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls); rg's --pre, --hostname-bin and --search-zip (and
+# -z); sort's -o, --output and --compress-program; git's --output, --ext-diff and --textconv; tail's -f and -F,
+# which never end. Two reviews on 2026-10-07 found these holes.
+WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|fprint\w*|fls)")  # find's, checked on find only
+WRITING_LONG = ("output", "pre", "hostname-bin", "search-zip", "compress-program", "ext-diff", "textconv")
+SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}  # short flags dangerous only for that reader
+LONG_BY_COMMAND = {"tail": ("follow", "retry")}  # long ones, by any prefix
+# Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
+SEPARATORS = {"&&", "||", ";", "|"}
+QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}  # the error stream merged or dropped
+
+
+def shell_words(command: str) -> list[str] | None:
+    """The command split as the shell would split it, quotes removed, operators as words of their own; None when
+    the shell would expand or substitute something first (`$`, a backtick, braces outside single quotes), or when
+    a quote is left open. Globs (`*`, `?`, `[`) stay: they only name files, and the fixture holds no file named
+    like a flag. A `#` is a plain character, so a comment can never hide what follows it."""
+    words, word, quote, started, i = [], "", None, False, 0
+    while i < len(command):
+        ch = command[i]
+        if quote == "'":
+            if ch == "'":
+                quote = None
+            else:
+                word += ch
+        elif quote == '"':
+            if ch == '"':
+                quote = None
+            elif ch in "$`":
+                return None
+            elif ch == "\\" and i + 1 < len(command):
+                i += 1
+                word += command[i]
+            else:
+                word += ch
+        elif ch in "'\"":
+            quote, started = ch, True
+        elif ch in "$`{}":
+            return None
+        elif ch == "\\":
+            if i + 1 >= len(command):
+                return None
+            i += 1
+            word += command[i]
+            started = True
+        elif ch in " \t":  # bash splits on these only
+            if started:
+                words.append(word)
+            word, started = "", False
+        elif ch in ";&|<>()":
+            if started:
+                words.append(word)
+            run = ch
+            while i + 1 < len(command) and command[i + 1] in ";&|<>()":
+                i += 1
+                run += command[i]
+            words.append("\0" + run)  # an operator, marked so a quoted ";" is never one
+            word, started = "", False
+        else:
+            word += ch
+            started = True
+        i += 1
+    if quote:
+        return None
+    if started:
+        words.append(word)
+    return words
+
+
+def _writes(segment: list[str]) -> bool:
+    """Whether one reader's arguments hold a flag that writes, runs another program, or never ends."""
+    for token in segment[1:]:
+        if token.startswith("--"):
+            name = token[2:].split("=", 1)[0]
+            if name and any(option.startswith(name) for option in WRITING_LONG + LONG_BY_COMMAND.get(segment[0], ())):
+                return True
+        elif segment[0] == "find" and WRITING_SHORT.fullmatch(token):
+            return True
+        elif token.startswith("-") and set(token[1:]) & set(SHORT_BY_COMMAND.get(segment[0], "")):
+            return True
+    return False
+
+
+def command_segments(command: str) -> list[list[str]] | None:
+    """The simple commands a shell line chains with `&&`, `||`, `;` or `|`, as words, the error stream's merging or
+    dropping folded away; None when it holds anything else: a redirection, an expansion or substitution, a
+    subshell, a background job or a line break."""
+    if not command.strip() or any(mark in command for mark in ("\n", "\r", "\0")):
+        return None
+    words = shell_words(command.strip())
+    if words is None:
+        return None
+    joined: list[str] = []  # the error stream merged or dropped, as one quiet word
+    k = 0
+    while k < len(words):
+        fd = words[k] if words[k] in ("1", "2") and k + 1 < len(words) and words[k + 1].startswith("\0") else ""
+        op, target = (words[k + 1], words[k + 2:k + 3]) if fd else (words[k], words[k + 1:k + 2])
+        if op.startswith("\0") and target and not target[0].startswith("\0") and fd + op[1:] + target[0] in QUIET:
+            joined.append("\0quiet")
+            k += 3 if fd else 2
+            continue
+        joined.append(words[k])
+        k += 1
+    segments, current = [], []
+    for w in joined:
+        if w == "\0quiet":
+            continue
+        if w.startswith("\0"):
+            if w[1:] not in SEPARATORS:
+                return None  # a redirection, a subshell or a background job
+            segments.append(current)
+            current = []
+        else:
+            current.append(w)
+    segments.append(current)
+    return [s[:1] + s[3:] if s[:2] == ["git", "-C"] and len(s) > 3 else s for s in segments]  # git -C DIR reads
+
+
+def _reads(segment: list[str]) -> bool:
+    return bool(segment) and bool(READ_ONLY.match(" ".join(segment))) and not _writes(segment)
+
+
+def read_only(command: str) -> bool:
+    """A shell command that only reads the repository, run so a session may look before it chooses: one read, or
+    reads joined by `&&`, `||`, `;` or `|`, with the error stream merged or dropped at most. Any other redirection,
+    an expansion or substitution, a background job or a line break refuses the whole command."""
+    segments = command_segments(command)
+    return segments is not None and all(_reads(segment) for segment in segments)
+
+
+# The researcher agent's shell: a read, or `curl` fetching a page whole into a temporary folder outside the repository
+# (a summarising fetch once contradicted the text it summarised). Its own hook enforces it (`agents/researcher.md`).
+CURL_FLAGS = {"-s", "-S", "-L", "-f", "-I", "--silent", "--show-error", "--location", "--fail", "--head", "--compressed",
+              "--create-dirs"}  # the folders made are the output's, checked to be in the scratch
+CURL_VALUED = {"-A", "--user-agent", "-m", "--max-time", "--retry"}
+
+
+def _curl_into_scratch(segment: list[str], repo: Path) -> bool:
+    if segment[:1] != ["curl"]:
+        return False
+    scratch = Path(tempfile.gettempdir()).resolve()
+    urls, i = 0, 1
+    while i < len(segment):
+        token = segment[i]
+        if token in ("-o", "--output") or token.startswith("--output="):
+            target = token.split("=", 1)[1] if "=" in token else (segment[i + 1] if i + 1 < len(segment) else "")
+            i += 1 if "=" in token else 2
+            path = Path(target).expanduser().resolve()
+            if not target or scratch not in path.parents or repo.resolve() in (path, *path.parents):
+                return False
+            continue
+        if token in CURL_VALUED:
+            i += 2
+            continue
+        if token in CURL_FLAGS or (re.fullmatch(r"-[sSLfI]+", token) is not None):
+            i += 1
+            continue
+        if re.match(r"^https?://", token):
+            urls, i = urls + 1, i + 1
+            continue
+        return False  # any other flag: data to send, a config file, an upload, a name taken from the URL
+    return urls >= 1
+
+
+def research_allowed(command: str, repo: Path) -> bool:
+    """Whether the researcher's hook lets a shell command run: every part reads, or fetches into the scratch."""
+    segments = command_segments(command)
+    return segments is not None and all(_reads(s) or _curl_into_scratch(s, repo) for s in segments)
+
+
 # --- lookup: the index's rows a change matches --------------------------------------------------------
 # Reading the whole index costs a session several thousand tokens on every later turn; a change usually needs one
 # to three of its rows. `bundle.py lookup` ranks the *By what you are about to do* rows by a change's words, files
@@ -4070,6 +4253,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--bundle", default=str(OWN_BUNDLE), help="the bundle whose method's entry format is read")
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
+    sub.add_parser("research-hook", help="the researcher agent's PreToolUse hook: one call on stdin; exit 2 refuses it")
     p = sub.add_parser("lookup", help="the index's rows a change matches, from its words, files or diff; nothing when none")
     p.add_argument("words", nargs="*", help="what the change does, in words")
     p.add_argument("--files", nargs="*", type=Path, help="files the change will touch")
@@ -4123,6 +4307,28 @@ def _trailers_argv(argv: list[str]) -> list[str]:
     return ["trailers", *own, *(["--", *rest] if rest else [])]
 
 
+def research_hook(stdin: str) -> int:
+    """The researcher agent's hook: 0 lets a call run, 2 refuses it; anything unreadable is refused, since a hook
+    that fails with another code lets the call through."""
+    try:
+        payload = json.loads(stdin)
+        if payload.get("tool_name") != "Bash":
+            return 0
+        command = str((payload.get("tool_input") or {}).get("command", ""))
+        cwd = Path(payload.get("cwd") or ".")
+        try:
+            repo = Path(git(cwd, "rev-parse", "--show-toplevel").strip())
+        except (subprocess.CalledProcessError, OSError):
+            repo = cwd
+        if research_allowed(command, repo):
+            return 0
+        print("researcher: only reads, and `curl` into a temporary folder outside the repository, run here", file=sys.stderr)
+        return 2
+    except Exception as error:  # noqa: BLE001
+        print(f"researcher: refused, the hook could not read the call ({error})", file=sys.stderr)
+        return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(_trailers_argv(list(sys.argv[1:] if argv is None else argv)))
     try:
@@ -4133,6 +4339,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- one branch per command
+    if args.command == "research-hook":
+        return research_hook(sys.stdin.read())
     if args.command == "verify":
         tree = Path(args.tree)
         privacy = privacy_check(tree) if not is_legacy(_a_bundle(tree)) else None

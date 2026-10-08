@@ -25,12 +25,15 @@ class Frontmatter(Base):
                          {"slug": "a-slug", "forked_at": None, "set": ["context", "sync"], "map": {"lineage": "g-1", "kind": "text"}})
 
     def test_a_plain_scalar_yaml_would_type_or_refuse_must_be_quoted(self) -> None:
-        for value in ("1.", "+1.", "01.", "2026-09-25 10:00:00 Z", "2026-09-25T10:00:00 +05:00", "1_2:30", "21", "1.0", "yes", "Off", "2026-01-01", "0x1F", "1:20", ".inf", "a: b", "a:", "- x", "? x", "=", "<<",
+        for value in ("1.", "+1.", "01.", "2026-09-25 10:00:00 Z", "2026-09-25T10:00:00 +05:00", "1_2:30", "021", "+21", "1.0", "True", "TRUE", "yes", "Off", "2026-01-01", "0x1F", "1:20", ".inf", "a: b", "a:", "- x", "? x", "=", "<<",
                       "a\tb", "[, a]"):
             with self.subTest(value=value), self.assertRaises(bundle.FrontmatterError):
                 bundle.parse_frontmatter(f"claim: {value}\n")
         with self.assertRaises(bundle.FrontmatterError):
             bundle.parse_frontmatter("phases:\n  - a\n- b\n")
+        # a plain decimal integer and lowercase true or false read alike in every YAML parser (a subagent's fields)
+        self.assertEqual(bundle.parse_frontmatter("maxTurns: 40\nomitClaudeMd: true\nx: false\nz: 0\n"),
+                         {"maxTurns": 40, "omitClaudeMd": True, "x": False, "z": 0})
 
     def test_a_block_list_of_quoted_strings_folds_across_lines(self) -> None:
         block = 'adapted:                        # local\n  - "one line\n    continued"\n  - "two"\ndeclined:  []\n'

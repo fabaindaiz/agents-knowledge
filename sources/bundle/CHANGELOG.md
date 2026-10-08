@@ -21,6 +21,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   change, with a `cues` list now in each note, and prints one to three rows with their cards. It is an aid beside
   the index, not a replacement: its offline recall (two in three at the top three) is under the nine in ten the
   wiring would need, so the root file's knowledge line still reads the index.
+- **A `researcher` agent** (`agents/researcher.md`, *under review*): delegated research on a cheaper model at medium
+  effort, 40 turns at most, a five-minute cache and no root files, reading and fetching only, a report of at most
+  800 words with every claim's source and its assumptions marked. A hook in its own frontmatter
+  (`bundle.py research-hook`) lets its shell run reads and `curl` into a temporary folder outside the repository,
+  nothing else; the host runs it only in a trusted folder. The update installs it beside the reviewer.
 - **`bundle.py close --base REF`**: the closing checklist's deterministic part in one command (verify, trailers,
   record ids, decisions, docs-drift, local memory), failing on any, with what stays the writer's named.
 

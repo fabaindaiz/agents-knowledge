@@ -53,19 +53,21 @@ FIRE, MISFIRE = 0.8, 0.1
 # Every other tool is refused by a hook, a connector's (`mcp__…`) as much as a built-in one: a request such as
 # "push everything" must do nothing, through any tool the machine has.
 ALLOWED = ("Read", "Grep", "Glob", "Skill", "ToolSearch", "TodoWrite")
-# A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
-READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$|git remote( (-v|--verbose))?$|git stash list|sort)(\s|$)")
-# Flags of an allowed reader that write or run another program, matched also when a long one is abbreviated:
-# find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls); rg's --pre, --hostname-bin and --search-zip (and
-# -z); sort's -o, --output and --compress-program; git's --output, --ext-diff and --textconv; tail's -f and -F,
-# which never end. Two reviews on 2026-10-07 found these holes.
-WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|fprint\w*|fls)")  # find's, checked on find only
-WRITING_LONG = ("output", "pre", "hostname-bin", "search-zip", "compress-program", "ext-diff", "textconv")
-SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}  # short flags dangerous only for that reader
-LONG_BY_COMMAND = {"tail": ("follow", "retry")}  # long ones, by any prefix
-# Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
-SEPARATORS = {"&&", "||", ";", "|"}
-QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}  # the error stream merged or dropped
+# The read-only classifier lives in the bundle tool since 0.0.30, shared with the researcher agent's hook.
+def _bundle_tool():  # noqa: ANN202
+    import importlib.util
+    path = Path(__file__).resolve().parents[2] / "sources" / "bundle" / "tools" / "bundle.py"
+    spec = importlib.util.spec_from_file_location("agent_guides_bundle", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("agent_guides_bundle", module)  # a dataclass looks its module up there
+    spec.loader.exec_module(module)
+    return module
+
+
+_B = _bundle_tool()
+READ_ONLY, WRITING_SHORT, WRITING_LONG = _B.READ_ONLY, _B.WRITING_SHORT, _B.WRITING_LONG
+SHORT_BY_COMMAND, LONG_BY_COMMAND, SEPARATORS, QUIET = _B.SHORT_BY_COMMAND, _B.LONG_BY_COMMAND, _B.SEPARATORS, _B.QUIET
+shell_words, _writes, read_only = _B.shell_words, _B._writes, _B.read_only
 PREAMBLE = {"ToolSearch", "TodoWrite"}  # calls a session may make before choosing; the routed metric looks past them
 CALLS = 5  # the lenient metric reads this many tool calls
 
@@ -90,113 +92,6 @@ def tool_calls(lines, limit: int = CALLS) -> list[tuple[str, str]]:  # noqa: ANN
                 if len(calls) >= limit:
                     return calls
     return calls
-
-
-def shell_words(command: str) -> list[str] | None:
-    """The command split as the shell would split it, quotes removed, operators as words of their own; None when
-    the shell would expand or substitute something first (`$`, a backtick, braces outside single quotes), or when
-    a quote is left open. Globs (`*`, `?`, `[`) stay: they only name files, and the fixture holds no file named
-    like a flag. A `#` is a plain character, so a comment can never hide what follows it."""
-    words, word, quote, started, i = [], "", None, False, 0
-    while i < len(command):
-        ch = command[i]
-        if quote == "'":
-            if ch == "'":
-                quote = None
-            else:
-                word += ch
-        elif quote == '"':
-            if ch == '"':
-                quote = None
-            elif ch in "$`":
-                return None
-            elif ch == "\\" and i + 1 < len(command):
-                i += 1
-                word += command[i]
-            else:
-                word += ch
-        elif ch in "'\"":
-            quote, started = ch, True
-        elif ch in "$`{}":
-            return None
-        elif ch == "\\":
-            if i + 1 >= len(command):
-                return None
-            i += 1
-            word += command[i]
-            started = True
-        elif ch in " \t":  # bash splits on these only
-            if started:
-                words.append(word)
-            word, started = "", False
-        elif ch in ";&|<>()":
-            if started:
-                words.append(word)
-            run = ch
-            while i + 1 < len(command) and command[i + 1] in ";&|<>()":
-                i += 1
-                run += command[i]
-            words.append("\0" + run)  # an operator, marked so a quoted ";" is never one
-            word, started = "", False
-        else:
-            word += ch
-            started = True
-        i += 1
-    if quote:
-        return None
-    if started:
-        words.append(word)
-    return words
-
-
-def _writes(segment: list[str]) -> bool:
-    """Whether one reader's arguments hold a flag that writes, runs another program, or never ends."""
-    for token in segment[1:]:
-        if token.startswith("--"):
-            name = token[2:].split("=", 1)[0]
-            if name and any(option.startswith(name) for option in WRITING_LONG + LONG_BY_COMMAND.get(segment[0], ())):
-                return True
-        elif segment[0] == "find" and WRITING_SHORT.fullmatch(token):
-            return True
-        elif token.startswith("-") and set(token[1:]) & set(SHORT_BY_COMMAND.get(segment[0], "")):
-            return True
-    return False
-
-
-def read_only(command: str) -> bool:
-    """A shell command that only reads the repository, run so a session may look before it chooses: one read, or
-    reads joined by `&&`, `||`, `;` or `|`, with the error stream merged or dropped at most. Any other redirection,
-    an expansion or substitution, a background job or a line break refuses the whole command."""
-    if not command.strip() or any(mark in command for mark in ("\n", "\r", "\0")):
-        return False
-    words = shell_words(command.strip())
-    if words is None:
-        return False
-    joined: list[str] = []  # the error stream merged or dropped, as one quiet word
-    k = 0
-    while k < len(words):
-        fd = words[k] if words[k] in ("1", "2") and k + 1 < len(words) and words[k + 1].startswith("\0") else ""
-        op, target = (words[k + 1], words[k + 2:k + 3]) if fd else (words[k], words[k + 1:k + 2])
-        if op.startswith("\0") and target and not target[0].startswith("\0") and fd + op[1:] + target[0] in QUIET:
-            joined.append("\0quiet")
-            k += 3 if fd else 2
-            continue
-        joined.append(words[k])
-        k += 1
-    segments, current = [], []
-    for w in joined:
-        if w == "\0quiet":
-            continue
-        if w.startswith("\0"):
-            if w[1:] not in SEPARATORS:
-                return False  # a redirection, a subshell or a background job
-            segments.append(current)
-            current = []
-        else:
-            current.append(w)
-    segments.append(current)
-    segments = [s[:1] + s[3:] if s[:2] == ["git", "-C"] and len(s) > 3 else s for s in segments]  # git -C DIR reads
-    return all(segment and READ_ONLY.match(" ".join(segment)) and not _writes(segment) for segment in segments)
 
 
 def allowed(call: tuple[str, str]) -> bool:

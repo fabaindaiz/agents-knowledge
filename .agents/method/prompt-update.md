@@ -210,8 +210,8 @@ repository's own artifacts, which do not take the practice up.
    the home did with each. Report both. A proposal not listed stays: it waits for
    the next release.
 
-   **3b. Refresh the reviewer**: copy `.agents/agents/knowledge-reviewer.md` into the assistant's
-   agent folder again (Claude Code: `.claude/agents/knowledge-reviewer.md`), and make the root file's
+   **3b. Refresh the agents**: copy every file of `.agents/agents/` into the assistant's agent folder
+   again (Claude Code: `.claude/agents/`), the reviewer and, since 0.0.30, the researcher; and make the root file's
    knowledge line, its privacy line and its line that this repository's procedures win the ones
    `prompt-bootstrap.md` Phase 4 words, in this repository's own words. The installed copy is never edited:
    every release regenerates it; adapt it through the root file, and record the adaptation in

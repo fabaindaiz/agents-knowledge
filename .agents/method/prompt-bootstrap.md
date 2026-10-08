@@ -305,10 +305,12 @@ repository and say so. Only when the user asks for a review in a fresh context o
 names the reviewer, give the diff to the `knowledge-reviewer` subagent and wait
 for its answer; when a change deletes or rewrites stored data, moves money or
 touches authentication and none was asked for, offer one in the report, in one
-line.* **Install the reviewer**: copy
-`.agents/agents/knowledge-reviewer.md` into the assistant's agent folder (Claude
-Code: `.claude/agents/`); every release regenerates it, and the update copies it
-again. Without the line the knowledge
+line.* **Install the agents**: copy every file of `.agents/agents/` (the
+reviewer, and the researcher a session delegates research to) into the
+assistant's agent folder (Claude Code: `.claude/agents/`); every release
+regenerates them, and the update copies them again. The researcher's hook,
+which keeps its shell to reads and fetches into a temporary folder, runs only
+in a folder the host trusts. Without the line the knowledge
 base is a folder nobody opens. The same map gets a second line, also in the
 repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
