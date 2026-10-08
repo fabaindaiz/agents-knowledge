@@ -7,7 +7,7 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
-## [Unreleased]
+## [0.0.30] - 2026-10-08
 
 ### Added
 
