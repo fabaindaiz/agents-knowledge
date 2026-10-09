@@ -677,6 +677,41 @@ class Carry(Base):
         self.assertFalse((repo / ".agents").exists())
         self.assertEqual(self.R.bundle_branches(repo), [("agents", "0.0.3")])
 
+    def a_carrier_whose_bundle_is_on_a_branch(self, name: str) -> Path:
+        repo = init_repo(self.root / name)
+        commit(repo, "start")
+        start = git(repo, "branch", "--show-current").strip()
+        git(repo, "switch", "-q", "-c", "agents")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/README.md").write_text(B.dump_frontmatter({"bundle": "agent-guides", "version": "0.0.3"}) + "\n# Guides\n")
+        commit(repo, "the bundle")
+        git(repo, "switch", "-q", start)
+        return repo
+
+    def test_align_reports_it_not_aligned_with_its_branches(self) -> None:
+        one = make_carrier(self.root, "one")
+        B.mint_carrier_id(one, upstream="r-aaaaaa")
+        self.splice(one)
+        commit(one, "bundle")
+        two = self.a_carrier_whose_bundle_is_on_a_branch("two")
+
+        problems = self.R.align([one], self.home, missing=(two,))
+
+        self.assertIn("two: no bundle on disk; a bundle on agents (0.0.3)", problems)
+        self.assertTrue(any(p.startswith("one: ") for p in problems))
+
+    def test_gather_says_not_read(self) -> None:
+        one = make_carrier(self.root, "one")
+        B.mint_carrier_id(one, upstream="r-aaaaaa")
+        self.splice(one)
+        commit(one, "bundle")
+        two = self.a_carrier_whose_bundle_is_on_a_branch("two")
+
+        self.R.gather([one], self.root / "out", self.home, missing=(two,))
+
+        text = (self.root / "out/gather.md").read_text()
+        self.assertIn("two — not read: no bundle on disk", text)
+
     def test_a_splice_report_names_every_path_it_removes(self) -> None:
         actions = ["write README.md", "remove method/old.md", "remove tools/gone.py", "write SHA256SUMS"]
 

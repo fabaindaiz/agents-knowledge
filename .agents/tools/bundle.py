@@ -2734,6 +2734,7 @@ class Scope:
 
     repos: list[Path]
     source: str  # "argument", "environment" or "manifest"
+    missing: tuple[Path, ...] = ()  # listed, but with no bundle on disk: named by a read, refused by a write
 
     @property
     def declared(self) -> bool:
@@ -2750,7 +2751,10 @@ class Scope:
 def workspace(args: list[str], manifest: Path | None = MANIFEST, *, writing: bool = False) -> Scope:
     """The repositories this session works on: the ones given, else `AGENT_WORKSPACE`, else the manifest.
 
-    Every path has to carry a bundle, so a mistyped one stops the session instead of being skipped.
+    **A path with no bundle on disk** (a carrier whose bundle lives only on a branch) is refused when
+    the command writes, so a mistyped path stops the session. A command that only reads goes on without
+    it: the path comes back in `Scope.missing`, to be reported as not read. A read over paths none of
+    which carries a bundle still stops.
 
     **A command that writes never falls back to the manifest.** The manifest is this machine's list
     of carriers; it says which repositories exist, never which ones a session may edit. Inferring
@@ -2773,15 +2777,16 @@ def workspace(args: list[str], manifest: Path | None = MANIFEST, *, writing: boo
         sys.exit(f"no repositories given, no {WORKSPACE_ENV}, and no manifest at {manifest}")
     else:
         given, source = manifest_carriers(manifest), "manifest"
-    repos = [Path(p).expanduser().resolve() for p in given]
-    missing = [str(r) for r in repos if not (r / ".agents").is_dir()]
-    if missing:
-        raise NotACarrierError(f"no bundle in {missing}")
+    listed = [Path(p).expanduser().resolve() for p in given]
+    repos = [r for r in listed if (r / ".agents").is_dir()]
+    missing = tuple(r for r in listed if r not in repos)
+    if missing and (writing or not repos):
+        raise NotACarrierError(f"no bundle in {[str(m) for m in missing]}")
     if not repos:
         # A manifest with `carriers = []` gave an empty scope, and every command then failed on its
         # first carrier: `repos[0]` in gather, `next(iter(...))` in align.
         raise RefusedError(f"the scope is empty (from the {source}): name the carriers this session has open")
-    return Scope(repos, source)
+    return Scope(repos, source, missing)
 
 
 def manifest_carriers(manifest: Path) -> list[str]:
@@ -2798,14 +2803,15 @@ def outside(scope: Scope, manifest: Path | None = MANIFEST) -> list[str]:
     if not scope.declared or manifest is None or not manifest.exists():
         return []
     listed = [Path(p).expanduser().resolve() for p in manifest_carriers(manifest)]
-    return [str(p) for p in listed if p not in scope.repos]
+    return [str(p) for p in listed if p not in scope.repos and p not in scope.missing]
 
 
 def _scope_report(scope: Scope, verb: str) -> list[str]:
     """One line per carrier this session leaves alone — or one line saying why it can name none."""
+    unread = [f"  . not read: no bundle on disk: {path.name}" for path in scope.missing]
     if not scope.declared:
-        return [f"  . scope taken from the manifest: every carrier this machine knows is in it, so none is named as {verb}"]
-    return [f"  . outside this workspace, not {verb}: {name}" for name in outside(scope)]
+        return [*unread, f"  . scope taken from the manifest: every carrier this machine knows is in it, so none is named as {verb}"]
+    return [*unread, *[f"  . outside this workspace, not {verb}: {name}" for name in outside(scope)]]
 
 
 # --- verify ----------------------------------------------------------------------------------------
@@ -4599,7 +4605,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 1 if problems else 0
     if args.command == "check-local":
         declared = args.repos or os.environ.get(WORKSPACE_ENV) or MANIFEST.exists()
-        repos = workspace(args.repos).repos if declared else [OWN_REPO]
+        scope = workspace(args.repos) if declared else Scope([OWN_REPO], "argument")
+        repos = scope.repos
+        for line in _scope_report(scope, "checked") if scope.missing else []:
+            print(line)
         found = check_local_all(repos)
         for repo in repos:
             for warning in user_deny_warnings(repo) + attribution_warnings(repo):

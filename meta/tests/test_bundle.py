@@ -668,11 +668,29 @@ class Workspace(Base):
         self.assertEqual(B.outside(B.workspace([str(one)], manifest), manifest), [str(two)])
         self.assertIn("scope taken from the manifest", B._scope_report(B.workspace([], manifest), "written")[0])
 
+    def test_a_read_scope_lists_a_path_without_a_bundle_as_missing(self) -> None:
+        one, plain = self.root / "one", self.root / "plain"
+        make_bundle(one)
+        plain.mkdir()
+
+        scope = B.workspace([str(one), str(plain)], None)
+
+        self.assertEqual(scope.repos, [one])
+        self.assertEqual(scope.missing, (plain,))
+
+    def test_a_write_scope_still_refuses_it(self) -> None:
+        one, plain = self.root / "one", self.root / "plain"
+        make_bundle(one)
+        plain.mkdir()
+
+        with self.assertRaises(B.NotACarrierError):
+            B.workspace([str(one), str(plain)], None, writing=True)
+
     def test_a_path_that_carries_no_bundle_is_refused(self) -> None:
         (self.root / "plain").mkdir()
 
         with self.assertRaises(B.NotACarrierError):
-            B.workspace([str(self.root / "plain")], None)
+            B.workspace([str(self.root / "plain")], None, writing=True)
 
 
 class ChangelogCommand(Base):

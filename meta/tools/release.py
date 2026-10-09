@@ -1023,11 +1023,13 @@ def _forked_from(base: Path, tree: Path) -> list[str]:
     return out
 
 
-def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | None = None) -> dict:
+def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | None = None,
+           missing: tuple[Path, ...] = ()) -> dict:
     """Phase 1, read-only: every carrier against the release it holds; its proposals; what it forked.
 
     `packs` are proposals a carrier sent as one file (`bundle.py proposals --pack`), from a machine where
-    this session cannot open it: read as they are, never extracted.
+    this session cannot open it: read as they are, never extracted. `missing` are carriers with no bundle
+    on disk: the report says *not read* for each, so their proposals are never dropped in silence.
     """
     import json
     import shutil
@@ -1042,6 +1044,11 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
     available = set(tags(root))
     report: dict = {"carriers": {}, "packs": {}}
     lines = [f"# Gather — {len(repos)} carriers" + (f" and {len(packs)} packs" if packs else ""), ""]
+    for path in missing:
+        branches = bundle_branches(path)
+        lines += [f"## {path.name} — not read: no bundle on disk", "",
+                  *[f"- a bundle on {b} ({v})" for b, v in branches], "- its proposals, if any, were not gathered", ""]
+    report["missing"] = [path.name for path in missing]
     for repo, name in zip(repos, names):
         snapshot = out / "carriers" / name / ".agents"
         shutil.copytree(repo / ".agents", snapshot, ignore=shutil.ignore_patterns("__pycache__"))
@@ -1499,7 +1506,7 @@ def splice_report(name: str, actions: list[str], write: bool, backup: Path | Non
     return [head, *(f"  - {rel}" for rel in removed)]
 
 
-def align(repos: list[Path], root: Path = ROOT) -> list[str]:
+def align(repos: list[Path], root: Path = ROOT, missing: tuple[Path, ...] = ()) -> list[str]:
     """Phase 3: every carrier verifies, holds the home's release byte for byte, and is registered at it."""
     problems = []
     ids = B.carrier_ids(repos)
@@ -1521,6 +1528,9 @@ def align(repos: list[Path], root: Path = ROOT) -> list[str]:
             problems.append(f"{name}: {ids[repo]} is not in meta/tracking/carriers.md")
         elif row.group(1).strip() != version:
             problems.append(f"{name}: registered at {row.group(1).strip()}, the home is at {version}")
+    for path in missing:
+        found = "".join(f"; a bundle on {b} ({v})" for b, v in bundle_branches(path))
+        problems.append(f"{path.name}: no bundle on disk{found}")
     return problems
 
 
@@ -1664,7 +1674,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             scope = B.workspace(args.repos)
             for line in B._scope_report(scope, "gathered"):
                 print(line)
-            gather(scope.repos, Path(args.out), packs=[Path(f) for f in args.packs])
+            gather(scope.repos, Path(args.out), packs=[Path(f) for f in args.packs], missing=scope.missing)
             print(Path(args.out) / "gather.md")
             return 0
         if args.command == "intake":
@@ -1735,10 +1745,10 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             scope = B.workspace(args.repos)
             for line in B._scope_report(scope, "aligned"):
                 print(line)
-            problems = align(scope.repos)
+            problems = align(scope.repos, missing=scope.missing)
             for problem in problems:
                 print("  x " + problem)
-            print(f"{len(scope)} carriers " + ("aligned" if not problems else f"NOT aligned: {len(problems)} problems"))
+            print(f"{len(scope) + len(scope.missing)} carriers " + ("aligned" if not problems else f"NOT aligned: {len(problems)} problems"))
             return 1 if problems else 0
         if args.command == "note-state":
             for line in note_state(args.slug, args.state) or [f"{args.slug} is already {args.state}; nothing changed"]:
