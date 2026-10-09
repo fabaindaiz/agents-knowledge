@@ -456,7 +456,7 @@ Gather, in this order, stopping as soon as a source has nothing to add:
 - **What friction is still open.** Process items recorded and not yet fixed,
   especially any that today's work will hit again.
 
-At an effective usage level `full`, run `bundle.py usage brief` and apply what it prints.
+Run `bundle.py usage brief` and apply what it prints; it prints nothing without consent to preferences.
 
 **Then say it out loud, in six lines. Not a dump — a brief.**
 

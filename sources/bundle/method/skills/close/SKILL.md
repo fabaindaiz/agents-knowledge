@@ -66,13 +66,14 @@ states none). Replace each comment, and beyond the format:
 - **Procedures done by hand:** the same search. The second occurrence is a proposed skill or script,
   with its cost.
 
-- **Usage data, only as consent allows.** Run `python3 .agents/tools/bundle.py usage needs-consent`. On `ask`,
-  show the user the text below in their language and take the answer with `usage set` (level, or a category
-  `on|off`); unanswered, store nothing and do not ask again this session. On `ok`, record with `usage add`:
-  the session's frictions (`frictions`, counts); the ablation record (`ablation`) when it ran `usage brief`;
-  and a table of preferences to store (paraphrased, why, stated or inferred), each confirmed row by row
-  before `usage add preferences`. Then `usage show`: confirm (`usage use ID`) or let go each preference
-  expiring within 7 days.
+- **Usage data, only as consent allows.** Run `python3 .agents/tools/bundle.py usage needs-consent`. On `ask`
+  (or an error, shown), show the user the text below in their language and take the answer with `usage set`
+  (level, or a category `on|off`); unanswered, store nothing and do not ask again this session. On `ok:
+  <categories>`, record only the categories listed, with `usage add CATEGORY` (alone, it prints the fields and
+  units): `frictions`, counts; `ablation` when it ran `usage brief`; `preferences`, a table (paraphrased, why,
+  stated or inferred) confirmed row by row, shown only when listed. Then `usage show`: confirm (`usage use ID`)
+  or let go each preference expiring within 7 days. Ablation: a repeat is a user message giving an
+  instruction already given; a correction rejects what the agent just did. Show both counts before recording.
 
 ~~~text
 Usage data stays on this machine, outside every repository and never in git. It serves to improve how

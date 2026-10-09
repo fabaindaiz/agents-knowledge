@@ -91,7 +91,7 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
    it is where a helpful adoption turns into an unwanted rewrite.
 
 The first pass is a long session (in adopt mode, it creates only what has no
-home, and the host's own files follow one per session: principle 19). Its product is listed in *Done — the bootstrap*; the part
+home, and the host's own files follow one per session: principle 19). Its product, with two to four skills, is listed in *Done — the bootstrap* (`prompt-bootstrap.md`); the part
 most people skip is **a script that checks the structural rules the prose
 claims.**
 
@@ -2110,7 +2110,7 @@ stopped at <where>."*
 - **Read what the invocation names, not the whole method.** That is what each
   invocation's `Reads:` line is for.
 - **Do not regenerate the brief when nothing moved.** "No change since the last
-  session" is a complete step 0, after `usage brief` where it applies.
+  session" is a complete step 0, after `usage brief` (it prints nothing without consent to preferences).
 - **Cache expensive reasoning into the repo**, not into a longer conversation: a
   decision row is re-read at zero cost forever, a conversation is not.
 - **Where a cheap check exists, run it before the expensive reasoning.** The

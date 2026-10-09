@@ -17,7 +17,7 @@ holds anything. Taking a release appends one entry to `lineage` in `carrier.toml
 `bundle.py proposals --prune` do it, once per version), so the line of releases a repository followed is kept.
 
 **Any home may run a meta-session, a diverging one included.** To open one: clone a home repository at a release
-tag, mint its own id (`bundle.py carrier-id --mint`), and record the tag it started from. Two lines that drifted
+tag, remove `carrier` and `lineage` from the clone's `carrier.toml`, mint its own id (`bundle.py carrier-id --mint`), and record the tag it started from. Two lines that drifted
 apart are reunified later by the merge method (`prompt-merge.md`, a home file) from the lineage.
 
 ## How a carrier meets a home

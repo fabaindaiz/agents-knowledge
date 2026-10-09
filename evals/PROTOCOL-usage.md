@@ -22,7 +22,7 @@ and at what token cost? Context files have been reported to add cost without a r
 | Arms | `on`: `usage brief` prints the stored preferences and the session applies them. `off`: `usage brief` prints `(ablation: off)` and withholds them |
 | Assignment | alternated per session by `usage brief` itself, from the last recorded arm; the agent does not choose |
 | Unit | one coding session that ran `usage brief` |
-| Recorded at close | `usage add ablation arm=<on\|off> repeats=N corrections=N ktok=N`, by the close |
+| Recorded at close | `usage add ablation arm=<on\|off> repeats=N corrections=N ktok=N [prefs=N]`, by the close; `prefs` is the number of preferences the brief printed |
 | Size | at least 20 sessions per arm before any verdict; `bundle.py usage report` prints `insufficient data` below that |
 
 ## What is counted
@@ -58,9 +58,9 @@ stop storing, whatever the verdict.
 | The user knows the arm (the brief prints it) and may behave differently | Unavoidable and stated: a single-user trial cannot blind the person. Counts are of messages, not judgments of effort |
 | Carry-over: a preference applied in an `on` session shapes habits in the next `off` one | Alternation keeps arms adjacent; carry-over biases the contrast toward zero, never toward a false gain |
 | Small n: 20 sessions per arm is one user's weeks | The verdict is a default for that user, not a finding about users; a close call is reported as such |
-| Sessions differ in task and length | ktok is reported per session beside the mean; no adjustment is made, and the spread is shown |
+| Sessions differ in task and length | ktok is reported per session beside the mean; no adjustment is made, and the spread is computed at analysis from the raw records the tool keeps (`usage report` prints means only) |
 | The agent counting its own corrections | The count is listed to the user at close, who may change it |
-| Preferences stored during the trial change the `on` arm | Reported: the number of preferences stored at each session is part of the record's context, not of the verdict |
+| Preferences stored during the trial change the `on` arm | Reported: the number of preferences the brief printed (`prefs`) is part of the record's context, not of the verdict |
 
 ## Deviations
 
