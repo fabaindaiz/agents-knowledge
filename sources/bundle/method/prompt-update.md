@@ -116,7 +116,7 @@ in `prompt-context.md` §*The pre-flight*.
 *The agent will print something like this, and then wait:*
 
 ~~~text
-Before I update the bundle here, four things (five when a fifth line follows).
+Before I update the bundle here, four things, or five when the log question applies.
 Reply **`defaults`** to take all but the first as proposed; the first one I
 need from you.
 
@@ -131,8 +131,8 @@ need from you.
    it reconsidered.
 4. **The gate.** After applying, I run this repository's gate if it has one and
    it writes nothing.
-5. **The log** (only when `carrier.toml` has no `log` and the log is not at the
-   default path): I read the log at `<path>` (from `adapted` or the root map) and
+5. **The session log** (only when `carrier.toml` has no `log` and the log is not at the
+   default path): I read the session log at `<path>` (from `adapted` or the root map) and
    will set `log` to it. Say if it is elsewhere.
 
 Not asking, because `carrier.toml` and the repository answer them: which
