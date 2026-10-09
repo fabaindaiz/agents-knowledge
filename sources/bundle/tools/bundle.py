@@ -64,6 +64,7 @@ if sys.version_info < (3, 11):
              "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
 
 import argparse
+import ast
 import builtins
 import collections
 import datetime
@@ -770,6 +771,41 @@ def _privacy_lines(path: Path, rel: str, shown: str) -> list[PrivacyLine]:
     return out
 
 
+def _squash(text: str) -> str:
+    """Whitespace collapsed to single spaces and case folded: how a quote and the text it may quote are compared."""
+    return " ".join(text.split()).casefold()
+
+
+def bundle_text(tree: Path) -> str:
+    """What a bundle itself says, normalised: its shipped files' text and the string literals of its tools.
+
+    A quote of this is the bundle quoting itself, not somebody's words. A Python file contributes only the
+    string literals `ast` reads (the pieces of an f-string one by one), so its code is not text; the carrier's
+    own files (proposals, `incoming/`) are not shipped and so never excuse a quote.
+    """
+    parts: list[str] = []
+    for rel in shipped(tree):
+        path = tree / rel
+        if path.is_symlink() or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if path.suffix == ".py":
+            try:
+                parts += [n.value for n in ast.walk(ast.parse(text)) if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+            except (SyntaxError, ValueError):
+                parts.append(text)
+        else:
+            parts.append(text)
+    return "\n".join(_squash(part) for part in parts)
+
+
+def quotes_bundle(quote: str, text: str) -> bool:
+    """Whether the whole quoted span, normalised, appears verbatim in `bundle_text`. A span that only contains
+    words of the bundle inside a longer sentence of its own is not a quote of it."""
+    span = _squash(quote)
+    return bool(span) and span in text
+
+
 def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, terms_file: Path | None = None,
                   commits: tuple[Path, str] | None = None) -> PrivacyReport:
     """Reads every travelling file of a bundle, or the given files, for what could identify somebody.
@@ -799,12 +835,13 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
     normalised = sorted({term.casefold() for term in terms})
     fingerprint = hashlib.sha256("\n".join(normalised).encode("utf-8")).hexdigest()[:8]
     partial = not source.is_file()
+    own_text = bundle_text(OWN_BUNDLE) if OWN_BUNDLE.is_dir() else ""
     note = (f"partial: no private-terms list on this machine ({shown} does not exist), so no private name was checked"
             if partial else f"private terms: {len(normalised)} read from {shown}, list {fingerprint}")
     if commits:
         with tempfile.TemporaryDirectory() as scratch:
             targets, count = commit_targets(commits[0], commits[1], Path(scratch).resolve())
-            report = _privacy_scan(targets, terms, note, partial)
+            report = _privacy_scan(targets, terms, note, partial, own_text)
         report.commits = count
         return report
     if paths:
@@ -812,7 +849,7 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
     else:
         tree = _a_bundle(tree if tree is not None else OWN_BUNDLE)
         targets = [Target(tree / rel, rel, rel) for rel in all_files(tree) if not _never_travels(rel)]
-    return _privacy_scan(targets, terms, note, partial)
+    return _privacy_scan(targets, terms, note, partial, own_text)
 
 
 @dataclass(frozen=True)
@@ -921,8 +958,9 @@ def hunk_added(patch: str) -> set[int]:
     return added
 
 
-def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: bool) -> PrivacyReport:
-    """The rules and the private terms over every target; see `privacy_check`."""
+def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: bool, own_text: str = "") -> PrivacyReport:
+    """The rules and the private terms over every target; see `privacy_check`. `own_text` is `bundle_text` of this
+    tool's bundle: a `quote` that is verbatim in it is the bundle's own words and is not reported."""
     findings: list[Finding] = []
     allowances: list[tuple[str, str]] = []
     skipped: set[int] = set()
@@ -934,6 +972,8 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
         home = target.home or (path.parent if path.is_file() else path)
         own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(home)
         exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
+        # A shipped file of this bundle is part of `own_text`, so it would excuse its own quotes: it keeps the warning.
+        text_of_bundle = "" if path.resolve().is_relative_to(OWN_BUNDLE.resolve()) and not is_carrier_owned(rel) else own_text
         for line in _privacy_lines(path, rel, shown):
             if target.lines is not None and line.number not in target.lines:
                 continue
@@ -943,7 +983,8 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
                 if (rule.evidence_only and not line.evidence) or (rule.literature_exempt and line.literature) \
                         or (rule.placeholder_exempt and line.placeholder_fence):
                     continue
-                found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)]
+                found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)
+                          if not (name == "quote" and quotes_bundle(hit, text_of_bundle))]
             # The term itself is not printed: this output is pasted into sessions and changelogs, and
             # the one thing it must not carry is the word it caught.
             hits = term_hits(line.text, terms)

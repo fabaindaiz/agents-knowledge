@@ -534,6 +534,25 @@ class Privacy(Base):
         self.assertEqual(sorted(self.rules(report, "WARN")), ["exact-count", "n-of-m", "quote"])
         self.assertEqual(report.failures, [])
 
+    def _quote_warnings(self, quoted: str) -> list[str]:
+        agents = make_bundle(self.root)
+        a_proposal(agents, f'It said "{quoted}" on the screen.', lacks="a second occurrence")
+        return self.rules(B.privacy_check(agents), "WARN")
+
+    def test_a_quote_of_a_shipped_sentence_does_not_warn(self) -> None:
+        shipped = "the only part that compounds across projects rather than within one"
+        self.assertIn(shipped, " ".join((B.OWN_BUNDLE / "method/prompt-context.md").read_text().split()))
+
+        self.assertNotIn("quote", self._quote_warnings(shipped))
+
+    def test_a_quote_of_a_tool_message_does_not_warn(self) -> None:
+        self.assertNotIn("quote", self._quote_warnings("not empty; export into a new folder"))
+
+    def test_a_private_quote_still_warns(self) -> None:
+        self.assertIn("quote", self._quote_warnings("the vendor outage drained every queue overnight"))
+        self.assertIn("quote", self._quote_warnings(
+            "our customer said the only part that compounds across projects rather than within one broke billing"))
+
     def test_a_standards_number_is_not_a_count(self) -> None:
         agents = make_bundle(self.root)
         plant(agents / "knowledge/notes/active/absence.md", "Unlike RFC 7396 / 6902 and ISO 8601, it read 7" + ",396 rows.")
