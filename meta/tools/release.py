@@ -1055,7 +1055,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
     (out / GATHER_MARKER).write_text("written by release.py gather; the whole folder is replaced by the next one\n")
     available = set(tags(root))
     report: dict = {"carriers": {}, "packs": {}}
-    lines = [f"# Gather — {len(repos)} carriers" + (f", {len(missing)} not read" if missing else "") + (f" and {len(packs)} packs" if packs else ""), ""]
+    lines = [f"# Gather — {len(repos)} carrier{'' if len(repos) == 1 else 's'}" + (f", {len(missing)} not read" if missing else "") + (f" and {len(packs)} pack{'' if len(packs) == 1 else 's'}" if packs else ""), ""]
     for path in missing:
         branches = bundle_branches(path)
         lines += [f"## {path.name} — not read: no bundle on disk", "",
