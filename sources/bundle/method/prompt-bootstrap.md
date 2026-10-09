@@ -247,8 +247,7 @@ inferred rather than read.
 
 ### Phase 2 — Research the outside (read-only but for its findings). Report before proposing anything.
 
-This is the phase most bootstraps skip, and it is what makes the rest
-non-generic. **Three searches, scoped to the questions the owner confirmed at
+**Three searches, scoped to the questions the owner confirmed at
 the pre-flight, and nothing enters the repo unless it changed or confirmed a
 decision.** Each finding is written as it lands to one dated research document
 (`docs/research/<date>-bootstrap.md`, or where the repository keeps research),
@@ -257,11 +256,8 @@ found; what answers no confirmed question is marked so.
 
 1. **The domain.** The recognised references for this kind of software —
    the canonical paper, talk, book chapter or engineering blog post that the
-   people who build these things cite. *(In an interactive renderer: frame
-   timing, input-latency calibration, perceived responsiveness. In a
-   transactional service: idempotency keys, exactly-once semantics,
-   reconciliation. In a data platform: slowly changing dimensions, late-arriving
-   data, backfill strategy.)*
+   people who build these things cite. *(In a transactional service: idempotency keys, exactly-once semantics,
+   reconciliation.)*
 2. **The language and its ecosystem.** Official style guides, the idioms the
    community treats as settled, the standard project layout, the known traps of
    the version you are pinned to. Prefer the primary source over a summary.
@@ -290,8 +286,7 @@ Rules for this phase:
 - **A recipe written for a different environment is the most dangerous kind of
   correct.** Say which environment a recommendation assumes.
 - **Cap it.** Five to fifteen sources that changed something beats fifty that
-  did not. If a search produced nothing that changes a decision, say that — it is
-  a valid and useful result.
+  did not. If a search changed no decision, say that.
 
 ### Phase 3 — Propose (still do not write)
 
@@ -332,8 +327,7 @@ is in use** (experimental), list them in `carrier.toml` (`surfaces = ["cursor",
 `.claude/rules/` and of those agents, and Copilot's pointer to `AGENTS.md`, and
 `verify` then fails a copy that is stale or edited. The researcher's hook,
 which keeps its shell to reads and fetches into a temporary folder, runs only
-in a folder the host trusts. Without the line the knowledge
-base is a folder nobody opens. The same map gets a second line, also in the
+in a folder the host trusts. The same map gets a second line, also in the
 repository's own words: *nothing written into `.agents/` or any file that leaves
 this repository may identify, directly or by reconstruction, a private
 repository, its people or its users — `bundle.py privacy .agents` checks it*
@@ -385,9 +379,7 @@ once, with pointers to it.
 ### Phase 7 — Audit `docs/` against the code
 
 Contrast every document with what is on disk. Update or delete what is stale.
-**A document pointing at a deleted file is worse than no document**, and this is
-the single most common decay in an agent-assisted repo, because agents delete
-code faster than they re-read prose. Sweep for the names of anything you removed.
+**A document pointing at a deleted file is worse than no document**. Sweep for the names of anything you removed.
 
 ### Phase 8 — Roadmap and progress evaluation
 
@@ -397,7 +389,7 @@ in motion, in the same vocabulary as the invariants.
 
 ### Phase 9 — The recurring review
 
-Bootstrapping is not the end; the system rots without a ritual. Add a
+Add a
 `state-review` skill that runs on demand and answers:
 
 - Does every document named in the map exist, and is every claim in it still
@@ -441,8 +433,7 @@ did not. A whole-branch review is offered when a multi-task plan is done.
 ### 0. The opening brief — load the world before you touch the request
 
 **Do this before answering, before planning, and before agreeing that the
-request makes sense.** A session that starts by reading only the request is
-working from the one source that has no memory. A complex task is routed by
+request makes sense.** A complex task is routed by
 its signals (`.agents/method/skills/README.md`).
 
 Gather, in this order, stopping as soon as a source has nothing to add:
@@ -494,8 +485,7 @@ Four rules for the brief, each learned from its opposite:
   information the human paid for.
 - **Written for someone who has not been here since last week**, because that is
   usually true. Name things, do not allude to them.
-- **Six lines, not six paragraphs.** Anything longer gets skimmed, and a skimmed
-  brief is worse than none: it has been paid for and not read.
+- **Six lines, not six paragraphs.** Anything longer gets skimmed.
 
 > **Example.** A session opened on "keep adding roadmap items". Three lines of
 > the brief mattered: a task-runner change **staged by another session**, not to
@@ -553,14 +543,13 @@ evaluating, and it has a shape worth following:
    40 ms at p99"*, *"this is the first native dependency in a repo that is
    currently script and data"*. An option priced in adjectives cannot be
    compared with anything.
-2. **Say what each option forecloses**, not only what it costs today. Foreclosure
-   is the part nobody can reconstruct from the code a year later.
+2. **Say what each option forecloses**, not only what it costs today.
 3. **Count the exceptions.** If an option needs an exception to a stated rule,
    *that* is the real price, and it has to be written into the roadmap **with a
    name** — one mechanism, one owner, one way back. An exception nobody named
    becomes the new rule.
 4. **Name the cheap reversible option**, and say so plainly when it is the one
-   you recommend. Reversibility is worth a lot of elegance.
+   you recommend.
 5. **Keep "do nothing" on the table.** It wins more often than it is offered.
 6. **Say what would change your answer.** A trade-off you cannot falsify is a
    preference. *"If the target ever reports dropped frames, this measurement gets
@@ -643,8 +632,7 @@ commit.
 The gate is the floor. The core invariant's own test — the replay, the round
 trip, the wheel installed clean — is cheap relative to a wrong claim: **if the
 report will say the invariant holds, run the thing that proves it**, even when
-you are confident nothing you touched could have moved it. Confidence is not a
-measurement.
+you are confident nothing you touched could have moved it.
 
 **Verification is a step, not a reflex.** Run it once per finished unit of work,
 not between two edits of the same change. Scope it by the measured cost of each
@@ -655,10 +643,7 @@ false claim. A collection error is reported, never routed around with a skip.
 
 **Before calling a red check yours or pre-existing, measure the untouched base**
 in the same environment — a clean export of `HEAD` (`git archive HEAD | tar -x
--C <scratch>`) or a separate worktree — without touching the working tree. One
-repository found its gate had been failing on `main` all along only by doing
-this; another proved a rising count came
-from concurrent edits in the same tree, not from the change.
+-C <scratch>`) or a separate worktree — without touching the working tree..
 
 **A change meant to change nothing is proved by what it must preserve, compared
 mechanically.** Before a refactor, move, regeneration, reformat or translation,
@@ -697,7 +682,7 @@ sentence anywhere in the repo that my change just made false?**
 
 ### 7. Report honestly, and let the human decide what is theirs
 
-The report is not a victory lap. It says what was built, **what the first
+It says what was built, **what the first
 attempt got wrong and what caught it**, what was measured, what was left
 undone, and — separately and explicitly — **any structural decision you
 declined to make on your own**. Put that last one where it cannot be missed; it
@@ -747,8 +732,7 @@ Three rules underneath it:
 - **Technical names stay in their own language.** Identifiers, commands, types,
   file paths and error strings are quoted exactly, in English, whatever language
   the prose around them is in; the headings and keywords a tool parses (a plan
-  skill's task heading) follow the tool. A translated command is a command that does not
-  run, and a translated symbol cannot be searched for.
+  skill's task heading) follow the tool.
 - **Talk to the human in their language; write documents in the
   repository's.** The method documents are English (`prompt-context.md`
   §*The set*).
@@ -814,19 +798,10 @@ process work either absent or exhausting:
   friction (2nd hit — see roadmap). Nothing needs you.` Expand only if asked.
   The changelog entry's *Learned* carries the same line.
 
-The human shipping a feature is not interrupted; the one improving the process
-finds a year of honest observations waiting.
-
 **The closing question, asked plainly:** *if the next session is a different
 agent, on another machine, with no memory of this one, what would it have to
 re-derive?* Everything that answers that question is a gap you can close in the
 next two minutes, and will never close as cheaply again.
-
-> **Example.** One session's harvest was four rows: two decisions with
-> enforcers, one number that moved into the document owning it, one roadmap
-> entry flipped from *planned* to *done, and here is what is still missing* —
-> and one honest `nothing generalises` for the rest. The whole thing took less
-> time than re-reading the diff.
 
 ### Working safely in a tree you do not own
 
@@ -852,9 +827,7 @@ Six hazards, all of which have cost real time:
   and name every file it refused. Prefer the `--check` variant everywhere else —
   it writes nothing and is always safe.
   **Format only the files in the change**: a repo-wide format mixes unrelated
-  diffs into yours and can move a suppression pragma off the line it covered —
-  one repository saw its type-error count rise by about ten that way, with no
-  semantic change.
+  diffs into yours and can move a suppression pragma off the line it covered.
 - **Generated artefacts churn.** Regenerating can rewrite a file with new random
   identifiers and no real change. Put back the ones that did not actually change
   — only files *your* change regenerated, by writing `HEAD`'s content over them

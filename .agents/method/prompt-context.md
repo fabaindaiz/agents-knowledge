@@ -227,10 +227,6 @@ are the claims that rot fastest, because nothing else ever runs them.
 Anything verifiable by reading the tree should be verified by a script that runs
 in the gate. Write it early, and expect it to fail on day one.
 
-> **Example.** When one repository's structural audit was first
-> written, **every one of its rules was being violated somewhere** — every one of them documented, every
-> one believed to be held.
-
 Structural rules worth a script in almost any repo:
 
 - **Dependency direction** between layers or packages.
@@ -299,10 +295,6 @@ for, and they live next to what they describe.
 The root `CLAUDE.md` holds what must hold **always**. Everything else points.
 The map is a table of *question → document*, because that is how a mid-task
 agent actually searches.
-
-> **Example.** One root file went **from about 800 lines to about 200** when the measured detail
-> moved to the document that owned each number. Nothing was lost; it stopped being
-> paid for on every request.
 
 **Prevents:** a root file whose middle nobody reads, and two copies of a rule
 that will drift.
@@ -650,13 +642,6 @@ one who holds the knowledge to decide, but not your context.
   offered as a short table, each with what it does here and its cost, then one
   multi-select question.
 
-> **Example.** Adding user-made lists to a small fixed-height screen came down to
-> three questions: whose the lists are, where the selector goes, and how one is
-> edited. The second was presented as three layouts priced in the unit that
-> actually binds — screen height, counted in visible list items — and the answer
-> took one word. Everything else in the feature
-> was decided without asking.
-
 **Content the owner authored is not yours to complete.** Words in their voice, a
 dedication, a design or a sequence they made by hand: an empty slot there is a
 choice until they say otherwise — leave it empty and say so; an element they left
@@ -718,7 +703,7 @@ makes the case, and it is always the same shape:
 > Hit by every session that touches a file, for a year, it is the clearest
 > possible case for the one command that replaced it (a short script, written
 > once; its rules are in `prompt-bootstrap.md`, *Working safely in a tree you do
-> not own*). The thirty seconds is why nobody wrote it.
+> not own*).
 
 **Three disciplines, and the third is the one that keeps this from becoming a
 menace:**
@@ -1512,11 +1497,6 @@ memory of why it left:
 That last state is the one most roadmaps lack, and it is the one that saves the
 most time. Without it, an agent that has never seen the last three refusals
 proposes the same blocked idea every time it reads the file, in good faith.
-
-> **Example.** Two entries in one repo's roadmap are blocked outside: one needs
-> licensed assets that are absent on almost every machine, and the other needs a
-> platform API that an upstream proposal has not shipped. Both say so, and both name the
-> event that would reopen them. Neither has been re-proposed since.
 
 **Finishing an item edits the roadmap in the same change that finishes it.** Not
 in a follow-up, and not "when things settle": a roadmap that describes a feature

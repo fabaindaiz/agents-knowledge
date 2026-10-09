@@ -83,9 +83,7 @@ tells you which of the other documents you need — and sometimes the answer is
 none of them.
 
 **What you get back:** one file, `.agents/evaluation-<date>-<content6>.md`, under about
-200 lines, whose first paragraph is enough to decide what to do. Then a maturity
-table, what is working, what is not, what is already false, and a next-steps
-list ordered cheapest-first with the rows that need a decision from you marked.
+200 lines, whose first paragraph is enough to decide what to do (the skeleton is under *The report*).
 
 ---
 
@@ -143,9 +141,7 @@ the scores mean.
 ## What this is for
 
 An agent's usefulness in a repository is capped by what the repository tells it:
-usually nothing, or a great deal that is no longer true. From the inside the
-first looks like "the AI is not very good here" and the second like "the AI
-keeps doing the wrong thing confidently". This evaluation names which you have
+usually nothing, or a great deal that is no longer true. This evaluation names which you have
 and how far from useful you are. **It is deliberately read-only** — that is
 what makes it safe on somebody else's repository, without a plan — and the
 report is the one file it writes.
@@ -154,12 +150,10 @@ report is the one file it writes.
 
 ## Rules for the evaluation
 
-Non-negotiable, and every one of them exists because the opposite produces a
-report that gets ignored:
+Non-negotiable:
 
 1. **Change nothing.** No fixes, no tidying, not even a typo, not even the
-   obvious one-line improvement. A read-only tool that sometimes writes is a
-   tool nobody runs on a repository they care about.
+   obvious one-line improvement.
 2. **Quote, never invent.** Every command, path and rule in the report is copied
    from where it is defined. If the README names a command that the task runner
    does not have, **that is a finding**, not something to quietly correct.
@@ -170,11 +164,8 @@ report that gets ignored:
    have.
 5. **Lead with what is good, and mean it.** A repository that has survived years
    of work is doing several things right, and some of them are better than this
-   method's defaults. A report that is only criticism is a report that gets
-   skimmed and closed — and it also misses the most valuable finding, which is
-   the convention worth copying elsewhere.
-6. **Rank by cost, not by severity.** The reader wants to know what to do on
-   Monday morning, not what is theoretically most broken.
+   method's defaults. A report that is only criticism gets skimmed and closed, and misses the convention worth copying elsewhere.
+6. **Rank by cost, not by severity.**
 7. **No secrets in the report.** Do not copy credentials, tokens, customer
    names, personal data or internal URLs into it, even when you found them in a
    file. **If you find a secret committed to the repository, say that one is
@@ -249,10 +240,6 @@ or unlisted is a finding — the next update overwrites it; name the file. So is
 a `carrier.toml`, proposals or an evaluation report copied from another
 repository (the tell: an `adapted` entry naming a file this repository lacks).
 
-The contents of `adapted` and `declined` are the most informative lines in the
-bundle: they are this repository's own record of what it changed and what it
-refused, and they are what stops the next update re-proposing both.
-
 This answer decides what the reader does next (`prompt-context.md` §*Which
 document to run*).
 
@@ -270,8 +257,7 @@ is cheapest**: a rung-1 rule that a ten-line script would move to rung 3 is the
 highest-yield finding this evaluation produces.
 
 A rule with no consequence stated — "use X" with no "or else" — is a rung-1 rule
-whatever it claims, because nothing tells a future session what it costs to
-ignore.
+whatever it claims.
 
 ### 4. Is any of it already false?
 
@@ -373,8 +359,7 @@ keeps such things, and **say in your reply where you put it.** One file, and it
 is the only thing this prompt writes.
 
 **Length: the summary fits on one screen, and the whole report stays under about
-200 lines.** A thorough report nobody finishes is a thorough report nobody acts
-on. Push the evidence into short bullets and let the detail be citable rather
+200 lines.** Push the evidence into short bullets and let the detail be citable rather
 than exhaustive.
 
 ### The skeleton
@@ -436,7 +421,6 @@ targeted fixes first, then bootstrap. With the reason.>
 - **`Effort` is in hours or days, and it is a guess** — say so. A wrong estimate
   is still more useful than none.
 - **Avoid the word "should" without an actor.** Say who does it.
-- **No secrets, no personal data, no customer names.** See rule 7.
 
 ---
 

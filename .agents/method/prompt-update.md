@@ -66,7 +66,7 @@ what you adapt and how, what you refuse and why, and any candidates sent up;
 and the prune's table (§*The prune*), built now, before anything is replaced:
 every file the release removes or this repository added under `.agents/`, each
 section classified, with the links that point at it. My approval of this step
-covers those removals. **Write nothing until I approve.**
+covers those removals. **Write nothing further until I approve.**
 
 **6. After approval, settle the table's content first** (the proposals and the
 moves out of `.agents/` it names, and the removal of the foreign files it drops), **then replace the bundle** as §*Replacing
@@ -132,7 +132,7 @@ need from you.
    is elsewhere, give me the path and I export it there first (`bundle.py export`). Nothing live is
    overwritten until you approve the triage.
 2. **Prune.** Files the new release no longer lists and files this repository added under
-   `.agents/` are each classified (§*The prune*), and so are the links to them from its own files, in the triage you approve before
+   `.agents/` are what I classify (§*The prune*), with the links to them from its own files listed alongside, in the triage you approve before
    anything is replaced. I delete nothing without that approval, and nothing whose content is not covered, sent up or moved.
 3. **Declined.** I respect everything in `carrier.toml`'s `declined` and do not
    re-propose it, unless the release changes the reason. Say if you want any of
