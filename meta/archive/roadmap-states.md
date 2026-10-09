@@ -2,6 +2,46 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-09, second close: 0.0.31's scope is built, reviewed and on `main` (`6f9e34b`, pushed).**
+`v0.0.30` is the last tag; 0.0.31 is open and not cut. The plan is `meta/reviews/2026-10-09-plan-0.0.31-release.md`.
+
+**Done this session** (*Done* lists the items):
+- Plan steps 1–5: Phase 1 and the intake, the three scoped items, two reduction passes, the shipped tool without
+  comments, the carrier tool's cleanup, the `[0.0.31]` changelog section.
+- **Added by the owner (T7, `d-5ed7e8-389b56`):** `method/meta.md` and `bundle.py home`, the lineage, and consented
+  local usage data, `bundle.py usage` (design `meta/reviews/2026-10-09-design-meta-and-usage.md`, research
+  `...-usage-data-research.md`, protocol `evals/PROTOCOL-usage.md`); thirteen decisions, `d-5ed7e8-f7f903` to
+  `d-5ed7e8-adbd1f`.
+- **The export's cap is 1,000,000 bytes and no further** (`d-5ed7e8-efd0e2`); the export is about 923 KB.
+- Every task had its review; a final review on the most capable model, then one fix wave and a re-review.
+- This machine's usage consent is `full`; the session's agent costs, frictions and four preferences are stored
+  locally (`bundle.py usage show`).
+
+**Next, in order:**
+1. **Step 7a:** register the cost pilot in `evals/PROTOCOL.md` (`minimal`, 0.0.30 from its tag, the candidate; pilot-9's
+   six tasks, three repetitions: 54 trials, about an hour), run it in the background, then the trigger eval of `next`
+   and the three skills in the pilot carrier (`d-5ed7e8-71a809`), the owner labelling (about 20 minutes).
+2. Step 7b, each carrier's audit; step 8, the owner's word, then cut, tag, push; Phases 2–3 (splice; add
+   `attribution` in the five carriers without it); the close.
+3. The four new items: `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`, `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
+
+**Waiting on the owner:** the 40 `unconfirmed:` reasons in `meta/decisions.md` (two are this session's rulings, `d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); a template's pointer to the
+knowledge index; judges for the follow-up experiment; the carriers' 0.0.30 branches and pull request; the credentials
+ticket; each assistant's terms for automated runs.
+
+**To continue on another machine:** `git pull --tags`; usage data does not travel (by design); delete the
+user-level copy of `next` once 0.0.31 is installed here.
+
+**What went wrong** (counted with `bundle.py count` over the roadmap and its archive):
+- **A reduction pass dropped real rules, twice** (the incoming tool's exception, then five rules); each was restored
+  after a review. Second incident: `i-5ed7e8-1e9c1c`.
+- **The worktree isolation refused compound commands naming git**, variables in `sed`, and even an id's text, again
+  and again; scripts written to a file went through. `i-5ed7e8-780330`.
+- **My estimates of delegated work ran high**: implementations took about seven tenths of the tokens and half the
+  time; reviews were exact in tokens. Calibrated: an implementation 6–8 minutes, 130–170k tokens.
+- The usage tool came in at 22 KB, not 8–10: the export went over the old cap until the owner raised it.
+- `bundle.py new entry` and `memory-diff` failed from this worktree (`i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`).
+
 **State on 2026-10-09, close: the 0.0.31 tool fixes are on `main`** (`8161e4b..13a5d57`, pushed), reviewed task by
 task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 

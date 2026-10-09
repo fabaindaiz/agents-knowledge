@@ -20,45 +20,38 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-09, second close: 0.0.31's scope is built, reviewed and on `main` (`6f9e34b`, pushed).**
-`v0.0.30` is the last tag; 0.0.31 is open and not cut. The plan is `meta/reviews/2026-10-09-plan-0.0.31-release.md`.
+**State on 2026-10-09, third close: 0.0.31 is cut, tagged `v0.0.31` and pushed** (`17aa53a`); this home took it
+(proposals pruned, agent copies and their surfaces refreshed, registered and aligned). No other carrier was reached,
+by the owner's choice: they are under *Blocked outside*.
 
-**Done this session** (*Done* lists the items):
-- Plan steps 1–5: Phase 1 and the intake, the three scoped items, two reduction passes, the shipped tool without
-  comments, the carrier tool's cleanup, the `[0.0.31]` changelog section.
-- **Added by the owner (T7, `d-5ed7e8-389b56`):** `method/meta.md` and `bundle.py home`, the lineage, and consented
-  local usage data, `bundle.py usage` (design `meta/reviews/2026-10-09-design-meta-and-usage.md`, research
-  `...-usage-data-research.md`, protocol `evals/PROTOCOL-usage.md`); thirteen decisions, `d-5ed7e8-f7f903` to
-  `d-5ed7e8-adbd1f`.
-- **The export's cap is 1,000,000 bytes and no further** (`d-5ed7e8-efd0e2`); the export is about 923 KB.
-- Every task had its review; a final review on the most capable model, then one fix wave and a re-review.
-- This machine's usage consent is `full`; the session's agent costs, frictions and four preferences are stored
-  locally (`bundle.py usage show`).
+**Done since the second close:**
+- **The cost pilot moved to 0.0.32 or the first minor release** (`d-5ed7e8-5b183e`).
+- **The trigger eval, lenient by decision** (`d-5ed7e8-7a95b5`: misfire at most 0.25): `next`, `close` and
+  `decision-review` pass; `user-walk` stays under the gate (`i-5ed7e8-36d9b1`). Record:
+  `meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`.
+- **The long skills open with a pre-review** (`d-5ed7e8-d7c0b7` to `d-5ed7e8-8e9ebe`): the open questions first, then
+  whether to run; the answers recorded even when declined.
+- **Descriptions capped by kind** (`d-5ed7e8-cf8021`): 2,776 in total, about 2,570 used.
+- **The carriers' audits** found a layout break older than 0.0.31 in three carriers still at 0.0.25; the changelog now
+  carries its **Layout:** line.
+- The user-level copy of `next` on this machine was deleted; the installed one replaces it.
 
 **Next, in order:**
-1. **Step 7a:** register the cost pilot in `evals/PROTOCOL.md` (`minimal`, 0.0.30 from its tag, the candidate; pilot-9's
-   six tasks, three repetitions: 54 trials, about an hour), run it in the background, then the trigger eval of `next`
-   and the three skills in the pilot carrier (`d-5ed7e8-71a809`), the owner labelling (about 20 minutes).
-2. Step 7b, each carrier's audit; step 8, the owner's word, then cut, tag, push; Phases 2–3 (splice; add
-   `attribution` in the five carriers without it); the close.
-3. The four new items: `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`, `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
+1. **Carry 0.0.31 to the carriers**, when the owner names them (Phase 2: splice on a branch per carrier, `attribution`
+   in the five that lack it, prune, their gates; three carriers' audits to adapt by the Layout line).
+2. The cost pilot of 0.0.31 against 0.0.30, at the next release.
+3. `i-5ed7e8-36d9b1` (`user-walk` routing), then the four process items `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`,
+   `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
 
-**Waiting on the owner:** the 40 `unconfirmed:` reasons in `meta/decisions.md` (two are this session's rulings, `d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); a template's pointer to the
-knowledge index; judges for the follow-up experiment; the carriers' 0.0.30 branches and pull request; the credentials
-ticket; each assistant's terms for automated runs.
+**Waiting on the owner:** the `unconfirmed:` reasons in `meta/decisions.md` (two are the agent's own rulings,
+`d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); which carriers take 0.0.31; a template's pointer to the knowledge index; judges
+for the follow-up experiment; the carriers' 0.0.30 branches; the credentials ticket; each assistant's terms.
 
-**To continue on another machine:** `git pull --tags`; usage data does not travel (by design); delete the
-user-level copy of `next` once 0.0.31 is installed here.
+**To continue on another machine:** `git pull --tags`. Usage data and the trigger cases stay on this machine.
 
-**What went wrong** (counted with `bundle.py count` over the roadmap and its archive):
-- **A reduction pass dropped real rules, twice** (the incoming tool's exception, then five rules); each was restored
-  after a review. Second incident: `i-5ed7e8-1e9c1c`.
-- **The worktree isolation refused compound commands naming git**, variables in `sed`, and even an id's text, again
-  and again; scripts written to a file went through. `i-5ed7e8-780330`.
-- **My estimates of delegated work ran high**: implementations took about seven tenths of the tokens and half the
-  time; reviews were exact in tokens. Calibrated: an implementation 6–8 minutes, 130–170k tokens.
-- The usage tool came in at 22 KB, not 8–10: the export went over the old cap until the owner raised it.
-- `bundle.py new entry` and `memory-diff` failed from this worktree (`i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`).
+**What went wrong:** the trigger eval's labels were first applied to an earlier run's case files too, in the same
+folder; restored from their last run's records and checked identical. A longer description bought nothing
+(`user-walk`), so it was not kept.
 
 ## Standing rules and facts
 
@@ -440,6 +433,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
+- **0.0.31 not carried yet** (owner, 2026-10-09: this home only). Every other carrier this machine lists is behind it
+  (`release.py align`: twelve, two with no bundle on disk); each takes it at a meta-session that names it.
 - **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
   (then 0.0.30) to the carriers only that machine holds and to the three it shares with this one, whose newer work is
   unpushed there; bring the cost profile script into `evals/`; leave and document the published attribution lines in
@@ -474,7 +469,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
-- **0.0.31 scope, 2026-10-09 (not yet cut; on `main` at `6f9e34b`).** Closed: `i-5ed7e8-d203b6` (`c308f62`);
+- **0.0.31, 2026-10-09: cut and tagged `v0.0.31` (`17aa53a`).** Its scope below, plus the pre-review (`49d7bcf`), the trigger eval and descriptions by kind (`ef62c32`), the Layout line (`27aad43`).
+- **0.0.31 scope, 2026-10-09 (on `main` at `6f9e34b`).** Closed: `i-5ed7e8-d203b6` (`c308f62`);
   `i-5ed7e8-12fcfb` (`017081a`); `i-5ed7e8-2d3b47` (`4011671`); the final review's fixes (`54e8c40`); the reduction
   pass (`6255772`); the shipped tool without comments (`07eb096`); the carrier tool's cleanup (`3446ee1`); the meta
   package, lineage and usage data (`7a3ba7e` to `c061cd2`, `965c245`, `202dc36`); five small fixes (`4cebc0c`); the
