@@ -30,7 +30,7 @@ own tool, never by this one.
                                                                 the Status column to a four-column log
     python3 .agents/tools/bundle.py report [TREE] [--json] [--check]   size per folder and session; budgets
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
-    python3 .agents/tools/bundle.py export DEST                 the shipped files and SHA256SUMS: a release as it travels
+    python3 .agents/tools/bundle.py export [--replace] DEST   the shipped files and SHA256SUMS: a release as it travels
     python3 .agents/tools/bundle.py propose --kind K --target SLUG (--from FILE | --claim C --evidence E) [...]
                                                                 one proposal to the bundle, in proposals/
     python3 .agents/tools/bundle.py proposals [--prune | --pack FILE | --from-outbox]
@@ -3185,18 +3185,42 @@ def budget_problems(tree: Path, data: dict | None = None) -> list[str]:
     return problems
 
 
-def export(tree: Path, dest: Path) -> list[str]:
+def _replace_own(rel: str) -> bool:
+    """What a replace keeps: the carrier file, anything under `proposals/` or `incoming/`, evaluation reports."""
+    top = rel.split("/")[0]
+    return rel == CARRIER_FILE or top in (PROPOSALS, "incoming") or ("/" not in rel and top.startswith("evaluation-"))
+
+
+def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
     """Copies this bundle's shipped files and `SHA256SUMS` into `dest`: a release as it travels.
 
     Never the carrier's own files (its carrier file, its proposals, `incoming/` contents, evaluation reports),
     which another repository would otherwise take as its own. Refused unless the copy verifies first.
+    With `replace`, `dest` holds an older release: every file in it must be listed in its `SHA256SUMS` or be the
+    carrier's own, else nothing is touched. Then the old release's files are removed, the new ones written, the
+    carrier's own kept.
     """
     problems = checksum_problems(tree)
     if problems:
         raise RefusedError(f"{tree}: does not match its SHA256SUMS ({problems[0]}); export only a verified release")
-    if dest.exists() and any(dest.iterdir()):
-        raise RefusedError(f"{dest}: not empty; export into a new folder")
+    old: set[str] = set()
+    if replace:
+        if not (dest / CHECKSUMS).is_file():
+            raise RefusedError(f"{dest}: holds no {CHECKSUMS}; --replace refreshes only a folder that holds a release")
+        old = {*read_checksums(dest), CHECKSUMS}
+        held = [p.relative_to(dest).as_posix() for p in dest.rglob("*") if p.is_file() or p.is_symlink()]
+        foreign = sorted(rel for rel in held if rel not in old and not _replace_own(rel))
+        if foreign:
+            raise RefusedError(f"{dest}: holds files no release lists, nothing removed: {', '.join(foreign)}")
+    elif dest.exists() and any(dest.iterdir()):
+        raise RefusedError(f"{dest}: not empty; export into a new folder (or --replace over an older release)")
     rels = [*shipped(tree), CHECKSUMS]
+    for rel in sorted(old - set(rels)):
+        (dest / rel).unlink(missing_ok=True)
+        parent = (dest / rel).parent
+        while parent != dest and parent.is_dir() and not any(parent.iterdir()):
+            parent.rmdir()
+            parent = parent.parent
     for rel in rels:
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(tree / rel, dest / rel)
@@ -4479,6 +4503,7 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder: a release as it travels")
     p.add_argument("dest")
     p.add_argument("--tree", default=str(OWN_BUNDLE))
+    p.add_argument("--replace", action="store_true", help="dest holds an older release: replace it, keeping the carrier's own files; refused if it holds anything else")
     p = sub.add_parser("propose", help="write one proposal to the bundle into proposals/, under this carrier's id")
     p.add_argument("--kind", required=True, choices=list(PROPOSAL_KINDS))
     p.add_argument("--target", required=True, help="the slug of the note, candidate or method file it concerns (a new slug for a new learning)")
@@ -4745,7 +4770,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         print(changelog_since(Path(args.tree), args.since), end="")
         return 0
     if args.command == "export":
-        print(f"exported {len(export(Path(args.tree), Path(args.dest)))} files to {args.dest}")
+        print(f"exported {len(export(Path(args.tree), Path(args.dest), args.replace))} files to {args.dest}")
         return 0
     if args.command == "propose":
         claim, evidence = args.claim, args.evidence

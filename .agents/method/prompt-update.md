@@ -191,12 +191,13 @@ repository's own artifacts, which do not take the practice up.
 
 ## Replacing the bundle
 
-1. **Copy every file the incoming `SHA256SUMS` lists, and `SHA256SUMS` itself**,
-   from `.agents/incoming/release/` to the same path under `.agents/`. That
-   includes `incoming/README.md`, which the copy holds at
-   `incoming/release/incoming/README.md`.
-2. **Remove the shipped files the release no longer lists** (listed in our old
-   `SHA256SUMS`, absent from the new one), once the prune has reported on them.
+1. **Run `python3 .agents/incoming/release/tools/bundle.py export --replace .agents`**, once the prune has reported
+   on the files the release no longer lists. It is a Python write, so a carrier whose edit permissions deny hand
+   edits can run it. It checks first and writes after: every file under `.agents/` must be listed in the old
+   `SHA256SUMS` or be the carrier's own, else it refuses and removes nothing. Then it removes the old release's
+   files the new one lacks, writes the new ones and `SHA256SUMS` (including `incoming/README.md`), and keeps the
+   carrier's own. A carrier whose shell is also denied stops here and asks me to run it.
+2. **Fix what it refused, never by deleting around it:** a file it names is a foreign file; move it out or ask.
 3. **Never touch what the carrier owns:** `carrier.toml`, the proposals in
    `proposals/` (every file but its `README.md` and `RECEIVED.md`), the contents
    of `incoming/` other than its `README.md`, and `evaluation-*` files — except

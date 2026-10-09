@@ -96,6 +96,55 @@ class Verify(Base):
         self.assertEqual(sorted(p.name for p in (out / "proposals").iterdir()), ["README.md", "RECEIVED.md"])
         self.assertEqual(B.verify_problems(out, release=True), [])
 
+    def _older_release_folder(self) -> tuple[Path, Path]:
+        real = Path(__file__).resolve().parents[2] / ".agents"
+        out = self.root / "folder"
+        B.export(real, out)
+        (out / "method/only-in-the-old.md").write_text("# old\n")
+        (out / "empty-after").mkdir()
+        (out / "empty-after/only.md").write_text("# old\n")
+        B.write_checksums(out)
+        return real, out
+
+    def test_replace_updates_a_release_only_folder(self) -> None:
+        real, out = self._older_release_folder()
+        (out / "carrier.toml").write_text('carrier = "r-aaaaaa"\n')
+        (out / "proposals/p-0123456789.md").write_text("mine\n")
+
+        written = B.export(real, out, replace=True)
+
+        self.assertEqual(B.checksum_problems(out), [])
+        self.assertIn(B.CHECKSUMS, written)
+        self.assertFalse((out / "method/only-in-the-old.md").exists())
+        self.assertFalse((out / "empty-after").exists())
+        self.assertEqual((out / "carrier.toml").read_text(), 'carrier = "r-aaaaaa"\n')
+        self.assertEqual((out / "proposals/p-0123456789.md").read_text(), "mine\n")
+
+    def test_replace_refuses_a_foreign_file_and_removes_nothing(self) -> None:
+        real, out = self._older_release_folder()
+        (out / "notes.md").write_text("not listed anywhere\n")
+        (out / "method/extra.md").write_text("nor this\n")
+
+        with self.assertRaises(B.RefusedError) as caught:
+            B.export(real, out, replace=True)
+
+        self.assertIn("notes.md", str(caught.exception))
+        self.assertIn("method/extra.md", str(caught.exception))
+        self.assertTrue((out / "method/only-in-the-old.md").exists())
+        self.assertTrue((out / "notes.md").exists())
+
+    def test_replace_refuses_a_folder_without_checksums(self) -> None:
+        real = Path(__file__).resolve().parents[2] / ".agents"
+        out = self.root / "folder"
+        out.mkdir()
+        (out / "something.md").write_text("mine\n")
+
+        with self.assertRaises(B.RefusedError) as caught:
+            B.export(real, out, replace=True)
+
+        self.assertIn(B.CHECKSUMS, str(caught.exception))
+        self.assertTrue((out / "something.md").exists())
+
     def test_a_release_carrying_what_incoming_refuses_fails_even_with_its_own_checksums(self) -> None:
         real = Path(__file__).resolve().parents[2] / ".agents"
         out = self.root / "release"
@@ -547,7 +596,9 @@ class Privacy(Base):
         self.assertNotIn("quote", self._quote_warnings(shipped))
 
     def test_a_quote_of_a_tool_message_does_not_warn(self) -> None:
-        self.assertNotIn("quote", self._quote_warnings("not empty; export into a new folder"))
+        quoted = "not empty; export into a new folder"
+        self.assertIn(quoted, B.bundle_text(B.OWN_BUNDLE))
+        self.assertNotIn("quote", self._quote_warnings(quoted))
 
     def test_a_private_quote_still_warns(self) -> None:
         self.assertIn("quote", self._quote_warnings("the vendor outage drained every queue overnight"))
