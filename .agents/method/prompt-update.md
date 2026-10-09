@@ -60,20 +60,25 @@ bundle does not? Run `prompt-harvest.md`: it writes proposals in
 nothing survives.
 
 **5. Propose, and wait.** The deltas you will apply and the edit each implies,
-what you adapt and how, what you refuse and why, and any candidates sent up.
-**Write nothing until I approve.**
+what you adapt and how, what you refuse and why, and any candidates sent up;
+and the prune's table (§*The prune*), built now, before anything is replaced:
+every file the release removes or this repository added under `.agents/`, each
+section classified, with the links that point at it. My approval of this step
+covers those removals. **Write nothing until I approve.**
 
-**6. After approval, replace the bundle** as §*Replacing the bundle* says, and
-append this update's adaptations to `adapted` and its refusals to `declined`
-in `carrier.toml`, each with a reason written for a stranger. Apply each
+**6. After approval, settle the table's content first** (the proposals and the
+moves out of `.agents/` it names), **then replace the bundle** as §*Replacing
+the bundle* says, and append this update's adaptations to `adapted` and its
+refusals to `declined` in `carrier.toml`, each with a reason written for a
+stranger, and set `log` there when the pre-flight asked for it. Apply each
 accepted delta as a **real edit** to this repository's own files (the root
 instruction file, the decisions log, the roadmap, the audit script, the
 skills), not as a note that it should be done. Extend what exists; never
 reorganise as part of an update.
 
-**7. Then prune**, following §*The prune*: every file the release no longer
-lists, and every inbound link to it. **Report it and wait before removing
-anything.** Then `python3 .agents/tools/bundle.py verify` must pass.
+**7. Then repair the links**, following §*The prune* step 3: every inbound link
+to a file the replace removed. Report it. Then
+`python3 .agents/tools/bundle.py verify` must pass.
 
 If the decisions log is still in four columns, give it its Status column:
 `bundle.py decisions docs/decisions.md --migrate`, then `--write` once the list
@@ -125,8 +130,8 @@ need from you.
    is elsewhere, give me the path and I export it there first (`bundle.py export`). Nothing live is
    overwritten until you approve the triage.
 2. **Prune.** Files the new release no longer lists, and links to them from this
-   repository's own files, get a proposal each. I delete nothing without your
-   approval, and nothing whose content is not covered, sent up or moved.
+   repository's own files, get a proposal each, in the triage you approve before
+   anything is replaced. I delete nothing without that approval, and nothing whose content is not covered, sent up or moved.
 3. **Declined.** I respect everything in `carrier.toml`'s `declined` and do not
    re-propose it, unless the release changes the reason. Say if you want any of
    it reconsidered.
@@ -199,9 +204,12 @@ repository's own artifacts, which do not take the practice up.
    write, so a carrier whose edit permissions deny hand edits can run it. It checks first and writes after:
    every file under `.agents/` must be listed in the old `SHA256SUMS` or be the carrier's own, else it refuses
    and removes nothing. Then it writes the new release's files and `SHA256SUMS` (including
-   `incoming/README.md`), removes the old release's files the new one lacks, and keeps the carrier's own. A
-   carrier whose shell is also denied stops here and asks me to run it.
-2. **Fix what it refused, never by deleting around it:** a file it names is a foreign file; move it out or ask.
+   `incoming/README.md`), removes at once the old release's files the new one lacks (the ones the approved
+   prune table lists), and keeps the carrier's own. A carrier whose shell is also denied stops here and asks me
+   to run it.
+2. **Fix what it refused, never by deleting around it:** a file it names is a foreign file. The prune's
+   table already classified it; one that shows up now was missed, so go back to the proposal for it: move it out
+   or ask.
 3. **Never touch what the carrier owns:** `carrier.toml`, the proposals in
    `proposals/` (every file but its `README.md` and `RECEIVED.md`), the contents
    of `incoming/` other than its `README.md`, and `evaluation-*` files — except
@@ -245,11 +253,16 @@ repository's own artifacts, which do not take the practice up.
 A release removes and renames files, and this repository's own files may still
 point at them. **Nothing is deleted until its content is verified as covered
 somewhere else, or moved to where it belongs**: verified section by section,
-and reported.
+and reported. The replace removes the old release's files at once, so the
+table is built and approved **before** it runs, and the links are repaired
+after.
 
-1. **List the candidates:** every file under `.agents/` that the new
-   `SHA256SUMS` does not list and the carrier does not own, including any this
-   repository added there.
+1. **List the candidates, before the replace:** every file listed in the old
+   `SHA256SUMS` and not in the incoming one, and every foreign file the replace
+   would name: a file under `.agents/` that the old `SHA256SUMS` does not list
+   and the carrier does not own, including any this repository added there
+   (list the difference, or run `export --replace` and read its refusal; it
+   removes nothing when it refuses).
 2. **Classify each section, by content and not by title:**
 
 | Verdict | Means | What happens |
@@ -260,15 +273,16 @@ and reported.
 | **Not covered, local** | it is about *this* repository | **moved out of `.agents/`** to where this repository keeps such things |
 
 3. **Follow every inbound link:** the root instruction file, documents,
-   scripts, CI, settings, the audit's skip lists. Every pointer is updated or
-   removed in the same change; a dead pointer is the most common breakage an
+   scripts, CI, settings, the audit's skip lists. List them with the table;
+   after the replace, every pointer is updated or removed in the same change; a dead pointer is the most common breakage an
    update causes. **Append-only history is the exception**: a changelog, a
    session log or any record this repository declares never rewritten keeps
    what it said when it was written; a pointer there is history, not a link to
    repair, and the audit that checks paths exempts it rather than the entry
    being edited.
-4. **Report the table and wait.** Then remove, and record in the changelog
-   entry what happened to each file's content.
+4. **The table goes into the proposal** (paste step 5); the approval covers
+   the removals. After the replace has run, repair the links (step 3) and
+   record in the changelog entry what happened to each file's content.
 
 Never delete a file you have not read in full, never delete something because
 it is old, and never fold a repository-specific document into the bundle to
