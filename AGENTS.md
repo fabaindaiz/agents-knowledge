@@ -113,7 +113,9 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
   more remain than one message holds, run `decision-review`.
 - **The owner's word is the authorization to merge or push**: when the owner asks for it, do it yourself, a
   fast-forward with the gate and the trailers checked, never forced. From an isolated worktree, push `HEAD:main`
-  or leave the worktree first; never hand the command back for the owner to run.
+  or leave the worktree first; never hand the command back for the owner to run. A plan lands task by task
+  this way; where the host refuses that push, each next task starts from the previous task's branch and `main`
+  is fast-forwarded once at the end (`d-5ed7e8-3ec5f0`).
 - **The release is never edited by hand**: every file in `.agents/` but this repository's own
   (`carrier.toml`, `proposals/p-*.md`, `incoming/` contents) is generated. Edit its original in `sources/`, then
   run `release.py build`. Move a note between states

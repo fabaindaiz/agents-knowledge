@@ -1,8 +1,10 @@
 # Decision review of the rulings taken while running the 0.0.31 tool plan (2026-10-09)
 
-**State: open.** The inventory was shown to the owner and the agent's twelve were expanded with examples; the walk of
-the owner's four has not started. Resume at decision 1. Nothing here is recorded in `meta/decisions.md` yet: the
-`decision-review` skill records every row only after the owner confirms the summary screen.
+**State: closed on 2026-10-09.** The owner walked the four, one per turn, and confirmed the
+summary; every row is in `meta/decisions.md`: R3 `d-5ed7e8-3ec5f0`, R5 `d-5ed7e8-d5e034`, R13 `d-5ed7e8-505656`, R10
+`d-5ed7e8-f83ee5`, and the agent's twelve as `agent s-5ed7e8-4632df`, from `d-5ed7e8-51d905` to `d-5ed7e8-abd06e`.
+Every recommendation was taken. R5's reason is the owner's: going over the limit without raising it, and reducing
+the content to fit in later stages. Applied at once: R3's fallback in `AGENTS.md`, R13's scope in `prompt-sync.md`.
 
 **Context.** The plan `meta/reviews/2026-10-08-plan-0.0.31-tools.md` ran subagent-driven on 2026-10-09 and landed on
 `main` (`8161e4b..13a5d57`). The controller took fourteen rulings on the owner's behalf (its ledger was a working

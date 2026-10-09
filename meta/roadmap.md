@@ -30,8 +30,8 @@ task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 - Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
 
 **Next, in order:**
-1. **Resume the decision review** of the plan's rulings: `meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`,
-   at decision 1; none recorded yet.
+1. The decision review of the plan's rulings is closed and recorded
+   (`meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`).
 2. **Cut 0.0.31.** First shrink the export under the cap; settle `i-5ed7e8-d203b6`, shipped text, before cutting; run each carrier's audit
    (`prompt-sync.md` Phase 1, step 7b); settle the three held proposals (`p-5fd7b61d19`, `p-d2fa16b1fd`,
    `p-de14564c12`), which no carrier here holds any more. Write the changelog notes:
