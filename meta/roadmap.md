@@ -32,12 +32,9 @@ task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 **Next, in order:**
 1. The decision review of the plan's rulings is closed and recorded
    (`meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`).
-2. **Cut 0.0.31.** First shrink the export under the cap; settle `i-5ed7e8-d203b6`, shipped text, before cutting; run each carrier's audit
-   (`prompt-sync.md` Phase 1, step 7b); settle the three held proposals (`p-5fd7b61d19`, `p-d2fa16b1fd`,
-   `p-de14564c12`), which no carrier here holds any more. Write the changelog notes:
-   `install-skills` now reads `declined`, so an entry beginning `skills` or `skill <name>` skips skills without
-   asking (run `declined_skills` over each carrier); the replace step changed (prune table approved first); a
-   bundle-less path no longer stops `check-local` or `gather`; a **Layout:** line if the audit finds one.
+2. **Cut 0.0.31** by `meta/reviews/2026-10-09-plan-0.0.31-release.md` (`d-5ed7e8-e9405d` to `d-5ed7e8-71a809`):
+   Phase 1 and its verdict table, the scoped items, the reduction pass and the changelog cut, the cost pilot and
+   the trigger eval in the pilot carrier, each carrier's audit, then the owner's word.
 3. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
 4. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
    (stale checksums, registered at 0.0.28 against the home's 0.0.30, one carrier missing from `carriers.md`).
