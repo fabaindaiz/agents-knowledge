@@ -2471,3 +2471,45 @@ class Usage(Base):
 
     def test_the_tools_own_source_does_not_trip_the_guard(self) -> None:
         self.assertEqual([f for f in B.privacy_check(paths=[Path(B.__file__)]).failures if f.rule == "usage-record"], [])
+
+    def test_a_hand_edited_consent_of_the_wrong_type_is_refused_by_name_and_set_repairs_it(self) -> None:
+        path = B.usage_consent_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        for text, key in (('level = "everything"\n', "level"), ('level = "full"\ncategories = 3\n', "categories"),
+                          ('level = "full"\nretention = "x"\n', "retention"), ('level = "full"\ncategories_known = [1]\n', "categories_known"),
+                          ('level = "full"\n[retention]\ndays = true\n', "retention.days"), ('level = "full"\n[retention]\ndays = 0\n', "retention.days")):
+            path.write_text(text)
+            for action in ("show", "needs-consent", "brief"):
+                with self.assertRaises(B.RefusedError, msg=text) as caught:
+                    self.u(action)
+                self.assertIn(f"`{key}`", str(caught.exception))
+                self.assertIn("usage set", str(caught.exception))
+        self.u("set", "level", "counts")
+        self.assertEqual(self.u("needs-consent"), ["ok"])
+
+    def test_a_corrupted_data_file_is_read_without_a_traceback(self) -> None:
+        self.u("set", "level", "counts")
+        self.u("add", "frictions", "session=a")
+        with self.state("frictions.jsonl").open("ab") as out:
+            out.write(b"\xff\xfe not json\n")
+        self.assertEqual(len(B.usage_records(self.repo, "frictions", self.TODAY)), 1)
+
+    def test_equal_repeats_are_not_a_fall(self) -> None:
+        self.u("set", "level", "full")
+        for arm in ("on", "off"):
+            for _ in range(20):
+                self.u("add", "ablation", f"arm={arm}", "repeats=2", "corrections=0", "ktok=5")
+        self.assertIn("verdict: turn off by default", "\n".join(self.u("report")))
+
+    def test_a_repository_at_the_home_folder_is_written_with_a_warning_and_any_other_is_refused(self) -> None:
+        home = self.root / "home"
+        init_repo(home)
+        err = io.StringIO()
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(home / "state")}), contextlib.redirect_stderr(err):
+            self.u("set", "level", "counts")
+            self.assertEqual(self.u("add", "frictions", "session=x"), ["stored frictions"])
+        self.assertIn("repository at your home folder", err.getvalue())
+        nested = init_repo(home / "project")
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(nested / "state")}):
+            with self.assertRaises(B.RefusedError):
+                self.u("add", "frictions", "session=y")
