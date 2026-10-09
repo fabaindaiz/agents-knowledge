@@ -9,6 +9,13 @@ Generated from `.agents/` at `6255772`: bytes from the shipped files; *Loaded by
 skills), or a person pastes it (a prompt's paste box). *Never loaded: executed* is the tool: its bytes count toward the
 export, never toward a session's context. In `tools/bundle.py`, comments are 27,274 bytes and docstrings 44,092.
 
+**A dash in *Loaded by* does not mean unused.** The tree follows the `Reads:` lists only, not the pointers between
+documents: *Workspaces* and *Using the set* in `prompt-context.md`, and the *Checklists* and *The working invocation* in
+`prompt-bootstrap.md`, carry a dash and are reached by reference from the bootstrap, the harvest and the home's sync.
+Reviewed with the owner the same day: the shipped tool loses its comments (−27 KB, the original keeps them); the old
+changelog sections, `RECEIVED.md` and `OPEN.md`'s answered slugs stay, each saving under a kilobyte or needed by the one
+carrier still on 0.0.25.
+
 Export: 919269 bytes (897.7 KB). Cap: 913167 bytes.
 
 | Part | Bytes | Share | Loaded by | How often |
