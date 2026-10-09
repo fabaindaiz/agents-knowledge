@@ -7,6 +7,83 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
+## [0.0.31] - 2026-10-09
+
+**What a carrier runs at this update.** In each carrier, first read `declined` in `carrier.toml`: `install-skills` now reads it, so an entry that begins
+`skills` or `skill <name>` makes it skip them without asking, where it used to install them again; an entry meant
+as prose may now match, so reword it. Then follow `prompt-update.md`
+as it now reads: the prune's table is built and approved before the replace, and `export --replace` does the
+copy. Run `bundle.py verify`; if it warns that `.claude/settings.json` has no `attribution` setting with empty
+`commit` and `pr`, set it (`prompt-context.md`, *Attribution is a setting, not a sentence*). Before updating, grep the
+carrier's own scripts for the names under *Removed* below.
+
+### Added
+
+- **`method/meta.md` and `bundle.py home`** (*under review*): what a home is, how a release reaches a carrier and
+  what each process does with a proposal, read on demand (linked from harvest and update, in no read list).
+  `bundle.py home` prints, from local files, the home and parent of the release held, `upstream`, the last lineage
+  entries, the proposals waiting and whether `incoming/` holds anything. It also says how a diverging line opens its
+  own meta-session. A carrier does nothing.
+- **A lineage of the releases a repository followed** (*under review*): the README's frontmatter gains `parent`, the
+  tag the release followed, beside `home`; `carrier.toml` gains `lineage`, one `VERSION HOME DATE` entry per release
+  taken, appended by `export --replace` and `proposals --prune` once per version and never by a home. The append
+  edits `carrier.toml` as text, keeping its comments and order. A carrier writes nothing by hand.
+- **Consented local usage data: `bundle.py usage`** (*under review*): `show`, `set`, `add`, `use`, `forget`,
+  `brief`, `summary`, `report` and `needs-consent`. It stays on the machine, outside every repository and never in
+  git; the default is nothing, and `usage set` takes a level (none, counts, full) or a category on or off. Records
+  expire after 90 days, a preference renewing when used. Nothing is stored before the answer: `close` asks once,
+  with the text it shows, stores only what the answer allows, and does not ask again that session unanswered.
+  The tool writes only in a state folder, refuses a path inside a repository, and a sentinel rule in `verify` and the
+  privacy check fails any usage record or consent file that reaches a tracked or staged file. Harvest may show
+  `usage summary`; a preference never enters a proposal. A carrier that never answers changes nothing.
+- **A long background agent states its price first** (*under review*): its estimate of time and tokens, and its
+  model, before it runs; when it returns the actual is compared, and with consent both are recorded
+  (`usage add agent_costs`; `prompt-context.md`).
+- **A guide to starting each process and a `next` skill** (*under review*): `method/guide.md` says what to say to
+  start each process, in any language; `/next` advises which one fits. The update installs the skill.
+
+### Changed
+
+- **The shipped tool carries no comments**: the build strips them from `tools/bundle.py` (docstrings stay); the
+  home's original keeps them. It is one file smaller and behaves the same.
+- **The method's prose is shorter, its rules the same**: a light pass over the largest method files made one line
+  of what took two, restated nothing, and was reviewed for dropped rules (five restored). `prompt-update.md`
+  reads (a)-(e) in order, with the incoming tool, the writes before approval and the prune's classification each
+  stated once; a branch for the update is cut with `--no-track`, so a plain push never goes to the old branch.
+- **The security hook for the `researcher` agent bounds its scratch folder**: a job folder must be absolute, and
+  one equal to the user's home or containing it is no root; a refusal names the roots and the shape that runs.
+- **Merging and pushing from a worktree**: a session told to merge does it from its worktree, a fast-forward, and
+  never hands the command back; it publishes only when a push was asked too (`close` §*Rules*, `prompt-sync.md`).
+- **Every carrier's root map sends the user's decisions to principle 15's way of asking**; six notes gained
+  evidence from the proposals received.
+- **`privacy` does not warn on a quote of the bundle's own text** or the tool's own string literals; a private quote,
+  or one that only contains a bundle phrase, still warns. `check-local` and `align` name a path with no bundle.
+
+### Removed
+
+- **Helpers only the home used leave `tools/bundle.py`.** `write_checksums`, `checksums_text`, `read_pack` and
+  `PACK_LIMIT` and `carrier_ids` moved to the home's `release.py`; the `Sessions` type alias, `surface_files`, `entry_template` and
+  `count_mentions` were deleted. No subcommand lost a flag. A carrier is affected only if its own scripts import
+  them: `grep -rn -E 'write_checksums|checksums_text|read_pack|PACK_LIMIT|carrier_ids|Sessions|surface_files|entry_template|count_mentions'`
+  over its scripts and CI, and call `bundle.py` as a command instead.
+
+### Fixed
+
+- **A path with no bundle no longer stops `check-local`**: it is named as not read; a write over such a path, or a
+  read where none carries a bundle, still stops. `gather` counts carriers read, not carriers listed.
+- **`export --replace` ignores caches and finder metadata** and keeps the carrier's own files, the legacy outbox
+  included; it refreshes a folder that holds only a release.
+- **`install-skills` skips what `carrier.toml` declines**, reads quoted names and skips non-strings.
+- **`new entry` reads separated labels** and leaves a log in another language its own fields.
+- **`core.hooksPath` pointing at the repository's own hooks folder** by an absolute path, or from a linked
+  worktree at the main checkout's, is no longer warned about.
+- **A usage record missing a required key** is skipped by every reader instead of raising; an unknown category is
+  refused before consent is read, listing the valid ones; `usage set level none` says whether data is kept and that
+  `usage forget` erases it; `usage add CATEGORY` alone prints the fields.
+- **The usage guard reads the staged copy too**; `needs-consent` applies retention and prints `ask` or
+  `ok: <categories>`; `usage brief` renews the preferences it prints; `home` with no `carrier.toml` says so.
+- **Notes' cues say the mechanism**; the build refuses a product noun in one.
+
 ## [0.0.30] - 2026-10-08
 
 ### Added
