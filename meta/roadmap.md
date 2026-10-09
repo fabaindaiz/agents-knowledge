@@ -434,7 +434,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
-- **0.0.31 carried to three more carriers on 2026-10-09** (the owner named them; each on its 0.0.30 branch with `main` merged in, then fast-forwarded to `main` and pushed). One of them keeps a feature branch checked out, so `align` reads it behind until that branch takes `main`. The rest of this machine's carriers (nine, two with no bundle on disk) wait until the owner names them.
+- **0.0.31 carried to three more carriers on 2026-10-09** (the owner named them; each on its 0.0.30 branch with `main` merged in, then fast-forwarded to `main` and pushed). All three are registered and aligned (one's feature branch took `main` by a merge). The update was mechanical only: each carrier's hand-off now opens with the rest of it (triage against the carrier, harvest, links, removed helpers, `/next` and the usage consent) for its next session. The rest of this machine's carriers (nine, two with no bundle on disk) wait until the owner names them.
 - **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
   (then 0.0.30) to the carriers only that machine holds and to the three it shares with this one, whose newer work is
   unpushed there; bring the cost profile script into `evals/`; leave and document the published attribution lines in
