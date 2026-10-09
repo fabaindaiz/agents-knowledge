@@ -47,6 +47,11 @@ carrier's own scripts for the names under *Removed* below.
 
 ### Changed
 
+- **Layout:** for a carrier coming from 0.0.26 or earlier, two changes no earlier section named: since 0.0.27 the
+  index's *By phase of work* rows name each note as a backticked slug, not a link (its card is
+  `knowledge/cards/<slug>.md`), and since 0.0.30 `knowledge/areas/` is gone (a note is reached through its card).
+  An audit of the carrier's own that parses those rows or reads the area pages fails after this update while
+  `verify` passes: point it at the slug and the card, or drop the check and rely on `bundle.py verify`.
 - **The shipped tool carries no comments**: the build strips them from `tools/bundle.py` (docstrings stay); the
   home's original keeps them. It is one file smaller and behaves the same.
 - **The method's prose is shorter, its rules the same**: a light pass over the largest method files made one line
