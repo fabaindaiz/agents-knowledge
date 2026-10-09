@@ -191,8 +191,7 @@ repository's own artifacts, which do not take the practice up.
 
 ## Replacing the bundle
 
-1. **Run `python3 .agents/incoming/release/tools/bundle.py export --replace .agents`**, once the prune has reported
-   on the files the release no longer lists. It is a Python write, so a carrier whose edit permissions deny hand
+1. **Run `python3 .agents/incoming/release/tools/bundle.py export --replace .agents`**. It is a Python write, so a carrier whose edit permissions deny hand
    edits can run it. It checks first and writes after: every file under `.agents/` must be listed in the old
    `SHA256SUMS` or be the carrier's own, else it refuses and removes nothing. Then it removes the old release's
    files the new one lacks, writes the new ones and `SHA256SUMS` (including `incoming/README.md`), and keeps the

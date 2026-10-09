@@ -3187,9 +3187,8 @@ def budget_problems(tree: Path, data: dict | None = None) -> list[str]:
 
 
 def _replace_own(rel: str) -> bool:
-    """What a replace keeps: the carrier file, anything under `proposals/` or `incoming/`, evaluation reports."""
-    top = rel.split("/")[0]
-    return rel == CARRIER_FILE or top in (PROPOSALS, "incoming") or ("/" not in rel and top.startswith("evaluation-"))
+    """What a replace keeps: `is_carrier_owned` (the legacy outbox included) and all of `proposals/` and `incoming/`."""
+    return is_carrier_owned(rel) or rel.split("/")[0] in (PROPOSALS, "incoming")
 
 
 def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
@@ -3198,8 +3197,8 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
     Never the carrier's own files (its carrier file, its proposals, `incoming/` contents, evaluation reports),
     which another repository would otherwise take as its own. Refused unless the copy verifies first.
     With `replace`, `dest` holds an older release: every file in it must be listed in its `SHA256SUMS` or be the
-    carrier's own, else nothing is touched. Then the old release's files are removed, the new ones written, the
-    carrier's own kept.
+    carrier's own, else nothing is touched. Then the new files are written, the old release's files
+    the new one lacks removed, the carrier's own kept.
     """
     problems = checksum_problems(tree)
     if problems:
@@ -3216,15 +3215,17 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
     elif dest.exists() and any(dest.iterdir()):
         raise RefusedError(f"{dest}: not empty; export into a new folder (or --replace over an older release)")
     rels = [*shipped(tree), CHECKSUMS]
+    for rel in rels:
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(tree / rel, dest / rel)
     for rel in sorted(old - set(rels)):
+        if _replace_own(rel):
+            continue
         (dest / rel).unlink(missing_ok=True)
         parent = (dest / rel).parent
         while parent != dest and parent.is_dir() and not any(parent.iterdir()):
             parent.rmdir()
             parent = parent.parent
-    for rel in rels:
-        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(tree / rel, dest / rel)
     return rels
 
 

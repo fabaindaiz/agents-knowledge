@@ -120,8 +120,23 @@ class Verify(Base):
         self.assertEqual((out / "carrier.toml").read_text(), 'carrier = "r-aaaaaa"\n')
         self.assertEqual((out / "proposals/p-0123456789.md").read_text(), "mine\n")
 
+    def test_replace_keeps_the_legacy_outbox_and_never_removes_an_own_file_an_old_sum_listed(self) -> None:
+        real, out = self._older_release_folder()
+        (out / "tracking").mkdir()
+        (out / "tracking/candidates.md").write_text("old outbox\n")
+        (out / "proposals/p-0123456789.md").write_text("mine\n")
+        digest = hashlib.sha256(b"mine\n").hexdigest()
+        with (out / B.CHECKSUMS).open("a") as f:
+            f.write(f"{digest}  proposals/p-0123456789.md\n")
+
+        B.export(real, out, replace=True)
+
+        self.assertEqual((out / "tracking/candidates.md").read_text(), "old outbox\n")
+        self.assertEqual((out / "proposals/p-0123456789.md").read_text(), "mine\n")
+
     def test_replace_refuses_a_foreign_file_and_removes_nothing(self) -> None:
         real, out = self._older_release_folder()
+        (out / "method/prompt-context.md").unlink()
         (out / "notes.md").write_text("not listed anywhere\n")
         (out / "method/extra.md").write_text("nor this\n")
 
@@ -132,6 +147,7 @@ class Verify(Base):
         self.assertIn("method/extra.md", str(caught.exception))
         self.assertTrue((out / "method/only-in-the-old.md").exists())
         self.assertTrue((out / "notes.md").exists())
+        self.assertFalse((out / "method/prompt-context.md").exists())
 
     def test_replace_refuses_a_folder_without_checksums(self) -> None:
         real = Path(__file__).resolve().parents[2] / ".agents"
