@@ -937,6 +937,19 @@ class Manifest(Base):
         R = release()
         self.assertEqual(R.manifest_problems(self.tree(), export_cap=10_000), [])
 
+    def test_each_description_has_the_cap_of_its_kind(self) -> None:
+        R = release()
+        root = self.tree()
+        skill = root / ".agents/method/skills/close/SKILL.md"
+        skill.write_text("---\nname: close\ndescription: " + "x" * 751 + "\n---\n\nBody.\n")
+        self.assertIn("close", "\n".join(R.manifest_problems(root, export_cap=10_000, descriptions_cap=10_000)))
+        skill.write_text("---\nname: close\ndescription: " + "x" * 750 + "\n---\n\nBody.\n")
+        self.assertEqual(R.manifest_problems(root, export_cap=10_000, descriptions_cap=10_000), [])
+        other = root / ".agents/method/skills/unknown/SKILL.md"
+        other.parent.mkdir(parents=True)
+        other.write_text("---\nname: unknown\ndescription: Short.\n---\n\nBody.\n")
+        self.assertIn("no kind", "\n".join(R.manifest_problems(root, export_cap=10_000, descriptions_cap=10_000)))
+
     def test_each_limit_crossed_fails(self) -> None:
         R = release()
         root = self.tree()

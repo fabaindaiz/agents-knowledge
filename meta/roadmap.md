@@ -86,6 +86,9 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
+  longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
+  *Collides with:* the root file's budget, the `user-walk` description.
 - **`i-5ed7e8-1e9c1c` · A prose reduction pass is checked cut by cut by a reader other than its writer.** Twice in
   0.0.31 a pass listed each cut as `removed: … (restated by …)` and still dropped a rule (the incoming tool's exception;
   five rules), found only by a later review. *Estimate:* a paragraph in `prompt-sync.md` and a proposal; or a script

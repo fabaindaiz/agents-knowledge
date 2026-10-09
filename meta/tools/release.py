@@ -916,7 +916,12 @@ def queue_problems(root: Path = ROOT) -> list[str]:
 # (d-5ed7e8-efd0e2): the room is not a budget. It binds at the cut: between releases the export may grow past it and
 # `check` warns; `release` refuses.
 EXPORT_CAP = 1_000_000
-DESCRIPTIONS_CAP = 2_776  # characters of the skill and agent descriptions a carrier loads on every turn; raised once, for next only (meta/decisions.md)
+DESCRIPTIONS_CAP = 2_776  # chars of the skill and agent descriptions a carrier loads on every turn, in total
+# Each description is capped by its kind, since a long process must recognise varied phrasing and an agent run only
+# on request need not (the descriptions' caps by kind, in meta/decisions.md).
+DESCRIPTION_KIND_CAPS = {"long process": 750, "light skill": 250, "agent on request": 250, "delegated agent": 200}
+DESCRIPTION_KINDS = {"close": "long process", "decision-review": "long process", "user-walk": "long process",
+                     "next": "light skill", "knowledge-reviewer": "agent on request", "researcher": "delegated agent"}
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 
 
@@ -935,7 +940,17 @@ def manifest_problems(root: Path = ROOT, export_cap: int = EXPORT_CAP, descripti
     problems = []
     tree = root / ".agents"
     described = sorted(tree.glob("method/skills/*/SKILL.md")) + sorted(tree.glob("agents/*.md"))
-    chars = sum(len(str(B.read_frontmatter(f.read_text(encoding="utf-8"), str(f))[0].get("description", ""))) for f in described)
+    lengths = {}
+    for f in described:
+        meta = B.read_frontmatter(f.read_text(encoding="utf-8"), str(f))[0]
+        lengths[str(meta.get("name") or f.parent.name)] = len(str(meta.get("description", "")))
+    chars = sum(lengths.values())
+    for name, length in sorted(lengths.items()):
+        kind = DESCRIPTION_KINDS.get(name)
+        if kind is None:
+            problems.append(f"{name}: a description with no kind; add it to DESCRIPTION_KINDS in meta/tools/release.py")
+        elif length > DESCRIPTION_KIND_CAPS[kind]:
+            problems.append(f"{name}: its description is {length} chars, over the cap for its kind, {kind} ({DESCRIPTION_KIND_CAPS[kind]})")
     if chars > descriptions_cap:
         problems.append(f"the skill and agent descriptions are {chars} characters, over the manifest's cap of {descriptions_cap}")
     roadmap = root / "meta/roadmap.md"
