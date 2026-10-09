@@ -11,6 +11,16 @@ path; the delays and setbacks came from the human's own use. So the walk lists e
 wrong **before** handling any, and what it produces are tests and hypotheses, never evidence about
 real users.
 
+## Before it starts: the pre-review
+
+This process is long. Before its first step, one message: the important questions still open for it, at most four,
+each with a recommendation, found by cheap reads only (`git status`, the hand-off, a review pending, `proposed`
+decision rows), such as which of its two jobs (the human's observations, or a walk of one flow), which flow, whether
+a fix may ship before the walk ends; and, unless the human asked for this process by name or command, whether to run
+it in full. Asked for by name and nothing open: start. Each answer is written where it belongs (a decision row, the
+roadmap, the plan) even when the human declines the process, and goes in with the session's next commit
+(`d-5ed7e8-d7c0b7`).
+
 ## 1. Actors and goals
 
 Who uses it (from the repository's personas or data where they exist; say so when they are assumed),

@@ -12,6 +12,15 @@ plan has run: rulings walked after a plan was executed were mostly changed, and 
 addendum; walked before it, none was needed. So this runs **before** the plan. The rules for every
 question are `.agents/method/prompt-context.md` §15; this is its decision-review mode.
 
+## Before it starts: the pre-review
+
+This process is long. Before its first step, one message: the important questions still open for it, at most four,
+each with a recommendation, found by cheap reads only (`git status`, the hand-off, a review pending, `proposed`
+decision rows), such as which material is reviewed, which decisions are minor enough to decide alone, whether to
+stop early; and, unless the human asked for this process by name or command, whether to run it in full. Asked for by
+name and nothing open: start. Each answer is written where it belongs (a decision row, the roadmap, the plan) even
+when the human declines the process, and goes in with the session's next commit (`d-5ed7e8-d7c0b7`).
+
 ## 1. Read first
 
 Read the spec, the code it touches, the decisions log and the roadmap. Anything they answer, or that a

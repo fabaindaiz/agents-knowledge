@@ -9,6 +9,15 @@ allowed-tools: Bash, Read, Edit, Write, Grep
 A close is worth what the next session can do with it **on another machine, with no memory of
 this one**. Run every step; say which ones found nothing.
 
+## Before it starts: the pre-review
+
+This process is long. Before its first step, one message: the important questions still open for it, at most four,
+each with a recommendation, found by cheap reads only (`git status`, the hand-off, a review pending, `proposed`
+decision rows), such as a review still pending, whether to push at the end, uncommitted work that is not the
+session's; and, unless the human asked for this process by name or command, whether to run it in full. Asked for by
+name and nothing open: start. Each answer is written where it belongs (a decision row, the roadmap, the plan) even
+when the human declines the process, and goes in with the session's next commit (`d-5ed7e8-d7c0b7`).
+
 ## 0. Pause is not close
 
 "Pause", "leave it paused", "no commits": stop where you are. No commits, no merge, no record that a
