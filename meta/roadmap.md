@@ -79,6 +79,7 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, and a hex hash. *Collides with:* the rules' tests, which must still fail on a real leak.
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
