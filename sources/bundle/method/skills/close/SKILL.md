@@ -68,7 +68,7 @@ states none). Replace each comment, and beyond the format:
 
 - **Usage data, only as consent allows.** Run `python3 .agents/tools/bundle.py usage needs-consent`. On `ask`,
   show the user the text below in their language and take the answer with `usage set` (level, or a category
-  `on|off`); unanswered, store nothing and do not ask again this session. On `ok`, record with `usage add`: the
+  `on|off`); unanswered, store nothing and do not ask again this session. On `ok`, record with `usage add`:
   the session's frictions (`frictions`, counts); the ablation record (`ablation`) when it ran `usage brief`;
   and a table of preferences to store (paraphrased, why, stated or inferred), each confirmed row by row
   before `usage add preferences`. Then `usage show`: confirm (`usage use ID`) or let go each preference

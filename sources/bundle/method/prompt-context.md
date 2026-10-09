@@ -30,6 +30,7 @@ The version history is `../CHANGELOG.md`.
 
 **The set can grow.** Nothing should hard-code how many documents it has: list
 what is actually present next to this file.
+`prompt-evaluate.md` lists every method prompt present beside it.
 
 **Who owns what.** Each executable prompt owns its own procedure and nothing
 else. Everything they share — which one to run, the enforcement ladder, the
@@ -89,7 +90,7 @@ forwarded, and principle 20 is the rule, with the tool that checks it.
    it is where a helpful adoption turns into an unwanted rewrite.
 
 The first pass is a long session (in adopt mode, it creates only what has no
-home: principle 19). Its product is listed in *Done — the bootstrap*; the part
+home, and the host's own files follow one per session: principle 19). Its product is listed in *Done — the bootstrap*; the part
 most people skip is **a script that checks the structural rules the prose
 claims.**
 
@@ -105,7 +106,8 @@ claims.**
 **On the length of these documents.** The method argues for a 200-line budget
 and is itself long. `CLAUDE.md` is **loaded into every session** and paid for
 every time; this is a **procedure read on demand, in parts**, and each
-invocation's `Reads:` list names the parts.
+invocation's `Reads:` list names the parts. Apply the same split in the
+repository you are bootstrapping.
 
 ---
 
@@ -1625,6 +1627,10 @@ file, the other two are already breaking it.* A hook is worth writing for the
 agent that runs it; a rule that holds only through one agent's hook is a
 deviation, and is written down as one.
 
+Per-area targeting is the one place the shapes line up: `paths:`, `globs:` and
+`applyTo:` are three spellings of one glob, so per-area rules can be **generated
+from one source**.
+
 ### What to write where
 
 | Content | Goes | Why |
@@ -1655,7 +1661,7 @@ what you could not confirm `ASSUMPTION`.**
 | `.claude/skills/<name>/SKILL.md` | **on demand**, chosen from its `description` | the description is a trigger, not a title: write the phrasings that should reach for it |
 | `.claude/agents/<name>.md` subagents | **on demand**, chosen from its `description` or named by the author; it runs in a context of its own, limited to its `tools:` | work whose reading must not enter the author's context, such as the knowledge review, goes here; only its answer comes back |
 | Hooks in `.claude/settings.json` | **deterministically**, on lifecycle events | the one mechanism that does not depend on the agent's judgement |
-| `.claude/rules/*.md` with `paths:` | **on demand**, when a file matching the glob is read | per-area targeting without a nested file |
+| `.claude/rules/*.md` with `paths:` | **on demand**, when a file matching the glob is read | per-area targeting without a nested file; one source serves all three |
 | `@path` imports inside an instruction file | **at launch**, and they spend context | importing a docs tree into the root file defeats the budget — **prefer nesting over importing**; the one import worth its cost is `@AGENTS.md` as the root file's first line, the documented bridge that keeps one source |
 
 **What is still not unconditional, and it is load-bearing:** every per-area
@@ -2103,7 +2109,7 @@ stopped at <where>."*
 - **Read what the invocation names, not the whole method.** That is what each
   invocation's `Reads:` line is for.
 - **Do not regenerate the brief when nothing moved.** "No change since the last
-  session" is a complete step 0.
+  session" is a complete step 0, after `usage brief` where it applies.
 - **Cache expensive reasoning into the repo**, not into a longer conversation: a
   decision row is re-read at zero cost forever, a conversation is not.
 - **Where a cheap check exists, run it before the expensive reasoning.** The

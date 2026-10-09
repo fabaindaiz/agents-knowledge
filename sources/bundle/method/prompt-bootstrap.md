@@ -613,8 +613,8 @@ asked for, the report offers one, in one line; it does not run it.
 
 **The whole branch, offered when a multi-task plan is done.** Before the close,
 ask in one question whether a fresh agent should review the whole branch, given
-the plan and its decisions as intent, and give the cost, and the thin
-evidence for it (principle 19). Not for one small
+the plan and its decisions as intent, and give the cost (in five repositories each took four to twenty minutes,
+about a hundred thousand tokens where counted; thin evidence: principle 19). Not for one small
 commit.
 
 - **Fix the findings and nothing else**, then send only what changed for a
