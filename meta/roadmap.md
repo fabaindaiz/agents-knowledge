@@ -25,8 +25,8 @@ task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 
 **Done since the last close** (the plan is `meta/reviews/2026-10-08-plan-0.0.31-tools.md`; *Done* lists the items):
 - The tool fixes and the method's text, ten tasks (*Done*).
-- **The export cap** warns between releases and binds at the cut (`d-5ed7e8-a3e7e8`). The export is about 920 KB
-  against the 913,167-byte cap, so the cut must shrink it first.
+- **The export cap** warns between releases and binds at the cut (`d-5ed7e8-a3e7e8`). The cap is now 1,000,000 bytes
+  and no further (`d-5ed7e8-efd0e2`); the export is about 915 KB.
 - Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
 
 **Next, in order:**

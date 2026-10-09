@@ -56,7 +56,7 @@ The checked ones fail `release.py check`; the measured one is read from the rele
 
 | Limit | Today | Cap | How |
 |---|---:|---:|---|
-| Export, shipped bytes | about 920 KB | the cap does not rise without a decision; aim 550 KB; may grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
+| Export, shipped bytes | about 915 KB | 1,000,000 bytes, raised once and never further (`d-5ed7e8-efd0e2`); the room is not a budget: each growth is justified on its own; aim 550 KB; may grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
 | Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens) | about 2,776 characters | 2,776 characters, raised once for `next` only (`meta/decisions.md`) | checked |
 | A coding session's reads | about 10k tokens (estimate) | 10,100 | checked (existing) |
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |

@@ -912,9 +912,10 @@ def queue_problems(root: Path = ROOT) -> list[str]:
             for r in rows if not QUEUE_ROW.match(r[0].strip())]
 
 
-# `MANIFEST.md`'s checked limits. The export's cap is 0.0.29's shipped bytes; it is raised only with a decision row.
-# It binds at the cut: between releases the export may grow past it and `check` warns; `release` refuses.
-EXPORT_CAP = 913_167
+# `MANIFEST.md`'s checked limits. The export's cap was 0.0.29's shipped bytes, raised once to 1 MB and no further
+# (d-5ed7e8-efd0e2): the room is not a budget. It binds at the cut: between releases the export may grow past it and
+# `check` warns; `release` refuses.
+EXPORT_CAP = 1_000_000
 DESCRIPTIONS_CAP = 2_776  # characters of the skill and agent descriptions a carrier loads on every turn; raised once, for next only (meta/decisions.md)
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 

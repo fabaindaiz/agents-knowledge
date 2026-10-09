@@ -2591,6 +2591,21 @@ class Usage(Base):
         plain = make_bundle(self.root / "no-git")
         self.assertEqual(B.usage_file_problems(plain.parent), [])
 
+    def test_verify_reads_the_staged_copy_when_the_working_copy_changed(self) -> None:
+        self.u("set", "level", "counts")
+        self.u("add", "frictions", "session=x")
+        repo = init_repo(self.root / "carrier3")
+        agents = make_bundle(repo)
+        git_commit(repo, "chore: start")
+        (repo / "copy.jsonl").write_text(self.state("frictions.jsonl").read_text())
+        git(repo, "add", "copy.jsonl")
+        (repo / "copy.jsonl").write_text("{}\n")
+        (repo / "gone.jsonl").write_text(self.state("frictions.jsonl").read_text())
+        git(repo, "add", "gone.jsonl")
+        (repo / "gone.jsonl").unlink()
+        found = sorted(p.split(":")[0] for p in B.verify_problems(agents) if "usage data" in p)
+        self.assertEqual(found, ["copy.jsonl", "gone.jsonl"])
+
     def test_the_tools_own_source_does_not_trip_the_guard(self) -> None:
         self.assertEqual([f for f in B.privacy_check(paths=[Path(B.__file__)]).failures if f.rule == "usage-record"], [])
 

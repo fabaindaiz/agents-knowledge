@@ -2957,12 +2957,13 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
 
 
 def usage_file_problems(repo: Path) -> list[str]:
-    """Tracked or staged files whose first line is usage data's; outside a git tree, none."""
+    """Tracked or staged files whose first line is usage data's, in the working copy or the staged one; outside a git
+    tree, none."""
     try:
         listed = [p for p in git(repo, "ls-files", "-z").split("\0") if p]
     except (subprocess.CalledProcessError, OSError):
         return []
-    found = []
+    hits = set()
     for rel in listed:
         path = repo / rel
         if path.is_symlink() or not path.is_file():
@@ -2970,8 +2971,20 @@ def usage_file_problems(repo: Path) -> list[str]:
         with path.open("rb") as handle:
             first = handle.readline(512).decode("utf-8", errors="replace")
         if _usage_records(first):
-            found.append(f"{rel}: begins like usage data, which never belongs in a repository; untrack it")
-    return found
+            hits.add(rel)
+    # The staged copy may differ from the working one: one grep of the index, then the first line of each match.
+    try:
+        staged = git(repo, "grep", "--cached", "-l", "-z", "-I", "-F", "-e", "agent-guides-usage", "-e", CONSENT_FIRST)
+    except (subprocess.CalledProcessError, OSError):
+        staged = ""
+    for rel in (p for p in staged.split("\0") if p and p not in hits):
+        try:
+            first = git(repo, "show", f":{rel}").split("\n", 1)[0]
+        except (subprocess.CalledProcessError, OSError):
+            continue
+        if _usage_records(first):
+            hits.add(rel)
+    return [f"{rel}: begins like usage data, which never belongs in a repository; untrack it" for rel in sorted(hits)]
 
 
 def installed_catalogue_problems(repo: Path, skills: object) -> list[str]:
