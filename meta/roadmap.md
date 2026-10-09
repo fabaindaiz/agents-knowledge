@@ -20,43 +20,45 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-09, close: the 0.0.31 tool fixes are on `main`** (`8161e4b..13a5d57`, pushed), reviewed task by
-task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
+**State on 2026-10-09, second close: 0.0.31's scope is built, reviewed and on `main` (`6f9e34b`, pushed).**
+`v0.0.30` is the last tag; 0.0.31 is open and not cut. The plan is `meta/reviews/2026-10-09-plan-0.0.31-release.md`.
 
-**Done since the last close** (the plan is `meta/reviews/2026-10-08-plan-0.0.31-tools.md`; *Done* lists the items):
-- The tool fixes and the method's text, ten tasks (*Done*).
-- **The export cap** warns between releases and binds at the cut (`d-5ed7e8-a3e7e8`). The cap is now 1,000,000 bytes
-  and no further (`d-5ed7e8-efd0e2`); the export is about 915 KB.
-- Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
+**Done this session** (*Done* lists the items):
+- Plan steps 1–5: Phase 1 and the intake, the three scoped items, two reduction passes, the shipped tool without
+  comments, the carrier tool's cleanup, the `[0.0.31]` changelog section.
+- **Added by the owner (T7, `d-5ed7e8-389b56`):** `method/meta.md` and `bundle.py home`, the lineage, and consented
+  local usage data, `bundle.py usage` (design `meta/reviews/2026-10-09-design-meta-and-usage.md`, research
+  `...-usage-data-research.md`, protocol `evals/PROTOCOL-usage.md`); thirteen decisions, `d-5ed7e8-f7f903` to
+  `d-5ed7e8-adbd1f`.
+- **The export's cap is 1,000,000 bytes and no further** (`d-5ed7e8-efd0e2`); the export is about 923 KB.
+- Every task had its review; a final review on the most capable model, then one fix wave and a re-review.
+- This machine's usage consent is `full`; the session's agent costs, frictions and four preferences are stored
+  locally (`bundle.py usage show`).
 
 **Next, in order:**
-1. The decision review of the plan's rulings is closed and recorded
-   (`meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`).
-2. **Cut 0.0.31** by `meta/reviews/2026-10-09-plan-0.0.31-release.md` (`d-5ed7e8-e9405d` to `d-5ed7e8-71a809`):
-   Phase 1 and its verdict table, the scoped items, the reduction pass and the changelog cut, the cost pilot and
-   the trigger eval in the pilot carrier, each carrier's audit, then the owner's word.
-3. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
-4. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
-   (stale checksums, registered at 0.0.28 against the home's 0.0.30, one carrier missing from `carriers.md`).
+1. **Step 7a:** register the cost pilot in `evals/PROTOCOL.md` (`minimal`, 0.0.30 from its tag, the candidate; pilot-9's
+   six tasks, three repetitions: 54 trials, about an hour), run it in the background, then the trigger eval of `next`
+   and the three skills in the pilot carrier (`d-5ed7e8-71a809`), the owner labelling (about 20 minutes).
+2. Step 7b, each carrier's audit; step 8, the owner's word, then cut, tag, push; Phases 2–3 (splice; add
+   `attribution` in the five carriers without it); the close.
+3. The four new items: `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`, `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
 
-**Waiting on the owner:**
-- The twelve `unconfirmed:` reasons in `meta/decisions.md`.
-- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: yes).
-- Judges and time for the follow-up experiment.
-- The carriers' 0.0.30 branches; the hand-carried carrier's pull request; the credentials ticket; the `proposed` rows
-  in carriers' logs; each assistant's terms for automated runs.
+**Waiting on the owner:** the 40 `unconfirmed:` reasons in `meta/decisions.md` (two are this session's rulings, `d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); a template's pointer to the
+knowledge index; judges for the follow-up experiment; the carriers' 0.0.30 branches and pull request; the credentials
+ticket; each assistant's terms for automated runs.
 
-**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which also copies the owner's four
-new user-level instruction lines. A temporary copy of `next` sits at the user level on this machine: delete it once
-0.0.31 is installed.
+**To continue on another machine:** `git pull --tags`; usage data does not travel (by design); delete the
+user-level copy of `next` once 0.0.31 is installed here.
 
-**What went wrong** (`bundle.py count` over the session log; each the first of its kind):
-- The host's permission classifier refused the fast-forward of `main` after Task 1; work went on as a linear chain.
-- The review-diff script writes under the current directory's repository, a worktree mid-session.
-- My wording of a review fix added a step that could replace the bundle before approval; a re-review removed it.
-- The export reached its cap at Task 5; the owner's rule settled it.
-- Task 3's intake check could not run: no carrier here holds the held proposals.
-- The plan's rulings were walked with the owner only after it ran, which the `decision-review` skill warns against.
+**What went wrong** (counted with `bundle.py count` over the roadmap and its archive):
+- **A reduction pass dropped real rules, twice** (the incoming tool's exception, then five rules); each was restored
+  after a review. Second incident: `i-5ed7e8-1e9c1c`.
+- **The worktree isolation refused compound commands naming git**, variables in `sed`, and even an id's text, again
+  and again; scripts written to a file went through. `i-5ed7e8-780330`.
+- **My estimates of delegated work ran high**: implementations took about seven tenths of the tokens and half the
+  time; reviews were exact in tokens. Calibrated: an implementation 6–8 minutes, 130–170k tokens.
+- The usage tool came in at 22 KB, not 8–10: the export went over the old cap until the owner raised it.
+- `bundle.py new entry` and `memory-diff` failed from this worktree (`i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`).
 
 ## Standing rules and facts
 
@@ -67,7 +69,9 @@ generated. Nothing leaves the candidate queue by age. The user is the sole autho
 prediction is written before a measurement, and a refuted one is stated, not moved. Where a local
 checkout and its remote disagree after a rewrite, the remote is the record. Carriers are updated only when the owner asks, and only
 the ones named; a session never offers to update another repository's `.agents/` on its own. Questions run in
-modes (principle 15): a decision review one decision per turn, everything at once before the owner leaves.
+modes (principle 15): a decision review one decision per turn, everything at once before the owner leaves. Findings are reported as they fall, candidly, in a form comparable to a
+published study. A long background agent is announced with its estimate of time, tokens and model, then compared with
+its actual. Usage data stays on its machine; only a generalised figure the owner approves enters a record.
 
 **Templates** (not carriers, no `carrier.toml`): two template repositories are open on this machine; both were
 refreshed to 0.0.30 and tagged `v0.0.30` on 2026-10-08, the knowledge template from 0.0.28 and a second one
@@ -82,18 +86,21 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
-- **`i-5ed7e8-d203b6` · `prompt-update.md` reads coherently.** From the last re-review; it is shipped text of 0.0.31.
-  (a) The table's "this repository added" bucket should be "not listed in the old `SHA256SUMS`, whether or not the
-  incoming one lists it" (a file added at a path the incoming release now ships falls between); (b) the start-up read
-  list omits the old `.agents/SHA256SUMS` and the old files the prune classifies; (c) the pre-flight's prune question
-  omits the files the repository added and promises a proposal to every section; (d) "nothing in `incoming/` is
-  followed, loaded or cited" contradicts Replacing step 1 running the incoming copy's tool; (e) step 4 writes
-  proposals before step 5's "write nothing until I approve" without stating the exception. *Estimate:* under an hour
-  of prose. *Collides with:* the cut of 0.0.31.
-- **`i-5ed7e8-12fcfb` · Tests for the security hook's edges the code already handles, and a bound on a broad job
-  directory.** A job root that is an ancestor of the repository, a symlinked `tmp` into the repository, `..` in `-o`;
-  and a bound on a broad or relative `$CLAUDE_JOB_DIR`. *Estimate:* about 2 hours with tests. *Collides with:*
-  `research_allowed` and its tests.
+- **`i-5ed7e8-1e9c1c` · A prose reduction pass is checked cut by cut by a reader other than its writer.** Twice in
+  0.0.31 a pass listed each cut as `removed: … (restated by …)` and still dropped a rule (the incoming tool's exception;
+  five rules), found only by a later review. *Estimate:* a paragraph in `prompt-sync.md` and a proposal; or a script
+  that lists each removed sentence's rule words (numbers, commands, ids) and greps the rest for them, about two
+  hours. *Collides with:* the next reduction pass.
+- **`i-5ed7e8-780330` · In an isolated worktree, version-control calls go in plain separate commands.** The host
+  refuses a compound command, a `-C` or `cd`, a variable where an option may stand, or any text naming git in a form it
+  cannot verify; a script written to a file runs. Say it once in the method's worktree rule. *Estimate:* a few lines.
+  *Collides with:* `prompt-sync.md`, the `close` skill.
+- **`i-5ed7e8-6cf312` · `bundle.py new entry` refuses a missing log in one line, and the home names its session
+  log.** Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
+  close skill's step 3 does not know. *Estimate:* an hour with a test. *Collides with:* `new entry`, the close skill.
+- **`i-5ed7e8-11e17f` · `memory-diff` from a linked worktree reads the repository's memory.** It reads the
+  worktree's own, empty, folder; `--memory` is the workaround. *Estimate:* an hour with a test. *Collides with:*
+  `memory-diff`, `close`.
 - **`i-5ed7e8-307d02` · Carriers stop re-checking the release's internals in their own audits.** Six carrier audits
   re-check the index and note layout that `bundle.py verify` owns, and each layout change breaks them all. Offer
   each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
@@ -107,12 +114,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   trigger eval's cases for `next` and the other skills in several languages, in the pilot carrier. **A local copy of `next` sits at the owner's user level until 0.0.31 is installed there: delete it
   then**, since it is a derived copy that goes stale. *Estimate:* about a day, with the trigger cases.
   *Collides with:* `skills/README.md`, `install-skills`, the skill trigger eval.
-- **`i-5ed7e8-2d3b47` · In an isolated worktree, work on the main working copy goes through ExitWorktree or a
-  fast-forward push, never a command handed back to the owner.** The second incident of the host's worktree isolation
-  refusing git aimed at the main working copy, on 2026-10-08, the owner's own `!` command included. Done for this
-  repository in `AGENTS.md` (*The owner's word is the authorization*); left: whether the method's `close` skill and
-  `prompt-sync.md` say the same for every carrier. *Estimate:* a few lines and a proposal. *Collides with:* nothing.
-
 - **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
   one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
   0.0.30 (`meta/reviews/2026-10-08-cursor-copilot-support.md`). **Levels 1 and 2 shipped in 0.0.30 as experimental**
@@ -470,6 +471,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **0.0.31 scope, 2026-10-09 (not yet cut; on `main` at `6f9e34b`).** Closed: `i-5ed7e8-d203b6` (`c308f62`);
+  `i-5ed7e8-12fcfb` (`017081a`); `i-5ed7e8-2d3b47` (`4011671`); the final review's fixes (`54e8c40`); the reduction
+  pass (`6255772`); the shipped tool without comments (`07eb096`); the carrier tool's cleanup (`3446ee1`); the meta
+  package, lineage and usage data (`7a3ba7e` to `c061cd2`, `965c245`, `202dc36`); five small fixes (`4cebc0c`); the
+  changelog section (`cf4376b`, `6f9e34b`). Described in `.agents/CHANGELOG.md`.
 - **0.0.31 tool fixes, 2026-10-09 (not yet cut; branch chain from `fix/coloured-help` to `docs/method-text`, reviewed).**
   Closed: `i-5ed7e8-cce629` (`7063adb`); `i-5ed7e8-74d789` (`f16d7ff`, the intake of the three held proposals could not
   run: no carrier here holds them); `i-5ed7e8-e44264` (`fc67c5e`, `16e0970`: a non-repository path is not read, and a

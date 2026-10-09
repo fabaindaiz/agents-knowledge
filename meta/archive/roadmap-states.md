@@ -2,6 +2,44 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-09, close: the 0.0.31 tool fixes are on `main`** (`8161e4b..13a5d57`, pushed), reviewed task by
+task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
+
+**Done since the last close** (the plan is `meta/reviews/2026-10-08-plan-0.0.31-tools.md`; *Done* lists the items):
+- The tool fixes and the method's text, ten tasks (*Done*).
+- **The export cap** warns between releases and binds at the cut (`d-5ed7e8-a3e7e8`). The cap is now 1,000,000 bytes
+  and no further (`d-5ed7e8-efd0e2`); the export is about 915 KB.
+- Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
+
+**Next, in order:**
+1. The decision review of the plan's rulings is closed and recorded
+   (`meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`).
+2. **Cut 0.0.31** by `meta/reviews/2026-10-09-plan-0.0.31-release.md` (`d-5ed7e8-e9405d` to `d-5ed7e8-71a809`):
+   Phase 1 and its verdict table, the scoped items, the reduction pass and the changelog cut, the cost pilot and
+   the trigger eval in the pilot carrier, each carrier's audit, then the owner's word.
+3. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
+4. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
+   (stale checksums, registered at 0.0.28 against the home's 0.0.30, one carrier missing from `carriers.md`).
+
+**Waiting on the owner:**
+- The twelve `unconfirmed:` reasons in `meta/decisions.md`.
+- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: yes).
+- Judges and time for the follow-up experiment.
+- The carriers' 0.0.30 branches; the hand-carried carrier's pull request; the credentials ticket; the `proposed` rows
+  in carriers' logs; each assistant's terms for automated runs.
+
+**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which also copies the owner's four
+new user-level instruction lines. A temporary copy of `next` sits at the user level on this machine: delete it once
+0.0.31 is installed.
+
+**What went wrong** (`bundle.py count` over the session log; each the first of its kind):
+- The host's permission classifier refused the fast-forward of `main` after Task 1; work went on as a linear chain.
+- The review-diff script writes under the current directory's repository, a worktree mid-session.
+- My wording of a review fix added a step that could replace the bundle before approval; a re-review removed it.
+- The export reached its cap at Task 5; the owner's rule settled it.
+- Task 3's intake check could not run: no carrier here holds the held proposals.
+- The plan's rulings were walked with the owner only after it ran, which the `decision-review` skill warns against.
+
 **State on 2026-10-08, close: `main` holds the 0.0.31 intake, the guide with `next`, and the home's `.claude/`
 reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
 
