@@ -121,7 +121,7 @@ The rulings are read from wherever the plan kept them; never assume the plan per
   red and green runs; never a fix taken on the delegate's word.
 - The human's own uncommitted changes go in only when the human says so, in a commit of their own,
   as left.
-- Push, or merge into the main branch, only when the human asks. When asked, do it yourself and never hand the command back: from an isolated worktree, push the branch's head to the main branch as a fast-forward, or leave the worktree first.
+- Push, or merge into the main branch, only when the human asks. When asked, do it yourself and never hand the command back: to merge from an isolated worktree, leave it first; push the branch's head to the remote main as a fast-forward only when a push was asked too.
 - **Ready for review is a state of its own.** Where the host reserves merging and closing to a person, prepare
   the evidence (gates green, the pull request's body, the summary for the work item's author), move the item
   to review, and stop. After a person approves: merge, remove the worktree before deleting its branch, close
