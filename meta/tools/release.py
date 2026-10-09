@@ -751,6 +751,9 @@ def release(version: str, root: Path = ROOT) -> str:
     section = next((m for m in B.CHANGELOG_SECTION.finditer(text) if m.group(1) == version), None)
     if section is None or not section.group(2):
         raise RefusedError(f"{B.CHANGELOG} has no `## [{version}] - YYYY-MM-DD` section; describe the release first")
+    over = export_over_cap(root, EXPORT_CAP)
+    if over:
+        raise RefusedError(over)
     set_version(root, version, section.group(2))
     build(root)
     return f'git tag -a v{version} -m "agent-guides {version}"'
@@ -811,7 +814,9 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
     errors, warnings, _ = B.decision_check([log]) if log.is_file() else ([], [], {})
     problems += [f"decisions: {e}" for e in errors]
+    over = export_over_cap(root, EXPORT_CAP)
     return problems, (privacy.notes() + home.notes() + [f"  ! decisions: {w}" for w in warnings]
+                      + ([f"  ! WARN {over}"] if over else [])
                       + [f"  ! {w}" for w in B.user_deny_warnings(root)])
 
 
@@ -826,19 +831,26 @@ def queue_problems(root: Path = ROOT) -> list[str]:
 
 
 # `MANIFEST.md`'s checked limits. The export's cap is 0.0.29's shipped bytes; it is raised only with a decision row.
+# It binds at the cut: between releases the export may grow past it and `check` warns; `release` refuses.
 EXPORT_CAP = 913_167
 DESCRIPTIONS_CAP = 2_776  # characters of the skill and agent descriptions a carrier loads on every turn; raised once, for next only (meta/decisions.md)
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 
 
-def manifest_problems(root: Path = ROOT, export_cap: int = EXPORT_CAP, descriptions_cap: int = DESCRIPTIONS_CAP,
-                      handoff_cap: int = HANDOFF_CAP) -> list[str]:
-    """The limits `MANIFEST.md` marks as checked: the export does not grow, nor what every turn loads, nor the hand-off."""
-    problems = []
+def export_over_cap(root: Path = ROOT, export_cap: int = EXPORT_CAP) -> str | None:
+    """The message when the shipped export is over its cap, else None: a warning from `check`, a refusal from `release`."""
     tree = root / ".agents"
     size = sum((tree / rel).stat().st_size for rel in B.shipped(tree)) if tree.is_dir() else 0
     if size > export_cap:
-        problems.append(f"the export ships {size} bytes, over the manifest's cap of {export_cap} (raise it only by a decision)")
+        return f"the export ships {size} bytes, over the manifest's cap of {export_cap}; shrink it before the cut"
+    return None
+
+
+def manifest_problems(root: Path = ROOT, export_cap: int = EXPORT_CAP, descriptions_cap: int = DESCRIPTIONS_CAP,
+                      handoff_cap: int = HANDOFF_CAP) -> list[str]:
+    """The limits `MANIFEST.md` marks as checked: what every turn loads and the hand-off (the export binds at the cut)."""
+    problems = []
+    tree = root / ".agents"
     described = sorted(tree.glob("method/skills/*/SKILL.md")) + sorted(tree.glob("agents/*.md"))
     chars = sum(len(str(B.read_frontmatter(f.read_text(encoding="utf-8"), str(f))[0].get("description", ""))) for f in described)
     if chars > descriptions_cap:

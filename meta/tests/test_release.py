@@ -408,6 +408,19 @@ class Build(Base):
 
 
 class Release(Base):
+    def test_the_cut_refuses_over_the_export_cap_and_writes_nothing(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        changelog = home / "sources/bundle/CHANGELOG.md"
+        changelog.write_text(changelog.read_text().replace("## [Unreleased]\n", "## [Unreleased]\n\n## [0.0.2] - 2026-02-01\n\n- More.\n"))
+        before = git(home, "status", "--porcelain")
+        with mock.patch.object(R, "EXPORT_CAP", 10):
+            with self.assertRaisesRegex(R.RefusedError, r"the export ships \d+ bytes, over the manifest's cap of 10"):
+                R.release("0.0.2", home)
+        self.assertEqual(git(home, "status", "--porcelain"), before)
+        self.assertEqual(B.bundle_version(home / ".agents"), "0.0.1")
+        self.assertIsNone(R.export_over_cap(home, export_cap=10_000_000))
+        self.assertIn("git tag -a v0.0.2", R.release("0.0.2", home))
     def test_a_release_must_be_newer_and_described(self) -> None:
         R = release()
         home = make_home(self.root)
@@ -912,7 +925,6 @@ class Manifest(Base):
     def test_each_limit_crossed_fails(self) -> None:
         R = release()
         root = self.tree()
-        self.assertIn("export", "\n".join(R.manifest_problems(root, export_cap=10)))
         self.assertIn("descriptions", "\n".join(R.manifest_problems(root, export_cap=10_000, descriptions_cap=5)))
         (root / "meta/roadmap.md").write_text("## Where we are\n\n" + "word " * 501 + "\n## Next\n")
         self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
@@ -921,6 +933,22 @@ class Manifest(Base):
         self.assertIn("hand-off", "\n".join(R.manifest_problems(root, export_cap=10_000)))
         (root / "meta/roadmap.md").write_text("# Roadmap\n\n## Next\n")
         self.assertIn("no *Where we are*", "\n".join(R.manifest_problems(root, export_cap=10_000)))
+
+    def test_check_warns_and_passes_over_the_export_cap(self) -> None:
+        R = release()
+        root = self.tree()
+        self.assertNotIn("export", "\n".join(R.manifest_problems(root, export_cap=10)))
+        message = R.export_over_cap(root, export_cap=10)
+        self.assertRegex(message, r"^the export ships \d+ bytes, over the manifest's cap of 10; shrink it before the cut$")
+        self.assertIsNone(R.export_over_cap(root, export_cap=10_000))
+
+    def test_check_prints_the_export_overrun_as_a_warn_not_a_problem(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        with mock.patch.object(R, "EXPORT_CAP", 10):
+            problems, notes = R.check(home)
+        self.assertTrue([n for n in notes if "WARN" in n and "the export ships" in n])
+        self.assertFalse([p for p in problems if "the export ships" in p])
 
 
 class Received(Base):
