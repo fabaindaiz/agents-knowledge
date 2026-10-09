@@ -380,7 +380,8 @@ once, with pointers to it.
 ### Phase 7 — Audit `docs/` against the code
 
 Contrast every document with what is on disk. Update or delete what is stale.
-**A document pointing at a deleted file is worse than no document**. Sweep for the names of anything you removed.
+**A document pointing at a deleted file is worse than no document.** Sweep for the names of anything
+you removed.
 
 ### Phase 8 — Roadmap and progress evaluation
 
@@ -390,11 +391,9 @@ in motion, in the same vocabulary as the invariants.
 
 ### Phase 9 — The recurring review
 
-Add a
-`state-review` skill that runs on demand and answers:
+Add a `state-review` skill that runs on demand and answers:
 
-- Does every document named in the map exist, and is every claim in it still
-  true?
+- Does every document named in the map exist, and is every claim in it still true?
 - Does every rule still have an enforcer, and did any of them fire this period?
 - What changed that should have become a decision row and did not?
 - What in the roadmap is now closed — by being built, or by a measurement?
@@ -644,7 +643,7 @@ false claim. A collection error is reported, never routed around with a skip.
 
 **Before calling a red check yours or pre-existing, measure the untouched base**
 in the same environment — a clean export of `HEAD` (`git archive HEAD | tar -x
--C <scratch>`) or a separate worktree — without touching the working tree..
+-C <scratch>`) or a separate worktree — without touching the working tree.
 
 **A change meant to change nothing is proved by what it must preserve, compared
 mechanically.** Before a refactor, move, regeneration, reformat or translation,
