@@ -2611,14 +2611,45 @@ def record_lineage(tree: Path, today: str | None = None) -> bool:
     entry = f'  {_toml_str(f"{version} {home} {today or datetime.date.today().isoformat()}")},\n'
     path = tree / CARRIER_FILE
     text = path.read_text(encoding="utf-8")
-    existing = re.search(r"^lineage[ \t]*=[ \t]*\[[^\]]*", text, re.MULTILINE)
-    if existing:
-        text = text[: existing.end()] + ("" if existing.group(0).endswith(("\n", "[")) else "\n") + entry + text[existing.end() :]
+    opened = re.search(r"^lineage[ \t]*=[ \t]*\[", text, re.MULTILINE)
+    if opened:
+        last, i, in_string = opened.end() - 1, opened.end(), ""
+        while i < len(text):
+            ch = text[i]
+            if in_string:
+                last = i
+                if ch == "\\" and in_string == '"':
+                    i += 1
+                    last = i
+                elif ch == in_string:
+                    in_string = ""
+            elif ch in "\"'":
+                in_string, last = ch, i
+            elif ch == "#":
+                i = text.find("\n", i)
+                i = len(text) if i < 0 else i
+                continue
+            elif ch == "]":
+                break
+            elif not ch.isspace():
+                last = i
+            i += 1
+        else:
+            print(f"  ! {path}: the lineage array does not close; lineage not recorded", file=sys.stderr)
+            return False
+        comma = "" if text[last] in ",[" else ","
+        updated = text[: last + 1] + comma + "\n" + entry + text[last + 1 :]
     else:
         table = re.search(r"^\[", text, re.MULTILINE)
         cut = table.start() if table else len(text)
         lead = "" if not cut or text[cut - 1] == "\n" else "\n"
-        text = text[:cut] + lead + "lineage = [\n" + entry + "]\n" + ("\n" if table else "") + text[cut:]
+        updated = text[:cut] + lead + "lineage = [\n" + entry + "]\n" + ("\n" if table else "") + text[cut:]
+    try:
+        tomllib.loads(updated)
+    except tomllib.TOMLDecodeError as error:
+        print(f"  ! {path}: appending to lineage would leave invalid TOML ({error}); lineage not recorded", file=sys.stderr)
+        return False
+    text = updated
     path.write_text(text, encoding="utf-8")
     return True
 

@@ -2110,6 +2110,24 @@ class Lineage(Base):
         self.assertEqual(data["lineage"], ["0.0.31 r-0a0a0a 2026-10-09", "0.0.32 r-0a0a0a 2026-11-01"])
         self.assertEqual(data["skills"], {"review": "my-review"})
 
+    def test_an_existing_array_of_any_shape_stays_valid_with_the_entry_once(self) -> None:
+        shapes = {
+            "inline": 'carrier = "r-abcdef"\nlineage = ["0.0.1 r-0a0a0a 2026-01-01"]\n',
+            "multi without comma": 'carrier = "r-abcdef"\nlineage = [\n  "0.0.1 r-0a0a0a 2026-01-01"\n]\n',
+            "comment with bracket": 'carrier = "r-abcdef"\nlineage = [\n  "0.0.1 r-0a0a0a 2026-01-01", # was [first]\n]\nadopted = "2026-01-01"\n',
+            "bracket in a string": 'carrier = "r-abcdef"\nlineage = ["0.0.1 r-0a0a0a 2026-01-01", "x ] y"]\n',
+            "empty inline": 'carrier = "r-abcdef"\nlineage = []\n',
+        }
+        for name, own in shapes.items():
+            agents = self.carrier(name.replace(" ", "-"))
+            (agents / "carrier.toml").write_text(own)
+            self.assertTrue(B.record_lineage(agents, today="2026-10-09"), name)
+            self.assertFalse(B.record_lineage(agents, today="2026-10-10"), name)
+            data = B.read_carrier(agents)
+            self.assertEqual(sum(e.startswith("0.0.31 r-0a0a0a ") for e in data["lineage"]), 1, name)
+            self.assertEqual(data["lineage"][0], "0.0.1 r-0a0a0a 2026-01-01" if name != "empty inline" else data["lineage"][0], name)
+            self.assertEqual(data["carrier"], "r-abcdef", name)
+
     def test_a_new_version_or_another_home_is_a_new_entry(self) -> None:
         agents = self.carrier()
         B.record_lineage(agents, today="2026-10-09")
