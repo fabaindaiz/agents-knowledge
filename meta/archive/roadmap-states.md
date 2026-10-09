@@ -6,6 +6,50 @@ The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 w
 reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
 
 **Done since 0.0.30's close:**
+- Phase 2 carried to nine carriers (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more by its owner, unmerged.
+- **The 0.0.31 intake** (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals; a pilot's four entered
+  as the home's own (`d-5ed7e8-67a443`); three of one carrier's held until `i-5ed7e8-74d789`.
+- **A guide to starting each process, and the `next` skill** (`meta/reviews/2026-10-08-guide-and-next.md`), designed
+  with the owner and tested first; the description cap raised by exactly `next`'s description (`d-5ed7e8-afb297`).
+- **Every carrier's root map** gains a line sending the user's decisions to principle 15 (`d-5ed7e8-8369d1`); it
+  reaches each carrier at its next update.
+- **The home's `.claude/` reviewed with the owner:** the method's skills installed (`d-5ed7e8-482d59`); privacy over
+  every tracked file through `bundle.py privacy --tracked`, used by the hook and CI (`d-5ed7e8-cb5a1f`); the reminder at
+  start and after compaction (`d-5ed7e8-6f0e89`); permissions that catch accidental edits only, from the next session
+  (`d-5ed7e8-2ca3ef`).
+- Three home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`, `p-7e912173fa`.
+
+**Next, in order:**
+1. **Execute `meta/reviews/2026-10-08-plan-0.0.31-tools.md`** subagent-driven: ten tasks, a branch each; the
+   tool items and `i-5ed7e8-c390fa`'s rest (`d-5ed7e8-b99290` to `d-5ed7e8-6e5d82`). About ten hours.
+2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
+3. At the release: the verdicts on the carrier's ten rows and the three new proposals.
+
+**Waiting on the owner:**
+- The twelve `unconfirmed:` reasons in `meta/decisions.md`.
+- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: one line in each
+  template's read-me).
+- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
+- Judges and time for the follow-up experiment.
+- The carriers' 0.0.30 branches; the hand-carried carrier's pull request; the credentials ticket; the `proposed` rows
+  in carriers' logs; each assistant's terms for automated runs.
+
+**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which now also copies the owner's four
+new user-level instruction lines. On this machine, a temporary copy of `next` sits at the user level: delete it once
+0.0.31 is installed.
+
+**What went wrong** (`bundle.py count`; each the first of its kind unless said):
+- A delegation named a scratch folder the researcher's hook refuses; citations stayed at abstracts (`i-5ed7e8-460736`).
+- `align` printed one line and checked nothing (`i-5ed7e8-e44264`).
+- **Second incident:** worktree isolation refused git on the main working copy, the owner's own `!` command included
+  (`i-5ed7e8-2d3b47`).
+- I declined a merge the owner authorized, citing a host default; `AGENTS.md` now says the owner's word suffices.
+- Fresh reviews caught wrong counts, a recoverable pilot description, and an `allow` that cannot override a `deny`.
+
+**State on 2026-10-08, close: `main` holds the 0.0.31 intake, the guide with `next`, and the home's `.claude/`
+reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
+
+**Done since 0.0.30's close:**
 - Phase 2 carried to nine carriers on new branches (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more carried
   by its owner, registered at 0.0.30 from its unmerged bundle branch.
 - **The 0.0.31 intake** (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals; a pilot's four entered

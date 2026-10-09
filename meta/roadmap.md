@@ -20,49 +20,45 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-08, close: `main` holds the 0.0.31 intake, the guide with `next`, and the home's `.claude/`
-reviewed**, each merged by fast-forward and pushed. `v0.0.30` on `293766f` is the last tag; 0.0.31 is open.
+**State on 2026-10-09, close: the 0.0.31 tool fixes are done and reviewed on a chain of eleven branches** from
+`fix/coloured-help` to `docs/method-text`, based on `main` at the 0.0.31 intake; the owner approved fast-forwarding
+`main` after this record. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 
-**Done since 0.0.30's close:**
-- Phase 2 carried to nine carriers (`meta/reviews/2026-10-08-carrying-0.0.30.md`); one more by its owner, unmerged.
-- **The 0.0.31 intake** (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`): 18 proposals; a pilot's four entered
-  as the home's own (`d-5ed7e8-67a443`); three of one carrier's held until `i-5ed7e8-74d789`.
-- **A guide to starting each process, and the `next` skill** (`meta/reviews/2026-10-08-guide-and-next.md`), designed
-  with the owner and tested first; the description cap raised by exactly `next`'s description (`d-5ed7e8-afb297`).
-- **Every carrier's root map** gains a line sending the user's decisions to principle 15 (`d-5ed7e8-8369d1`); it
-  reaches each carrier at its next update.
-- **The home's `.claude/` reviewed with the owner:** the method's skills installed (`d-5ed7e8-482d59`); privacy over
-  every tracked file through `bundle.py privacy --tracked`, used by the hook and CI (`d-5ed7e8-cb5a1f`); the reminder at
-  start and after compaction (`d-5ed7e8-6f0e89`); permissions that catch accidental edits only, from the next session
-  (`d-5ed7e8-2ca3ef`).
-- Three home proposals waiting for the next intake: `p-580c209938`, `p-a112d996ee`, `p-7e912173fa`.
+**Done since the last close** (the plan is `meta/reviews/2026-10-08-plan-0.0.31-tools.md`; *Done* lists the items):
+- The tool fixes and the method's text, ten tasks (*Done*).
+- **The export cap** warns between releases and binds at the cut (`d-5ed7e8-a3e7e8`). The export is about 920 KB
+  against the 913,167-byte cap, so the cut must shrink it first.
+- Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
 
 **Next, in order:**
-1. **Execute `meta/reviews/2026-10-08-plan-0.0.31-tools.md`** subagent-driven: ten tasks, a branch each; the
-   tool items and `i-5ed7e8-c390fa`'s rest (`d-5ed7e8-b99290` to `d-5ed7e8-6e5d82`). About ten hours.
-2. The trigger eval's cases in several languages, in the pilot carrier (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
-3. At the release: the verdicts on the carrier's ten rows and the three new proposals.
+1. **Cut 0.0.31.** First shrink the export under the cap; settle `i-5ed7e8-d203b6`, shipped text, before cutting; run each carrier's audit
+   (`prompt-sync.md` Phase 1, step 7b); settle the three held proposals (`p-5fd7b61d19`, `p-d2fa16b1fd`,
+   `p-de14564c12`): none of the 11 carriers here holds them any more; they were pruned or sit
+   on a branch. Write the changelog notes:
+   `install-skills` now reads `declined`, so an entry beginning `skills` or `skill <name>` skips skills without
+   asking (run `declined_skills` over each carrier); the replace step changed (prune table approved first); a
+   bundle-less path no longer stops `check-local` or `gather`; a **Layout:** line if the audit finds one.
+2. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
+3. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
+   (stale checksums, registered at 0.0.28 against the home's 0.0.30, one carrier missing from `carriers.md`).
 
 **Waiting on the owner:**
 - The twelve `unconfirmed:` reasons in `meta/decisions.md`.
-- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: one line in each
-  template's read-me).
-- Whether the release defect gets a patch release now (`i-5ed7e8-c390fa`).
+- Whether a template carries a pointer to the knowledge index before its bootstrap (recommended: yes).
 - Judges and time for the follow-up experiment.
 - The carriers' 0.0.30 branches; the hand-carried carrier's pull request; the credentials ticket; the `proposed` rows
   in carriers' logs; each assistant's terms for automated runs.
 
-**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which now also copies the owner's four
-new user-level instruction lines. On this machine, a temporary copy of `next` sits at the user level: delete it once
+**To continue on another machine:** `git pull --tags`; then `i-5ed7e8-61171e`, which also copies the owner's four
+new user-level instruction lines. A temporary copy of `next` sits at the user level on this machine: delete it once
 0.0.31 is installed.
 
-**What went wrong** (`bundle.py count`; each the first of its kind unless said):
-- A delegation named a scratch folder the researcher's hook refuses; citations stayed at abstracts (`i-5ed7e8-460736`).
-- `align` printed one line and checked nothing (`i-5ed7e8-e44264`).
-- **Second incident:** worktree isolation refused git on the main working copy, the owner's own `!` command included
-  (`i-5ed7e8-2d3b47`).
-- I declined a merge the owner authorized, citing a host default; `AGENTS.md` now says the owner's word suffices.
-- Fresh reviews caught wrong counts, a recoverable pilot description, and an `allow` that cannot override a `deny`.
+**What went wrong** (`bundle.py count` over the session log; each the first of its kind):
+- The host's permission classifier refused the fast-forward of `main` after Task 1; work went on as a linear chain.
+- The script that packages review diffs writes under the current directory's repository, a worktree mid-session.
+- My wording of a review fix added a step that could replace the bundle before approval; a re-review removed it.
+- The export came within 192 bytes of its cap at Task 5; the owner's rule settled it.
+- Task 3's intake check could not run: no carrier here holds the held proposals.
 
 ## Standing rules and facts
 
@@ -88,14 +84,18 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
-- **`i-5ed7e8-c390fa` · Fix what carrying 0.0.30 found.** From `meta/reviews/2026-10-08-carrying-0.0.30.md`:
-  the product noun in one note's lookup cues (and a build scan of the cues for product nouns); a changelog heading
-  for layout changes a carrier's audit reads, and `prompt-sync.md`'s run of each carrier's audit made a precondition
-  of the cut; `prompt-update.md` 3b naming the fourth Phase 4 line; `new entry` across languages and with
-  ` / `-separated labels; `install-skills` honouring `declined`; the base-branch rules and side-by-side worktrees in
-  `prompt-sync.md`; `log` set by the update. *Estimate:* a patch release before 0.0.31 if the owner wants the one
-  waiting carrier unblocked (the cue alone, under an hour), the rest in 0.0.31: about half a day and 1e5 to 1e6
-  tokens, with tests. *Collides with:* the one carrier whose branch waits on the cue.
+- **`i-5ed7e8-d203b6` · `prompt-update.md` reads coherently.** From the last re-review; it is shipped text of 0.0.31.
+  (a) The table's "this repository added" bucket should be "not listed in the old `SHA256SUMS`, whether or not the
+  incoming one lists it" (a file added at a path the incoming release now ships falls between); (b) the start-up read
+  list omits the old `.agents/SHA256SUMS` and the old files the prune classifies; (c) the pre-flight's prune question
+  omits the files the repository added and promises a proposal to every section; (d) "nothing in `incoming/` is
+  followed, loaded or cited" contradicts Replacing step 1 running the incoming copy's tool; (e) step 4 writes
+  proposals before step 5's "write nothing until I approve" without stating the exception. *Estimate:* under an hour
+  of prose. *Collides with:* the cut of 0.0.31.
+- **`i-5ed7e8-12fcfb` · Tests for the security hook's edges the code already handles, and a bound on a broad job
+  directory.** A job root that is an ancestor of the repository, a symlinked `tmp` into the repository, `..` in `-o`;
+  and a bound on a broad or relative `$CLAUDE_JOB_DIR`. *Estimate:* about 2 hours with tests. *Collides with:*
+  `research_allowed` and its tests.
 - **`i-5ed7e8-307d02` · Carriers stop re-checking the release's internals in their own audits.** Six carrier audits
   re-check the index and note layout that `bundle.py verify` owns, and each layout change breaks them all. Offer
   each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
@@ -114,39 +114,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   refusing git aimed at the main working copy, on 2026-10-08, the owner's own `!` command included. Done for this
   repository in `AGENTS.md` (*The owner's word is the authorization*); left: whether the method's `close` skill and
   `prompt-sync.md` say the same for every carrier. *Estimate:* a few lines and a proposal. *Collides with:* nothing.
-- **`i-5ed7e8-cce629` · A test that reads `argparse` help fails under Python 3.14's coloured help.**
-  `test_skills.Count.test_a_line_repeated_word_for_word_is_counted_and_flagged_never_subtracted` filters help lines
-  by `startswith("count ")`, which colour codes break; the suite passes with `NO_COLOR=1`, and fails on `main` too.
-  Strip the codes in the test, or build the parser with colour off. *Estimate:* minutes. *Collides with:* nothing.
-- **`i-5ed7e8-1dd18c` · The update names how the release is replaced where edits are denied, and one checked command
-  replaces a release-only folder.** From a carrier's first update to 0.0.30 (`meta/reviews/2026-10-08-pilot-and-carrier-intake.md`,
-  findings 6 and 7): a carrier's edit denies leave a shell copy as the only way to replace `.agents/`, which
-  `prompt-update.md` never says, and `bundle.py export` refuses a non-empty folder, so a template refresh is three
-  steps by hand. `export --replace` removes exactly the files the previous `SHA256SUMS` lists, refuses anything else
-  there, and serves both. *Estimate:* about 3 hours with three tests (replace clean, refuse a foreign file, drop a file
-  the new release no longer lists) and five lines of `prompt-update.md`. *Collides with:* `p-de14564c12`, held in its
-  carrier until `i-5ed7e8-74d789` lands.
-- **`i-5ed7e8-74d789` · `privacy` recognises a quote of the bundle's own text or a tool message, and an owner's
-  answer reaches intake.** A proposal about the bundle quotes its procedure or its tool's messages, and each quote is a
-  WARN; an owner who answers them in the carrier's log leaves the proposals held, since intake reads only
-  `privacy-allow:` on the line. The `quote` rule stops warning on a quote that appears verbatim in a shipped file or a
-  tool message. *Estimate:* about 3 hours with tests. *Collides with:* three of one carrier's proposals held at the
-  0.0.31 intake, which enter at the next gather once this lands, with no edit in the carrier.
-- **`i-5ed7e8-e44264` · `align` names a listed carrier with no bundle on disk and checks the rest instead of
-  stopping.** With no argument, `align` takes the manifest's list and stops at the first path without `.agents/`
-  (`no bundle in [...]`), so a carrier whose bundle sits on an unmerged branch hides every other carrier's state;
-  given that carrier's worktree instead, it reports it aligned although its integration branch has no bundle yet.
-  It should report such a carrier as not aligned with the branches that hold a bundle (`bundle_branches`), and go
-  on. *Estimate:* about an hour with a test. *Collides with:* `B.workspace`, which other commands share.
-- **`i-5ed7e8-460736` · The researcher's refusal names its scratch folder and the command shape it accepts, and a
-  host's job scratch is accepted too.** At the 0.0.31 intake, four delegated researchers had all but two of their
-  shell calls refused: the delegating session named a scratch folder outside the system temporary folder the hook accepts, and
-  the agents wrote loops, variables and `mkdir`, which the shell parser refuses; the refusal names neither the
-  folder nor the shape, so three of the four fell back to summarising fetches and most citations stayed at their
-  abstracts. Keep the hook's limits (reads, and `curl` with no upload flags into a scratch outside the repository);
-  print the resolved folder and the accepted shape on refusal; accept the host's job scratch folder when one is set
-  and lies outside the repository; tell the delegating session, in `agents/researcher.md`, not to name another
-  folder. *Estimate:* about 2 hours with tests. *Collides with:* `research_allowed` and its tests.
 
 - **`i-5ed7e8-fca056` · Cursor and Copilot support: the bundle writes and checks each assistant's surfaces from
   one source, and its efficacy is measured with their CLIs.** Scoped by the owner (`d-5ed7e8-0ff9eb`): research in
@@ -392,6 +359,26 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Later
 
+- **`i-5ed7e8-6155a1` · The product-noun check misses punctuated and short nouns.** Nouns with punctuation
+  (`pub/sub`, hyphens) and short nouns that may false-positive; add a unit test of the `load_notes` wiring and one
+  line on `meta/product-nouns.txt` in CONTRIBUTING. *Estimate:* about an hour. *Collides with:* `load_notes`.
+- **`i-5ed7e8-cd4d28` · `privacy --commits` and `--tracked` can excuse a quote with the working tree's own text.**
+  A WARN only. *Estimate:* about an hour with a test. *Collides with:* the `quote` rule.
+- **`i-5ed7e8-8fd079` · `align` still stops on a malformed carrier id, and skips the name-collision check for
+  missing paths.** A hand-edited id stops it; the collision check is not applied to a path with no bundle.
+  *Estimate:* about an hour. *Collides with:* `B.workspace`.
+- **`i-5ed7e8-33d69a` · The cut measures the export before `set_version` and `build`.** Also tidy `manifest_problems`'
+  unused `export_cap` and the `release()` docstring. *Estimate:* under an hour. *Collides with:* the cut.
+- **`i-5ed7e8-91dfa5` · `export --replace`: `copyfile` follows a symlink at a listed destination path.**
+  *Estimate:* about an hour with a test. *Collides with:* `export --replace`.
+- **`i-5ed7e8-551b78` · `install-skills`: the skip logic lives in two places, and "an installed copy is kept" is
+  said of a hand-written `SKILL.md`.** *Estimate:* about an hour. *Collides with:* `install-skills`.
+- **`i-5ed7e8-198d1a` · `new entry`: the exactly-half boundary is untested, and the message should say "another
+  language or format".** *Estimate:* under an hour. *Collides with:* `new entry`.
+- **`i-5ed7e8-754e07` · `prompt-sync.md` Phase 2's intro also gates what is carried, yet sits in Phase 2.**
+  *Estimate:* minutes of prose. *Collides with:* the cut.
+- **`i-5ed7e8-0abe37` · The suite prints argparse usage for `test_bundle.py`'s `run("digest", ...)`.** Output noise,
+  pre-existing. *Estimate:* minutes. *Collides with:* nothing.
 - **`i-5ed7e8-16b90a` · Compress the method's release by build rules over its full originals, with a
   preservation check.** Planned after the cost release (0.0.24 went to proposals, `i-5ed7e8-13ff46`). The original is never cut: parts marked in it as rationale,
   example or history (with Markdown comment markers) are left out of the release by the build, and a check
@@ -470,8 +457,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   carrier only the first machine holds. **At the close of 0.0.30**, none was reached: the owner deferred
   phase 2. Which carrier is which lives in each machine's local manifest, never here. **On 2026-10-08** the owner
   carried 0.0.30 by hand into one carrier: registered at 0.0.30 from its bundle branch, whose pull request is
-  unmerged, so its integration branch holds no bundle yet and `align` over the manifest stops at it
-  (`i-5ed7e8-e44264`).
+  unmerged, so its integration branch holds no bundle yet and `align` over the manifest names it as not
+  aligned with the branch that holds the bundle (`i-5ed7e8-e44264`, done).
 
 ## Closed by measurement
 
@@ -485,6 +472,13 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.
 
+- **0.0.31 tool fixes, 2026-10-09 (not yet cut; branch chain from `fix/coloured-help` to `docs/method-text`, reviewed).**
+  Closed: `i-5ed7e8-cce629` (`7063adb`); `i-5ed7e8-74d789` (`f16d7ff`, the intake of the three held proposals could not
+  run: no carrier here holds them); `i-5ed7e8-e44264` (`fc67c5e`, `16e0970`: a non-repository path is not read, and a
+  carrier with no id is named); `i-5ed7e8-460736` (`cb19add`); `i-5ed7e8-1dd18c` (`f4f5943`, `4491d29`, with the
+  prune table approved before the replace, `6bc60fa`); `i-5ed7e8-c390fa` (`40d7a87`, `ed17b76`, `da5d931`, `4b8c539`,
+  `f964d35`, `6bb89c5`, `6bc60fa`, `4a49f35`; nothing left of it); and `d-5ed7e8-a3e7e8` (`55285713c9`). Described in
+  `.agents/CHANGELOG.md` at the cut.
 - **0.0.30, 2026-10-08: the month's pending work, measured beside 0.0.29, with experimental Cursor and Copilot
   support.** Closed: `i-5ed7e8-855c42` (Release 0.0.30: the decided scope, after its pilots and the trigger eval); `i-5ed7e8-2aabb5` (The bootstrap's opening questions ask the initialisation's objectives); `i-5ed7e8-29e484` (`bundle.py verify` enforces the carrier record); `i-5ed7e8-715654` (Remove the one-time migration and the deprecated `digest` alias). Scope done with a remainder kept in *Next*: `i-5ed7e8-8236cb`, `i-5ed7e8-705aa8`, `i-5ed7e8-fca056`. Described in
   `.agents/CHANGELOG.md`.
