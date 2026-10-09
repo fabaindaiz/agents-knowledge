@@ -233,6 +233,24 @@ class Build(Base):
         self.assertEqual(B.verify_problems(self.agents), [])
         self.assertEqual(B.bundle_version(self.agents), "0.0.1")
 
+    def test_a_cue_naming_a_product_is_refused(self) -> None:
+        (self.home / "meta").mkdir(exist_ok=True)
+        (self.home / "meta/product-nouns.txt").write_text("# products\n\nAcmeDB\n")
+        nouns = self.R.product_nouns(self.home)
+        self.assertEqual(nouns, ["acmedb"])
+
+        def note(cues: list[str]):  # noqa: ANN202
+            meta = {"slug": "n", "topic": "t", "claim": "c", "confidence": "measured", "cues": cues}
+            return self.R.Note("n", "retired", meta, "", "sources/notes/retired/n.md")
+
+        problems = self.R._note_problems(note(["partial update", "acmedb update"]), nouns)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("sources/notes/retired/n.md", problems[0])
+        self.assertIn("acmedb update", problems[0])
+        self.assertIn("say the mechanism", problems[0])
+        self.assertEqual(self.R._note_problems(note(["partial update", "dotted path"]), nouns), [])
+        self.assertEqual(self.R.product_nouns(self.home / "nowhere"), [])
+
     def test_a_shipped_note_is_short_and_carries_its_card(self) -> None:
         text = (self.agents / "knowledge/notes/active/alpha.md").read_text()
         meta, body = B.read_frontmatter(text)

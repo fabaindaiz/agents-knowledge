@@ -12,7 +12,7 @@ about:
 rests_on: "Sagas (1987), write-ahead logging (ARIES, 1992)"
 strength: "well established"
 our_evidence: "occurrences in two repositories; no crash injected"
-cues: ["ack", "acknowledge message", "at-least-once", "two writes", "transaction", "commit then publish", "outbox", "crash between", "redelivery", "queue consumer", "dual write", "write order", "sqs", "kafka offset"]
+cues: ["ack", "acknowledge message", "at-least-once", "two writes", "transaction", "commit then publish", "outbox", "crash between", "redelivery", "queue consumer", "dual write", "write order", "message visibility timeout", "consumer offset commit"]
 ---
 
 # Order writes by what a failure leaves behind

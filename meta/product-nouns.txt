@@ -1,0 +1,32 @@
+# Product names that must not appear in a note's `cues`.
+# Cues route a reader by mechanism; a product name routes by one stack and points at a carrier's choices.
+# One public product per line, any case; blank lines and lines starting with # are ignored.
+# `release.py build` and `release.py check` refuse a cue holding one of these words.
+# Document and key-value stores
+firestore
+dynamodb
+mongodb
+couchdb
+redis
+cassandra
+# Relational stores
+postgresql
+mysql
+sqlite
+oracle
+# Clouds and managed services
+aws
+azure
+gcp
+firebase
+cloudflare
+# Queues and streams
+kafka
+rabbitmq
+sqs
+pubsub
+# Frameworks
+django
+rails
+spring
+react

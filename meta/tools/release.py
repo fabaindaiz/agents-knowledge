@@ -200,6 +200,7 @@ def load_notes(sources: Path, strict_cards: bool = True) -> list[Note]:
     renders the old tables, which had no card column).
     """
     notes, problems = [], []
+    nouns = product_nouns(sources.parent)
     for state in NOTE_STATES:
         for path in sorted((sources / "notes" / state).glob("*.md"), key=lambda p: p.name.encode()):
             where = path.relative_to(sources.parent).as_posix()
@@ -209,7 +210,7 @@ def load_notes(sources: Path, strict_cards: bool = True) -> list[Note]:
                 problems.append(str(error))
                 continue
             note = Note(path.stem, state, meta, body, where)
-            problems += [p for p in _note_problems(note) if strict_cards or "boundary" not in p]
+            problems += [p for p in _note_problems(note, nouns) if strict_cards or "boundary" not in p]
             notes.append(note)
     slugs = [n.slug for n in notes]
     problems += [f"note {s!r} is in more than one state folder" for s in sorted({s for s in slugs if slugs.count(s) > 1})]
@@ -231,8 +232,33 @@ def principles(notes: list[Note]) -> dict[str, list[Note]]:
     return out
 
 
-def _note_problems(note: Note) -> list[str]:
+def product_nouns(root: Path) -> list[str]:
+    """The lower-cased product names in `meta/product-nouns.txt`; none when the file is absent."""
+    path = root / "meta" / "product-nouns.txt"
+    if not path.is_file():
+        return []
+    lines = (line.strip().lower() for line in path.read_text(encoding="utf-8").splitlines())
+    return [line for line in lines if line and not line.startswith("#")]
+
+
+def _product_cues(cues: list, nouns: list[str]) -> list[tuple[str, str]]:
+    """[(cue, noun)] for every cue that holds a listed product name as a word (or a phrase)."""
+    found = []
+    for cue in cues:
+        folded = str(cue).casefold()
+        words = set(re.findall(r"[a-z0-9_]+", folded))
+        for noun in nouns:
+            if noun in words or (" " in noun and noun in folded):
+                found.append((str(cue), noun))
+    return found
+
+
+def _note_problems(note: Note, nouns: list[str] | None = None) -> list[str]:
     meta, problems = note.meta, []
+    nouns = product_nouns(ROOT) if nouns is None else nouns
+    cues = meta.get("cues")
+    problems += [f"{note.where}: cue {cue!r} names a product ({noun}); say the mechanism"
+                 for cue, noun in _product_cues(cues if isinstance(cues, list) else [], nouns)]
     missing = [k for k in REQUIRED if not str(meta.get(k) or "").strip()]
     if note.state == "retired":
         missing = [k for k in ("slug", "claim") if not meta.get(k)]
