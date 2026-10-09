@@ -128,7 +128,7 @@ which no release writes and `SHA256SUMS` does not list:
 | `log` | optional: its session log, relative to the repository, when it is not `.claude/logs/agent-changelog.md`; `new entry` and `count` read it |
 | `harvested_through` | the last date its harvest read; the next harvest starts there |
 | `adapted` | its renamings and substitutions, one line each |
-| `declined` | what it refused, each with a reason written for a stranger |
+| `declined` | what it refused, each with a reason written for a stranger; an entry beginning `skill <name>` or `skill:<name>` makes `install-skills` skip that skill, and `skills` alone all of them (an installed copy is kept and `--check` warns) |
 | `visibility` | `public` or `private`; when `public`, `verify` fails if git tracks the private folder |
 | `private_folder` | where its confidential records live, when not `.private` at the root (principle 20) |
 

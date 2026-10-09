@@ -3804,18 +3804,42 @@ def _installed(text: str) -> bool:
     return text.startswith("---\n# " + SKILL_BANNER)
 
 
+def declined_skills(tree: Path) -> set[str]:
+    """The skills a bundle's `carrier.toml` `declined` refuses: `{"*"}` for all, else the names.
+
+    An entry begins, case-folded, with `skill <name>` or `skill:<name>` (the name ends at whitespace, a colon or
+    the end), or with `skills` and then a space, a colon or the end. What follows is the reason and is ignored.
+    """
+    out: set[str] = set()
+    for entry in (read_carrier(tree) or {}).get("declined", []):
+        text = entry.strip().casefold()
+        if (m := re.match(r"skills(?:[\s:]|$)", text)):
+            out.add("*")
+        elif (m := re.match(r"skill(?:\s+|:\s*)([^\s:]+)", text)):
+            out.add(m.group(1))
+    return out
+
+
+def _is_declined(name: str, declined: set[str]) -> bool:
+    return "*" in declined or name.casefold() in declined
+
+
 def install_skills(repo: Path, tree: Path, names: list[str] | None = None, *, force: bool = False,
                    into: str = SKILLS_INTO) -> list[str]:
     """Writes each named base skill (all of them by default) merged with its `LOCAL.md`; returns the paths.
 
     A `SKILL.md` the repository wrote itself is refused unless `force`: its rules belong in `LOCAL.md` first.
+    A skill its `carrier.toml` declines is skipped, and one already installed is left where it is.
     """
+    declined = declined_skills(tree)
     bases = base_skills(tree)
     unknown = [n for n in names or [] if n not in bases]
     if unknown:
         raise RefusedError(f"no base skill named {', '.join(unknown)} in {tree / SKILLS} (it has: {', '.join(bases) or 'none'})")
     written = []
     for name in names or list(bases):
+        if _is_declined(name, declined):
+            continue
         target = repo / into / name / "SKILL.md"
         if target.is_file() and not _installed(target.read_text(encoding="utf-8")) and not force:
             raise RefusedError(f"{target}: a skill this repository wrote; move what it says into LOCAL.md beside it, "
@@ -3826,13 +3850,21 @@ def install_skills(repo: Path, tree: Path, names: list[str] | None = None, *, fo
     return written
 
 
+def declined_installed_skills(repo: Path, tree: Path, into: str = SKILLS_INTO) -> list[str]:
+    """Skills installed by `install-skills` though `carrier.toml` declines them; never removed, only reported."""
+    declined = declined_skills(tree)
+    return [p.parent.name for p in sorted((repo / into).glob("*/SKILL.md"))
+            if _is_declined(p.parent.name, declined) and _installed(p.read_text(encoding="utf-8"))]
+
+
 def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) -> list[str]:
     """Every installed skill that is not what its base and `LOCAL.md` produce now; the repository's own are skipped."""
     bases = base_skills(tree)
+    declined = declined_skills(tree)
     problems = []
     for path in sorted((repo / into).glob("*/SKILL.md")):
         text = path.read_text(encoding="utf-8")
-        if not _installed(text):
+        if not _installed(text) or _is_declined(path.parent.name, declined):
             continue
         rel, name = path.relative_to(repo).as_posix(), path.parent.name
         if name not in bases:
@@ -4846,8 +4878,16 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             problems = installed_skill_problems(repo, tree)
             for problem in problems:
                 print("  x " + problem)
+            for name in declined_installed_skills(repo, tree):
+                print(f"  ! {name}: installed though declined in carrier.toml; kept, remove it by hand or drop the entry")
             print("installed skills: " + (f"{len(problems)} problems" if problems else "current"))
             return 1 if problems else 0
+        declined = declined_skills(tree)
+        bases = base_skills(tree)
+        for name in args.names or list(bases):
+            if name in bases and _is_declined(name, declined):
+                kept = (repo / SKILLS_INTO / name / "SKILL.md").is_file()
+                print(f"  - {name}: declined in carrier.toml, skipped" + ("; an installed copy is kept" if kept else ""))
         for rel in install_skills(repo, tree, args.names or None, force=args.force):
             print(f"  + {rel}")
         return 0
