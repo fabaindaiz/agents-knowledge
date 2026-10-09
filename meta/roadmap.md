@@ -434,8 +434,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
-- **0.0.31 not carried yet** (owner, 2026-10-09: this home only). Every other carrier this machine lists is behind it
-  (`release.py align`: twelve, two with no bundle on disk); each takes it at a meta-session that names it.
+- **0.0.31 carried to three more carriers on 2026-10-09** (the owner named them; each on its 0.0.30 branch with `main` merged in, then fast-forwarded to `main` and pushed). One of them keeps a feature branch checked out, so `align` reads it behind until that branch takes `main`. The rest of this machine's carriers (nine, two with no bundle on disk) wait until the owner names them.
 - **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
   (then 0.0.30) to the carriers only that machine holds and to the three it shares with this one, whose newer work is
   unpushed there; bring the cost profile script into `evals/`; leave and document the published attribution lines in
