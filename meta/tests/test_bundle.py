@@ -2619,10 +2619,11 @@ class Usage(Base):
         self.u("set", "level", "counts")
         said = "\n".join(self.u("set", "level", "none"))
         self.assertIn("nothing is stored", said)
-        self.assertIn("`usage forget`", said)
         self.u("set", "level", "counts")
         self.u("add", "frictions", "session=a")
-        self.assertIn("existing data is kept", "\n".join(self.u("set", "level", "none")))
+        said = "\n".join(self.u("set", "level", "none"))
+        self.assertIn("existing data is kept", said)
+        self.assertIn("`usage forget`", said)
 
     def test_tok_fields_pass_this_machines_private_terms(self) -> None:
         self.u("set", "level", "counts")

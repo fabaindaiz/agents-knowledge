@@ -4724,7 +4724,7 @@ def usage_set(args, today, repo=None):
     _usage_write(usage_consent_path(), "\n".join(lines))
     held = bool(repo) and any(_usage_file(repo, c).is_file() for c in USAGE_CATEGORIES)
     said = ("nothing more is stored; existing data is kept, and `usage forget` erases it" if held
-            else "nothing more is stored, and nothing is stored now; `usage forget` erases what is stored later")
+            else "nothing is stored")
     return [*usage_states(usage_consent()), *([said] if key == "level" and level == "none" and repo else [])]
 
 
