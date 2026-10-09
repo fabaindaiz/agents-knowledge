@@ -96,7 +96,9 @@ A carrier writes only what it owns: `.agents/carrier.toml` and its proposals, on
 
 ## The tool
 
-`meta/tools/release.py` is the home's half (Python 3.11+, standard library only); it loads the carrier tool, `.agents/tools/bundle.py`, so every rule both need exists once. Its tests: `python3 -m unittest discover -s meta/tests -t .`. **A command that writes is given the repositories; it never works them out** (`prompt-context.md` §*Workspaces: several repositories at once*). A read-only command may fall back to the manifest, and says so.
+`meta/tools/release.py` is the home's half (Python 3.11+, standard library only); it loads the carrier tool, `.agents/tools/bundle.py`, so every rule both need exists once. Its tests: `python3 -m unittest discover -s meta/tests -t .`.
+
+**Worktrees.** A change to the tools or the method is made in a worktree, and the worktrees sit side by side in one folder, each named after its repository (a path inside a repository is never a worktree's home). Run the commands in the main checkout's environment. Never use `git stash` to move work between worktrees: commit on the worktree's branch instead. The owner's branch rule (work on a branch; merge and push only when asked) is said in the changelog entry of the release that introduces the practice. **A command that writes is given the repositories; it never works them out** (`prompt-context.md` §*Workspaces: several repositories at once*). A read-only command may fall back to the manifest, and says so.
 
 | Step | Command | Writes |
 |---|---|---|
@@ -146,7 +148,7 @@ In the home, never in a carrier.
 
 **First, when the release changes wording an agent follows or a path a carrier references, review each carrier in execution**: one read-only agent per carrier reads that carrier's own definitions of work (its task tracker, plans, review, commits, logs, gate, audit) beside what the release makes an agent do there, and classifies every meeting point as a conflict in execution, a broken reference, an unstated precedence, or wording only. The tool tests and each carrier's `verify` prove the files; only this reading proves the carrier still works as it defines itself. A conflict found is fixed in the bundle before the release is carried, or named for that carrier's own commit. (The queued `dry-run-a-procedure-by-an-agent-before-release` is the same reading applied to the procedure itself.)
 
-**Then run each carrier's own audit over the new release in a scratch copy**: a carrier's audit that reads a file the release generates by its layout breaks when the layout changes while `bundle.py verify` stays green, and only running it finds that.
+**Then run each carrier's own audit over the new release in a scratch copy, before the cut**: running them is a precondition of cutting, not a step after it. A carrier's audit that reads a file the release generates by its layout breaks when the layout changes while `bundle.py verify` stays green, and only running it finds that. A layout change those audits read is stated in the changelog as a **Layout:** line under *Changed*, naming what moved, so a carrier's owner can find the audit to adapt.
 
 For each carrier, and **with that carrier as today's repository** (`prompt-context.md` §*Workspaces*):
 

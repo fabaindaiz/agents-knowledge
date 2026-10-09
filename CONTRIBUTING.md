@@ -86,4 +86,5 @@ A change under `sources/` changes the bundle, so it reaches carriers only in a
 release. **Releases are cut by a meta-session** (`meta/method/prompt-sync.md`): the version, the dated
 `CHANGELOG.md` section and the tag. A pull request leaves the version alone and adds its entry under
 `## [Unreleased]` in `sources/bundle/CHANGELOG.md`. Nothing in `.agents/` is edited by hand: every file
-there says it is generated.
+there says it is generated. A change to the layout of generated files, which a carrier's own audit may
+read, is stated as a **Layout:** line under *Changed* in that entry, naming what moved.

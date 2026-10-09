@@ -116,8 +116,9 @@ in `prompt-context.md` §*The pre-flight*.
 *The agent will print something like this, and then wait:*
 
 ~~~text
-Before I update the bundle here, four things. Reply **`defaults`** to take the
-last three as proposed; the first one I need from you.
+Before I update the bundle here, four things (five when a fifth line follows).
+Reply **`defaults`** to take all but the first as proposed; the first one I
+need from you.
 
 1. **Where is the newer copy?** I read it from `.agents/incoming/release/`; if it
    is elsewhere, give me the path and I export it there first (`bundle.py export`). Nothing live is
@@ -130,6 +131,9 @@ last three as proposed; the first one I need from you.
    it reconsidered.
 4. **The gate.** After applying, I run this repository's gate if it has one and
    it writes nothing.
+5. **The log** (only when `carrier.toml` has no `log` and the log is not at the
+   default path): I read the log at `<path>` (from `adapted` or the root map) and
+   will set `log` to it. Say if it is elsewhere.
 
 Not asking, because `carrier.toml` and the repository answer them: which
 version we are on, what this repository already adapted, and where each
@@ -190,11 +194,12 @@ repository's own artifacts, which do not take the practice up.
 
 ## Replacing the bundle
 
-1. **Run `python3 .agents/incoming/release/tools/bundle.py export --replace .agents`**. It is a Python write, so a carrier whose edit permissions deny hand
-   edits can run it. It checks first and writes after: every file under `.agents/` must be listed in the old
-   `SHA256SUMS` or be the carrier's own, else it refuses and removes nothing. Then it removes the old release's
-   files the new one lacks, writes the new ones and `SHA256SUMS` (including `incoming/README.md`), and keeps the
-   carrier's own. A carrier whose shell is also denied stops here and asks me to run it.
+1. **Run `python3 .agents/incoming/release/tools/bundle.py export --replace .agents`**. It is a Python
+   write, so a carrier whose edit permissions deny hand edits can run it. It checks first and writes after:
+   every file under `.agents/` must be listed in the old `SHA256SUMS` or be the carrier's own, else it refuses
+   and removes nothing. Then it writes the new release's files and `SHA256SUMS` (including
+   `incoming/README.md`), removes the old release's files the new one lacks, and keeps the carrier's own. A
+   carrier whose shell is also denied stops here and asks me to run it.
 2. **Fix what it refused, never by deleting around it:** a file it names is a foreign file; move it out or ask.
 3. **Never touch what the carrier owns:** `carrier.toml`, the proposals in
    `proposals/` (every file but its `README.md` and `RECEIVED.md`), the contents
@@ -211,9 +216,7 @@ repository's own artifacts, which do not take the practice up.
 
    **3b. Refresh the agents**: copy every file of `.agents/agents/` into the assistant's agent folder
    again (Claude Code: `.claude/agents/`), the reviewer and, since 0.0.30, the researcher; and make the root file's
-   knowledge line, its privacy line, its line that this repository's procedures win and, since 0.0.31, its line on
-   asking the user's decisions the ones
-   `prompt-bootstrap.md` Phase 4 words, in this repository's own words. The installed copy is never edited:
+   lines the ones `prompt-bootstrap.md` Phase 4 names, in this repository's own words. The installed copy is never edited:
    every release regenerates it; adapt it through the root file, and record the adaptation in
    `adapted`. **Where `carrier.toml` lists `surfaces`** (Cursor, Copilot; experimental), run `bundle.py surfaces
    --write` after the copy. The first time, it refuses a file written by hand at a copy's path, and lists the
