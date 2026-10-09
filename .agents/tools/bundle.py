@@ -4116,13 +4116,22 @@ def _field_key(label: str) -> str:
     return re.sub(r"[^\w ]", "", label).strip().casefold()
 
 
-def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str]]:
-    """The entry format to write with, and the labels of the fields the method's adds to the log's own.
+def _field_keys(label: str) -> set[str]:
+    """The keys a label answers to: `A / B` is the alternatives `A` and `B`."""
+    return {key for part in re.split(r"\s*/\s*", label) if (key := _field_key(part))}
+
+
+def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str], list[str]]:
+    """The entry format to write with, the labels of the fields the method's adds to the log's own, and those it lacks.
 
     The log's own format wins, but it was copied from some release, and a newer release may have added a
     field to the method's (`prompt-context.md`, its changelog artifact): taking the log's alone kept every
     such field away from a carrier, silently. So each field of the method's that the log's lacks is
     appended, its description marked as coming from the method, and named in the second value.
+
+    A label written `A / B` answers to either. A log whose labels match fewer than half of the method's fields
+    is in another language, or follows another method: appending the method's would put English fields beside
+    its own words, so none is appended and the third value names the ones it lacks.
     """
     own = entry_template_text(log.read_text(encoding="utf-8")) if log.is_file() else None
     method = section(tree / "method/prompt-context.md", CHANGELOG_ARTIFACT)
@@ -4130,19 +4139,25 @@ def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str]]:
     if not own:
         if not template:
             raise RefusedError(f"{log}: states no entry format, and the method's changelog template was not found")
-        return template, []
+        return template, [], []
     if not template:
-        return own, []
-    have = {_field_key(m.group(1)) for line in own.split("\n") if (m := ENTRY_FIELD.match(line))}
+        return own, [], []
+    have: set[str] = set()
+    for line in own.split("\n"):
+        if m := ENTRY_FIELD.match(line):
+            have |= _field_keys(m.group(1))
     added: list[tuple[str, str]] = []
     for line in template.split("\n"):
         if m := ENTRY_FIELD.match(line):
             added.append((m.group(1), m.group(2).strip()))
         elif added and line.strip() and not line.startswith("#"):
             added[-1] = (added[-1][0], (added[-1][1] + " " + line.strip()).strip())
-    added = [(label, text) for label, text in added if _field_key(label) not in have]
+    missing = [(label, text) for label, text in added if not _field_keys(label) & have]
+    if len(added) - len(missing) < len(added) / 2:
+        return own, [], [label for label, _ in missing]
+    added = missing
     lines = [f"**{label}** {FROM_METHOD} {text}".rstrip() for label, text in added]
-    return own.rstrip("\n") + "\n" + "".join(line + "\n" for line in lines), [label for label, _ in added]
+    return own.rstrip("\n") + "\n" + "".join(line + "\n" for line in lines), [label for label, _ in added], []
 
 
 def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
@@ -4895,7 +4910,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         repo = Path(args.repo)
         log = Path(args.log) if args.log else carrier_log(repo)
         title = " ".join(args.parts)
-        template, added = entry_format(log, Path(args.bundle))
+        template, added, lacking = entry_format(log, Path(args.bundle))
         entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template,
                           level=entry_level(log.read_text(encoding="utf-8")) if log.is_file() else 2)
         if not args.write:
@@ -4906,6 +4921,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         if added:
             print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
                   "add them to the log's format, or say there why it omits them")
+        if lacking:
+            print(f"  . this log's format shares fewer than half of the method's fields, so it is read as another language's; "
+                  f"the method's entry format has fields it lacks, not appended: {' '.join(f'**{label}**' for label in lacking)}; "
+                  "add the ones you want, in the log's own words")
         return 0
     if args.command == "lookup":
         tree = Path(args.bundle)

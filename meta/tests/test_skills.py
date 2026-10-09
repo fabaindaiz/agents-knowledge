@@ -397,6 +397,47 @@ class NewEntry(Base):
         self.assertEqual(len(said), 1, out)
         self.assertIn("**Not verified.** **Learned**;", said[0])
 
+    def test_slash_separated_labels_are_alternatives(self) -> None:
+        repo, agents = a_carrier(self.root)
+        (agents / "method/prompt-context.md").write_text(
+            "# Context\n\n### " + B.CHANGELOG_ARTIFACT + "\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
+            "**What.** What changed.\n**Why.** The reason.\n**Not verified.** What could not be checked.\n```\n")
+        log = repo / "log.md"
+        log.write_text(LOG.replace("**Why.** The reason, including the request\nthat prompted it.",
+                                   "**Why.** The reason.\n**Unchecked / Not verified.** What was not checked."))
+
+        result = B.entry_format(log, agents)
+        template, added = result[0], result[1]
+
+        self.assertEqual(added, [])
+        self.assertEqual(template.count("Not verified"), 1, template)
+
+    def test_a_log_in_another_language_gets_no_english_fields(self) -> None:
+        repo, agents = a_carrier(self.root)
+        (agents / "method/prompt-context.md").write_text(
+            "# Context\n\n### " + B.CHANGELOG_ARTIFACT + "\n\n```markdown\n## YYYY-MM-DD · s-x — <t>\n"
+            "**What.** What changed.\n**Why.** The reason.\n**Not verified.** What could not be checked.\n"
+            "**Learned.** General and local.\n```\n")
+        log = repo / "log.md"
+        log.write_text("# Bitácora\n\n---\n\n## 2026-01-02 · s-abcdef-111111 — Otra sesión\n\n**Qué.** Algo.\n\n---\n\n"
+                       "## Formato de entrada\n\n```\n## AAAA-MM-DD · s-<repo6>-<contenido6> — <título>\n"
+                       "**Qué.** Qué cambió.\n**Por qué.** La razón.\n**Cómo.** El método.\n"
+                       "**Aprendido.** Lo general.\n**Pendiente.** Lo que falta.\n```\n")
+
+        code, out = run("new", "entry", "T", "--log", str(log), "--repo", str(repo), "--bundle", str(agents))
+
+        self.assertEqual(code, 0, out)
+        fields = [line for line in out.split("\n") if line.startswith("**")]
+        for english in ("**What", "**Why", "**Not verified", "**Learned"):
+            self.assertFalse([line for line in fields if line.startswith(english)], out)
+        for own in ("**Qué.**", "**Por qué.**", "**Cómo.**", "**Aprendido.**", "**Pendiente.**"):
+            self.assertIn(own, out)
+        said = [line for line in out.split("\n") if "lacks" in line and "<!--" not in line]
+        self.assertEqual(len(said), 1, out)
+        for name in ("**What.**", "**Why.**", "**Not verified.**", "**Learned.**"):
+            self.assertIn(name, said[0])
+        self.assertNotIn("from the method's entry format, which this log's lacks:", out)
+
     def test_the_entry_is_inserted_above_the_newest_one(self) -> None:
         entry = B.new_entry("A new session", "r-abcdef", "2026-01-03", B.entry_template_text(LOG))
 
