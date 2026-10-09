@@ -58,8 +58,6 @@ from __future__ import annotations
 
 import sys
 
-# Before any import that needs 3.11 (`tomllib`): an older interpreter gets one line, not a traceback. Written
-# in syntax that 3.9 still parses, so the refusal is reached at all.
 if sys.version_info < (3, 11):
     sys.exit(f"bundle.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
              "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
@@ -95,15 +93,8 @@ HERE = Path(__file__).resolve().parent
 OWN_BUNDLE = HERE.parent
 OWN_REPO = OWN_BUNDLE.parent
 
-# Where this machine lists its carriers. Paths are per machine and never belong in the bundle: the
-# bundle names a carrier only by its stored random id, in the home repository's carriers table.
 MANIFEST = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "agent-guides/carriers.toml"
 
-# How a session says which repositories it has open. A machine carries more of this bundle than any
-# session works on: the workspace is **all** the repositories open in this session and **only** those,
-# because a carrier nobody is looking at must not receive a release, and an open one must not be left
-# behind on an older version. Declared by argument, or by `AGENT_WORKSPACE` (paths separated as this
-# platform separates them); the manifest is the fallback and says so.
 WORKSPACE_ENV = "AGENT_WORKSPACE"
 
 
@@ -131,7 +122,6 @@ class RefusedError(RuntimeError):
     """
 
 
-# --- documents -------------------------------------------------------------------------------------
 
 
 def _hidden(rel: str) -> bool:
@@ -165,9 +155,6 @@ def _markdown(tree: Path) -> list[str]:
     return [rel for rel in shipped(tree) if rel.endswith(".md")]
 
 
-# The note lifecycle: the folder a note sits in is its state. A carrier holds `active` and `review`;
-# `retired` stays in the home repository, which is what keeps a withdrawn note from costing a carrier
-# anything.
 NOTE_STATES = ("active", "review", "retired")
 NOTES = "knowledge/notes"
 
@@ -182,10 +169,6 @@ def _a_bundle(tree: Path) -> Path:
 def _rels(tree: Path, pattern: str) -> list[str]:
     return [p.relative_to(tree).as_posix() for p in tree.glob(pattern) if p.is_file() and not _hidden(p.relative_to(tree).as_posix())]
 
-# --- links -----------------------------------------------------------------------------------------
-# A link is `](target)`, optionally `](<target> "title")`. Only relative ones are the bundle's to keep
-# true: a scheme (`https:`, `mailto:`), an absolute path and a bare `#anchor` are skipped. Fenced
-# blocks and inline code are examples, not pointers, and are skipped too.
 
 LINK = re.compile(r"\]\(\s*<?([^()\s<>]+)>?(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
 INLINE_CODE = re.compile(r"(`+).+?\1")
@@ -209,7 +192,7 @@ def _prose(lines: list[str]) -> list[bool]:
     return out
 
 
-def _each_link(text: str, visit) -> tuple[str, int]:  # noqa: ANN001 -- visit: (target) -> str | None
+def _each_link(text: str, visit) -> tuple[str, int]:
     """Calls `visit` on every link target in prose; a string it returns replaces that target.
 
     Returns:
@@ -294,7 +277,6 @@ def reachability_problems(tree: Path) -> list[str]:
     """
     indexes = [rel for rel in ("knowledge/INDEX.md",) if (tree / rel).exists()] + sorted(_rels(tree, "knowledge/areas/*.md"))
     linked = {resolved for index in indexes for _, resolved in _links(tree, index)}
-    # Since 0.0.30 a note is reached through its card: the index links the card, the card links the note.
     linked |= {resolved for card in sorted(linked) if card.startswith("knowledge/cards/") and (tree / card).is_file()
                for _, resolved in _links(tree, card)}
     problems = [
@@ -303,67 +285,35 @@ def reachability_problems(tree: Path) -> list[str]:
         for rel in sorted(_rels(tree, f"{NOTES}/{state}/**/*.md"), key=str.encode)
         if rel not in linked
     ]
-    # A card is one lookup from the index, or it is not the entry point it is meant to be (0.0.23).
     from_index = {resolved for _, resolved in _links(tree, "knowledge/INDEX.md")} if (tree / "knowledge/INDEX.md").exists() else set()
     problems += [f"{rel}: a card that knowledge/INDEX.md does not link to"
                  for rel in sorted(_rels(tree, "knowledge/cards/*.md"), key=str.encode) if rel not in from_index]
     return problems
 
-# --- privacy ---------------------------------------------------------------------------------------
-# Nothing in the bundle may let a reader identify, directly or by putting details together, a private
-# repository, its owner, organisation, customers, users or infrastructure, or any person who uses or
-# iterates the bundle: it travels through public carriers. Until 2026-09-24 that was a sentence in the
-# method, and a review that day found the bundle full of what it forbids -- figures, exact constants,
-# quoted code, field names, time zones, and carrier ids that could be reversed -- each one written by a
-# session that had the sentence in front of it. A rule that is only remembered is not kept.
-#
-# The rules are generic and need no private word to run: they are the shapes a leak takes. What only
-# this machine knows -- the names of its private repositories, owners, customers -- lives in a local
-# terms file that never travels (`default_terms_path`), and every term in it is a failure too.
-#
-# A FAIL is a leak. A WARN is advisory: a large exact count or a long quote is sometimes the evidence
-# itself, and only a reader tells a fingerprint from a round number. `privacy-allow: <reason>` on a line
-# (in markdown, inside an HTML comment) waives that line, only on the user's explicit instruction, and
-# every waiver is printed on every run, so none is silent.
 
-# Where the evidence of a note is written. What a carrier's own code said is quoted and named there,
-# so there, and in all of `tracking/`, code names and long quotes are read as what they usually are.
 EVIDENCE_HEADINGS = ("where it came from", "evidence")
-# Where published work is cited. A version, a count or a title quoted from a paper names the paper, not
-# a carrier, so these sections and `references.md` are exempt from the quote, count and version rules.
 LITERATURE_HEADINGS = ("literature",)
 LITERATURE_FILES = ("references.md",)
 
-# Mail domains the IETF reserves for examples and tests: an address there reaches nobody.
 EXAMPLE_MAIL_DOMAINS = ("example.com", "example.org", "example.net", "example", "test", "invalid", "localhost")
 EMAIL = re.compile(r"(?<![\w.%+-])([A-Za-z0-9._%+-]+)@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})(?![\w-])")
 
-# The forges whose paths are `owner/repo`. A path on one names somebody, and the owner is the part a
-# reader follows to the rest of their work.
 FORGE_HOSTS = ("github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "gitea.com", "git.sr.ht",
                "gist.github.com", "raw.githubusercontent.com")
 FORGE = re.compile(
     r"(?<![\w.-])(?:[a-z+]+://)?(?:[\w.-]+@)?(" + "|".join(map(re.escape, FORGE_HOSTS)) + r")(?::\d+)?[/:]~?([\w.-]+)(?:/([\w.-]+))?",
     re.IGNORECASE)
-# Owners that are placeholders in examples (`owner/repo`), and first path segments of a forge that are
-# its own pages rather than an account.
 FORGE_PLACEHOLDER_OWNERS = frozenset({"owner", "user", "you", "your-org", "your-name", "your-user", "org", "example", "me", "someone", "name"})
 FORGE_PAGES = frozenset({"about", "features", "pricing", "marketplace", "topics", "settings", "login", "apps", "enterprise",
                          "security", "site", "explore", "collections", "readme", "en", "docs", "solutions", "resources", "trending"})
-# Public projects the bundle cites as literature, as `owner/repo`, lowercase. A citation names a project
-# the world already knows; any other forge path names somebody. None is cited on a forge today.
 PUBLISHED_PROJECTS: frozenset[str] = frozenset()
 
-# A home folder carries its owner's login name. Placeholders written in examples are not anybody's.
 HOME_PATH = re.compile(r"(?<![\w/.~-])(?:/Us(?:ers)/|/ho(?:me)/|[A-Za-z]:\\Us(?:ers)\\)([^\s/\\`'\"<>)\]]+)|(?<=/)-Users-([A-Za-z0-9._]+)-")
 HOME_PLACEHOLDERS = frozenset({"you", "user", "username", "me", "name", "example", "runner", "shared", "someone", "$user", "${user}", "<you>"})
 
-# An id somebody chose, `[A-Z]{2,}-\d{2,}`, is a tracker's key: it names the project it was chosen in.
 CHOSEN_ID = re.compile(r"(?<![\w-])([A-Z]{2,})-(\d{2,})(?![\w-])")
-# Prefixes of the same shape that name a published standard, report or primitive, never a project.
 CITATION_ID_PREFIXES = frozenset({"RFC", "CVE", "CWE", "ISO", "IEC", "IEEE", "ECMA", "ES", "PEP", "UTF", "UCS", "SHA", "AES", "RSA",
                                   "CRC", "HMAC", "ECDSA", "FIPS", "NIST", "SP", "ANSI", "HTTP", "TLS", "WCAG", "COVID"})
-# Whole citation ids of that shape, for a report number that holds a prefix-and-number pair inside it.
 CITATION_IDS = frozenset({"ESD-TR-73-51"})
 
 CURRENCY_CODES = "USD|EUR|GBP|JPY|CNY|CHF|CAD|AUD|NZD|MXN|BRL|ARS|CLP|COP|PEN|UYU|INR|KRW|SGD|HKD|SEK|NOK|DKK|PLN|ZAR"
@@ -372,18 +322,14 @@ CURRENCY = re.compile(
     rf"(?<![\w$\\{{])(?:US|CA|AU|NZ|HK|MX|R)?[$€£¥₹₩]\s?(?:{_AMOUNT})(?:\s?(?:k|K|M|MM|bn|million|thousand|billion)\b)?"
     rf"|\b(?:{CURRENCY_CODES})\s?\$?\s?(?:{_AMOUNT})"
     rf"|(?<![\w.])(?:{_AMOUNT})\s?(?:{CURRENCY_CODES}|(?i:dollars?|euros?|pesos?|yen))\b")
-# `$1` is a shell's first argument far more often than a price, so a symbol before one lone digit is
-# not read as an amount. A price that small fingerprints nothing.
 SHELL_ARGUMENT = re.compile(r"^\$\d$")
 
-# An offset or a zone name places a person on the map.
 TIMEZONE = re.compile(
     r"\b(?:UTC|GMT)\s?[+\-−–]\s?\d{1,2}(?::?\d{2})?\b"
     r"|\b\d\d:\d\d(?::\d\d(?:\.\d+)?)?[+\-−]\d\d:?\d\d\b"
     r"|\bEtc/GMT[+-]\d+"
     r"|\b(?:Africa|America|Antarctica|Asia|Atlantic|Australia|Europe|Indian|Pacific)/[A-Z][A-Za-z_]+(?:/[A-Z][A-Za-z_]+)?")
 
-# A pinned library version is the dependency list of one codebase, which a search engine matches.
 _VERSION = r"v?\d+(?:\.\d+)+(?:[-+.]?(?:a|b|rc|f|p|post|dev)\d+)*"
 VERSION_PIN = re.compile(
     rf"[\w.\[\]-]+\s?(?:===?|~=|>=|<=|!=|~>)\s?{_VERSION}"
@@ -392,10 +338,7 @@ VERSION_PIN = re.compile(
     r"|\b[A-Za-z][\w+.-]*\s+v?\d+\.\d+\.\d+(?:[-+][\w.]+)?(?![.\d])"
     r"|\b\d{4}\.\d+\.\d+[abfp]\d+\b")
 
-# A carrier or record id next to what the carrier does ties the id to a kind of business. The list is
-# broad on purpose: a list of only the domains this bundle's own carriers work in would name them.
 CARRIER_OR_RECORD_ID = re.compile(r"(?<![\w-])(?:r-([0-9a-f]{6})|[dis]-([0-9a-f]{6})-[0-9a-f]{3,6})(?![\w-])")
-# The hex of ids written as examples (`r-abcdef`, `d-abcdef-123456`): obviously nobody's.
 EXAMPLE_ID_HEX = frozenset({"abcdef", "aaaaaa", "bbbbbb", "cccccc", "000000", "fedcba"})
 DOMAIN_NOUNS = (
     "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "credit-card", "debit-card", "card number", "cardholder", "prepaid card",
@@ -407,15 +350,12 @@ DOMAIN_NOUNS = (
     "restaurant", "booking", "hotel", "flight", "dating", "social network")
 DOMAIN_NOUN = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in DOMAIN_NOUNS) + r")(?:e?s)?\b", re.IGNORECASE)
 
-# Names in code: `camelCase`, `PascalCase` with two humps or more, `snake_case`, `SCREAMING_CASE`.
 CODE_NAME_FORMS = (
     re.compile(r"^_*[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*$"),
     re.compile(r"^[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+$"),
     re.compile(r"^_*[a-z0-9]+(?:_[a-z0-9]+)+_*$"),
     re.compile(r"^_*[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+_*$"),
 )
-# Keys and names that vendors publish: an API's parameters, a CI's variables, a product's spelling.
-# Naming one says which tool was used, which thousands of repositories share, not which repository.
 VENDOR_KEYS = frozenset({
     "max_tokens", "stop_reason", "stop_sequences", "tool_use", "tool_result", "tool_choice", "cache_control", "input_schema",
     "pull_request", "workflow_dispatch", "GITHUB_TOKEN", "GITHUB_OUTPUT", "GITHUB_ENV", "XDG_CONFIG_HOME", "LC_ALL",
@@ -424,23 +364,16 @@ VENDOR_KEYS = frozenset({
     "BigQuery", "PyPI", "YouTube", "LaTeX", "NumPy", "SciPy", "PyTorch", "TensorFlow", "FastAPI", "OpenAI", "DeepMind",
     "WebAssembly", "GraphQL", "DynamoDB", "CloudFormation", "PyInstaller", "OAuth",
 })
-# The bundle's own vocabulary, which every carrier already holds: header fields, the report's keys, the
-# workspace variable. The tool's own names and Python's are added in `_public_names`.
 BUNDLE_NAMES = frozenset({"forked_at", "retired_because", "superseded_by", "tokens_estimate", "context_share", "base_rule",
                           "base_from", "AGENT_WORKSPACE", "CLAUDE_md", "AGENTS_md"})
 
 QUOTE = re.compile(r"\"([^\"\n]+)\"|“([^”\n]+)”")
 BLOCKQUOTE = re.compile(r"^\s*>\s+(.*\S)")
-# A large number, with or without thousands separators; years, dates, ids and decimals are not read.
 LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
 N_OF_M = re.compile(r"\b\d+\s+(?:of|out of)\s+(?:the\s+)?\d+\b")
-# A number that names a standard ("RFC 7396", "RFC 7396 / 6902") is not a count.
 STANDARD_NUMBER = re.compile(r"\b(?:RFC|ISO|IEC|IEEE|PEP)[\s-]*(?:\d+\s*/\s*)*$")
-# The waiver. Assembled, so that this file's own source does not read as a waiver of this line.
 PRIVACY_ALLOW = re.compile("privacy-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
-# A waiver written as documentation (`<reason>`) is an example of the syntax, not a waiver.
 PLACEHOLDER_REASON = re.compile(r"^<[^>]*>$")
-# What makes a fenced block an example rather than a record: a placeholder a reader has to replace.
 PLACEHOLDER = re.compile(r"<[A-Za-z][\w .-]*>|\bexample\.(?:com|org|net)\b|\b(?:owner|OWNER)/(?:repo|REPO)\b|\b(?:YOUR|your)[-_]")
 
 
@@ -476,7 +409,7 @@ def _emails(text: str) -> list[str]:
         if any(domain == d or domain.endswith("." + d) for d in EXAMPLE_MAIL_DOMAINS):
             continue
         if m.group(1) == "git" and domain in FORGE_HOSTS:
-            continue  # the ssh user of a public forge; the forge rule judges the path after it
+            continue
         found.append(m.group(0))
     return found
 
@@ -509,8 +442,6 @@ def _offsets(text: str) -> list[str]:
     return [m.group(0) for m in TIMEZONE.finditer(text)]
 
 
-# Versions that name no codebase: this bundle's own (0.0.x while the format settles), and the published
-# standards it follows, which every reader can look up.
 OWN_VERSION = re.compile(r"(?:^|[\s\"])v?0\.0\.\d+\"?$")
 NAMED_STANDARDS = re.compile(r"(?i)(?:semantic versioning|semver|keep a changelog|changelog|versioning)\s+v?\d+\.\d+\.\d+$")
 
@@ -540,11 +471,11 @@ def _large_counts(text: str) -> list[str]:
     for m in LARGE_NUMBER.finditer(text):
         digits = re.sub(r"\D", "", m.group(1))
         if len(m.group(1)) == 4 and 1900 <= int(digits) <= 2100:
-            continue  # a year
+            continue
         if len(digits.rstrip("0")) < 2:
-            continue  # one significant figure: an order of magnitude, which is what the rule asks for
+            continue
         if STANDARD_NUMBER.search(text[:m.start(1)]):
-            continue  # a standard's number
+            continue
         found.append(m.group(1))
     return found
 
@@ -554,7 +485,6 @@ def _n_of_m(text: str) -> list[str]:
 
 
 def _quotes(text: str) -> list[str]:
-    # A proposal header's value that YAML needs quoted (`lacks: "refused: <reason>"`) is a value, not a quote.
     field_value = re.match(r"(?:" + "|".join(PROPOSAL_KEYS) + r'): (?=")', text)
     quoted = [q for m in QUOTE.finditer(text) if len((q := m.group(1) or m.group(2)).split()) >= 5
               and not (field_value and m.start() == field_value.end())]
@@ -581,11 +511,8 @@ class PrivacyRule:
     placeholder_exempt: bool = False
 
 
-# Every file of a carrier's private folder starts with this line. Found as a line of its own anywhere that
-# travels, it is a private file pasted out whole, whatever the rest of it holds and whatever no terms list
-# names; written inside a sentence, as the method describes it, it is not.
 PRIVATE_SENTINEL = "confidential: never leaves this repository"
-PRIVATE_FOLDER = ".private"  # at the root: never under `docs/`, which a site generator publishes
+PRIVATE_FOLDER = ".private"
 
 
 def _sentinels(text: str) -> list[str]:
@@ -645,8 +572,8 @@ class PrivacyReport:
     files: int
     terms: str
     skipped: str = ""
-    partial: bool = False  # no private-terms list on this machine: the generic rules ran, the private names did not
-    commits: int | None = None  # with `--commits`: how many commits; `files` is then their messages and changed files
+    partial: bool = False
+    commits: int | None = None
 
     @property
     def failures(self) -> list[Finding]:
@@ -693,7 +620,7 @@ def _evidence_file(rel: str) -> bool:
     return rel.startswith(("tracking/", "meta/tracking/")) or (rel.startswith(f"{PROPOSALS}/") and is_carrier_owned(rel))
 
 
-def _never_travels(rel: str) -> bool:  # noqa: D103
+def _never_travels(rel: str) -> bool:
     """An evaluation report or material offered in `incoming/`: this repository's own, never published by
     the bundle, so not what the privacy check guards (an evaluation report names its repository)."""
     parts = rel.split("/")
@@ -759,7 +686,7 @@ def _privacy_lines(path: Path, rel: str, shown: str) -> list[PrivacyLine]:
         shows = bool(PLACEHOLDER.search("\n".join(lines[i:j])))
         placeholder[i:j] = [shows] * (j - i)
         i = j
-    out, stack = [], []  # stack: (level, heading text, lowercased)
+    out, stack = [], []
     for n, line in enumerate(lines):
         m = HEADING.match(line) if prose[n] and n >= skip else None
         if m:
@@ -828,11 +755,7 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
         raise RefusedError(f"--terms {terms_file}: no such file")
     source = terms_file or default_terms_path()
     terms = read_terms(source) if source.is_file() else []
-    # Printed with `~` for the home folder: this line is pasted into sessions, and a home path is one
-    # of the things this check exists to catch.
     shown = str(source).replace(str(Path.home()), "~", 1)
-    # How many terms and which list, by a short hash of the normalised list: two machines, or two runs, that
-    # print the same hash checked the same names, and the names themselves are never printed.
     normalised = sorted({term.casefold() for term in terms})
     fingerprint = hashlib.sha256("\n".join(normalised).encode("utf-8")).hexdigest()[:8]
     partial = not source.is_file()
@@ -887,9 +810,9 @@ def commit_targets(repo: Path, rev_range: str, scratch: Path) -> tuple[list[Targ
             targets.append(Target(message, message.name, f"{short} message", None, repo))
             for rel, lines in _commit_files(repo, sha):
                 if not lines or rel.startswith(private):
-                    continue  # nothing added, or the carrier's private folder, whose files are private by design
+                    continue
                 if git(repo, "cat-file", "-t", f"{sha}:{rel}").strip() != "blob":
-                    continue  # a submodule's pointer: the commit it names is that repository's to check
+                    continue
                 content = git(repo, "cat-file", "blob", f"{sha}:{rel}", binary=True)
                 if b"\0" in content:
                     continue
@@ -947,12 +870,12 @@ def hunk_added(patch: str) -> set[int]:
         if m := HUNK.match(line):
             width, at = len(m.group(1)) - 1, int(m.group(2))
             continue
-        if not width or line.startswith("\\"):  # "\ No newline at end of file"
+        if not width or line.startswith("\\"):
             continue
         prefix = line[:width]
         if len(prefix) < width or set(prefix) - set(" +-"):
             width = 0
-        elif "-" not in prefix:  # a line the result holds
+        elif "-" not in prefix:
             if set(prefix) == {"+"}:
                 added.add(at)
             at += 1
@@ -967,13 +890,9 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
     skipped: set[int] = set()
     for target in targets:
         path, rel, shown = target.path, target.rel, target.shown
-        # A private repository's name is a leak anywhere but inside that repository: there it is the
-        # repository's own name. Its proposals still leave it (the home takes them in), so they keep
-        # every term, and so does the home, whose files are what it publishes.
         home = target.home or (path.parent if path.is_file() else path)
         own = set() if rel.startswith(f"{PROPOSALS}/") else _own_names(home)
         exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
-        # A shipped file of this bundle is part of `own_text`, so it would excuse its own quotes: it keeps the warning.
         text_of_bundle = "" if path.resolve().is_relative_to(OWN_BUNDLE.resolve()) and not is_carrier_owned(rel) else own_text
         for line in _privacy_lines(path, rel, shown):
             if target.lines is not None and line.number not in target.lines:
@@ -986,8 +905,6 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
                     continue
                 found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)
                           if not (name == "quote" and quotes_bundle(hit, text_of_bundle))]
-            # The term itself is not printed: this output is pasted into sessions and changelogs, and
-            # the one thing it must not carry is the word it caught.
             hits = term_hits(line.text, terms)
             skipped.update(i for i in hits if i in exempt)
             found += [Finding("FAIL", "private-term", where, f"term on line {i} of the terms file")
@@ -997,7 +914,7 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
                            if not any(a <= m.start() < b for a, b in code)), None)
             reason = marker.group(1).strip() if marker else ""
             if marker and PLACEHOLDER_REASON.match(reason):
-                marker = None  # the syntax, written as an example of itself
+                marker = None
             if marker and not reason:
                 found.append(Finding("FAIL", "allow-without-reason", where, "a waiver must say why, and who asked"))
             elif marker:
@@ -1032,15 +949,6 @@ def _own_names(folder: Path) -> frozenset[str]:
     return frozenset(n.casefold() for n in names if n)
 
 
-# --- sessions and their size ------------------------------------------------------------------------
-# What each type of session loads is declared once, in the method: every invocation carries a `Reads:`
-# list, one line per file, `- <bundle-relative path>` followed by ` §<heading>` for each section it
-# needs (none: the whole file). A heading means only that section, from its line to the next heading
-# of the same or a higher level. The tool reads those lists rather than keeping a copy of them: a table
-# here would be a second source of truth, and the first draft of this command was exactly that, marked
-# provisional until somebody reconciled it by hand. `SESSION_SOURCES` only says where each list is:
-# the file, and which `Reads:` list in it counting from 0, because the bootstrap document carries two
-# (the bootstrap itself, and the working invocation it installs for every coding session).
 SESSION_SOURCES: dict[str, tuple[str, int]] = {
     "coding": ("method/prompt-bootstrap.md", 1),
     "consult": ("README.md", 0),
@@ -1048,7 +956,6 @@ SESSION_SOURCES: dict[str, tuple[str, int]] = {
     "bootstrap": ("method/prompt-bootstrap.md", 0),
     "update": ("method/prompt-update.md", 0),
     "harvest": ("method/prompt-harvest.md", 0),
-    # The reviewer subagent of the phased session: what it loads before it opens any card.
     "review": ("agents/knowledge-reviewer.md", 0),
 }
 Sessions = "dict[str, list[tuple[str, str | None]]]"
@@ -1077,7 +984,6 @@ def sessions_of(tree: Path) -> tuple[dict[str, list[tuple[str, str | None]]], li
         path = tree / rel
         found = reads_lists(path.read_text(encoding="utf-8")) if path.is_file() else []
         if index < len(found):
-            # A subagent's definition is its prompt: loaded whole, before anything its list names.
             sessions[name] = ([(rel, None)] if rel.startswith("agents/") else []) + found[index]
         else:
             missing.append(f"session {name!r}: {rel} has no `Reads:` list number {index}")
@@ -1189,9 +1095,6 @@ def report(tree: Path, sessions: dict[str, list[tuple[str, str | None]]] | None 
         }
     return {
         "tree": str(tree),
-        # Measured on 2026-10-05 from usage deltas on one machine: bundle text runs at about 2.9 characters
-        # per token, so this estimate is about 1.4 times low. Every budget is set in this same unit, so
-        # relative comparisons and the budgets stand; only the absolute figure is low.
         "tokens": "estimate: ceil(characters / 4), about 1.4× low for bundle text",
         "context_window": CONTEXT_WINDOW,
         "total": total,
@@ -1220,16 +1123,8 @@ def report_markdown(data: dict) -> str:
         lines.append(f"| {name}{flag} | {len(s['parts'])} | {s['bytes']} | {s['tokens_estimate']} | {s['context_share']:.1%} |")
     return "\n".join(lines) + "\n"
 
-# --- ids -------------------------------------------------------------------------------------------
 
 
-# A carrier's id is random, minted once, and stored in the carrier's own file, `.agents/carrier.toml`,
-# which no release writes, so every release keeps it.
-#
-# Until 2026-09-24 it was derived from the repository's remote, on the claim that a hash names the
-# repository without naming it. It did not: a hash of an input somebody can guess is reversed by
-# guessing, and one carrier was reversed from its owner's public repositories in a few dozen guesses.
-# Six random hex say nothing about the repository; what ties them to it is only that it stores them.
 CARRIER_FIELD = "carrier"
 CARRIER_ID = re.compile(r"^r-[0-9a-f]{6}$")
 
@@ -1289,7 +1184,6 @@ def mint_carrier_id(repo: Path, today: str | None = None, upstream: str | None =
     if present is not None:
         raise RefusedError(f"{repo}: already stores {present}; an id is minted once and never replaced")
     tree = repo / ".agents"
-    # The release names its home; an empty `upstream` is what marks the home itself (2026-10-07).
     try:
         home = read_frontmatter((tree / "README.md").read_text(encoding="utf-8"))[0].get("home") if (tree / "README.md").is_file() else None
     except FrontmatterError:
@@ -1318,9 +1212,6 @@ def carrier_ids(repos: list[Path]) -> dict[Path, str]:
     return ids
 
 
-# Records that parallel sessions write in one carrier: a decision, a roadmap item, a session entry.
-# A counter (`D-017`) is what two sessions pick at once, and what one carrier's log shares with the
-# next carrier's; an id derived from the carrier and the text is neither.
 RECORD_KINDS = {"d": "decision", "i": "roadmap item", "s": "session entry"}
 
 
@@ -1338,17 +1229,8 @@ def record_id(kind: str, text: str, carrier: str) -> str:
     return f"{kind}-{carrier.removeprefix('r-')}-{hashlib.sha256(content.encode()).hexdigest()[:6]}"
 
 
-# How a record id is found in a document, and what counts as writing one down rather than citing it.
-# A record is defined once, where it is written: a row whose first cell is the id (`| d-... |`), or a
-# heading that carries it after a `·` (`## 2026-01-01 · s-... — title`). Anywhere else the id is a
-# citation, and a citation may repeat. Fenced blocks are examples and are not read.
 RECORD_ID = re.compile(r"\b[dis]-[0-9a-f]{6}-[0-9a-f]{6}\b")
-# The first scheme ended in a sequence number (`d-abcdef-017`). Ids written under it stay valid as
-# written and are never rewritten, so they are recognised, not reported as malformed.
 LEGACY_RECORD_ID = re.compile(r"\b[dis]-[0-9a-f]{6}-\d{3}\b")
-# What looks like an attempt at one: the kind letter, two parts, a digit somewhere. `d-abcdef-12345`
-# (a digit dropped) and `D-ABCDEF-123456` (a case changed) are ids somebody meant, and a check that
-# only reads well-formed ids never sees the ones that went wrong.
 RECORD_ID_ATTEMPT = re.compile(r"(?<![\w-])[disDIS]-([0-9A-Za-z]{2,12})-([0-9A-Za-z]{2,12})(?![\w-])")
 RECORD_DEFINITION = re.compile(r"^\s*\|\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\s*\||^#{1,6}\s.*·\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\b")
 
@@ -1390,7 +1272,7 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
             definition = RECORD_DEFINITION.match(line)
             name = definition and (definition.group(1) or definition.group(2))
             if name and name not in well_formed:
-                name = None  # a malformed id in a definition slot, reported above
+                name = None
             for index, occurrence in enumerate(found_here):
                 found = occurrence.group(0)
                 counts["ids"] += 1
@@ -1409,14 +1291,6 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
     return errors, warnings, counts
 
 
-# --- the decisions log ------------------------------------------------------------------------------
-# Artifact 6 is a table a tool reads: `| Id | Status | Decision | Why | Enforced in |`. The Status cell is
-# `<state> <date> · <decider>`, in fixed English keywords whatever language the log is written in, read by
-# column position so a log keeps its own headings. The decider is a person's stable alias (`h1`), an agent's
-# session (`agent s-...`) or `found` (read from the code); blank, on a migrated row, it counts as a person.
-# Only a person accepts: an agent that would change a person's decision writes a `proposed` row. The table
-# under *Looks deliberate, is not* is known debt, with columns of its own. Fenced blocks are examples.
-# Ids of the first schemes (`D-001`, `d-abcdef-017`) stay valid as written, so they are rows too.
 _DECISION_ID = r"(?:d-[0-9a-f]{6}-[0-9a-f]{3,6}|D-\d{3,4})"
 DECISION_STATUS = re.compile(
     rf"^(?P<state>proposed|accepted|declined|deprecated|superseded by (?P<by>{_DECISION_ID}))"
@@ -1428,7 +1302,6 @@ DEBT_HEADING = "looks deliberate, is not"
 DECISION_COLUMNS = ("Id", "Status", "Decision", "Why", "Enforced in")
 TABLE_SEPARATOR = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
 _PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\w\.(?:py|pyi|md|mdc|json|jsonc|ya?ml|toml|ini|cfg|sh|bash|js|mjs|cjs|ts|tsx|jsx|rs|go|java|kt|swift|rb|php|cs|c|h|cc|cpp|hpp|sql|html|css|txt|lock|gradle|xml|ps1|bat))$")
-# A dotted name with no such extension (`permissions.deny`, `Stores.start`) is a key or a symbol, not a file.
 
 
 def table_cells(line: str) -> list[str]:
@@ -1672,7 +1545,7 @@ def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[s
             continue
         candidates.append((table, rows))
     headers = Counter(tuple(c.lower() for c in rows[0][1]) for _, rows in candidates)
-    own = headers.most_common(1)[0][0] if headers else None  # the commonest header; a tie goes to the first one
+    own = headers.most_common(1)[0][0] if headers else None
     for table, rows in candidates:
         if tuple(c.lower() for c in rows[0][1]) != own:
             left.append(f"line {table[0][0]}: | {' | '.join(rows[0][1])} | ({len(rows) - 2} rows)")
@@ -1692,11 +1565,6 @@ def migrate_decisions(path: Path, today: datetime.date | None = None) -> tuple[s
             lines[number - 1] = "| " + " | ".join(c.replace("|", "\\|") if "`" not in c else c for c in cells) + " |"
     return "\n".join(lines), migrated, left
 
-# --- formats: frontmatter, carrier file, checksums, versions -----------------------------------------
-# Every format here is an industry one, read by a documented subset so the tool stays standard library
-# only: YAML frontmatter, TOML (`tomllib` reads it; a small writer writes the one file the tool owns),
-# the `SHA256SUMS` file of GNU coreutils (`sha256sum -c` / `shasum -a 256 -c` verify it without this
-# tool), Semantic Versioning 2.0.0 and Keep a Changelog 1.1.0.
 
 
 class FrontmatterError(ValueError):
@@ -1704,10 +1572,8 @@ class FrontmatterError(ValueError):
 
 
 FRONT_KEY = re.compile(r"^([A-Za-z_][\w-]*):(?: +|$)")
-# A plain (unquoted) scalar is kept only when every YAML parser reads it as this same string: no `: ` or
-# trailing `:`, no tab or control character, no line separator, and not a word or number YAML types.
 PLAIN_REFUSED = re.compile(r":\s|:$|[\t\x00-\x08\x0b-\x1f\x7f\x85\u2028\u2029]| #")
-PLAIN_TYPED = re.compile(  # PyYAML's implicit resolvers (bool, int, float, null, timestamp, merge, value), and y/n
+PLAIN_TYPED = re.compile(
     r"(?i)y|n|yes|no|on|off|true|false|null|~|<<|="
     r"|[-+]?0b[0-1_]+|[-+]?0[0-7_]+|[-+]?(?:0|[1-9][0-9_]*)|[-+]?0x[0-9a-f_]+|[-+]?[1-9][0-9_]*(?::[0-5]?[0-9])+"
     r"|[-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:e[-+][0-9]+)?|\.[0-9_]+(?:e[-+][0-9]+)?|[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*"
@@ -1765,7 +1631,6 @@ class _Scanner:
                     raise self.fail(f"unknown escape \\{code}")
                 continue
             if ch == "\n":
-                # A line break inside a quoted scalar folds: to a space, or to one newline per empty line.
                 while out and out[-1] in " \t":
                     out.pop()
                 breaks = 0
@@ -1788,8 +1653,6 @@ class _Scanner:
         value = self.text[start : self.at].strip(" ")
         if value in ("", "~", "null"):
             return None
-        # A plain decimal integer and true or false read alike in every YAML parser: a subagent's maxTurns and
-        # omitClaudeMd need them (0.0.30). Everything else that YAML would type stays refused.
         if re.fullmatch(r"(?:0|[1-9][0-9]*)", value):
             return int(value)
         if value in ("true", "false"):
@@ -1924,8 +1787,6 @@ def _yaml_str(value: str) -> str:
         elif ch == "\t":
             out.append("\\t")
         elif ord(ch) < 0x20 or 0x7F <= ord(ch) <= 0x9F or ch in "\u2028\u2029" or unicodedata.category(ch) in ("Cf", "Cs"):
-            # Control characters, the C1 range (NEL among them), line separators and format characters are
-            # escaped: YAML refuses some raw and folds others, so they would not read back as written.
             out.append(f"\\u{ord(ch):04x}" if ord(ch) <= 0xFFFF else f"\\U{ord(ch):08x}")
         else:
             out.append(ch)
@@ -1971,11 +1832,8 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
     return "\n".join(lines + ["---"]) + "\n"
 
 
-# The carrier file: the one file of `.agents/` that belongs to the carrier and not to the bundle. It is
-# never listed in `SHA256SUMS`, a release never writes it, and it holds everything that used to be the
-# "repository's own fields" of several headers. TOML, read by `tomllib`.
 CARRIER_FILE = "carrier.toml"
-CARRIER_TABLES = ("skills",)  # a role of the skill catalogue to the name installed here (method/skills/README.md)
+CARRIER_TABLES = ("skills",)
 CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "adapted", "declined",
                "visibility", "private_folder")
 VISIBILITIES = ("public", "private")
@@ -2011,7 +1869,7 @@ def dump_carrier(data: dict) -> str:
             lines.append(f"{key} = []" if not value else f"{key} = [\n" + "".join(f"  {_toml_str(v)},\n" for v in value) + "]")
         else:
             raise RefusedError(f"{CARRIER_FILE}: `{key}` must be a string or a list of strings")
-    for key, table in tables.items():  # TOML tables come after every top-level key
+    for key, table in tables.items():
         if not all(isinstance(k, str) and isinstance(v, str) for k, v in table.items()):
             raise RefusedError(f"{CARRIER_FILE}: `[{key}]` maps names to strings")
         lines += ["", f"[{key}]", *[f"{k} = {_toml_str(v)}" for k, v in table.items()]]
@@ -2038,9 +1896,6 @@ def write_carrier(tree: Path, data: dict) -> None:
     (tree / CARRIER_FILE).write_text(dump_carrier(data), encoding="utf-8")
 
 
-# What belongs to the carrier and not to the bundle: its carrier file, its proposals, whatever is offered
-# in `incoming/`, and evaluation reports. None of it is in `SHA256SUMS`, and a release neither writes it
-# nor removes it. The two READMEs and the list of proposals received are the release's.
 CHECKSUMS = "SHA256SUMS"
 PROPOSALS = "proposals"
 RECEIVED = "proposals/RECEIVED.md"
@@ -2053,7 +1908,6 @@ EXPERIMENT_VERDICTS = ("confirms", "moves the boundary", "falsifies")
 PROPOSAL_KEYS = ("proposal", "bundle", "carrier", "base", "digest", "kind", "action", "target", "lacks", "verdict",
                  "where", "seen")
 RECEIVED_HEADER = "| Proposal | Received at | Verdict |"
-# The outbox of 0.0.22 and 0.0.23: two tables, one row per learning. Read only to convert it into proposals.
 OUTBOX = ("tracking/candidates.md", "tracking/experiments.md")
 OUTBOX_COLUMNS = {
     "tracking/candidates.md": "| Candidate | Kind | Lacks | Evidence | First seen |",
@@ -2107,13 +1961,6 @@ def read_table(path: Path, header: str, prefix: bool = False) -> list[list[str]]
     return []
 
 
-# --- proposals -------------------------------------------------------------------------------------
-# One file per learning, `proposals/p-<hex10>.md`, written by the carrier's harvest with `propose` and
-# never edited after: the pattern of news fragments (towncrier) and changesets. Its header says where it
-# comes from and what it was written against, as `git format-patch --base` does for a patch: the carrier,
-# the release it held (`base`) and that release's `SHA256SUMS` digest. Only the home integrates it; the
-# release lists what the home received (`proposals/RECEIVED.md`), and the carrier removes those itself
-# (`proposals --prune`). Nothing the home runs deletes a carrier's proposal.
 
 
 @dataclass
@@ -2315,10 +2162,9 @@ def prune_proposals(tree: Path) -> list[tuple[str, str]]:
     return gone
 
 
-UNKNOWN_DATE = "unknown"  # only a row converted from an old outbox that gave no date; `propose` always writes one
+UNKNOWN_DATE = "unknown"
 CANDIDATE_CELL = re.compile(r"^(?:(extends|overlaps)\s+)?([a-z0-9][\w.-]*)\s*(?:—|--|-|:)\s+(.*)$", re.DOTALL | re.IGNORECASE)
 TABLE_SEPARATOR = re.compile(r"^\|[\s:|-]+\|?$")
-# The two tables' text as every release that had them wrote it; anything else in the files is the carrier's.
 OUTBOX_INTRO = {
     "tracking/candidates.md": (
         "# Candidates this repository offers\n\n"
@@ -2370,14 +2216,10 @@ def row_proposal(rel: str, row: list[str], carrier: str, base: str = "", digest:
                      lacks=lacks or "not given in the row")
         if mapped is None:
             _note(p, f"Kind: {kind or 'not given'}")
-    # A date cell with more than a date ("2026-01-01 or earlier") keeps its first date, and what it said goes
-    # into the evidence, word for word; a cell with no date at all is `unknown`, never the day of the
-    # conversion: a gather and a conversion made on different days must give the row one id.
     date = re.search(r"\d{4}-\d{2}-\d{2}", p.seen)
     if not date or p.seen.strip() != date.group(0):
         _note(p, f"{'Date' if p.kind == 'experiment' else 'First seen'}: {p.seen.strip() or 'not given'}")
         p.seen = date.group(0) if date else UNKNOWN_DATE
-    # A claim line that reads as a heading would split the body where the evidence begins: it is escaped.
     p.claim = re.sub(r"(?m)^(\s*)#", r"\1\\#", p.claim)
     p.carrier, p.base, p.digest = carrier, base, digest
     p.id = proposal_id(p)
@@ -2460,7 +2302,7 @@ def convert_outbox(tree: Path, rows: list[tuple[str, list[str]]] | None = None, 
     return written
 
 
-PACK_LIMIT = 2**18  # bytes per proposal: far above a paragraph and its evidence, far below anything else
+PACK_LIMIT = 2**18
 
 
 def pack_proposals(tree: Path, out: Path) -> list[str]:
@@ -2489,7 +2331,7 @@ def read_pack(path: Path) -> dict[str, str]:
                 raise RefusedError(f"{path}: {name} is in it twice; a pack holds each proposal once")
             if member.size > PACK_LIMIT:
                 raise RefusedError(f"{path}: {member.name} is larger than a proposal can be")
-            data = archive.extractfile(member).read()  # type: ignore[union-attr]
+            data = archive.extractfile(member).read()
             try:
                 out[name] = data.decode("utf-8")
             except UnicodeDecodeError as error:
@@ -2662,18 +2504,13 @@ def invisible_characters(tree: Path, rels: list[str]) -> list[str]:
     return found
 
 
-# What may never arrive through `incoming/`: configuration a coding assistant or git would execute in
-# the receiving repository, and scripts. The bundle's own tool is the one script a release carries.
 INCOMING_REFUSED_NAMES = re.compile(
     r"(?i)(^|/)(settings[^/]*\.json|hooks|\.claude|\.git[^/]*|\.githooks|\.github|\.vscode|\.idea|\.cursor|\.mcp\.json|"
     r"\.envrc|\.env|makefile|gnumakefile|justfile|package\.json|\.pre-commit-config\.yaml|\.windsurfrules|"
     r"claude\.md|agents\.md|gemini\.md|\.cursorrules|copilot-instructions\.md)(/|$)")
 INCOMING_SCRIPT = re.compile(r"(?i)\.(sh|bash|zsh|fish|py|pyc|pyw|pyz|js|jsx|mjs|cjs|ts|tsx|go|rs|rb|pl|php|ps1|psm1|bat|cmd|com|command|"
                              r"exe|dll|so|dylib|jar|app|vbs|scpt|applescript)$")
-# The one script a release carries, at its place in the release: `tools/bundle.py`, or under one folder
-# the release was exported into.
 INCOMING_TOOL = re.compile(r"^(?:[^/]+/)?tools/bundle\.py$")
-# Characters that render as nothing and are not format characters (Cf): fillers and a grapheme joiner.
 INVISIBLE_OTHER = frozenset("\u034f\u115f\u1160\u3164\uffa0\u2800\u180e")
 
 
@@ -2733,15 +2570,15 @@ class Scope:
     """
 
     repos: list[Path]
-    source: str  # "argument", "environment" or "manifest"
-    missing: tuple[Path, ...] = ()  # listed, but with no bundle on disk: named by a read, refused by a write
+    source: str
+    missing: tuple[Path, ...] = ()
 
     @property
     def declared(self) -> bool:
         """Whether this session said what it works on, rather than inheriting every carrier."""
         return self.source != "manifest"
 
-    def __iter__(self):  # noqa: ANN204 -- an iterator of Path; the annotation needs typing.Iterator
+    def __iter__(self):
         return iter(self.repos)
 
     def __len__(self) -> int:
@@ -2783,8 +2620,6 @@ def workspace(args: list[str], manifest: Path | None = MANIFEST, *, writing: boo
     if missing and (writing or not repos):
         raise NotACarrierError(f"no bundle in {[str(m) for m in missing]}")
     if not repos:
-        # A manifest with `carriers = []` gave an empty scope, and every command then failed on its
-        # first carrier: `repos[0]` in gather, `next(iter(...))` in align.
         raise RefusedError(f"the scope is empty (from the {source}): name the carriers this session has open")
     return Scope(repos, source, missing)
 
@@ -2814,7 +2649,6 @@ def _scope_report(scope: Scope, verb: str) -> list[str]:
     return [*unread, *[f"  . outside this workspace, not {verb}: {name}" for name in outside(scope)]]
 
 
-# --- verify ----------------------------------------------------------------------------------------
 
 
 def private_folder(repo: Path, carrier: dict | None = None) -> str:
@@ -2888,12 +2722,12 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
         problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
                      if k in carrier and not isinstance(carrier[k], list)]
-        if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():  # a home writes releases from there
+        if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():
             problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
                             "the repository this one takes releases from (the release names it as `home` in README.md)")
         problems += installed_catalogue_problems(tree.parent, carrier.get("skills"))
         problems += carrier_surface_problems(tree.parent, carrier.get("surfaces"))
-        if (tree.parent / DOCS_MAP).is_file():  # the map and its documents' references (docs-drift --map, --refs)
+        if (tree.parent / DOCS_MAP).is_file():
             problems += docs_map_problems(tree.parent) + docs_ref_problems(tree.parent)
         problems += private_folder_problems(tree.parent, carrier)
     return problems + incoming_problems(tree) + installed_skill_problems(tree.parent, tree)
@@ -2929,16 +2763,8 @@ def check_local_all(repos: list[Path]) -> list[tuple[str, list[str]]]:
     return [(repo.name, problems) for repo in repos if (problems := check_local(repo))]
 
 
-# --- commit messages ---------------------------------------------------------------------------------
 
-# Who an attribution line names when it credits an assistant rather than a person. A person's trailer
-# passes: the rule this enforces is that the user is the sole author, and a tool adds these lines by default.
 ASSISTANT_NAME = r"\b(?:claude|anthropic|copilot|chatgpt|openai|gpt|codex|gemini|cursor|devin|aider|windsurf|codeium|tabnine|codewhisperer)\b"
-# - any `Key-by: value` trailer at a line's start whose value names one (Co-authored-by, Assisted-by,
-#   Generated-by, Co-developed-by, ...): a `-by:` key at a line's start is never prose;
-# - a "Generated with" line naming one anywhere after it (the tools' default footer);
-# - a "Generated by" line only when the name follows at once: "Generated by release.py; refreshes the gpt
-#   notes" is a sentence about a file, not a credit.
 ATTRIBUTION = (re.compile(r"^\s*[A-Za-z][\w-]*-by:.*" + ASSISTANT_NAME, re.IGNORECASE),
                re.compile(r"^\W*generated with\b.*" + ASSISTANT_NAME, re.IGNORECASE),
                re.compile(r"^\W*generated by:?\s+[\[\"'`@]?" + ASSISTANT_NAME, re.IGNORECASE))
@@ -2947,7 +2773,7 @@ ATTRIBUTION = (re.compile(r"^\s*[A-Za-z][\w-]*-by:.*" + ASSISTANT_NAME, re.IGNOR
 def attribution_lines(message: str) -> list[str]:
     """The lines of a commit or tag message that credit an assistant (`ATTRIBUTION`), stripped."""
     return [line.strip() for line in message.split("\n") if any(rule.search(line) for rule in ATTRIBUTION)]
-TRAILER_DEFAULT = 20  # commits read when the repository has no remote at all
+TRAILER_DEFAULT = 20
 
 
 def trailer_problems(repo: Path, rev_range: str | None = None) -> tuple[list[str], str, int]:
@@ -2994,23 +2820,7 @@ def published_on(repo: Path, sha: str) -> list[str]:
     return [ref for ref in refs if not ref.endswith("/HEAD")]
 
 
-# --- the user's own assistant settings ---------------------------------------------------------------
 
-# What is assumed about the host (Claude Code), read from its settings and permissions documentation:
-# - User settings (`~/.claude/settings.json`) apply to every project. List keys such as
-#   `permissions.deny` MERGE across the user, shared-project and local-project files instead of the
-#   higher level replacing the lower, and rules are evaluated deny, then ask, then allow: a deny at any
-#   level wins over an allow at any level. So a project cannot lift a deny its user wrote.
-# - File rules are `Read(path)` and `Edit(path)`, gitignore syntax: `//p` is absolute, `~/p` is under the
-#   home folder, `/p` is relative to the settings file's own folder (for user settings, `~/.claude/p`), and
-#   `p` or `./p` is relative to the session's working directory, taken here to be the repository root. A
-#   bare pattern without a slash, or a single directory and `/**` in a deny rule, matches at any depth; one
-#   written `./p` names that path at the root and is not floated (`./.env` is not `sub/.env`). A Read
-#   deny also blocks Edit and Write on that path. A `Write(path)` rule is accepted but never consulted.
-# - They block the assistant's file tools and the file commands it runs in a shell, not a script that
-#   opens files itself: a gate or hook still writes the file, while the session cannot edit it by hand.
-# Not modelled: `!` carve-outs (a negated rule is skipped, so a warning may over-report), managed
-# settings, and `CLAUDE_CONFIG_DIR` beyond where the user file is looked for.
 USER_SETTINGS_ENV = "AGENT_GUIDES_USER_SETTINGS"
 FILE_RULE = re.compile(r"^(Read|Edit|Write)(?:\((.*)\))?$", re.DOTALL)
 
@@ -3062,13 +2872,12 @@ def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path
     elif rule_path.startswith("/"):
         anchor, pattern = settings_dir, rule_path[1:]
     elif rule_path.startswith("./"):
-        anchor, pattern = repo, rule_path[2:]  # a path the rule spells from the root: anchored there, never floated
+        anchor, pattern = repo, rule_path[2:]
     else:
         anchor, pattern, relative = repo, rule_path, True
     pattern = pattern.rstrip("/")
     if not pattern:
         return []
-    # Only a relative pattern floats: an anchored one matches at its anchor and nowhere deeper.
     anywhere = relative and ("/" not in pattern or bool(re.fullmatch(r"[^/]+/\*\*", pattern)))
     rx = re.compile(("(?:.*/)?" if anywhere else "") + _glob_regex(pattern), re.DOTALL)
     anchor = Path(os.path.realpath(anchor))
@@ -3155,11 +2964,6 @@ def user_deny_warnings(repo: Path) -> list[str]:
     return warnings
 
 
-# Static budgets, in estimated tokens: what a coding session loads before its task, and the largest card
-# it may read. They stand in for the cost caps (a normal session at most 1.5 times a session without the
-# bundle, one that consults the knowledge at most twice), which only a measured run can check; a budget
-# crossed is a release that grew what every session pays for. Set at 0.0.22 to the measured size plus a
-# tenth. In the report's unit, characters over four, which runs about 1.4 times low for bundle text.
 BUDGETS = {"coding": 10_100, "card": 360, "review": 6_900}
 def largest_card(tree: Path) -> tuple[str, int]:
     """(note, estimated tokens) of the largest card: what one lookup from the index costs."""
@@ -3208,7 +3012,6 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
         if not (dest / CHECKSUMS).is_file():
             raise RefusedError(f"{dest}: holds no {CHECKSUMS}; --replace refreshes only a folder that holds a release")
         old = {*read_checksums(dest), CHECKSUMS}
-        # What `all_files` ignores (caches, a real `.DS_Store`) is not foreign; it is left where it is.
         seen = set(all_files(dest))
         held = [p.relative_to(dest).as_posix() for p in dest.rglob("*")
                 if p.is_symlink() or (p.is_file() and p.relative_to(dest).as_posix() in seen)]
@@ -3232,19 +3035,6 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
     return rels
 
 
-# --- documentation drift: a carrier's map of documents to the paths they describe ---------------------
-# A document that agents load or follow goes stale when the code it describes changes without it. Review
-# misses it; this checks it from the diff, with no model (`method/prompt-context.md`, principle 16). The map
-# is the carrier's own file, `docs-map.toml` at the repository's root:
-#
-#     [[doc]]
-#     path = "docs/tools.md"            # the document
-#     watches = ["src/tools/**/*.py"]   # what it describes, globs over tracked files
-#     reason = "it documents every tool's flags"
-#     blocks = true                      # fail a range (true) or warn (false)
-#     refs = false                       # optional: skip its reference check, when it describes another repository
-#
-# A commit escapes a blocking rule with a `docs-unchanged: <reason>` line in its message.
 
 DOCS_MAP = "docs-map.toml"
 DOCS_ESCAPE = re.compile(r"^docs-unchanged:[ \t]*(\S.*)$", re.MULTILINE)
@@ -3263,7 +3053,7 @@ class DocRule:
 class Drift:
     doc: str
     blocks: bool
-    changed: tuple[str, ...]  # the watched paths that changed without the document
+    changed: tuple[str, ...]
 
 
 def _path_glob(pattern: str) -> re.Pattern[str]:
@@ -3356,7 +3146,7 @@ def docs_map_problems(repo: Path) -> list[str]:
     return problems
 
 
-DOC_PATH = re.compile(r"`([\w.\-/]+/[\w.\-/]*\w)`")  # a backticked path with a folder in it
+DOC_PATH = re.compile(r"`([\w.\-/]+/[\w.\-/]*\w)`")
 
 
 def docs_ref_problems(repo: Path) -> list[str]:
@@ -3373,9 +3163,8 @@ def docs_ref_problems(repo: Path) -> list[str]:
                 problems.append(f"{rule.doc}: links to {target}, which does not exist")
         for target in DOC_PATH.findall(text):
             if target.startswith(("http", "~", "/")) or "*" in target or re.match(r"^[A-Z][A-Z_]+/", target):
-                continue  # a URL, a home path, a glob, or a placeholder such as DIR/
+                continue
             bare = target.rstrip("/")
-            # a path is named from a folder the document takes for granted: it exists when a tracked path ends in it
             if not any(f == bare or f.endswith("/" + bare) or f.startswith(bare + "/") or f"/{bare}/" in f"/{f}" for f in files):
                 problems.append(f"{rule.doc}: names `{target}`, which is not in the repository")
     return problems
@@ -3401,7 +3190,6 @@ def docs_report(repo: Path, since: str = "7d") -> dict:
         watched = [f for f in (_git_files(repo) or set()) if any(_path_glob(g).match(f) for g in rule.watches)]
         code = git(repo, "log", "-1", "--format=%H", "--", *watched).strip() if watched else ""
         doc = git(repo, "log", "-1", "--format=%H", "--", rule.doc).strip()
-        # stale by commit order, not by clock: the document's last commit comes strictly before the code's
         if code and doc and code != doc and subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor", doc, code],
                                                             capture_output=True).returncode == 0:
             report["stale"].append(rule.doc)
@@ -3415,23 +3203,14 @@ def docs_report(repo: Path, since: str = "7d") -> dict:
     return report
 
 
-# --- a shell command that only reads -----------------------------------------------------------------
-# Moved here from the trigger eval in 0.0.30 so the researcher agent's hook and the eval share one classifier,
-# reviewed adversarially twice (`meta/reviews/2026-10-07-trigger-eval-adversarial.md` in the home).
 
-# A shell command runs only when it reads: no redirection, chaining, substitution, nor a tool that writes.
 READ_ONLY = re.compile(r"^(ls|cat|head|tail|wc|find|grep|rg|pwd|echo|git (status|log|diff|show|ls-files)|git branch( (--list|-a|-r|-v|-vv|--show-current))*$|git remote( (-v|--verbose))?$|git stash list|sort)(\s|$)")
-# Flags of an allowed reader that write or run another program, matched also when a long one is abbreviated:
-# find's -exec*, -ok*, -delete and -f* (-fprint, -fprintf, -fls); rg's --pre, --hostname-bin and --search-zip (and
-# -z); sort's -o, --output and --compress-program; git's --output, --ext-diff and --textconv; tail's -f and -F,
-# which never end. Two reviews on 2026-10-07 found these holes.
-WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|fprint\w*|fls)")  # find's, checked on find only
+WRITING_SHORT = re.compile(r"-(exec\w*|ok\w*|delete|fprint\w*|fls)")
 WRITING_LONG = ("output", "pre", "hostname-bin", "search-zip", "compress-program", "ext-diff", "textconv")
-SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}  # short flags dangerous only for that reader
-LONG_BY_COMMAND = {"tail": ("follow", "retry")}  # long ones, by any prefix
-# Reads may be chained or piped, as sessions look with compound commands (stage 2, 2026-10-07); each part must read.
+SHORT_BY_COMMAND = {"rg": "z", "sort": "o", "tail": "fF"}
+LONG_BY_COMMAND = {"tail": ("follow", "retry")}
 SEPARATORS = {"&&", "||", ";", "|"}
-QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}  # the error stream merged or dropped
+QUIET = {"2>&1", "2>/dev/null", ">/dev/null", "1>/dev/null", "&>/dev/null"}
 
 
 def shell_words(command: str) -> list[str] | None:
@@ -3467,7 +3246,7 @@ def shell_words(command: str) -> list[str] | None:
             i += 1
             word += command[i]
             started = True
-        elif ch in " \t":  # bash splits on these only
+        elif ch in " \t":
             if started:
                 words.append(word)
             word, started = "", False
@@ -3478,7 +3257,7 @@ def shell_words(command: str) -> list[str] | None:
             while i + 1 < len(command) and command[i + 1] in ";&|<>()":
                 i += 1
                 run += command[i]
-            words.append("\0" + run)  # an operator, marked so a quoted ";" is never one
+            words.append("\0" + run)
             word, started = "", False
         else:
             word += ch
@@ -3514,7 +3293,7 @@ def command_segments(command: str) -> list[list[str]] | None:
     words = shell_words(command.strip())
     if words is None:
         return None
-    joined: list[str] = []  # the error stream merged or dropped, as one quiet word
+    joined: list[str] = []
     k = 0
     while k < len(words):
         fd = words[k] if words[k] in ("1", "2") and k + 1 < len(words) and words[k + 1].startswith("\0") else ""
@@ -3531,13 +3310,13 @@ def command_segments(command: str) -> list[list[str]] | None:
             continue
         if w.startswith("\0"):
             if w[1:] not in SEPARATORS:
-                return None  # a redirection, a subshell or a background job
+                return None
             segments.append(current)
             current = []
         else:
             current.append(w)
     segments.append(current)
-    return [s[:1] + s[3:] if s[:2] == ["git", "-C"] and len(s) > 3 else s for s in segments]  # git -C DIR reads
+    return [s[:1] + s[3:] if s[:2] == ["git", "-C"] and len(s) > 3 else s for s in segments]
 
 
 def _reads(segment: list[str]) -> bool:
@@ -3552,10 +3331,8 @@ def read_only(command: str) -> bool:
     return segments is not None and all(_reads(segment) for segment in segments)
 
 
-# The researcher agent's shell: a read, or `curl` fetching a page whole into a temporary folder outside the repository
-# (a summarising fetch once contradicted the text it summarised). Its own hook enforces it (`agents/researcher.md`).
 CURL_FLAGS = {"-s", "-S", "-L", "-f", "-I", "--silent", "--show-error", "--location", "--fail", "--head", "--compressed",
-              "--create-dirs"}  # the folders made are the output's, checked to be in the scratch
+              "--create-dirs"}
 CURL_VALUED = {"-A", "--user-agent", "-m", "--max-time", "--retry"}
 
 
@@ -3573,7 +3350,7 @@ def scratch_roots(repo: Path) -> list[Path]:
     job = os.environ.get("CLAUDE_JOB_DIR")
     if job and Path(job).is_absolute():
         extra, repo, home = (Path(job) / "tmp").resolve(), repo.resolve(), Path.home().resolve()
-        broad = extra == home or extra in home.parents  # the filesystem root, the home folder, or above it
+        broad = extra == home or extra in home.parents
         if extra.is_dir() and not broad and repo not in (extra, *extra.parents) and extra not in repo.parents:
             roots.append(extra)
     return roots
@@ -3602,7 +3379,7 @@ def _curl_into_scratch(segment: list[str], repo: Path) -> bool:
         if re.match(r"^https?://", token):
             urls, i = urls + 1, i + 1
             continue
-        return False  # any other flag: data to send, a config file, an upload, a name taken from the URL
+        return False
     return urls >= 1
 
 
@@ -3612,11 +3389,6 @@ def research_allowed(command: str, repo: Path) -> bool:
     return segments is not None and all(_reads(s) or _curl_into_scratch(s, repo) for s in segments)
 
 
-# --- lookup: the index's rows a change matches --------------------------------------------------------
-# Reading the whole index costs a session several thousand tokens on every later turn; a change usually needs one
-# to three of its rows. `bundle.py lookup` ranks the *By what you are about to do* rows by a change's words, files
-# or diff, against each row, its card and the note's `cues` (what such a change would contain). It prints the rows
-# and says where the index is when nothing matches; the wiring decides when to trust it (0.0.30, behind a gate).
 
 LOOKUP_STOP = set("""a an the and or of to in on for with by from as at is are be been being it its this that these
 those which who what when where how why not no do does did done any all each every some such than then there their
@@ -3634,7 +3406,7 @@ def _stem(word: str) -> str:
 
 
 def _lookup_tokens(text: str) -> list[str]:
-    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)  # camelCase splits
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
     return [_stem(w) for w in (m.lower() for m in re.findall(r"[A-Za-z][A-Za-z0-9]*", text.replace("_", " ")))
             if w not in LOOKUP_STOP and len(w) >= 3]
 
@@ -3708,9 +3480,6 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
     return "\n".join(parts)
 
 
-# --- the close's deterministic part ----------------------------------------------------------------
-# A close is mostly judgement (the entry's words, what went wrong, the hand-off); the checks around it are not,
-# and were run by hand one by one. `bundle.py close` runs them in order and fails on any (`method/skills/close`).
 
 @dataclass(frozen=True)
 class CloseStep:
@@ -3749,11 +3518,6 @@ def close_report(repo: Path, base: str | None = None) -> list[CloseStep]:
     return steps
 
 
-# --- skills, and the bookkeeping a close runs -------------------------------------------------------
-# The method's procedures ship as skills: a base in `method/skills/<name>/SKILL.md`, installed into the
-# carrier's assistant folder merged with the carrier's own `LOCAL.md` beside it. The repository's
-# procedure wins (its sections replace the base's), and no release file is edited to get there. Never
-# shipped as `.agents/skills/`, which an assistant may load directly, past the carrier's override.
 
 SKILLS = "method/skills"
 SKILLS_INTO = ".claude/skills"
@@ -3883,12 +3647,6 @@ def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) ->
     return problems
 
 
-# --- the other assistants' surfaces, generated from what Claude Code reads ------------------------------
-# Cursor and Copilot read `AGENTS.md`, and Claude Code's skill and subagent folders for compatibility
-# (`prompt-context.md`, *What each surface can actually do*). What has no common place is generated here:
-# per-area rules (one glob in three spellings), a subagent's tool limit, and Copilot's pointer to `AGENTS.md`.
-# The source is always the file Claude Code reads; each copy names it, and `verify` fails a stale or edited
-# copy when the carrier lists the assistant in `surfaces`. Experimental from 0.0.30.
 
 SURFACE_KINDS = ("cursor", "copilot")
 SURFACE_MARK = re.compile(r"Generated by bundle\.py surfaces from (.+?); edit that file, never this one")
@@ -3953,7 +3711,7 @@ def _surface_build(repo: Path, kinds: list[str]) -> tuple[dict[str, str], dict[s
         paths = meta.get("paths")
         globs = [paths] if isinstance(paths, str) else [str(p) for p in paths or []]
         description = _yaml_str(_rule_description(meta, body, path.stem))
-        if "cursor" in kinds:  # globs unquoted, as Cursor's documentation and its users write them
+        if "cursor" in kinds:
             globs_line = f"globs: {', '.join(globs)}\n" if globs else ""
             out[f".cursor/rules/{stem}.mdc"] = (f"---\n# {_surface_mark(source)}\ndescription: {description}\n"
                                                 f"{globs_line}alwaysApply: {'false' if globs else 'true'}\n---\n{body}")
@@ -3967,7 +3725,7 @@ def _surface_build(repo: Path, kinds: list[str]) -> tuple[dict[str, str], dict[s
         source, meta, body = got
         name, tools = str(meta.get("name") or path.stem), _tool_names(meta.get("tools"))
         head = f"---\n# {_surface_mark(source)}\nname: {_yaml_str(name)}\ndescription: {_yaml_str(str(meta.get('description', '')))}\n"
-        if "cursor" in kinds:  # Cursor limits a subagent only by `readonly`; a reader of the repository gets it
+        if "cursor" in kinds:
             readonly = bool(tools) and not WRITING_TOOLS & set(tools)
             out[f".cursor/agents/{path.stem}.md"] = f"{head}model: inherit\nreadonly: {'true' if readonly else 'false'}\n---\n{body}"
         if "copilot" in kinds:
@@ -4002,7 +3760,7 @@ def surface_problems(repo: Path, kinds: list[str]) -> list[str]:
     for rel, text in expected.items():
         path = repo / rel
         if rel in own:
-            if rel != COPILOT_POINTER:  # the pointer is only offered; a hand-written one stands
+            if rel != COPILOT_POINTER:
                 problems.append(f"{rel}: written by hand where a copy of {_generated_from(text)} belongs; compare the two, "
                                 "keep what the source lacks there, then `bundle.py surfaces --write --force`")
         elif not path.is_file():
@@ -4069,9 +3827,9 @@ def carrier_surface_problems(repo: Path, kinds: object) -> list[str]:
         + surface_problems(repo, [k for k in kinds if k in SURFACE_KINDS])
 
 
-ENTRY_HEADING = re.compile(r"^(#{2,3}) \d{4}-\d{2}-\d{2}\b")  # a log may keep its entries at level two or three
+ENTRY_HEADING = re.compile(r"^(#{2,3}) \d{4}-\d{2}-\d{2}\b")
 FORMAT_HEADING = re.compile(r"^#{2,6} .*\bformat\b", re.IGNORECASE)
-CHANGELOG_ARTIFACT = "5. The session log — `.claude/logs/agent-changelog.md` by default"  # its heading, exactly
+CHANGELOG_ARTIFACT = "5. The session log — `.claude/logs/agent-changelog.md` by default"
 
 
 def _first_fence(text: str) -> str | None:
@@ -4116,7 +3874,7 @@ def entry_level(log: str) -> int:
     return len(heading) - len(heading.lstrip("#")) if heading.startswith(("## ", "### ")) else 2
 
 
-ENTRY_FIELD = re.compile(r"^(?:\s*[-*]\s+)?\*\*(.+?)\*\*\s*(.*)$")  # bold labels, bulleted or not
+ENTRY_FIELD = re.compile(r"^(?:\s*[-*]\s+)?\*\*(.+?)\*\*\s*(.*)$")
 FROM_METHOD = "from the method's entry format, which this log's lacks:"
 
 
@@ -4272,7 +4030,6 @@ class Memory:
     matched: list[str]
 
 
-# Words too common to tell one rule from another; with every word under four letters, never matched.
 COMMON_WORDS = frozenset("""
 about above after again against also always another anything because been before being below between both
 cannot could does doing done down each either else even ever every first from have having here into just
@@ -4280,12 +4037,8 @@ keep kept last less like made make many more most much must never next none only
 since some still such than that their them then there these they thing this those through under until upon
 very want were what when where whether which while will with within without would your yours
 """.split())
-MEMORY_HELD = 0.6  # the share of a rule's words one passage must hold for the repository to hold the rule
-# Below this, words cannot tell a rule from a coincidence: a short rule ("run the lint and test gate before
-# any commit") shares three words with any file that names the scripts, so a passage must hold four.
+MEMORY_HELD = 0.6
 MEMORY_MIN_WORDS = 4
-# Files that are not prose: a manifest, a lockfile or a configuration names scripts and keys, never states a
-# rule, so a rule's words are not matched in them (a code span the memory names still is).
 NON_PROSE_SUFFIXES = frozenset({".json", ".jsonc", ".lock", ".toml", ".yaml", ".yml", ".ini", ".cfg", ".sum"})
 
 
@@ -4347,7 +4100,6 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
     for path in sorted(memory.glob("*.md")):
         if path.name == "MEMORY.md":
             continue
-        # Read loosely: the assistant writes this frontmatter, nested keys included, not the bundle.
         front, body = split_frontmatter(path.read_text(encoding="utf-8"))
         meta = {k: v.replace('\\"', '"') for k, v in
                 re.findall(r"^(name|description):[ \t]*\"?(.*?)\"?[ \t]*$", front or "", re.MULTILINE)}
@@ -4364,18 +4116,10 @@ def memory_report(memory: Path, repo: Path) -> list[Memory]:
     return found
 
 
-# --- what the human said: the assistant's local session transcripts ------------------------------------
-# A harvest reads what was said and never recorded (`prompt-harvest.md`, Phase 1 step 1): the typed turns,
-# the messages sent while the assistant worked, and the answers to question tools, whose free text
-# overrides the options. Claude Code keeps each session as JSON lines under `~/.claude/projects/<the
-# repository's path, every other character a dash>/`. Read here, printed, never written anywhere: a
-# transcript carries the logged-in account's identity.
 
-# What the host writes into the human's side of a transcript: reminders, notifications, another agent's
-# messages, the editor's context. A part that starts with one of these is not the human's.
 TRANSCRIPT_NOISE = ("<system-reminder>", "<task-notification>", "<agent-message", "<local-command", "<ide_", "Caveat:",
                     "Base directory for this skill")
-TURN_LIMIT = 4000  # characters of one message shown; a pasted log is not what the harvest reads for
+TURN_LIMIT = 4000
 
 
 def _encoded(path: Path) -> str:
@@ -4499,8 +4243,6 @@ def turns_report(dirs: list[Path], since: str = "", context: bool = False, label
     return lines
 
 
-# Every refusal the tool raises on purpose. Caught in `main`, printed as one line, exit 2: a refusal
-# is an answer, not a crash.
 REFUSALS = (NotACarrierError, OutsideWorkspaceError, DirtyTreeError, UndeclaredScopeError, RefusedError, FrontmatterError)
 
 
@@ -4673,7 +4415,7 @@ def research_hook(stdin: str) -> int:
             return 0
         print(RESEARCH_REFUSAL.format(roots=", ".join(str(root) for root in scratch_roots(repo))), file=sys.stderr)
         return 2
-    except Exception as error:  # noqa: BLE001
+    except Exception as error:
         print(f"researcher: refused, the hook could not read the call ({error})", file=sys.stderr)
         return 2
 
@@ -4687,7 +4429,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
 
-def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- one branch per command
+def _run(args: argparse.Namespace) -> int:
     if args.command == "research-hook":
         return research_hook(sys.stdin.read())
     if args.command == "verify":
@@ -4772,7 +4514,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             if args.paths or args.commits:
                 raise RefusedError("privacy: --tracked reads what git tracks; give it alone, not with --paths or --commits")
             args.paths = [str(f) for f in tracked_files(Path(args.repo))]
-            if not args.paths:  # an empty list would read the tree instead, and pass on files it never meant to read
+            if not args.paths:
                 print("privacy over 0 files tracked outside .agents/: nothing to read")
                 return 0
         result = privacy_check(Path(args.tree), [Path(f) for f in args.paths] if args.paths else None,
@@ -5018,7 +4760,6 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             raise RefusedError(f"--since {args.since}: not a date, YYYY-MM-DD")
         repo = Path(args.repo).resolve()
         dirs = [Path(d) for d in args.dirs] or transcript_dirs(repo)
-        # Named by role, not by path: the folder's name is the repository's path, home folder included.
         labels = {} if args.dirs else {d: "this checkout" if d.name == _encoded(repo) else
                                        "worktree " + d.name.rpartition("-worktrees-")[2] if "-worktrees-" in d.name else "another worktree"
                                        for d in dirs}

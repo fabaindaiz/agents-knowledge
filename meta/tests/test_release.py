@@ -993,3 +993,25 @@ class ShippedChangelog(Base):
         self.assertNotIn("- one", shipped)
         self.assertIn("sources/bundle/CHANGELOG.md", shipped)  # where the earlier versions are
         self.assertEqual(R.trim_changelog(text, None), text)  # no carrier registered: nothing cut
+
+
+class ShippedTool(Base):
+    ROOT = Path(__file__).resolve().parents[2]
+
+    def test_the_shipped_tool_has_no_comments_but_its_mark(self) -> None:
+        import tokenize
+        R = release()
+        with (self.ROOT / ".agents/tools/bundle.py").open("rb") as f:
+            comments = [t.string for t in tokenize.tokenize(f.readline) if t.type == tokenize.COMMENT]
+        self.assertEqual([c for c in comments if not c.startswith("#!") and R.RELEASE_MARK not in c], [])
+
+    def test_the_shipped_tool_parses_to_the_same_tree_as_its_original(self) -> None:
+        import ast
+        original = (self.ROOT / "sources/bundle/tools/bundle.py").read_text(encoding="utf-8")
+        shipped = (self.ROOT / ".agents/tools/bundle.py").read_text(encoding="utf-8")
+        self.assertEqual(ast.dump(ast.parse(original)), ast.dump(ast.parse(shipped)))
+
+    def test_a_hash_inside_a_string_survives(self) -> None:
+        R = release()
+        src = '#!/usr/bin/env python3\n# whole line\nx = "# not a comment"  # a comment\n\ny = 1\n'
+        self.assertEqual(R.strip_comments(src), '#!/usr/bin/env python3\nx = "# not a comment"\n\ny = 1\n')

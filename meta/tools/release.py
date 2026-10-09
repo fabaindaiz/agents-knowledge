@@ -33,8 +33,10 @@ if sys.version_info < (3, 11):
 import argparse
 import datetime
 import importlib.util
+import io
 import re
 import subprocess
+import tokenize
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -83,6 +85,23 @@ COPY_BANNER = f"{RELEASE_MARK} from its original in the home repository's source
 ORIGINALS = "sources/bundle"
 # The one shipped file that cannot carry a banner: the GNU checksum format has no comments.
 UNMARKED = ("SHA256SUMS",)
+
+
+def strip_comments(text: str) -> str:
+    """Python source without its comments, found as COMMENT tokens so a `#` inside a string stays; a shebang
+    stays, a line that held only a comment goes, and a line with code keeps its code."""
+    lines = text.split("\n")
+    found = [t.start for t in tokenize.generate_tokens(io.StringIO(text).readline) if t.type == tokenize.COMMENT]
+    drop: set[int] = set()
+    for row, col in found:
+        if row == 1 and lines[0].startswith("#!"):
+            continue
+        kept = lines[row - 1][:col].rstrip()
+        if kept:
+            lines[row - 1] = kept
+        else:
+            drop.add(row - 1)
+    return "\n".join(line for i, line in enumerate(lines) if i not in drop)
 
 
 def with_banner(rel: str, text: str) -> str:
@@ -594,6 +613,8 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
             text = path.read_text(encoding="utf-8")
             if rel == B.CHANGELOG:
                 text = trim_changelog(text, oldest_carrier_version(root / "meta"))
+            elif rel == "tools/bundle.py":
+                text = strip_comments(text)
             out[rel] = with_banner(rel, text)
     return out
 
