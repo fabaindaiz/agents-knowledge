@@ -186,12 +186,15 @@ def _rate(rows: list[dict], key: str) -> tuple[float, tuple[float, float]]:
     return (round(k / len(rows), 3) if rows else 0.0), wilson(k, len(rows))
 
 
-def verdict(results: list[dict], gate: str = "strict") -> dict:
+def verdict(results: list[dict], gate: str = "strict", max_misfire: float = MISFIRE) -> dict:
     """The rates on the cases that expect the skill and on the near misses, with intervals, and the pass.
 
     The gate is strict (the skill as the first call) unless `gate="lenient"`: for a skill whose requests point at
     material a session reads first, a fire after reads and before any write counts, for the near misses as much as
     for the expected cases (`meta/reviews/2026-10-07-trigger-eval-adversarial.md`, stage 2b).
+
+    `max_misfire` relaxes only the near misses' bound, where a decision prefers a skill that fires slightly too
+    often to one that misses (`d-5ed7e8-7a95b5`).
 
     A case marked `"ambiguous": true` is labelled by the owner's best guess: it is counted apart, by how often
     the session agreed with the label, and never decides the pass.
@@ -210,11 +213,11 @@ def verdict(results: list[dict], gate: str = "strict") -> dict:
     owner_fire, owner_interval = _rate(owner, "fired")
     key = "lenient" if gate == "lenient" else "fired"
     gated_fire, gated_misfire, gated_owner = _rate(expected, key)[0], _rate(near, key)[0], _rate(owner, key)[0]
-    passed = valid and gated_fire >= FIRE and gated_misfire <= MISFIRE and (not owner or gated_owner >= FIRE)
+    passed = valid and gated_fire >= FIRE and gated_misfire <= max_misfire and (not owner or gated_owner >= FIRE)
     return {"fire": fire, "fire_interval": fire_interval, "misfire": misfire, "misfire_interval": misfire_interval,
             "lenient_fire": lenient, "lenient_interval": lenient_interval,
             "owner_fire": owner_fire if owner else None, "owner_interval": owner_interval if owner else None,
-            "gate": gate, "lenient_misfire": _rate(near, "lenient")[0], "passed": passed, "valid": valid, "cases": len(results), "errors": len(errors),
+            "gate": gate, "max_misfire": max_misfire, "lenient_misfire": _rate(near, "lenient")[0], "passed": passed, "valid": valid, "cases": len(results), "errors": len(errors),
             "canary": {"cases": len(canaries), "fired": sum(bool(r.get("fired")) for r in canaries)},
             "ambiguous": {"cases": len(unsure), "agreed": sum(bool(r.get("fired")) == r["expect"] for r in unsure)}}
 
@@ -309,6 +312,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="a skill that asks to run before any response; the routed metric looks past it")
     parser.add_argument("--gate", choices=("strict", "lenient"), default="strict",
                         help="lenient counts a fire after reads, for a skill whose requests point at material to read")
+    parser.add_argument("--max-misfire", type=float, default=MISFIRE,
+                        help="the near misses' bound; raise it only by a decision (d-5ed7e8-7a95b5)")
     parser.add_argument("--max-errors", type=int, default=3, help="consecutive errors that stop the run")
     args = parser.parse_args(argv)
     text = args.skill.read_text(encoding="utf-8")
@@ -336,9 +341,9 @@ def main(argv: list[str] | None = None) -> int:
                 break
         if streak >= args.max_errors:
             break
-    result = verdict(results, args.gate)
+    result = verdict(results, args.gate, args.max_misfire)
     print(f"fire {result['fire']} {result['fire_interval']} (at least {FIRE}), lenient {result['lenient_fire']} "
-          f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {MISFIRE})"
+          f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {result['max_misfire']})"
           + (f", owner's words {result['owner_fire']} {result['owner_interval']}" if result["owner_fire"] is not None else "")
           + f": {'pass' if result['passed'] else 'fail'} (gate: {result['gate']})"
           + (f"; ambiguous, apart: {result['ambiguous']['agreed']}/{result['ambiguous']['cases']} agreed with the label"

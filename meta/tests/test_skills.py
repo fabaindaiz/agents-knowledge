@@ -722,6 +722,16 @@ class TriggerEval(Base):
         self.assertTrue(verdict["passed"])
         self.assertFalse(self.T.verdict(results + [{"expect": False, "fired": True}])["passed"])
 
+    def test_a_misfire_bound_set_by_decision_relaxes_only_the_misfire(self) -> None:
+        # d-5ed7e8-7a95b5: firing slightly too often is preferred to missing
+        fired = [{"expect": True, "fired": True}] * 8 + [{"expect": True, "fired": False}] * 2
+        near = [{"expect": False, "fired": False}] * 6 + [{"expect": False, "fired": True}] * 2
+        self.assertFalse(self.T.verdict(fired + near)["passed"])
+        relaxed = self.T.verdict(fired + near, max_misfire=0.25)
+        self.assertTrue(relaxed["passed"])
+        self.assertEqual(relaxed["max_misfire"], 0.25)
+        self.assertFalse(self.T.verdict(fired[2:] + [{"expect": True, "fired": False}] * 2 + near, max_misfire=0.25)["passed"])
+
     def test_a_lenient_gate_counts_a_fire_after_reads_on_both_sides(self) -> None:
         # a skill whose requests point at material a session reads first (decision-review, stage 2b)
         looked = [{"expect": True, "fired": False, "lenient": True}] * 8 + [{"expect": True, "fired": False, "lenient": False}] * 2
