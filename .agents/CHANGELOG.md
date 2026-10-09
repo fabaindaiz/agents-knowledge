@@ -39,6 +39,9 @@ carrier's own scripts for the names under *Removed* below.
 - **A long background agent states its price first** (*under review*): its estimate of time and tokens, and its
   model, before it runs; when it returns the actual is compared, and with consent both are recorded
   (`usage add agent_costs`; `prompt-context.md`).
+- **The long skills open with a pre-review** (*under review*): `close`, `decision-review` and `user-walk` first
+  ask, in one message, the important questions still open for them (at most four, from cheap reads) and, unless asked
+  for by name, whether to run in full; the answers are written where they belong even when the process is declined.
 - **A guide to starting each process and a `next` skill** (*under review*): `method/guide.md` says what to say to
   start each process, in any language; `/next` advises which one fits. The update installs the skill.
 
