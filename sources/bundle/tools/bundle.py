@@ -4756,8 +4756,16 @@ def _usage_valid(category, record):
     needs = {name: kind for name, kind in _usage_spec(category).items() if kind[-1] == "!" or name in record}
     if category == "preferences":
         needs |= {"id": "text!", "last_used": "text!", "uses": "int!"}
-    return all(name in record and isinstance(record[name], types.get(kind.rstrip("!"), str)) and not isinstance(record[name], bool)
-               for name, kind in needs.items())
+    if not all(name in record and isinstance(record[name], types.get(kind.rstrip("!"), str)) and not isinstance(record[name], bool)
+               for name, kind in needs.items()):
+        return False
+    try:
+        for name in ("at", "last_used"):
+            if name in record:
+                datetime.date.fromisoformat(record[name])
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 def usage_records(repo, category, today):

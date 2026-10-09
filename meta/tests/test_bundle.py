@@ -2595,8 +2595,9 @@ class Usage(Base):
             self.u("add", "ablation", f"arm={arm}", "repeats=1", "corrections=0", "ktok=1")
         good = {c: len(B.usage_records(self.repo, c, self.TODAY)) for c in B.USAGE_CATEGORIES}
         day = "2026-10-09"
-        bad = {"preferences": [{"v": 1, "at": day}, {"v": 1, "at": day, "id": "u-x", "last_used": 5, "uses": 0, "text": "t", "why": "w"}],
-               "frictions": [{"v": 1, "at": day}, {"v": 1, "at": day, "session": 3}],
+        bad = {"preferences": [{"v": 1, "at": day}, {"v": 1, "at": day, "id": "u-x", "last_used": 5, "uses": 0, "text": "t", "why": "w"},
+                               {"v": 1, "at": day, "id": "u-y", "last_used": "zzz", "uses": 0, "text": "t", "why": "w", "source": "stated"}],
+               "frictions": [{"v": 1, "at": day}, {"v": 1, "at": day, "session": 3}, {"v": 1, "at": "zzz", "session": "a"}],
                "agent_costs": [{"v": 1, "at": day}, {"v": 1, "at": day, "kind": "k", "act_ktok": "x"}],
                "ablation": [{"v": 1, "at": day}, {"v": 1, "at": day, "arm": "on", "repeats": "x"}]}
         for category, records in bad.items():

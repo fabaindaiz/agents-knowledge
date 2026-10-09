@@ -8,11 +8,11 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [0.0.31] - 2026-10-09
 
-**What a carrier runs at this update.** In each carrier, first read `declined` in `carrier.toml`: `install-skills` now reads it, so an entry that begins
-`skills` or `skill <name>` makes it skip them without asking, where it used to install them again; an entry meant
-as prose may now match, so reword it. Then follow `prompt-update.md`
-as it now reads: the prune's table is built and approved before the replace, and `export --replace` does the
-copy. Run `bundle.py verify`; if it warns that `.claude/settings.json` has no `attribution` setting with empty
+**What a carrier runs at this update.** In each carrier, first read `declined` in `carrier.toml`: `install-skills`
+now reads it, so an entry that begins `skills` or `skill <name>` makes it skip them without asking, where it used
+to install them again; an entry meant as prose may now match, so reword it. Then follow `prompt-update.md` as it
+now reads: the prune's table is built and approved before the replace, and `export --replace` does the copy.
+Run `bundle.py verify`; if it warns that `.claude/settings.json` has no `attribution` setting with empty
 `commit` and `pr`, set it (`prompt-context.md`, *Attribution is a setting, not a sentence*). Before updating, grep the
 carrier's own scripts for the names under *Removed* below.
 
@@ -46,13 +46,16 @@ carrier's own scripts for the names under *Removed* below.
 - **The shipped tool carries no comments**: the build strips them from `tools/bundle.py` (docstrings stay); the
   home's original keeps them. It is one file smaller and behaves the same.
 - **The method's prose is shorter, its rules the same**: a light pass over the largest method files made one line
-  of what took two, restated nothing, and was reviewed for dropped rules (five restored). `prompt-update.md`
+  of what took two and restated nothing; every rule, number and command stays. `prompt-update.md`
   reads (a)-(e) in order, with the incoming tool, the writes before approval and the prune's classification each
   stated once; a branch for the update is cut with `--no-track`, so a plain push never goes to the old branch.
 - **The security hook for the `researcher` agent bounds its scratch folder**: a job folder must be absolute, and
   one equal to the user's home or containing it is no root; a refusal names the roots and the shape that runs.
 - **Merging and pushing from a worktree**: a session told to merge does it from its worktree, a fast-forward, and
   never hands the command back; it publishes only when a push was asked too (`close` §*Rules*, `prompt-sync.md`).
+- **A permission rule catches a by-product edit, never intended work** (`prompt-context.md`, artifact 4; bootstrap
+  Phase 5): `deny` only on a file that only a tool writes, `ask` on generated files and the guards, no rule on
+  originals or the carrier's own files; an exception is a path left without a rule, never an allow.
 - **Every carrier's root map sends the user's decisions to principle 15's way of asking**; six notes gained
   evidence from the proposals received.
 - **`privacy` does not warn on a quote of the bundle's own text** or the tool's own string literals; a private quote,
@@ -60,11 +63,10 @@ carrier's own scripts for the names under *Removed* below.
 
 ### Removed
 
-- **Helpers only the home used leave `tools/bundle.py`.** `write_checksums`, `checksums_text`, `read_pack` and
-  `PACK_LIMIT` and `carrier_ids` moved to the home's `release.py`; the `Sessions` type alias, `surface_files`, `entry_template` and
-  `count_mentions` were deleted. No subcommand lost a flag. A carrier is affected only if its own scripts import
-  them: `grep -rn -E 'write_checksums|checksums_text|read_pack|PACK_LIMIT|carrier_ids|Sessions|surface_files|entry_template|count_mentions'`
-  over its scripts and CI, and call `bundle.py` as a command instead.
+- **Helpers only the home used leave `tools/bundle.py`.** `write_checksums`, `checksums_text`, `read_pack`,
+  `PACK_LIMIT` and `carrier_ids` moved to the home's `release.py`; the `Sessions` type alias, `surface_files`,
+  `entry_template` and `count_mentions` were deleted. No subcommand lost a flag. A carrier is affected only if its
+  own scripts import them: grep its scripts and CI for those names, and call `bundle.py` as a command instead.
 
 ### Fixed
 
