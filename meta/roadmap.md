@@ -20,9 +20,8 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-09, close: the 0.0.31 tool fixes are done and reviewed on a chain of eleven branches** from
-`fix/coloured-help` to `docs/method-text`, based on `main` at the 0.0.31 intake; the owner approved fast-forwarding
-`main` after this record. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
+**State on 2026-10-09, close: the 0.0.31 tool fixes are on `main`** (`8161e4b..13a5d57`, pushed), reviewed task by
+task and as a whole. `v0.0.30` is the last tag; 0.0.31 is open and not cut.
 
 **Done since the last close** (the plan is `meta/reviews/2026-10-08-plan-0.0.31-tools.md`; *Done* lists the items):
 - The tool fixes and the method's text, ten tasks (*Done*).
@@ -31,15 +30,16 @@ something else depends on — because that is what decides its order.
 - Eleven new items: ten follow-ups, and `i-5ed7e8-d203b6`, shipped text of 0.0.31.
 
 **Next, in order:**
-1. **Cut 0.0.31.** First shrink the export under the cap; settle `i-5ed7e8-d203b6`, shipped text, before cutting; run each carrier's audit
+1. **Resume the decision review** of the plan's rulings: `meta/reviews/2026-10-09-decision-review-0.0.31-rulings.md`,
+   at decision 1; none recorded yet.
+2. **Cut 0.0.31.** First shrink the export under the cap; settle `i-5ed7e8-d203b6`, shipped text, before cutting; run each carrier's audit
    (`prompt-sync.md` Phase 1, step 7b); settle the three held proposals (`p-5fd7b61d19`, `p-d2fa16b1fd`,
-   `p-de14564c12`): none of the 11 carriers here holds them any more; they were pruned or sit
-   on a branch. Write the changelog notes:
+   `p-de14564c12`), which no carrier here holds any more. Write the changelog notes:
    `install-skills` now reads `declined`, so an entry beginning `skills` or `skill <name>` skips skills without
    asking (run `declined_skills` over each carrier); the replace step changed (prune table approved first); a
    bundle-less path no longer stops `check-local` or `gather`; a **Layout:** line if the audit finds one.
-2. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
-3. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
+3. The trigger eval's cases in several languages (`i-5ed7e8-7d64ee`); then `i-5ed7e8-fca056`.
+4. At the meta-session: `release.py align` over the real manifest now runs and finds 18 problems over 11 carriers
    (stale checksums, registered at 0.0.28 against the home's 0.0.30, one carrier missing from `carriers.md`).
 
 **Waiting on the owner:**
@@ -55,10 +55,11 @@ new user-level instruction lines. A temporary copy of `next` sits at the user le
 
 **What went wrong** (`bundle.py count` over the session log; each the first of its kind):
 - The host's permission classifier refused the fast-forward of `main` after Task 1; work went on as a linear chain.
-- The script that packages review diffs writes under the current directory's repository, a worktree mid-session.
+- The review-diff script writes under the current directory's repository, a worktree mid-session.
 - My wording of a review fix added a step that could replace the bundle before approval; a re-review removed it.
-- The export came within 192 bytes of its cap at Task 5; the owner's rule settled it.
+- The export reached its cap at Task 5; the owner's rule settled it.
 - Task 3's intake check could not run: no carrier here holds the held proposals.
+- The plan's rulings were walked with the owner only after it ran, which the `decision-review` skill warns against.
 
 ## Standing rules and facts
 
