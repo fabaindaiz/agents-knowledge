@@ -712,6 +712,47 @@ class Carry(Base):
         text = (self.root / "out/gather.md").read_text()
         self.assertIn("two — not read: no bundle on disk", text)
 
+    def test_a_path_that_is_not_a_repository_is_not_read_instead_of_a_traceback(self) -> None:
+        one = make_carrier(self.root, "one")
+        B.mint_carrier_id(one, upstream="r-aaaaaa")
+        self.splice(one)
+        commit(one, "bundle")
+        plain = self.root / "plain"
+        plain.mkdir()
+
+        self.assertEqual(self.R.bundle_branches(plain), [])
+        self.R.gather([one], self.root / "out", self.home, missing=(plain,))
+        problems = self.R.align([one], self.home, missing=(plain,))
+
+        self.assertIn("plain — not read: no bundle on disk", (self.root / "out/gather.md").read_text())
+        self.assertIn("plain: no bundle on disk", problems)
+
+    def test_align_reports_a_carrier_with_no_id_and_checks_the_others(self) -> None:
+        one = make_carrier(self.root, "one")
+        B.mint_carrier_id(one, upstream="r-aaaaaa")
+        self.splice(one)
+        commit(one, "bundle")
+        bare = make_carrier(self.root, "bare")
+        (bare / ".agents/README.md").write_text(README.format(version="0.0.1"))
+
+        problems = self.R.align([one, bare], self.home)
+
+        self.assertIn("bare: no carrier id in carrier.toml", problems)
+        self.assertTrue(any(p.startswith("one: ") for p in problems))
+
+    def test_the_commands_hand_the_missing_paths_on(self) -> None:
+        one = make_carrier(self.root, "one")
+        plain = self.root / "plain"
+        plain.mkdir()
+        for command in ("align", "gather"):
+            argv = [command, str(one), str(plain)] + (["--out", str(self.root / "o")] if command == "gather" else [])
+            with mock.patch.object(self.R, command, return_value=[] if command == "align" else {}) as called, \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                code = self.R.main(argv)
+            self.assertEqual(code, 0)
+            self.assertEqual(called.call_args.kwargs["missing"], (plain.resolve(),))
+            self.assertIn("not read: no bundle on disk: plain", out.getvalue())
+
     def test_a_splice_report_names_every_path_it_removes(self) -> None:
         actions = ["write README.md", "remove method/old.md", "remove tools/gone.py", "write SHA256SUMS"]
 

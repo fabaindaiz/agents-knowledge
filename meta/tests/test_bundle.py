@@ -686,6 +686,17 @@ class Workspace(Base):
         with self.assertRaises(B.NotACarrierError):
             B.workspace([str(one), str(plain)], None, writing=True)
 
+    def test_check_local_names_a_missing_path_and_checks_the_rest(self) -> None:
+        one, plain = self.root / "one", self.root / "plain"
+        make_bundle(one)
+        plain.mkdir()
+
+        code, out = run("check-local", str(one), str(plain))
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("not read: no bundle on disk: plain", out)
+        self.assertIn("over 1 repositories", out)
+
     def test_a_path_that_carries_no_bundle_is_refused(self) -> None:
         (self.root / "plain").mkdir()
 

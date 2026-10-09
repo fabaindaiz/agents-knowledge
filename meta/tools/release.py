@@ -1474,6 +1474,8 @@ def bundle_branches(repo: Path) -> list[tuple[str, str]]:
     A carrier may keep its bundle on a branch that is not checked out, and then has no bundle folder on
     disk: a search of the filesystem passes it by, and reading every branch is what finds it.
     """
+    if not (repo / ".git").exists():
+        return []  # not a git repository (a mistyped path): no branch to read
     refs = str(git("for-each-ref", "--format=%(refname:short) %(symref)", "refs/heads", "refs/remotes", repo=repo)).split("\n")
     found = []
     for line in refs:
@@ -1509,6 +1511,9 @@ def splice_report(name: str, actions: list[str], write: bool, backup: Path | Non
 def align(repos: list[Path], root: Path = ROOT, missing: tuple[Path, ...] = ()) -> list[str]:
     """Phase 3: every carrier verifies, holds the home's release byte for byte, and is registered at it."""
     problems = []
+    unnamed = [repo for repo in repos if B.stored_carrier_id(repo) is None]
+    problems += [f"{repo.name}: no carrier id in carrier.toml" for repo in unnamed]
+    repos = [repo for repo in repos if repo not in unnamed]
     ids = B.carrier_ids(repos)
     version = B.bundle_version(root / ".agents")
     # The tagged release, not the working one: work built in the home after a release would otherwise unalign
