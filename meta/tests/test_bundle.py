@@ -117,7 +117,9 @@ class Verify(Base):
         self.assertIn(B.CHECKSUMS, written)
         self.assertFalse((out / "method/only-in-the-old.md").exists())
         self.assertFalse((out / "empty-after").exists())
-        self.assertEqual((out / "carrier.toml").read_text(), 'carrier = "r-aaaaaa"\n')
+        own = (out / "carrier.toml").read_text()
+        self.assertTrue(own.startswith('carrier = "r-aaaaaa"\nlineage = [\n  "'))
+        self.assertEqual(len(B.read_carrier(out)["lineage"]), 1)
         self.assertEqual((out / "proposals/p-0123456789.md").read_text(), "mine\n")
 
     def test_replace_keeps_the_legacy_outbox_and_never_removes_an_own_file_an_old_sum_listed(self) -> None:
@@ -2065,3 +2067,108 @@ class ResearchHook(Base):
         self.assertEqual(hook(json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}, "cwd": str(repo)})), 0)
         self.assertEqual(hook(json.dumps({"tool_name": "Bash", "tool_input": {"command": "rm -rf ."}, "cwd": str(repo)})), 2)
         self.assertEqual(hook("not json"), 2)
+
+
+class Lineage(Base):
+    """What a carrier knows of the home that built its release, and the lineage its own tool keeps."""
+
+    def carrier(self, name: str = "c"):  # noqa: ANN202
+        agents = make_bundle(self.root / name, "0.0.31")
+        readme = agents / "README.md"
+        data, body = B.read_frontmatter(readme.read_text())
+        data.update({"home": "r-0a0a0a", "parent": "v0.0.30"})
+        readme.write_text(B.dump_frontmatter(data) + body)
+        return agents
+
+    def set_version(self, agents: Path, version: str, home: str | None = None) -> None:
+        readme = agents / "README.md"
+        data, body = B.read_frontmatter(readme.read_text())
+        data["version"] = version
+        if home:
+            data["home"] = home
+        readme.write_text(B.dump_frontmatter(data) + body)
+
+    def test_taking_a_release_appends_one_lineage_entry_and_only_once(self) -> None:
+        agents = self.carrier()
+        self.assertTrue(B.record_lineage(agents, today="2026-10-09"))
+        self.assertEqual(B.read_carrier(agents)["lineage"], ["0.0.31 r-0a0a0a 2026-10-09"])
+        self.assertFalse(B.record_lineage(agents, today="2026-10-10"))
+        self.assertEqual(B.read_carrier(agents)["lineage"], ["0.0.31 r-0a0a0a 2026-10-09"])
+        self.assertNotIn("unknown key", "".join(B.verify_problems(agents)))
+
+    def test_the_append_keeps_the_carriers_own_text_and_tables(self) -> None:
+        agents = self.carrier()
+        own = '# mine\ncarrier = "r-abcdef"\nupstream = "r-0a0a0a"\n\n[skills]\nreview = "my-review"\n'
+        (agents / "carrier.toml").write_text(own)
+        B.record_lineage(agents, today="2026-10-09")
+        self.set_version(agents, "0.0.32")
+        B.record_lineage(agents, today="2026-11-01")
+        text = (agents / "carrier.toml").read_text()
+        self.assertTrue(text.startswith('# mine\ncarrier = "r-abcdef"\nupstream = "r-0a0a0a"\n'))
+        self.assertIn('[skills]\nreview = "my-review"\n', text)
+        data = B.read_carrier(agents)
+        self.assertEqual(data["lineage"], ["0.0.31 r-0a0a0a 2026-10-09", "0.0.32 r-0a0a0a 2026-11-01"])
+        self.assertEqual(data["skills"], {"review": "my-review"})
+
+    def test_a_new_version_or_another_home_is_a_new_entry(self) -> None:
+        agents = self.carrier()
+        B.record_lineage(agents, today="2026-10-09")
+        self.set_version(agents, "0.0.32")
+        self.assertTrue(B.record_lineage(agents, today="2026-11-01"))
+        self.set_version(agents, "0.0.32", home="r-bbbbbb")
+        self.assertTrue(B.record_lineage(agents, today="2026-11-02"))
+        self.assertEqual(B.read_carrier(agents)["lineage"],
+                         ["0.0.31 r-0a0a0a 2026-10-09", "0.0.32 r-0a0a0a 2026-11-01", "0.0.32 r-bbbbbb 2026-11-02"])
+
+    def test_nothing_is_recorded_without_a_home_or_a_carrier_file(self) -> None:
+        agents = make_bundle(self.root / "plain", "0.0.31")
+        self.assertFalse(B.record_lineage(agents, today="2026-10-09"))
+        self.assertNotIn("lineage", B.read_carrier(agents))
+        bare = self.carrier("bare")
+        (bare / "carrier.toml").unlink()
+        self.assertFalse(B.record_lineage(bare, today="2026-10-09"))
+
+    def test_replacing_the_bundle_records_the_lineage_in_the_carriers_own_file(self) -> None:
+        shipped = self.carrier("release")
+        (shipped / "carrier.toml").unlink()
+        release().write_checksums(shipped)
+        old = make_bundle(self.root / "old", "0.0.30")
+        B.export(shipped, old, replace=True)
+        entries = B.read_carrier(old)["lineage"]
+        self.assertEqual(len(entries), 1)
+        self.assertTrue(entries[0].startswith("0.0.31 r-0a0a0a "))
+        self.assertEqual(B.read_carrier(old)["carrier"], "r-abcdef")
+        self.assertEqual(B.checksum_problems(old), [])
+
+    def test_home_prints_the_release_origin_and_what_waits(self) -> None:
+        agents = self.carrier()
+        code, out = run("home", str(agents))
+        self.assertEqual(code, 0)
+        self.assertIn("home: r-0a0a0a", out)
+        self.assertIn("parent: v0.0.30", out)
+        self.assertIn("upstream: r-0a0a0a", out)
+        self.assertIn("lineage: none recorded", out)
+        self.assertIn("proposals waiting: 0", out)
+        self.assertIn("incoming: only its README", out)
+
+    def test_home_lists_the_last_lineage_entries_proposals_and_incoming(self) -> None:
+        agents = self.carrier()
+        for i in range(1, 8):
+            self.set_version(agents, f"0.0.{i}")
+            B.record_lineage(agents, today=f"2026-10-{i:02d}")
+        a_proposal(agents)
+        (agents / "incoming/release").mkdir()
+        (agents / "incoming/release/x.md").write_text("offered\n")
+        before = sorted(p.as_posix() for p in agents.rglob("*"))
+        code, out = run("home", str(agents))
+        self.assertEqual(code, 0)
+        self.assertIn("0.0.7 r-0a0a0a 2026-10-07", out)
+        self.assertNotIn("0.0.1 r-0a0a0a", out)
+        self.assertIn("proposals waiting: 1", out)
+        self.assertIn("incoming: holds something besides its README", out)
+        self.assertEqual(sorted(p.as_posix() for p in agents.rglob("*")), before)
+
+    def test_home_on_a_home_says_it_has_no_upstream(self) -> None:
+        agents = self.carrier()
+        B.write_carrier(agents, {"carrier": "r-0a0a0a", "adopted": "2026-01-01", "upstream": "", "adapted": [], "declined": []})
+        self.assertIn("upstream: none (this is a home repository)", run("home", str(agents))[1])

@@ -805,10 +805,16 @@ def installed_version(tree: Path) -> str | None:
     return B.bundle_version(tree) or legacy_version(tree)
 
 
-def set_version(root: Path, version: str, released: str) -> None:
+def set_version(root: Path, version: str, released: str, parent: str | None = None) -> None:
+    """Version, date, the building home's id (its own carrier file) and the tag this release follows."""
     readme = root / ORIGINALS / "README.md"
     data, body = B.read_frontmatter(readme.read_text(encoding="utf-8"), str(readme))
     data.update({"version": version, "released": released})
+    home = (B.read_carrier(root / ".agents") or {}).get(B.CARRIER_FIELD)
+    if home:
+        data["home"] = home
+    if parent:
+        data["parent"] = parent
     readme.write_text(B.dump_frontmatter(data) + body, encoding="utf-8")
 
 
@@ -829,8 +835,9 @@ def release(version: str, root: Path = ROOT) -> str:
     over = export_over_cap(root, EXPORT_CAP)
     if over:
         raise RefusedError(over)
-    set_version(root, version, section.group(2))
+    set_version(root, version, section.group(2), existing[-1] if existing else None)
     build(root)
+    B.record_lineage(root / ".agents", section.group(2))
     return f'git tag -a v{version} -m "agent-guides {version}"'
 
 

@@ -30,6 +30,8 @@ own tool, never by this one.
                                                                 the Status column to a four-column log
     python3 .agents/tools/bundle.py report [TREE] [--json] [--check]   size per folder and session; budgets
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
+    python3 .agents/tools/bundle.py home [TREE]                 the home this release came from, its parent tag, this
+                                                                carrier's lineage, proposals and incoming waiting
     python3 .agents/tools/bundle.py export [--replace] DEST   the shipped files and SHA256SUMS: a release as it travels
     python3 .agents/tools/bundle.py propose --kind K --target SLUG (--from FILE | --claim C --evidence E) [...]
                                                                 one proposal to the bundle, in proposals/
@@ -1958,7 +1960,7 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 CARRIER_FILE = "carrier.toml"
 CARRIER_TABLES = ("skills",)  # a role of the skill catalogue to the name installed here (method/skills/README.md)
 CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "adapted", "declined",
-               "visibility", "private_folder")
+               "visibility", "private_folder", "lineage")
 VISIBILITIES = ("public", "private")
 
 
@@ -2580,6 +2582,70 @@ def bundle_version(tree: Path) -> str | None:
     return version if isinstance(version, str) and SEMVER.match(version) else None
 
 
+def bundle_origin(tree: Path) -> tuple[str | None, str | None]:
+    """(home, parent) a release declares in its README frontmatter: the id of the home that built it and the
+    tag it follows. Either is None when absent or unreadable."""
+    readme = tree / "README.md"
+    if not readme.is_file():
+        return None, None
+    try:
+        data, _ = read_frontmatter(readme.read_text(encoding="utf-8"), str(readme))
+    except FrontmatterError:
+        return None, None
+    home, parent = data.get("home"), data.get("parent")
+    return (home if isinstance(home, str) and CARRIER_ID.match(home) else None,
+            parent if isinstance(parent, str) and parent else None)
+
+
+def record_lineage(tree: Path, today: str | None = None) -> bool:
+    """Appends `VERSION HOME DATE` to the `lineage` of the carrier file when the bundle holds a release not yet
+    recorded there; returns whether it wrote. Idempotent per version and home. Writes nothing without a carrier
+    file, a version or a home id."""
+    version, (home, _) = bundle_version(tree), bundle_origin(tree)
+    data = read_carrier(tree)
+    if data is None or version is None or home is None:
+        return False
+    lineage = list(data.get("lineage") or [])
+    if any(entry.startswith(f"{version} {home} ") for entry in lineage):
+        return False
+    entry = f'  {_toml_str(f"{version} {home} {today or datetime.date.today().isoformat()}")},\n'
+    path = tree / CARRIER_FILE
+    text = path.read_text(encoding="utf-8")
+    existing = re.search(r"^lineage[ \t]*=[ \t]*\[[^\]]*", text, re.MULTILINE)
+    if existing:
+        text = text[: existing.end()] + ("" if existing.group(0).endswith(("\n", "[")) else "\n") + entry + text[existing.end() :]
+    else:
+        table = re.search(r"^\[", text, re.MULTILINE)
+        cut = table.start() if table else len(text)
+        lead = "" if not cut or text[cut - 1] == "\n" else "\n"
+        text = text[:cut] + lead + "lineage = [\n" + entry + "]\n" + ("\n" if table else "") + text[cut:]
+    path.write_text(text, encoding="utf-8")
+    return True
+
+
+def home_report(tree: Path, last: int = 5) -> list[str]:
+    """What this carrier knows of the home it takes releases from, from local files only."""
+    home, parent = bundle_origin(tree)
+    carrier = read_carrier(tree) or {}
+    upstream = str(carrier.get("upstream") or "").strip()
+    lineage = list(carrier.get("lineage") or [])
+    waiting = len([p for p in _proposal_files(tree) if PROPOSAL_NAME.match(p.stem)])
+    offered = [p for p in (tree / "incoming").rglob("*") if p.is_file()] if (tree / "incoming").is_dir() else []
+    lines = [f"release: {bundle_version(tree) or 'unknown'}",
+             f"home: {home or 'not named by this release'}",
+             f"parent: {parent or 'not named by this release'}",
+             f"upstream: {upstream or 'none (this is a home repository)'}"]
+    if lineage:
+        lines.append(f"lineage (last {min(last, len(lineage))} of {len(lineage)}):")
+        lines += [f"  {entry}" for entry in lineage[-last:]]
+    else:
+        lines.append("lineage: none recorded")
+    lines.append(f"proposals waiting: {waiting}")
+    lines.append("incoming: " + ("only its README" if not [p for p in offered if p != tree / "incoming/README.md"]
+                                 else "holds something besides its README"))
+    return lines
+
+
 def is_legacy(tree: Path) -> bool:
     """A bundle from before 0.0.22: its README header names a `lineage`."""
     readme = tree / "README.md"
@@ -3173,6 +3239,8 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
         while parent != dest and parent.is_dir() and not any(parent.iterdir()):
             parent.rmdir()
             parent = parent.parent
+    if replace:
+        record_lineage(dest)
     return rels
 
 
@@ -4485,6 +4553,8 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("changelog", help="the CHANGELOG sections newer than a version")
     p.add_argument("--since", required=True, metavar="X.Y.Z")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
+    p = sub.add_parser("home", help="the home this release came from, its parent tag, this carrier's lineage, what waits in proposals/ and incoming/ (read-only)")
+    p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder (or, with --replace, over an older release): a release as it travels")
     p.add_argument("dest")
     p.add_argument("--tree", default=str(OWN_BUNDLE))
@@ -4754,6 +4824,9 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
     if args.command == "changelog":
         print(changelog_since(Path(args.tree), args.since), end="")
         return 0
+    if args.command == "home":
+        print("\n".join(home_report(Path(args.tree))))
+        return 0
     if args.command == "export":
         print(f"exported {len(export(Path(args.tree), Path(args.dest), args.replace))} files to {args.dest}")
         return 0
@@ -4782,6 +4855,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             return 0
         if args.prune:
             gone = prune_proposals(tree)
+            record_lineage(tree)
             for pid, verdict in gone:
                 print(f"  - {pid}: {verdict}")
             print(f"pruned {len(gone)} proposals the home received")

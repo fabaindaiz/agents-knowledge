@@ -116,6 +116,8 @@ every other carrier's and is the only one to integrate. A note, a card, a method
 by the release. `bundle.py check-local` is that rule as a check: it compares every released file with
 `SHA256SUMS` and names the ones changed, committed or not.
 
+What a home does with a proposal, step by step, and what makes one easy to take in: [`meta.md`](meta.md), read on demand.
+
 ## The scope: every repository open here, and no other
 
 The rule and its reasons are in `prompt-context.md` §*Workspaces: several repositories at once*.

@@ -421,6 +421,20 @@ class Release(Base):
         self.assertEqual(B.bundle_version(home / ".agents"), "0.0.1")
         self.assertIsNone(R.export_over_cap(home, export_cap=10_000_000))
         self.assertIn("git tag -a v0.0.2", R.release("0.0.2", home))
+    def test_a_release_names_its_home_and_parent_and_the_home_keeps_its_lineage(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        changelog = home / "sources/bundle/CHANGELOG.md"
+        changelog.write_text(changelog.read_text().replace("## [Unreleased]\n", "## [Unreleased]\n\n## [0.0.2] - 2026-02-01\n\n- More.\n"))
+        R.release("0.0.2", home)
+        for readme in (home / "sources/bundle/README.md", home / ".agents/README.md"):
+            front = B.read_frontmatter(readme.read_text())[0]
+            self.assertEqual((front["home"], front["parent"], front["version"]), ("r-aaaaaa", "v0.0.1", "0.0.2"))
+        self.assertEqual(B.read_carrier(home / ".agents")["lineage"], ["0.0.1 r-aaaaaa 2026-01-02", "0.0.2 r-aaaaaa 2026-02-01"])
+        self.assertEqual(R.build(home, check=True), [])
+        R.build(home)
+        self.assertEqual(B.read_carrier(home / ".agents")["lineage"], ["0.0.1 r-aaaaaa 2026-01-02", "0.0.2 r-aaaaaa 2026-02-01"])
+
     def test_a_release_must_be_newer_and_described(self) -> None:
         R = release()
         home = make_home(self.root)
