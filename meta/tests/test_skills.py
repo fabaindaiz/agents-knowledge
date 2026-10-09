@@ -395,7 +395,7 @@ class Count(Base):
         self.assertIn("a copy or a recurrence", out)
         self.assertNotIn("folded", out)
         self.assertIn("not incidents", out)
-        helps = [line for line in B._parser().format_help().split("\n") if line.strip().startswith("count ")]
+        helps = [line for line in B._parser().format_help().split("\n") if re.sub(r"\x1b\[[0-9;]*m", "", line.strip()).startswith("count ")]
         self.assertIn("not incidents", " ".join(helps))
 
 
