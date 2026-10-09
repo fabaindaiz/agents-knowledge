@@ -149,6 +149,17 @@ class Verify(Base):
         self.assertTrue((out / "notes.md").exists())
         self.assertFalse((out / "method/prompt-context.md").exists())
 
+    def test_replace_does_not_name_caches_and_finder_metadata_foreign(self) -> None:
+        real, out = self._older_release_folder()
+        (out / "tools/__pycache__").mkdir(parents=True)
+        (out / "tools/__pycache__/bundle.cpython-311.pyc").write_bytes(b"\x00cache")
+        (out / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1" + b"\x00" * 8)
+
+        B.export(real, out, replace=True)
+
+        self.assertEqual(B.checksum_problems(out), [])
+        self.assertFalse((out / "method/only-in-the-old.md").exists())
+
     def test_replace_refuses_a_folder_without_checksums(self) -> None:
         real = Path(__file__).resolve().parents[2] / ".agents"
         out = self.root / "folder"

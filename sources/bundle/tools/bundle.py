@@ -3207,7 +3207,10 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
         if not (dest / CHECKSUMS).is_file():
             raise RefusedError(f"{dest}: holds no {CHECKSUMS}; --replace refreshes only a folder that holds a release")
         old = {*read_checksums(dest), CHECKSUMS}
-        held = [p.relative_to(dest).as_posix() for p in dest.rglob("*") if p.is_file() or p.is_symlink()]
+        # What `all_files` ignores (caches, a real `.DS_Store`) is not foreign; it is left where it is.
+        seen = set(all_files(dest))
+        held = [p.relative_to(dest).as_posix() for p in dest.rglob("*")
+                if p.is_symlink() or (p.is_file() and p.relative_to(dest).as_posix() in seen)]
         foreign = sorted(rel for rel in held if rel not in old and not _replace_own(rel))
         if foreign:
             raise RefusedError(f"{dest}: holds files no release lists, nothing removed: {', '.join(foreign)}")
@@ -3806,15 +3809,18 @@ def _installed(text: str) -> bool:
 def declined_skills(tree: Path) -> set[str]:
     """The skills a bundle's `carrier.toml` `declined` refuses: `{"*"}` for all, else the names.
 
-    An entry begins, case-folded, with `skill <name>` or `skill:<name>` (the name ends at whitespace, a colon or
-    the end), or with `skills` and then a space, a colon or the end. What follows is the reason and is ignored.
+    An entry begins, case-folded, with `skill <name>` or `skill:<name>` (the name may be backtick-quoted and ends
+    at whitespace, a colon, a comma, a backtick or the end), or with `skills` and then a space, a colon or the end.
+    What follows is the reason and is ignored. An entry that is not a string is skipped.
     """
     out: set[str] = set()
     for entry in (read_carrier(tree) or {}).get("declined", []):
+        if not isinstance(entry, str):
+            continue
         text = entry.strip().casefold()
         if (m := re.match(r"skills(?:[\s:]|$)", text)):
             out.add("*")
-        elif (m := re.match(r"skill(?:\s+|:\s*)([^\s:]+)", text)):
+        elif (m := re.match(r"skill(?:\s+|:\s*)`?([^\s:,`]+)", text)):
             out.add(m.group(1))
     return out
 
@@ -4548,7 +4554,7 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("changelog", help="the CHANGELOG sections newer than a version")
     p.add_argument("--since", required=True, metavar="X.Y.Z")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
-    p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder: a release as it travels")
+    p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder (or, with --replace, over an older release): a release as it travels")
     p.add_argument("dest")
     p.add_argument("--tree", default=str(OWN_BUNDLE))
     p.add_argument("--replace", action="store_true", help="dest holds an older release: replace it, keeping the carrier's own files; refused if it holds anything else")

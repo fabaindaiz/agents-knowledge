@@ -724,6 +724,7 @@ class Carry(Base):
 
         text = (self.root / "out/gather.md").read_text()
         self.assertIn("two — not read: no bundle on disk", text)
+        self.assertIn("# Gather — 1 carriers, 1 not read", text)
 
     def test_a_path_that_is_not_a_repository_is_not_read_instead_of_a_traceback(self) -> None:
         one = make_carrier(self.root, "one")

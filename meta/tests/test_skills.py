@@ -11,6 +11,7 @@ import io
 import json
 import re
 from pathlib import Path
+from unittest import mock
 
 from meta.tests.support import Base, bundle, commit, init_repo, make_bundle
 
@@ -240,6 +241,10 @@ class Install(Base):
         self.assertEqual(declined("skill user-walk"), {"user-walk"})
         self.assertEqual(declined("skills: all of them"), {"*"})
         self.assertEqual(declined("skills"), {"*"})
+        self.assertEqual(declined("skill `user-walk`: ours"), {"user-walk"})
+        self.assertEqual(declined("skill user-walk, ours"), {"user-walk"})
+        with mock.patch.object(B, "read_carrier", return_value={"declined": [3, None, "skill close"]}):
+            self.assertEqual(B.declined_skills(agents), {"close"})
         self.assertEqual(declined("skillset foo", "skill user-walker", "skills-extra", "a rule about skill user-walk"),
                          {"user-walker"})
 
