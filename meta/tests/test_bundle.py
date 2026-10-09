@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import math
+import os
 import re
 import shutil
 import subprocess
@@ -1883,6 +1884,46 @@ class ResearchHook(Base):
             self.assertTrue(B.research_allowed(command, repo), command)
         for command in refused:
             self.assertFalse(B.research_allowed(command, repo), command)
+
+    def test_a_fetch_into_the_job_scratch_runs(self) -> None:
+        repo = init_repo(self.root / "r")
+        job, system = self.root / "job", self.root / "system"
+        (job / "tmp").mkdir(parents=True)
+        system.mkdir()
+        with mock.patch.dict(os.environ, {"CLAUDE_JOB_DIR": str(job)}), \
+                mock.patch("tempfile.gettempdir", return_value=str(system)):
+            self.assertTrue(B.research_allowed(
+                f"curl -sL https://example.org/a -o {job.resolve()}/tmp/a/a.md", repo))
+            self.assertFalse(B.research_allowed(f"curl -sL https://example.org/a -o {job.resolve()}/a.md", repo))
+
+    def test_a_job_scratch_unset_missing_or_inside_the_repo_is_not_a_root(self) -> None:
+        repo = init_repo(self.root / "r")
+        system = self.root / "system"
+        system.mkdir()
+        (self.root / "bare").mkdir()
+        (repo / "tmp").mkdir()
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDE_JOB_DIR"}
+        with mock.patch("tempfile.gettempdir", return_value=str(system)):
+            with mock.patch.dict(os.environ, env, clear=True):
+                self.assertEqual(B.scratch_roots(repo), [system.resolve()])
+            for job in (self.root / "bare", repo):
+                with mock.patch.dict(os.environ, {"CLAUDE_JOB_DIR": str(job)}):
+                    self.assertEqual(B.scratch_roots(repo), [system.resolve()], str(job))
+                    self.assertFalse(B.research_allowed(
+                        f"curl -sL https://example.org/a -o {job.resolve()}/tmp/a", repo), str(job))
+
+    def test_the_refusal_names_the_folder_and_the_shape(self) -> None:
+        import tempfile
+        tool = ROOT / "sources/bundle/tools/bundle.py"
+        repo = init_repo(self.root / "r")
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "rm -rf ."}, "cwd": str(repo)})
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDE_JOB_DIR"}
+        run = subprocess.run(["python3", str(tool), "research-hook"], input=payload, capture_output=True, text=True,
+                             cwd=repo, env=env)
+        self.assertEqual(run.returncode, 2)
+        self.assertIn(str(Path(tempfile.gettempdir()).resolve()), run.stderr)
+        self.assertIn("one `curl` per segment", run.stderr)
+        self.assertIn("no variables, loops or `cd`", run.stderr)
 
     def test_the_hook_refuses_with_exit_two_and_fails_closed(self) -> None:
         tool = ROOT / "sources/bundle/tools/bundle.py"

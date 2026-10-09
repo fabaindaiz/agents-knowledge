@@ -3531,10 +3531,28 @@ CURL_FLAGS = {"-s", "-S", "-L", "-f", "-I", "--silent", "--show-error", "--locat
 CURL_VALUED = {"-A", "--user-agent", "-m", "--max-time", "--retry"}
 
 
+RESEARCH_REFUSAL = (
+    "researcher: refused. Only reads, and `curl` into a scratch folder outside the repository, run here.\n"
+    "  Scratch folders: {roots}\n"
+    "  Shape: one `curl` per segment, `-o` under a scratch folder, joined by `&&`, `||`, `;` or `|`;\n"
+    "  no variables, loops or `cd`.")
+
+
+def scratch_roots(repo: Path) -> list[Path]:
+    """The system temporary folder, then `$CLAUDE_JOB_DIR/tmp` when it exists outside the repository."""
+    roots = [Path(tempfile.gettempdir()).resolve()]
+    job = os.environ.get("CLAUDE_JOB_DIR")
+    if job:
+        extra, repo = (Path(job).expanduser() / "tmp").resolve(), repo.resolve()
+        if extra.is_dir() and repo not in (extra, *extra.parents) and extra not in repo.parents:
+            roots.append(extra)
+    return roots
+
+
 def _curl_into_scratch(segment: list[str], repo: Path) -> bool:
     if segment[:1] != ["curl"]:
         return False
-    scratch = Path(tempfile.gettempdir()).resolve()
+    scratch = scratch_roots(repo)
     urls, i = 0, 1
     while i < len(segment):
         token = segment[i]
@@ -3542,7 +3560,7 @@ def _curl_into_scratch(segment: list[str], repo: Path) -> bool:
             target = token.split("=", 1)[1] if "=" in token else (segment[i + 1] if i + 1 < len(segment) else "")
             i += 1 if "=" in token else 2
             path = Path(target).expanduser().resolve()
-            if not target or scratch not in path.parents or repo.resolve() in (path, *path.parents):
+            if not target or not any(root in path.parents for root in scratch) or repo.resolve() in (path, *path.parents):
                 return False
             continue
         if token in CURL_VALUED:
@@ -4572,7 +4590,7 @@ def research_hook(stdin: str) -> int:
             repo = cwd
         if research_allowed(command, repo):
             return 0
-        print("researcher: only reads, and `curl` into a temporary folder outside the repository, run here", file=sys.stderr)
+        print(RESEARCH_REFUSAL.format(roots=", ".join(str(root) for root in scratch_roots(repo))), file=sys.stderr)
         return 2
     except Exception as error:  # noqa: BLE001
         print(f"researcher: refused, the hook could not read the call ({error})", file=sys.stderr)
