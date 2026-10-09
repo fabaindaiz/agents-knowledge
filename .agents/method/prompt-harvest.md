@@ -190,6 +190,8 @@ session without being told: the uncommitted diff is their work.
    write each as a proposal of kind `experiment`: the date, the note, the repository by mechanism rather
    than by name (`--where`), what was run, the result, and the verdict. Only this repository's runs
    since the last release are proposed.
+   Optionally, run `bundle.py usage summary`, show it, and ask whether any generalised figure enters a
+   proposal as Evidence; a preference never does.
 6. **Friction that belongs to this repository** — a command that is awkward here, a check this host
    needs — goes in **this repository's** roadmap. Only the part that is true of any repository is a
    method candidate.
@@ -214,8 +216,6 @@ session without being told: the uncommitted diff is their work.
 
 ## What the local step must never do
 
-- **Never write a released file**: not a note, a card, an index, a method document, the README or the
-  tool. Only `proposals/` and `harvested_through` change.
 - **Never promote a candidate to a note here**, however obviously true it is. It is one proposal with
   what it lacks, and the release decides, with every other carrier's candidates on the table, which is the
   only place the generality test can honestly be applied.
@@ -226,7 +226,6 @@ session without being told: the uncommitted diff is their work.
   answer a privacy warning for the human: when in doubt, it stays out.
 - **Never invent a second occurrence.** One repository seeing something twice is one repository; the
   count that matters is across carriers, and the release is where it is taken.
-- **Never harvest a repository this session does not have open**, however reachable its path is.
 - **Never harvest over an unclosed session in silence.** Either it is closed first, or what was left
   out is named in the report. A harvest that quietly misses the last week's work will be trusted.
 - **Never leave a refusal unwritten.** A learning that did not pass the generality test is a proposal

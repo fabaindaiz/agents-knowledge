@@ -256,8 +256,7 @@ found; what answers no confirmed question is marked so.
 
 1. **The domain.** The recognised references for this kind of software —
    the canonical paper, talk, book chapter or engineering blog post that the
-   people who build these things cite. *(In a transactional service: idempotency keys, exactly-once semantics,
-   reconciliation.)*
+   people who build these things cite.
 2. **The language and its ecosystem.** Official style guides, the idioms the
    community treats as settled, the standard project layout, the known traps of
    the version you are pinned to. Prefer the primary source over a summary.
@@ -276,7 +275,6 @@ Rules for this phase:
 - **Verify, do not recall.** Anything version-specific about a tool or platform
   gets checked against its documentation. State which claims you verified and
   which are from memory, and mark the second kind **ASSUMPTION**.
-- **Cite the source you actually used.** Not a plausible URL.
 - **A reference that resolves is not thereby the right one.** A finding becomes
   a decision's reason only after the cited text has been read, and the tool run
   where the claim is behavioural. A fetch tool that answers through a model
@@ -458,6 +456,8 @@ Gather, in this order, stopping as soon as a source has nothing to add:
 - **What friction is still open.** Process items recorded and not yet fixed,
   especially any that today's work will hit again.
 
+At an effective usage level `full`, run `bundle.py usage brief` and apply what it prints.
+
 **Then say it out loud, in six lines. Not a dump — a brief.**
 
 ```
@@ -613,10 +613,8 @@ asked for, the report offers one, in one line; it does not run it.
 
 **The whole branch, offered when a multi-task plan is done.** Before the close,
 ask in one question whether a fresh agent should review the whole branch, given
-the plan and its decisions as intent, and give the cost: in five repositories
-each took four to twenty minutes (about a hundred thousand tokens where
-counted), and nearly every one found a defect that the green gate, and any
-per-task review, had passed (thin evidence: principle 19). Not for one small
+the plan and its decisions as intent, and give the cost, and the thin
+evidence for it (principle 19). Not for one small
 commit.
 
 - **Fix the findings and nothing else**, then send only what changed for a
@@ -635,7 +633,7 @@ you are confident nothing you touched could have moved it.
 
 **Verification is a step, not a reflex.** Run it once per finished unit of work,
 not between two edits of the same change. Scope it by the measured cost of each
-test area (in one repository a single directory was most of the suite's time),
+test area,
 and run the whole suite for changes that cross layers.
 **Report exactly which selection ran**; a scoped run presented as the suite is a
 false claim. A collection error is reported, never routed around with a skip.
@@ -656,9 +654,7 @@ artefact, is `../knowledge/notes/active/validate-each-transformation-run.md`.
 
 ### 5. Look at what you made
 
-Principle 14, applied. Render it, run it, open it, read it. Budget for the fact
-that this step finds things — it found two defects in the example above, one of
-them in a branch that predated the change by months.
+Principle 14, applied. Render it, run it, open it, read it.
 
 ### 6. Put the documents back to true — in this change, not later
 
@@ -685,9 +681,7 @@ It says what was built, **what the first
 attempt got wrong and what caught it**, what was measured, what was left
 undone, and — separately and explicitly — **any structural decision you
 declined to make on your own**. Put that last one where it cannot be missed; it
-is the one part of the report the human must act on. Re-read the human's whole
-message first, and any sent mid-turn: every part is done or named as not done
-(principle 15).
+is the one part of the report the human must act on.
 
 Commits are split by *what changed and why*, and only the ones that pass the
 repo's stated bar are offered. A commit that needs an "and" in its subject is
@@ -914,7 +908,6 @@ first checks that its target resolves inside that directory.
 - [ ] The engineering standards are stated in the repo's own vocabulary: the
       test discipline, the strictness level types are set to, what a docstring
       owes, and the domain's non-negotiables.
-- [ ] Nothing existing was renamed or reorganised without explicit approval.
 - [ ] Each objective confirmed at the pre-flight is delivered, or reported as
       not, with its reason.
 - [ ] Accepted by a first real task: the owner names one, it runs through the
@@ -938,19 +931,12 @@ The short one. Run it before you report, every time.
       undone, and fills *Review*, *Learned* and *Cards relied on*. Every new
       record — entry, decision row, roadmap item — has an id from
       `bundle.py id`, not a number.
-- [ ] Every part of the human's message, those sent mid-turn included, is done
-      or named as not done.
 - [ ] Where the change touched state, a contract, data, security or
       verification, the cards the index links were applied before the design
       decision and their checks ran before claiming done; a review asked for
       ran on the diff, with at most two re-reviews; and none asked for, a change
       that deletes or rewrites stored data, moves money or touches
       authentication offered one in its report.
-- [ ] A multi-task plan that ended offered a whole-branch review in a fresh
-      context, in one question with its cost.
-- [ ] Any structural decision you declined to take is stated plainly in the
-      report, where the human cannot miss it.
-- [ ] Nothing of somebody else's was swept into your change.
 - [ ] The closing review ran: what this change invalidated was re-run, the
       learnings were routed to their homes, and the answer to *"what would the
       next agent have to re-derive?"* is written down somewhere.
@@ -959,20 +945,13 @@ The short one. Run it before you report, every time.
       any ledger for the symptom, and is written down.
 - [ ] Process improvements were **proposed, not performed** — except a one-line
       reversible one, which is named in the report.
-- [ ] Learnings and friction were **captured in full**, regardless of whether
-      this was a session about improving anything, and summarised in one line.
-- [ ] The test was written before the code, and it failed first for the reason
-      expected. Any exception is named as one.
 - [ ] In a workspace: today's repo was named, its conventions were re-read
       rather than recalled, and no rule crossed a repository boundary.
-- [ ] Nothing technical was simplified away from the report — order was chosen,
-      content was not trimmed.
 
 ### Smells that mean it went wrong
 
 Each is the visible sign of a rule above being broken; the rule is in brackets.
 
-- The root file is 600 lines — its middle is not read (principle 5).
 - A rule with no enforcer and no `—`: a wish presenting as a rule (principle 1).
 - Every decision row says "code review": review is a hope with a meeting
   attached, not an enforcer (principle 1).
@@ -983,17 +962,12 @@ Each is the visible sign of a rule above being broken; the rule is in brackets.
   are being edited out (artifact 5).
 - The audit script passed on its first run: the rules are trivial or the checks
   are not checking (principle 2).
-- Two documents state the same number; one is already stale (principle 5).
 - The agent keeps proposing something already decided: the decision, or its
   number, is missing from `decisions.md` (principle 10).
 - The agent asked nothing all session, or asked at every branch (principle 15).
 - A feature was declared done on a green gate alone (principle 14).
-- A limit in the gate was raised in the same commit as a feature (*Working
-  safely*).
 - No session ever proposed a process improvement, the process area is empty
   after months, or an improvement rode inside a feature commit (principle 17).
-- The opening brief is three paragraphs (step 0).
-- Every learning offered to the bundle as a candidate (*Improving the method*).
 - The tests were written after the code — the assertions describe the
   implementation's shape — or the suite has never failed on a real change
   (principle 18).

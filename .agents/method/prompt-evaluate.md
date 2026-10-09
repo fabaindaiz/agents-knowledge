@@ -78,12 +78,7 @@ summary says.
 ---
 
 **This is the front door.** Run it before anything else, on every repository but
-an empty one, including one you did not write and do not own. The report it produces is what
-tells you which of the other documents you need — and sometimes the answer is
-none of them.
-
-**What you get back:** one file, `.agents/evaluation-<date>-<content6>.md`, under about
-200 lines, whose first paragraph is enough to decide what to do (the skeleton is under *The report*).
+an empty one, including one you did not write and do not own.
 
 ---
 
@@ -100,7 +95,7 @@ Before I evaluate, five things — reply **`defaults`** to take all of them as
 proposed.
 
 1. **Scope.** I will evaluate the whole repository. *(If this is a monorepo, say
-   which package or say "all".)*
+   which package.)*
 2. **May I run the gate?** I will run only commands that write nothing — a
    `--check` formatter, a linter, a type checker. **I will not run tests, a
    build, or anything that touches the network** unless you say so, because I
@@ -118,9 +113,6 @@ proposed.
 Not asking, because the repository answers them: what the stack is, what the
 commands are, what conventions exist, and which instruction files are present.
 ~~~
-
-Ask **fewer** when the repository answers one: in a single-package repo, drop
-question 1 entirely rather than asking it and answering it yourself.
 
 ---
 
@@ -166,11 +158,9 @@ Non-negotiable:
    of work is doing several things right, and some of them are better than this
    method's defaults. A report that is only criticism gets skimmed and closed, and misses the convention worth copying elsewhere.
 6. **Rank by cost, not by severity.**
-7. **No secrets in the report.** Do not copy credentials, tokens, customer
-   names, personal data or internal URLs into it, even when you found them in a
-   file. **If you find a secret committed to the repository, say that one is
-   there and where — never what it is.** That is a finding with a severity of
-   its own.
+7. **No secrets in the report.** **If you find a secret committed to the
+   repository, say that one is there and where — never what it is.** That is a
+   finding with a severity of its own.
 8. **The report is about the repository, not about the people.** Nothing in it
    should read as an assessment of whoever wrote the code.
 
@@ -189,9 +179,6 @@ In this order. Stop early if the repository is small; say so if you did.
   `commands/`, `hooks/`, `logs/`
 - `.agents/README.md`'s frontmatter and `.agents/carrier.toml` — the `version`
   and `adopted` tell you whether this repo has been through this before
-- **Every prompt document of the method that is present**, whatever it is
-  called: list the files beside this one. Each executable prompt you find
-  defines criteria; use all of them, including any this document does not name.
 - `docs/` in full, with attention to anything that looks like decisions, ADRs,
   architecture, a roadmap, references or a changelog
 
@@ -244,8 +231,7 @@ This answer decides what the reader does next (`prompt-context.md` §*Which
 document to run*).
 
 If `carrier.toml` claims `adopted` but the artifacts it names do not exist, say
-so plainly: **the files were copied without the work.** That is a specific and
-common state, and it is worth its own sentence.
+so plainly: **the files were copied without the work.**
 
 ### 3. Does every rule name its consequence and its enforcer?
 
@@ -319,8 +305,7 @@ anything a tool is configured to always include. Compare against a budget of
 roughly 200 lines.
 
 Then say **which sections would move** if it needs to shrink: detail that
-belongs in a document nobody pays for until they open it. A root file of 600
-lines is not read in the middle; its author believes it is.
+belongs in a document nobody pays for until they open it.
 
 ### 9. What could not be determined?
 
@@ -345,10 +330,8 @@ adding unenforced prose.
 | 4 | The expensive mistakes are unrepresentable — types, schemas and formats in which the bad state cannot be written down. |
 
 Score each dimension separately, because repositories are rarely level in all of
-them, and the uneven ones are the interesting ones:
-
-`Coverage` · `Accuracy` · `Enforcement` · `Verification` · `Decision memory` ·
-`Process capture` · `Cost`
+them, and the uneven ones are the interesting ones (the dimensions are the
+skeleton's rows).
 
 ---
 

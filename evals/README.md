@@ -28,6 +28,7 @@ measures 0.0.22, not the v0.0.21 the pilots carried. Study 2's frozen digest bec
 | `PROTOCOL.md` | Study 1's pre-registration: six arms, judgment, boundary and neutral tasks, the analysis plan and its deviations |
 | `REPORT.md` | Study 1's pilots, written as they happened, with the instrument defects found and corrected |
 | `PROTOCOL-general.md` | Study 2's protocol: competing explanations, falsifiable hypotheses with their severity, five task blocks, routed controls, gates G0–G4, forecasts, the decision map, threats, what must be built, and what changed from draft 1 |
+| `PROTOCOL-usage.md` | The ablation of consented usage preferences, on against off per session: registered before any measurement, with its counting rules, verdict rule and threats |
 | `harness.py` | validates the tasks, freezes a plan, runs trials in isolation, grades them (Study 1; Study 2's arms and adapters are listed in `PROTOCOL-general.md` §16) |
 | `analyze.py` | Study 1's pre-registered analysis of a run |
 | `power.py` | Monte Carlo power for a paired superiority test, to size a run before it happens |

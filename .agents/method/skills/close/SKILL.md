@@ -67,6 +67,27 @@ states none). Replace each comment, and beyond the format:
 - **Procedures done by hand:** the same search. The second occurrence is a proposed skill or script,
   with its cost.
 
+- **Usage data, only as consent allows.** Run `python3 .agents/tools/bundle.py usage needs-consent`. On `ask`,
+  show the user the text below in their language and take the answer with `usage set` (level, or a category
+  `on|off`); unanswered, store nothing and do not ask again this session. On `ok`, record with `usage add`: the
+  the session's frictions (`frictions`, counts); the ablation record (`ablation`) when it ran `usage brief`;
+  and a table of preferences to store (paraphrased, why, stated or inferred), each confirmed row by row
+  before `usage add preferences`. Then `usage show`: confirm (`usage use ID`) or let go each preference
+  expiring within 7 days.
+
+~~~text
+Usage data stays on this machine, outside every repository and never in git. It serves to improve how
+you use the tool: calibrating agent cost estimates, seeing which steps of the method cost you most, and
+remembering your preferences. Choose:
+1. Nothing (the default).
+2. Counts only: agent costs and method frictions, no content.
+3. Full: also your preferences, each shown to you before it is stored, and the on/off comparison that
+   measures whether they help.
+4. Choose by category.
+Records are kept 90 days (a preference renews each time it is used). See them with `bundle.py usage show`,
+erase with `usage forget`, change with `usage set`. Declining changes nothing else.
+~~~
+
 ## 5. What lives only outside the repository
 
 `python3 .agents/tools/bundle.py memory-diff` lists the assistant's local memories for this
