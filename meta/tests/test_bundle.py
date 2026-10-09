@@ -1990,6 +1990,59 @@ class ResearchHook(Base):
                     self.assertFalse(B.research_allowed(
                         f"curl -sL https://example.org/a -o {job.resolve()}/tmp/a", repo), str(job))
 
+    def test_a_job_root_that_contains_the_repository_is_not_a_root(self) -> None:
+        job = self.root / "job"
+        repo = init_repo(job / "tmp" / "r")
+        system = self.root / "system"
+        system.mkdir()
+        with mock.patch.dict(os.environ, {"CLAUDE_JOB_DIR": str(job)}), \
+                mock.patch("tempfile.gettempdir", return_value=str(system)):
+            self.assertEqual(B.scratch_roots(repo), [system.resolve()])
+
+    def test_a_tmp_symlinked_into_the_repository_is_not_a_root(self) -> None:
+        repo = init_repo(self.root / "r")
+        (repo / "inside").mkdir()
+        job, system = self.root / "job", self.root / "system"
+        job.mkdir()
+        system.mkdir()
+        (job / "tmp").symlink_to(repo / "inside")
+        with mock.patch.dict(os.environ, {"CLAUDE_JOB_DIR": str(job)}), \
+                mock.patch("tempfile.gettempdir", return_value=str(system)):
+            self.assertEqual(B.scratch_roots(repo), [system.resolve()])
+            self.assertFalse(B.research_allowed(
+                f"curl -sL https://example.org/a -o {job}/tmp/a", repo))
+
+    def test_dotdot_in_the_output_cannot_leave_the_root(self) -> None:
+        repo = init_repo(self.root / "r")
+        system = self.root / "system"
+        system.mkdir()
+        with mock.patch("tempfile.gettempdir", return_value=str(system)):
+            self.assertTrue(B.research_allowed(
+                f"curl -sL https://example.org/a -o {system.resolve()}/a/x", repo))
+            for out in (f"{system.resolve()}/../elsewhere/x", f"{system.resolve()}/a/../../elsewhere/x",
+                        f"{system.resolve()}/../r/x"):
+                self.assertFalse(B.research_allowed(f"curl -sL https://example.org/a -o {out}", repo), out)
+
+    def test_a_relative_or_broad_job_dir_is_not_a_root(self) -> None:
+        repo = init_repo(self.root / "r")
+        system, home = self.root / "system", self.root / "h" / "home"
+        system.mkdir()
+        home.mkdir(parents=True)
+        for name, target in (("root", Path("/")), ("home", home), ("above", home.parent)):
+            (self.root / name).mkdir()
+            (self.root / name / "tmp").symlink_to(target)
+        (self.root / "rel" / "tmp").mkdir(parents=True)
+        with mock.patch.dict(os.environ, {"HOME": str(home)}), \
+                mock.patch("tempfile.gettempdir", return_value=str(system)):
+            for job in (self.root / "root", self.root / "home", self.root / "above", "rel", "./rel"):
+                cwd = os.getcwd()
+                os.chdir(self.root)
+                try:
+                    with mock.patch.dict(os.environ, {"CLAUDE_JOB_DIR": str(job)}):
+                        self.assertEqual(B.scratch_roots(repo), [system.resolve()], str(job))
+                finally:
+                    os.chdir(cwd)
+
     def test_the_refusal_names_the_folder_and_the_shape(self) -> None:
         import tempfile
         tool = ROOT / "sources/bundle/tools/bundle.py"

@@ -3567,12 +3567,14 @@ RESEARCH_REFUSAL = (
 
 
 def scratch_roots(repo: Path) -> list[Path]:
-    """The system temporary folder, then `$CLAUDE_JOB_DIR/tmp` when it exists outside the repository."""
+    """The system temporary folder, then `$CLAUDE_JOB_DIR/tmp` when the variable is absolute and its `tmp` exists, outside the repository and
+    neither the home folder nor above it."""
     roots = [Path(tempfile.gettempdir()).resolve()]
     job = os.environ.get("CLAUDE_JOB_DIR")
-    if job:
-        extra, repo = (Path(job).expanduser() / "tmp").resolve(), repo.resolve()
-        if extra.is_dir() and repo not in (extra, *extra.parents) and extra not in repo.parents:
+    if job and Path(job).is_absolute():
+        extra, repo, home = (Path(job) / "tmp").resolve(), repo.resolve(), Path.home().resolve()
+        broad = extra == home or extra in home.parents  # the filesystem root, the home folder, or above it
+        if extra.is_dir() and not broad and repo not in (extra, *extra.parents) and extra not in repo.parents:
             roots.append(extra)
     return roots
 
