@@ -32,6 +32,10 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
     python3 .agents/tools/bundle.py home [TREE]                 the home this release came from, its parent tag, this
                                                                 carrier's lineage, proposals and incoming waiting
+    python3 .agents/tools/bundle.py usage show|set|add|use|forget|brief|summary|report|needs-consent
+                                                                consented usage data, kept on this machine outside
+                                                                every repository, to improve how you work with the
+                                                                tool; `show` says what is stored and where
     python3 .agents/tools/bundle.py export [--replace] DEST   the shipped files and SHA256SUMS: a release as it travels
     python3 .agents/tools/bundle.py propose --kind K --target SLUG (--from FILE | --claim C --evidence E) [...]
                                                                 one proposal to the bundle, in proposals/
@@ -80,6 +84,7 @@ import posixpath
 import re
 import secrets
 import shutil
+import statistics
 import subprocess
 import tarfile
 import tempfile
@@ -589,6 +594,17 @@ PRIVATE_SENTINEL = "confidential: never leaves this repository"
 PRIVATE_FOLDER = ".private"  # at the root: never under `docs/`, which a site generator publishes
 
 
+# Usage data (`bundle.py usage`) is kept outside every repository: its files start with one of these, so a copy
+# found in anything that travels fails the check, the way a pasted private file does.
+CONSENT_FIRST = "# agent-guides usage consent \u2014 local only; see `bundle.py usage show`"
+USAGE_HEADER = re.compile(r'\{\s*"agent-guides-usage"\s*:')
+
+
+def _usage_records(text: str) -> list[str]:
+    bare = text.strip()
+    return ["usage data"] if bare == CONSENT_FIRST or USAGE_HEADER.match(bare) else []
+
+
 def _sentinels(text: str) -> list[str]:
     bare = re.sub(r"^\s*(?:<!--|[#>*+`-])*\s*|\s*(?:-->|`)*\s*$", "", text)
     return [PRIVATE_SENTINEL] if bare.casefold() == PRIVATE_SENTINEL else []
@@ -596,6 +612,7 @@ def _sentinels(text: str) -> list[str]:
 
 PRIVACY_RULES: dict[str, PrivacyRule] = {
     "private-record": PrivacyRule("FAIL", _sentinels),
+    "usage-record": PrivacyRule("FAIL", _usage_records),
     "email": PrivacyRule("FAIL", _emails, placeholder_exempt=True),
     "home-path": PrivacyRule("FAIL", _home_paths, placeholder_exempt=True),
     "forge-url": PrivacyRule("FAIL", _forge_paths, placeholder_exempt=True),
@@ -4531,6 +4548,374 @@ def turns_report(dirs: list[Path], since: str = "", context: bool = False, label
 REFUSALS = (NotACarrierError, OutsideWorkspaceError, DirtyTreeError, UndeclaredScopeError, RefusedError, FrontmatterError)
 
 
+# --- consented local usage data -------------------------------------------------------------------------
+# Everything stays on this machine, outside every repository, and serves to improve how the user works with
+# the tool. The bundle's checks read none of it; they only refuse a usage file found in a repository.
+
+USAGE_CATEGORIES = {
+    "agent_costs": "estimate against actual cost of delegated work, to calibrate estimates",
+    "frictions": "counts of gate failures, review-more picks and repeated or skipped steps, to see which steps cost most",
+    "preferences": "paraphrased preferences about how you work, to carry them between sessions",
+    "ablation": "preferences on or off per session with outcome counts, to learn whether preferences help",
+}
+USAGE_LEVELS = {"none": (), "counts": ("agent_costs", "frictions"), "full": tuple(USAGE_CATEGORIES)}
+USAGE_RETENTION = 90
+USAGE_SOON = 7
+USAGE_BRIEF_BYTES = 2048
+USAGE_MIN_SESSIONS = 20
+USAGE_TOKEN_RISE = 1 + 10 / 100
+USAGE_TOKEN = re.compile(r"[\w.:+-]{1,60}")
+USAGE_FIELDS: dict[str, dict[str, tuple]] = {
+    "agent_costs": {"kind": ("tok", 1), "model": ("tok", 1), "est_min": ("num", 0), "est_ktok": ("num", 0),
+                    "act_s": ("num", 1), "act_ktok": ("num", 1), "act_tools": ("int", 1)},
+    "frictions": {"session": ("tok", 1), "gate_fail": ("int", 0), "review_more": ("int", 0), "step_repeated": ("int", 0),
+                  "step_skipped": ("int", 0), "steps": ("steps", 0)},
+    "preferences": {"text": ("text", 1), "why": ("text", 1), "source": (("stated", "inferred"), 1)},
+    "ablation": {"arm": (("on", "off"), 1), "repeats": ("int", 1), "corrections": ("int", 1), "ktok": ("num", 1)},
+}
+
+
+def usage_consent_path() -> Path:
+    return default_terms_path().with_name("consent.toml")
+
+
+def usage_state_dir(repo: Path) -> Path:
+    """Where a carrier's usage data lives: the user's state folder, never a repository."""
+    data = read_carrier(repo / ".agents") if (repo / ".agents").is_dir() else None
+    name = str((data or {}).get(CARRIER_FIELD, ""))
+    name = name if CARRIER_ID.match(name) else "_none"
+    home = Path.home()
+    if sys.platform == "darwin":
+        base = home / "Library/Application Support"
+    elif sys.platform == "win32":
+        base = Path(os.environ.get("LOCALAPPDATA") or home / "AppData/Local")
+    else:
+        base = Path(os.environ.get("XDG_STATE_HOME") or home / ".local/state")
+    return base / "agent-guides" / name
+
+
+def _usage_write(path: Path, text: str, append: bool = False) -> None:
+    resolved = path.expanduser().resolve()
+    for parent in resolved.parents:
+        if (parent / ".git").exists():
+            raise RefusedError(f"{path}: inside the repository {parent}; usage data is kept outside every repository")
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    with resolved.open("a" if append else "w", encoding="utf-8") as out:
+        out.write(text)
+
+
+def usage_consent() -> dict | None:
+    """The consent file as read, or None when this machine was never asked."""
+    path = usage_consent_path()
+    if not path.is_file():
+        return None
+    try:
+        return tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as error:
+        raise RefusedError(f"{path}: not valid TOML ({error})") from error
+
+
+def usage_days(consent: dict | None) -> int:
+    days = ((consent or {}).get("retention") or {}).get("days", USAGE_RETENTION)
+    return days if isinstance(days, int) and days > 0 else USAGE_RETENTION
+
+
+def usage_effective(consent: dict | None) -> dict[str, bool]:
+    """Which categories may be stored: the level's, each overridable; ablation only with preferences."""
+    chosen = USAGE_LEVELS.get((consent or {}).get("level"), ())
+    overrides = (consent or {}).get("categories") or {}
+    state = {c: bool(overrides.get(c, c in chosen)) if consent else False for c in USAGE_CATEGORIES}
+    state["ablation"] = state["ablation"] and state["preferences"]
+    return state
+
+
+def usage_needs_consent() -> bool:
+    consent = usage_consent()
+    return consent is None or any(c not in (consent.get("categories_known") or []) for c in USAGE_CATEGORIES)
+
+
+def usage_save_consent(level: str, overrides: dict[str, bool], days: int, today: datetime.date) -> None:
+    lines = [CONSENT_FIRST, "# level: none stores nothing; counts stores agent_costs and frictions; full stores all four",
+             f'level = "{level}"', "# the day this machine was asked", f"asked = {today.isoformat()}",
+             "# the categories this version of the tool knows; one it does not list here is asked about again",
+             "categories_known = [" + ", ".join(f'"{c}"' for c in USAGE_CATEGORIES) + "]",
+             "# an entry here wins over the level; a category not listed follows the level"]
+    lines += [f"#   {c}: {purpose}" for c, purpose in USAGE_CATEGORIES.items()]
+    lines += ["[categories]", *[f"{c} = {'true' if on else 'false'}" for c, on in overrides.items()],
+              "# records older than this many days are deleted; a preference is kept this long after its last use",
+              "[retention]", f"days = {days}", ""]
+    _usage_write(usage_consent_path(), "\n".join(lines))
+
+
+def usage_state_lines() -> list[str]:
+    consent = usage_consent()
+    effective = usage_effective(consent)
+    return [f"level: {(consent or {}).get('level', 'none')}; retention {usage_days(consent)} days",
+            *[f"  {c}: {'on' if effective[c] else 'off'}" for c in USAGE_CATEGORIES]]
+
+
+def usage_set(args: list[str], today: datetime.date) -> list[str]:
+    consent = usage_consent() or {}
+    level, overrides, days = consent.get("level", "none"), dict(consent.get("categories") or {}), usage_days(consent)
+    usage = "usage set level <none|counts|full> | <category> <on|off> | retention <days>"
+    if len(args) != 2:
+        raise RefusedError(usage)
+    key, value = args
+    if key == "level" and value in USAGE_LEVELS:
+        level = value
+    elif key in USAGE_CATEGORIES and value in ("on", "off"):
+        overrides[key] = value == "on"
+    elif key == "retention" and value.isdigit() and int(value) > 0:
+        days = int(value)
+    else:
+        raise RefusedError(usage)
+    usage_save_consent(level, overrides, days, today)
+    return usage_state_lines()
+
+
+def _usage_file(repo: Path, category: str) -> Path:
+    return usage_state_dir(repo) / f"{category}.jsonl"
+
+
+def _usage_date(value: object) -> datetime.date:
+    try:
+        return datetime.date.fromisoformat(str(value))
+    except ValueError:
+        return datetime.date.min
+
+
+def _usage_header(category: str) -> str:
+    return json.dumps({"agent-guides-usage": 1, "category": category, "local_only": True}) + "\n"
+
+
+def usage_save(repo: Path, category: str, records: list[dict]) -> None:
+    _usage_write(_usage_file(repo, category), _usage_header(category) + "".join(json.dumps(r, sort_keys=True) + "\n" for r in records))
+
+
+def usage_records(repo: Path, category: str, today: datetime.date) -> list[dict]:
+    """A category's records within the retention window; older ones are deleted from the file as it is read."""
+    path = _usage_file(repo, category)
+    if not path.is_file():
+        return []
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(record, dict) and "agent-guides-usage" not in record:
+            records.append(record)
+    cutoff = today - datetime.timedelta(days=usage_days(usage_consent()))
+    stamp = "last_used" if category == "preferences" else "at"
+    kept = [r for r in records if _usage_date(r.get(stamp)) >= cutoff]
+    if len(kept) != len(records):
+        usage_save(repo, category, kept)
+    return kept
+
+
+def _usage_norm(text: str) -> str:
+    return " ".join(re.sub(r"[^\w\s]", "", text.casefold()).split())
+
+
+def _usage_value(name: str, kind: object, value: object) -> object:
+    try:
+        if kind == "tok" and USAGE_TOKEN.fullmatch(str(value)):
+            return str(value)
+        if kind in ("num", "int") and not isinstance(value, bool):
+            number = float(value)
+            if number >= 0 and (kind == "num" or number == int(number)):
+                return int(number) if number == int(number) else number
+        if kind == "text" and isinstance(value, str) and 3 <= len(value.strip()) <= 300 and "\n" not in value:
+            return value.strip()
+        if kind == "steps":
+            steps = value.split(",") if isinstance(value, str) else value
+            if isinstance(steps, list) and all(USAGE_TOKEN.fullmatch(str(s)) for s in steps):
+                return [str(s) for s in steps]
+        if isinstance(kind, tuple) and value in kind:
+            return value
+    except (TypeError, ValueError, OverflowError):
+        pass
+    shape = {"tok": "a short word", "num": "a number, 0 or more", "int": "a whole number, 0 or more",
+             "text": "one line of 3 to 300 characters", "steps": "a list of step names"}
+    raise RefusedError(f"usage add: `{name}` must be " + (" or ".join(kind) if isinstance(kind, tuple) else shape[kind]))
+
+
+def usage_privacy_problems(text: str) -> list[str]:
+    path = default_terms_path()
+    terms = read_terms(path) if path.is_file() else []
+    return ([f"{name}: {hit}" for name, rule in PRIVACY_RULES.items() if rule.level == "FAIL" for hit in rule.find(text)]
+            + [f"private-term: term on line {i} of the terms file" for i in term_hits(text, terms)])
+
+
+def usage_add(repo: Path, category: str, given: dict, today: datetime.date) -> str:
+    """Stores one record when the category is consented to; says so, and stores nothing, when it is not."""
+    if category not in USAGE_CATEGORIES:
+        raise RefusedError(f"usage add: category is one of {', '.join(USAGE_CATEGORIES)}")
+    if not usage_effective(usage_consent())[category]:
+        return f"not stored: no consent for {category}"
+    spec = USAGE_FIELDS[category]
+    unknown = sorted(set(given) - set(spec))
+    missing = sorted(k for k, (_, required) in spec.items() if required and k not in given)
+    if unknown or missing:
+        raise RefusedError(f"usage add {category}: " + "; ".join(
+            ([f"unknown {', '.join(unknown)}"] if unknown else []) + ([f"missing {', '.join(missing)}"] if missing else [])))
+    record: dict = {"v": 1, "at": today.isoformat(), **{k: _usage_value(k, spec[k][0], v) for k, v in given.items()}}
+    if category == "frictions":
+        record = {**{k: 0 for k, (t, _) in spec.items() if t == "int"}, **record}
+    if category == "preferences":
+        for key in ("text", "why"):
+            problems = usage_privacy_problems(record[key])
+            if problems:
+                raise RefusedError(f"usage add preferences: `{key}` refused, it must not identify anyone: " + "; ".join(problems))
+        record["id"] = "u-" + hashlib.sha256(_usage_norm(record["text"]).encode("utf-8")).hexdigest()[:6]
+        record.update(last_used=record["at"], uses=0)
+        records = usage_records(repo, category, today)
+        for old in records:
+            if old.get("id") == record["id"]:
+                old["last_used"] = record["at"]
+                usage_save(repo, category, records)
+                return f"renewed {record['id']}: already stored"
+        usage_save(repo, category, [*records, record])
+        return f"stored {category} {record['id']}"
+    usage_records(repo, category, today)
+    path = _usage_file(repo, category)
+    _usage_write(path, ("" if path.is_file() else _usage_header(category)) + json.dumps(record, sort_keys=True) + "\n", append=True)
+    return f"stored {category}"
+
+
+def usage_use(repo: Path, pref_id: str, today: datetime.date) -> str:
+    records = usage_records(repo, "preferences", today)
+    for record in records:
+        if record.get("id") == pref_id:
+            record.update(last_used=today.isoformat(), uses=int(record.get("uses", 0)) + 1)
+            usage_save(repo, "preferences", records)
+            return f"renewed {pref_id} until {today + datetime.timedelta(days=usage_days(usage_consent()))}"
+    raise RefusedError(f"usage use: no stored preference {pref_id}")
+
+
+def usage_forget(repo: Path, category: str | None) -> list[str]:
+    if category is not None and category not in USAGE_CATEGORIES:
+        raise RefusedError(f"usage forget: category is one of {', '.join(USAGE_CATEGORIES)}")
+    paths = [_usage_file(repo, c) for c in ([category] if category else USAGE_CATEGORIES)]
+    gone = [p for p in paths + ([] if category else [usage_consent_path()]) if p.is_file()]
+    for path in gone:
+        path.unlink()
+    return [f"deleted {p}" for p in gone] or ["nothing to delete"]
+
+
+def usage_show(repo: Path, today: datetime.date) -> list[str]:
+    consent, state = usage_consent(), usage_state_dir(repo)
+    paths = [f"consent: {usage_consent_path()}", f"data: {state}"]
+    purpose = "everything stays on this machine, outside every repository, and serves to improve how you work with the tool"
+    if consent is None and not any(_usage_file(repo, c).is_file() for c in USAGE_CATEGORIES):
+        return ["usage data: never configured. Nothing is stored, and no file in this repository is usage data.",
+                f"Purpose, if you choose to: {purpose}.", *paths]
+    effective, days = usage_effective(consent), usage_days(consent)
+    lines = [f"usage data: {purpose}.", *paths,
+             f"level: {(consent or {}).get('level', 'none')} (asked {(consent or {}).get('asked', 'never')}); retention {days} days"]
+    for category, why in USAGE_CATEGORIES.items():
+        lines.append(f"  {category}: {'on' if effective[category] else 'off'}, "
+                     f"{len(usage_records(repo, category, today))} records; {why}")
+    for pref in sorted(usage_records(repo, "preferences", today), key=lambda r: r.get("last_used", ""), reverse=True):
+        expires = _usage_date(pref.get("last_used")) + datetime.timedelta(days=days)
+        soon = "  EXPIRES SOON" if (expires - today).days <= USAGE_SOON else ""
+        lines.append(f"  {pref.get('id')}  last used {pref.get('last_used')}  expires {expires}{soon}  {pref.get('text')} ({pref.get('why')})")
+    return lines
+
+
+def usage_brief(repo: Path, today: datetime.date, memory: Path | None = None) -> list[str]:
+    """The stored preferences for a session's start: at most `USAGE_BRIEF_BYTES`, the latest used first."""
+    effective = usage_effective(usage_consent())
+    if not effective["preferences"]:
+        return []
+    lines: list[str] = []
+    if effective["ablation"]:
+        last = usage_records(repo, "ablation", today)
+        if last and last[-1].get("arm") == "on":
+            return ["(ablation: off) preferences withheld this session"]
+        lines.append("(ablation: on)")
+    folder = memory or memory_dir(repo)
+    held = _usage_norm(" ".join(p.read_text(encoding="utf-8", errors="replace") for p in sorted(folder.glob("*.md"))
+                                if p.name != "MEMORY.md")) if folder.is_dir() else ""
+    size = len("\n".join(lines).encode("utf-8"))
+    for pref in sorted(usage_records(repo, "preferences", today), key=lambda r: (r.get("last_used", ""), r.get("at", "")), reverse=True):
+        if held and _usage_norm(str(pref.get("text"))) in held:
+            continue
+        line = f"- {pref.get('text')} ({pref.get('why')}) [{pref.get('id')}]"
+        size += len(line.encode("utf-8")) + 1
+        if size > USAGE_BRIEF_BYTES:
+            break
+        lines.append(line)
+    return lines
+
+
+def _usage_range(values: list[float]) -> str:
+    return f"median {statistics.median(values):.2f}, range {min(values):.2f} to {max(values):.2f}" if values else "none"
+
+
+def usage_summary(repo: Path, today: datetime.date) -> list[str]:
+    """Aggregates only, never a preference's text: what a harvest may show the user."""
+    costs = usage_records(repo, "agent_costs", today)
+    lines = ["agent_costs, actual over estimate per kind:"]
+    for kind in sorted({str(r.get("kind")) for r in costs}):
+        mine = [r for r in costs if r.get("kind") == kind]
+        tokens = [r["act_ktok"] / r["est_ktok"] for r in mine if r.get("est_ktok")]
+        minutes = [r["act_s"] / 60 / r["est_min"] for r in mine if r.get("est_min")]
+        lines.append(f"  {kind} (n={len(mine)}): tokens {_usage_range(tokens)}; time {_usage_range(minutes)}")
+    frictions = usage_records(repo, "frictions", today)
+    total = {k: sum(r.get(k, 0) for r in frictions) for k, (t, _) in USAGE_FIELDS["frictions"].items() if t == "int"}
+    steps = Counter(s for r in frictions for s in r.get("steps", []))
+    lines += [f"frictions over {len(frictions)} sessions: " + ", ".join(f"{k} {v}" for k, v in total.items()),
+              "  per step: " + (", ".join(f"{s} {n}" for s, n in sorted(steps.items())) or "none")]
+    arms = Counter(r.get("arm") for r in usage_records(repo, "ablation", today))
+    return [*lines, f"ablation sessions: on {arms['on']}, off {arms['off']}"]
+
+
+def usage_report(repo: Path, today: datetime.date) -> list[str]:
+    """The ablation per arm and its verdict by the rule registered before the first measurement."""
+    records = usage_records(repo, "ablation", today)
+    means, lines = {}, []
+    for arm in ("on", "off"):
+        mine = [r for r in records if r.get("arm") == arm]
+        means[arm] = (len(mine), *[sum(r.get(k, 0) for r in mine) / len(mine) if mine else 0.0 for k in ("repeats", "corrections", "ktok")])
+        lines.append(f"  {arm}: {len(mine)} sessions, mean repeats {means[arm][1]:.2f}, corrections {means[arm][2]:.2f}, ktok {means[arm][3]:.1f}")
+    if min(means["on"][0], means["off"][0]) < USAGE_MIN_SESSIONS:
+        verdict = f"insufficient data (fewer than {USAGE_MIN_SESSIONS} sessions in an arm)"
+    elif means["on"][1] < means["off"][1] and means["on"][3] <= USAGE_TOKEN_RISE * means["off"][3]:
+        verdict = "keep on"
+    else:
+        verdict = "turn off by default"
+    unused = [p for p in usage_records(repo, "preferences", today) if not p.get("uses") and p.get("at") != today.isoformat()]
+    return ["ablation, preferences on against off:", *lines, f"verdict: {verdict}",
+            "preferences never used since stored (candidates to stop storing): " + (", ".join(p["id"] for p in unused) or "none")]
+
+
+def usage_command(repo: Path, action: str, rest: list[str], as_json: str | None = None, memory: Path | None = None,
+                  today: datetime.date | None = None) -> list[str]:
+    today = today or datetime.date.today()
+    if action == "needs-consent":
+        return ["ask" if usage_needs_consent() else "ok"]
+    if action == "set":
+        return usage_set(rest, today)
+    if action == "add":
+        if not rest:
+            raise RefusedError("usage add CATEGORY key=value ... | --json '{...}'")
+        pairs = [] if as_json else rest[1:]
+        given = json.loads(as_json) if as_json else dict(i.partition("=")[::2] for i in pairs)
+        if not isinstance(given, dict) or any("=" not in i for i in pairs):
+            raise RefusedError("usage add: fields are key=value pairs, or one JSON object")
+        return [usage_add(repo, rest[0], given, today)]
+    if action == "use" and len(rest) == 1:
+        return [usage_use(repo, rest[0], today)]
+    if action == "forget" and len(rest) <= 1:
+        return usage_forget(repo, rest[0] if rest else None)
+    reads = {"show": lambda: usage_show(repo, today), "brief": lambda: usage_brief(repo, today, memory),
+             "summary": lambda: usage_summary(repo, today), "report": lambda: usage_report(repo, today)}
+    if action in reads and not rest:
+        return reads[action]()
+    raise RefusedError("usage: show | set | add | use | forget | brief | summary | report | needs-consent")
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bundle.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -4586,6 +4971,12 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p = sub.add_parser("home", help="the home this release came from, its parent tag, this carrier's lineage, what waits in proposals/ and incoming/ (read-only)")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
+    p = sub.add_parser("usage", help="consented usage data, local only, outside every repository: show | set | add | use | forget | brief | summary | report | needs-consent")
+    p.add_argument("action", choices=["show", "set", "add", "use", "forget", "brief", "summary", "report", "needs-consent"])
+    p.add_argument("rest", nargs="*", help="set: level L | CATEGORY on|off | retention DAYS; add: CATEGORY key=value...; use: ID; forget: [CATEGORY]")
+    p.add_argument("--json", help="add: the fields as one JSON object")
+    p.add_argument("--repo", default=str(OWN_REPO))
+    p.add_argument("--memory", help="brief: the assistant's memory folder (default: its folder for REPO)")
     p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder (or, with --replace, over an older release): a release as it travels")
     p.add_argument("dest")
     p.add_argument("--tree", default=str(OWN_BUNDLE))
@@ -4857,6 +5248,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         return 0
     if args.command == "home":
         print("\n".join(home_report(Path(args.tree))))
+        return 0
+    if args.command == "usage":
+        for line in usage_command(Path(args.repo).resolve(), args.action, args.rest, args.json, Path(args.memory) if args.memory else None):
+            print(line)
         return 0
     if args.command == "export":
         print(f"exported {len(export(Path(args.tree), Path(args.dest), args.replace))} files to {args.dest}")

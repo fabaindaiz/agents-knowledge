@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import contextlib
+import datetime
 import hashlib
 import io
 import json
@@ -2190,3 +2191,283 @@ class Lineage(Base):
         agents = self.carrier()
         B.write_carrier(agents, {"carrier": "r-0a0a0a", "adopted": "2026-01-01", "upstream": "", "adapted": [], "declined": []})
         self.assertIn("upstream: none (this is a home repository)", run("home", str(agents))[1])
+
+
+class Usage(Base):
+    """Consented local usage data: nothing without consent, nothing in a repository, nothing that identifies."""
+
+    TODAY = datetime.date(2026, 10, 9)
+
+    def setUp(self) -> None:
+        super().setUp()
+        environment = mock.patch.dict(os.environ, {"HOME": str(self.root / "home"), "XDG_STATE_HOME": str(self.root / "state"),
+                                                   "LOCALAPPDATA": str(self.root / "state")})
+        environment.start()
+        self.addCleanup(environment.stop)
+        self.repo = self.root / "work"
+        self.repo.mkdir()
+        self.memory = self.root / "memory"
+
+    def after(self, days: int) -> datetime.date:
+        return self.TODAY + datetime.timedelta(days=days)
+
+    def u(self, *argv: str, day: datetime.date | None = None) -> list[str]:
+        return B.usage_command(self.repo, argv[0], list(argv[1:]), memory=self.memory, today=day or self.TODAY)
+
+    def state(self, name: str = "") -> Path:
+        return B.usage_state_dir(self.repo) / name
+
+    def pref(self, text: str, day: datetime.date | None = None) -> list[str]:
+        return self.u("add", "preferences", f"text={text}", "why=saves a round trip", "source=stated", day=day)
+
+    def prefs(self, day: datetime.date | None = None) -> list[dict]:
+        return B.usage_records(self.repo, "preferences", day or self.TODAY)
+
+    def test_a_machine_never_configured_says_so_and_stores_nothing(self) -> None:
+        shown = "\n".join(self.u("show"))
+        self.assertIn("never configured", shown)
+        self.assertIn("Nothing is stored", shown)
+        self.assertIn("no file in this repository is usage data", shown)
+        self.assertIn(str(self.state()), shown)
+        self.assertFalse(self.state().exists() or B.usage_consent_path().exists())
+        self.assertEqual(B.usage_effective(None), dict.fromkeys(B.USAGE_CATEGORIES, False))
+
+    def test_needs_consent_before_and_after_set_and_when_a_category_is_added(self) -> None:
+        self.assertEqual(self.u("needs-consent"), ["ask"])
+        self.u("set", "level", "counts")
+        self.assertEqual(self.u("needs-consent"), ["ok"])
+        with mock.patch.dict(B.USAGE_CATEGORIES, {"newer": "a category a later release adds"}):
+            self.assertEqual(self.u("needs-consent"), ["ask"])
+        self.assertTrue(B.usage_consent_path().read_text().startswith(B.CONSENT_FIRST + "\n"))
+        self.assertEqual(B.usage_consent()["asked"], self.TODAY)
+
+    def test_add_without_consent_stores_nothing_and_is_not_an_error(self) -> None:
+        code, out = run("usage", "add", "frictions", "session=close", "--repo", str(self.repo))
+        self.assertEqual((code, out.strip()), (0, "not stored: no consent for frictions"))
+        self.u("set", "level", "none")
+        self.assertEqual(self.u("add", "agent_costs", "kind=review", "model=m", "act_s=1", "act_ktok=1", "act_tools=1"),
+                         ["not stored: no consent for agent_costs"])
+        self.assertFalse(self.state().exists())
+
+    def test_each_level_and_an_override_decide_the_effective_categories(self) -> None:
+        def on() -> list[str]:
+            return [c for c, v in B.usage_effective(B.usage_consent()).items() if v]
+        self.u("set", "level", "none")
+        self.assertEqual(on(), [])
+        self.u("set", "level", "counts")
+        self.assertEqual(on(), ["agent_costs", "frictions"])
+        self.u("set", "level", "full")
+        self.assertEqual(on(), list(B.USAGE_CATEGORIES))
+        self.u("set", "frictions", "off")
+        self.assertEqual(on(), ["agent_costs", "preferences", "ablation"])
+        self.u("set", "preferences", "off")
+        self.assertEqual(on(), ["agent_costs"])
+        self.u("set", "level", "counts")
+        self.u("set", "preferences", "on")
+        self.u("set", "ablation", "on")
+        self.assertEqual(on(), ["agent_costs", "preferences", "ablation"])
+        self.u("set", "retention", "30")
+        self.assertEqual(B.usage_days(B.usage_consent()), 30)
+        with self.assertRaises(B.RefusedError):
+            self.u("set", "level", "everything")
+
+    def test_stored_records_carry_the_header_the_date_and_the_schema(self) -> None:
+        self.u("set", "level", "counts")
+        self.u("add", "frictions", "session=close", "gate_fail=2", "steps=close,review")
+        self.u("add", "agent_costs", "kind=review", "model=m", "act_s=30", "act_ktok=12.5", "act_tools=4")
+        lines = self.state("frictions.jsonl").read_text().splitlines()
+        self.assertEqual(json.loads(lines[0]), {"agent-guides-usage": 1, "category": "frictions", "local_only": True})
+        record = json.loads(lines[1])
+        self.assertEqual((record["at"], record["v"], record["gate_fail"], record["review_more"], record["steps"]),
+                         ("2026-10-09", 1, 2, 0, ["close", "review"]))
+        self.assertEqual(json.loads(self.state("agent_costs.jsonl").read_text().splitlines()[1])["act_ktok"], 12.5)
+        with self.assertRaises(B.RefusedError):
+            self.u("add", "frictions", "session=close", "gate_fail=-1")
+        with self.assertRaises(B.RefusedError):
+            self.u("add", "agent_costs", "kind=review")
+        code, _ = run("usage", "add", "frictions", "--json", '{"session": "x", "step_skipped": 1}', "--repo", str(self.repo))
+        self.assertEqual(code, 0)
+
+    def test_a_preference_that_names_a_private_term_or_leaks_is_refused(self) -> None:
+        self.u("set", "level", "full")
+        terms = B.default_terms_path()
+        terms.parent.mkdir(parents=True, exist_ok=True)
+        terms.write_text("zorblax\n")
+        with self.assertRaises(B.RefusedError) as caught:
+            self.pref("always ask zorblax first")
+        self.assertIn("private-term", str(caught.exception))
+        self.assertNotIn("zorblax", str(caught.exception))
+        with self.assertRaises(B.RefusedError):
+            self.pref("send it to someone@" + "corp.io")
+        self.assertEqual(self.prefs(), [])
+        self.assertTrue(self.pref("answers short, one decision per turn")[0].startswith("stored preferences u-"))
+
+    def test_a_duplicate_preference_is_renewed_not_stored_twice(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("Answers short, one decision per turn")
+        out = self.u("add", "preferences", "text=answers short -- one decision per turn!", "why=x y z", "source=stated", day=self.after(10))
+        self.assertIn("renewed", out[0])
+        stored = self.prefs(self.after(10))
+        self.assertEqual((len(stored), stored[0]["last_used"]), (1, self.after(10).isoformat()))
+
+    def test_retention_drops_old_records_and_a_preference_by_last_use(self) -> None:
+        self.u("set", "level", "full")
+        self.u("set", "retention", "30")
+        self.u("add", "frictions", "session=old")
+        self.pref("keeps a preference alive by use")
+        self.pref("never applied again")
+        keep = self.prefs()[0]["id"]
+        self.u("use", keep, day=self.after(20))
+        self.assertEqual(B.usage_records(self.repo, "frictions", self.after(40)), [])
+        self.assertEqual([p["id"] for p in self.prefs(self.after(40))], [keep])
+        self.assertEqual(len(self.state("frictions.jsonl").read_text().splitlines()), 1)
+
+    def test_use_renews_and_counts_and_an_unknown_id_is_refused(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("one decision per turn")
+        pid = self.prefs()[0]["id"]
+        self.assertIn("renewed", self.u("use", pid, day=self.after(5))[0])
+        record = self.prefs(self.after(5))[0]
+        self.assertEqual((record["last_used"], record["uses"]), (self.after(5).isoformat(), 1))
+        with self.assertRaises(B.RefusedError):
+            self.u("use", "u-000000")
+
+    def test_forget_deletes_one_category_or_everything(self) -> None:
+        self.u("set", "level", "full")
+        self.u("add", "frictions", "session=a")
+        self.pref("one decision per turn")
+        out = self.u("forget", "frictions")
+        self.assertEqual(len(out), 1)
+        self.assertTrue(out[0].startswith("deleted ") and "frictions.jsonl" in out[0])
+        self.assertTrue(self.state("preferences.jsonl").exists())
+        self.assertEqual(len(self.u("forget")), 2)
+        self.assertFalse(self.state("preferences.jsonl").exists() or B.usage_consent_path().exists())
+        self.assertIn("never configured", "\n".join(self.u("show")))
+
+    def test_show_lists_levels_purposes_and_preferences_expiring_soon(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("one decision per turn")
+        pid = self.prefs()[0]["id"]
+        shown = "\n".join(self.u("show", day=self.after(B.usage_days(B.usage_consent()) - 3)))
+        self.assertIn("outside every repository", shown)
+        self.assertIn("level: full", shown)
+        self.assertIn("EXPIRES SOON", shown)
+        self.assertIn(pid, shown)
+        self.assertIn("agent_costs: on", shown)
+        self.assertNotIn("EXPIRES SOON", "\n".join(self.u("show")))
+
+    def test_brief_is_capped_most_recent_first_and_skips_what_memory_holds(self) -> None:
+        self.u("set", "level", "full")
+        self.u("set", "ablation", "off")
+        self.pref("first preference stated")
+        self.pref("second preference stated", day=self.after(1))
+
+        def texts() -> list[str]:
+            return [line.split(" (")[0] for line in self.u("brief", day=self.after(2))]
+        self.assertEqual(texts(), ["- second preference stated", "- first preference stated"])
+        self.memory.mkdir()
+        (self.memory / "MEMORY.md").write_text("- index only\n")
+        (self.memory / "rule.md").write_text("---\nname: r\n---\nThe user wants: first preference stated.\n")
+        self.assertEqual(texts(), ["- second preference stated"])
+        for n in range(60):
+            self.u("add", "preferences", f"text=bulk preference number {n} about working", "why=" + "w" * 80, "source=stated")
+        brief = self.u("brief", day=self.after(2))
+        self.assertLessEqual(len(("\n".join(brief) + "\n").encode()), 2048)
+        self.assertGreater(len(brief), 5)
+        self.assertLess(len(brief), 62)
+
+    def test_brief_prints_nothing_without_preferences_consent(self) -> None:
+        self.u("set", "level", "counts")
+        self.assertEqual(self.u("brief"), [])
+
+    def test_ablation_alternates_the_arm_and_withholds_when_off(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("one decision per turn")
+        self.assertEqual(self.u("brief")[0], "(ablation: on)")
+        self.assertEqual(len(self.u("brief")), 2)
+        self.u("add", "ablation", "arm=on", "repeats=1", "corrections=0", "ktok=10")
+        self.assertEqual(self.u("brief"), ["(ablation: off) preferences withheld this session"])
+        self.u("add", "ablation", "arm=off", "repeats=2", "corrections=1", "ktok=9")
+        self.assertEqual(self.u("brief")[0], "(ablation: on)")
+        self.u("set", "preferences", "off")
+        self.assertEqual(self.u("add", "ablation", "arm=on", "repeats=1", "corrections=0", "ktok=1"),
+                         ["not stored: no consent for ablation"])
+
+    def test_summary_carries_aggregates_and_no_preference_text(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("a very particular phrasing")
+        for act in (10, 30):
+            self.u("add", "agent_costs", "kind=review", "model=m", "est_min=1", "est_ktok=10", f"act_s={act * 6}",
+                   f"act_ktok={act}", "act_tools=3")
+        self.u("add", "frictions", "session=close", "gate_fail=2", "steps=close")
+        self.u("add", "frictions", "session=close", "gate_fail=1", "steps=close,plan")
+        self.u("add", "ablation", "arm=on", "repeats=0", "corrections=0", "ktok=1")
+        text = "\n".join(self.u("summary"))
+        self.assertNotIn("particular", text)
+        self.assertIn("review (n=2): tokens median 2.00, range 1.00 to 3.00", text)
+        self.assertIn("gate_fail 3", text)
+        self.assertIn("close 2, plan 1", text)
+        self.assertIn("on 1, off 0", text)
+
+    def test_report_gives_the_three_verdicts_by_the_registered_rule(self) -> None:
+        self.u("set", "level", "full")
+        self.assertIn("insufficient data", "\n".join(self.u("report")))
+
+        def arms(on: tuple, off: tuple, n: int = 20) -> str:
+            self.u("forget", "ablation")
+            for arm, (repeats, ktok) in (("on", on), ("off", off)):
+                for _ in range(n):
+                    self.u("add", "ablation", f"arm={arm}", f"repeats={repeats}", "corrections=0", f"ktok={ktok}")
+            return "\n".join(self.u("report"))
+        self.assertIn("insufficient data", arms((1, 10), (2, 10), n=19))
+        self.assertIn("verdict: keep on", arms((1, 11), (2, 10)))
+        self.assertIn("verdict: turn off by default", arms((1, 12), (2, 10)))
+        self.assertIn("verdict: turn off by default", arms((2, 10), (2, 10)))
+
+    def test_report_lists_preferences_never_used(self) -> None:
+        self.u("set", "level", "full")
+        self.pref("one decision per turn")
+        pid = self.prefs()[0]["id"]
+        self.assertIn(pid, "\n".join(self.u("report", day=self.after(3))))
+        self.u("use", pid, day=self.after(3))
+        self.assertIn("none", self.u("report", day=self.after(3))[-1])
+
+    def test_the_state_folder_follows_the_carrier_id(self) -> None:
+        repo = init_repo(self.root / "carrier")
+        make_bundle(repo)
+        self.assertEqual(B.usage_state_dir(repo).name, B.repo_carrier_id(repo))
+        self.assertEqual(B.usage_state_dir(self.repo).name, "_none")
+        self.assertEqual(B.usage_state_dir(repo).parent.name, "agent-guides")
+
+    def test_writes_inside_a_git_working_tree_are_refused(self) -> None:
+        self.u("set", "level", "counts")
+        inside = init_repo(self.root / "tree")
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(inside / "state")}):
+            with self.assertRaises(B.RefusedError) as caught:
+                self.u("add", "frictions", "session=x")
+        self.assertIn("outside every repository", str(caught.exception))
+        self.assertFalse((inside / "state").exists())
+        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(inside / "config")}):
+            with self.assertRaises(B.RefusedError):
+                self.u("set", "level", "full")
+        self.assertFalse((inside / "config").exists())
+
+    def test_the_privacy_guard_fails_on_a_usage_file_tracked_or_staged(self) -> None:
+        self.u("set", "level", "counts")
+        self.u("add", "frictions", "session=x")
+        repo = init_repo(self.root / "guarded")
+        (repo / "README.md").write_text("# project\n")
+        git_commit(repo, "chore: start")
+        self.assertEqual(B.privacy_check(paths=[repo / "README.md"]).failures, [])
+        (repo / "frictions.jsonl").write_text(self.state("frictions.jsonl").read_text())
+        (repo / "notes.toml").write_text(B.usage_consent_path().read_text())
+        git(repo, "add", "frictions.jsonl", "notes.toml")
+        staged = B.privacy_check(paths=[repo / name for name in git(repo, "diff", "--cached", "--name-only").split()])
+        self.assertEqual([f.rule for f in staged.failures], ["usage-record", "usage-record"])
+        git_commit(repo, "chore: copied")
+        code, out = run("privacy", "--tracked", "--repo", str(repo))
+        self.assertEqual(code, 1, out)
+        self.assertIn("usage-record", out)
+
+    def test_the_tools_own_source_does_not_trip_the_guard(self) -> None:
+        self.assertEqual([f for f in B.privacy_check(paths=[Path(B.__file__)]).failures if f.rule == "usage-record"], [])
