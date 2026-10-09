@@ -342,21 +342,21 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-0728ee228d` | 0.0.30 | queued as `the-log-path-is-a-carrier-field` |
 | `p-0e598a6664` | 0.0.30 | queued as `close-stops-at-ready-for-review` |
 | `p-0f86cf7f59` | 0.0.30 | queued as `align-compares-against-the-tag` |
-| `p-1070df9806` | 0.0.30 | queued as `a-complex-task-reads-the-skill-catalogue` |
+| `p-1070df9806` | 0.0.30 | answered: the catalogue and its trigger are in `method/skills/README.md` since 0.0.30; recorded in the history |
 | `p-12f06b3438` | 0.0.30 | queued as `docs-drift-is-checked-not-reviewed` |
 | `p-2804dab2bd` | 0.0.30 | queued as `carrier-linters-exclude-the-bundle` |
-| `p-2b25ab65ae` | 0.0.30 | another occurrence of `register-resolves-a-worktree-to-its-repository`, to merge |
+| `p-2b25ab65ae` | 0.0.30 | answered: fixed in 0.0.30; recorded in the history |
 | `p-32c8ccbcfd` | 0.0.30 | queued as `a-tracker-is-the-roadmaps-source` |
-| `p-480f968069` | 0.0.30 | another occurrence of `a-complex-task-reads-the-skill-catalogue`, to merge |
+| `p-480f968069` | 0.0.30 | answered: the catalogue and its trigger are in `method/skills/README.md` since 0.0.30; recorded in the history |
 | `p-5720a81212` | 0.0.30 | queued as `mint-names-the-home-as-upstream` |
 | `p-80486d03e9` | 0.0.30 | queued as `a-plan-keeps-a-status-table` |
 | `p-9243a43766` | 0.0.30 | queued as `a-worktree-check-needs-its-own-environment` |
 | `p-aaea071f67` | 0.0.30 | queued as `answering-a-privacy-warning-rewrites-the-proposal` |
-| `p-b102eeae6f` | 0.0.30 | another occurrence of `prompt-context`, to merge |
-| `p-be515ef967` | 0.0.30 | another occurrence of `gather-reads-a-branch-not-only-the-checkout`, to merge |
+| `p-b102eeae6f` | 0.0.30 | answered: admitted into `prompt-context.md` §15 in 0.0.30; recorded in the history |
+| `p-be515ef967` | 0.0.30 | narrowed: the pre-flight and `gather` cover the branch question; the rest stays queued as `gather-reads-a-branch-not-only-the-checkout` |
 | `p-d8e9d86928` | 0.0.30 | queued as `criteria-and-tasks-map-both-ways` |
 | `p-de578f3f63` | 0.0.30 | queued as `new-entry-reads-the-logs-own-format` |
-| `p-f76353b351` | 0.0.30 | another occurrence of `prompt-context`, to merge |
+| `p-f76353b351` | 0.0.30 | answered: admitted into `prompt-context.md` §15 in 0.0.30; recorded in the history |
 | `p-fc57dd0369` | 0.0.30 | queued as `a-plan-may-be-a-working-artifact` |
 | `p-03af58edfc` | 0.0.31 | folded into `prompt-context` §15 as an occurrence (`history.md`) |
 | `p-d9a96d5862` | 0.0.31 | queued as `a-card-enters-an-answer-as-a-mechanism` |
@@ -364,15 +364,20 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-6a1060aa5b` | 0.0.31 | merged into `index-unread-where-rules-absorbed-it` |
 | `p-b90ef8c317` | 0.0.31 | merged into the note `derived-copy-goes-stale-silently`, *Evidence* |
 | `p-ec397a675e` | 0.0.31 | refused as a learning; a procedure in `evals/README.md` |
-| `p-11a3b4d7c5` | 0.0.31 | another occurrence of `a-shared-rule-has-one-enforcer-per-copy`, to merge |
+| `p-11a3b4d7c5` | 0.0.31 | merged into the queued row `a-shared-rule-has-one-enforcer-per-copy`, *Evidence* |
 | `p-38a48d40f6` | 0.0.31 | another occurrence of `prompt-update`, to merge |
-| `p-6fc1a0ee2d` | 0.0.31 | another occurrence of `changelog-order-is-checked`, to merge |
-| `p-b10b689423` | 0.0.31 | another occurrence of `refusal-must-not-read-like-an-answer`, to merge |
-| `p-b5ed4535bd` | 0.0.31 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
-| `p-c5ccb46250` | 0.0.31 | another occurrence of `best-effort-side-channels`, to merge |
-| `p-c986101c49` | 0.0.31 | another occurrence of `a-surviving-guard-mutation-means-a-missing-input`, to merge |
-| `p-cc620f4084` | 0.0.31 | another occurrence of `prompt-update`, to merge |
-| `p-cd7569810c` | 0.0.31 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
-| `p-f23391f5cc` | 0.0.31 | another occurrence of `order-writes-by-failure-residue`, to merge |
+| `p-6fc1a0ee2d` | 0.0.31 | merged into the queued row `changelog-order-is-checked`, *Evidence* |
+| `p-b10b689423` | 0.0.31 | merged into the note `refusal-must-not-read-like-an-answer`, *Evidence* |
+| `p-b5ed4535bd` | 0.0.31 | merged into the note `reproduce-the-checkout-not-only-the-environment`, *Evidence* |
+| `p-c5ccb46250` | 0.0.31 | merged into the note `best-effort-side-channels`, *Evidence* |
+| `p-c986101c49` | 0.0.31 | merged into the note `a-surviving-guard-mutation-means-a-missing-input`, *Evidence* |
+| `p-cc620f4084` | 0.0.31 | admitted into `prompt-update.md`, *Rules for the folder* (`--no-track`); recorded in the history |
+| `p-cd7569810c` | 0.0.31 | merged into the note `ratchet-in-a-pinned-environment`, *Evidence*, as observed |
+| `p-f23391f5cc` | 0.0.31 | merged into the note `order-writes-by-failure-residue`, *Evidence* |
 | `p-f692458588` | 0.0.31 | run logged against `copied-instruction-claims-its-origin` |
 | `p-f94bec8bcc` | 0.0.31 | run logged against `a-check-must-be-seen-to-fail` |
+| `p-580c209938` | 0.0.31 | another occurrence of `user-walk`, to merge |
+| `p-7e912173fa` | 0.0.31 | admitted into `prompt-context.md` and `prompt-bootstrap.md` Phase 5 (permission rules); recorded in the history |
+| `p-a112d996ee` | 0.0.31 | another occurrence of `prompt-context`, to merge |
+| `p-d2fa16b1fd` | 0.0.31 | another occurrence of `prompt-update`, to merge |
+| `p-de14564c12` | 0.0.31 | answered by `bundle.py export --replace` (0.0.31); recorded in the history |

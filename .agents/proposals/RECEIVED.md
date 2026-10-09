@@ -36,11 +36,11 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-0f9cb857ca` | 0.0.27 | — |
 | `p-0fc110b447` | 0.0.27 | — |
 | `p-10331493b3` | 0.0.26 | — |
-| `p-1070df9806` | 0.0.30 | queued as `a-complex-task-reads-the-skill-catalogue` |
+| `p-1070df9806` | 0.0.30 | answered: the catalogue and its trigger are in `method/skills/README.md` since 0.0.30; recorded in the history |
 | `p-10e696d3ae` | 0.0.26 | — |
 | `p-10f85b5cb7` | 0.0.27 | — |
 | `p-111c3c7143` | 0.0.24 | — |
-| `p-11a3b4d7c5` | 0.0.31 | another occurrence of `a-shared-rule-has-one-enforcer-per-copy`, to merge |
+| `p-11a3b4d7c5` | 0.0.31 | merged into the queued row `a-shared-rule-has-one-enforcer-per-copy`, *Evidence* |
 | `p-11b5e09dda` | 0.0.27 | — |
 | `p-11cb79103c` | 0.0.29 | — |
 | `p-127099fa7f` | 0.0.26 | — |
@@ -72,7 +72,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-290a632863` | 0.0.27 | — |
 | `p-29b56acbc2` | 0.0.27 | — |
 | `p-29be475822` | 0.0.27 | — |
-| `p-2b25ab65ae` | 0.0.30 | another occurrence of `register-resolves-a-worktree-to-its-repository`, to merge |
+| `p-2b25ab65ae` | 0.0.30 | answered: fixed in 0.0.30; recorded in the history |
 | `p-2d8db87a40` | 0.0.27 | — |
 | `p-2dd8588046` | 0.0.27 | — |
 | `p-2e680bc5bb` | 0.0.27 | — |
@@ -118,7 +118,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-4553abdc95` | 0.0.27 | — |
 | `p-458150cf50` | 0.0.27 | — |
 | `p-47766d2196` | 0.0.27 | — |
-| `p-480f968069` | 0.0.30 | another occurrence of `a-complex-task-reads-the-skill-catalogue`, to merge |
+| `p-480f968069` | 0.0.30 | answered: the catalogue and its trigger are in `method/skills/README.md` since 0.0.30; recorded in the history |
 | `p-486cadec03` | 0.0.27 | — |
 | `p-4a2be00ec2` | 0.0.26 | — |
 | `p-4cbe922a45` | 0.0.29 | — |
@@ -142,6 +142,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-56092db9f7` | 0.0.24 | — |
 | `p-5720a81212` | 0.0.30 | queued as `mint-names-the-home-as-upstream` |
 | `p-57dc3221f5` | 0.0.27 | — |
+| `p-580c209938` | 0.0.31 | another occurrence of `user-walk`, to merge |
 | `p-5a04855aa7` | 0.0.27 | — |
 | `p-5a33d7a5d9` | 0.0.26 | — |
 | `p-5c945ae226` | 0.0.27 | — |
@@ -164,7 +165,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-6e2034080b` | 0.0.27 | — |
 | `p-6e440b2922` | 0.0.24 | — |
 | `p-6f21be4805` | 0.0.27 | — |
-| `p-6fc1a0ee2d` | 0.0.31 | another occurrence of `changelog-order-is-checked`, to merge |
+| `p-6fc1a0ee2d` | 0.0.31 | merged into the queued row `changelog-order-is-checked`, *Evidence* |
 | `p-703335d6cd` | 0.0.27 | — |
 | `p-72375210fa` | 0.0.26 | — |
 | `p-72d567bcea` | 0.0.27 | — |
@@ -182,6 +183,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-7b47cea448` | 0.0.27 | — |
 | `p-7c5d30a28f` | 0.0.27 | — |
 | `p-7da5916ce3` | 0.0.27 | — |
+| `p-7e912173fa` | 0.0.31 | admitted into `prompt-context.md` and `prompt-bootstrap.md` Phase 5 (permission rules); recorded in the history |
 | `p-7e93ae63c6` | 0.0.27 | — |
 | `p-7eafee1538` | 0.0.27 | — |
 | `p-7ef07de020` | 0.0.26 | — |
@@ -239,6 +241,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-9f1754a08c` | 0.0.27 | — |
 | `p-9f3e748afb` | 0.0.26 | — |
 | `p-9f5d7c91ff` | 0.0.27 | — |
+| `p-a112d996ee` | 0.0.31 | another occurrence of `prompt-context`, to merge |
 | `p-a3b4441308` | 0.0.27 | — |
 | `p-a4fdcd562e` | 0.0.24 | — |
 | `p-a5a8909619` | 0.0.26 | — |
@@ -254,8 +257,8 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-acaf4cb669` | 0.0.27 | — |
 | `p-ad51fa8803` | 0.0.29 | — |
 | `p-ad97de28a0` | 0.0.27 | — |
-| `p-b102eeae6f` | 0.0.30 | another occurrence of `prompt-context`, to merge |
-| `p-b10b689423` | 0.0.31 | another occurrence of `refusal-must-not-read-like-an-answer`, to merge |
+| `p-b102eeae6f` | 0.0.30 | answered: admitted into `prompt-context.md` §15 in 0.0.30; recorded in the history |
+| `p-b10b689423` | 0.0.31 | merged into the note `refusal-must-not-read-like-an-answer`, *Evidence* |
 | `p-b19ea8150f` | 0.0.26 | — |
 | `p-b1d0825adf` | 0.0.27 | — |
 | `p-b333c94ddc` | 0.0.26 | — |
@@ -263,7 +266,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-b4281c9b5c` | 0.0.26 | — |
 | `p-b42d2322a0` | 0.0.27 | — |
 | `p-b4a2a380c8` | 0.0.27 | — |
-| `p-b5ed4535bd` | 0.0.31 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-b5ed4535bd` | 0.0.31 | merged into the note `reproduce-the-checkout-not-only-the-environment`, *Evidence* |
 | `p-b73457b956` | 0.0.27 | — |
 | `p-b757765f45` | 0.0.27 | — |
 | `p-b7b7b02aba` | 0.0.27 | — |
@@ -276,7 +279,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-bd85188ec9` | 0.0.27 | — |
 | `p-bde82faab4` | 0.0.24 | — |
 | `p-bdfc8f7fcc` | 0.0.27 | — |
-| `p-be515ef967` | 0.0.30 | another occurrence of `gather-reads-a-branch-not-only-the-checkout`, to merge |
+| `p-be515ef967` | 0.0.30 | narrowed: the pre-flight and `gather` cover the branch question; the rest stays queued as `gather-reads-a-branch-not-only-the-checkout` |
 | `p-be7f469024` | 0.0.29 | — |
 | `p-be8c106a62` | 0.0.27 | — |
 | `p-bf2579d9d9` | 0.0.27 | — |
@@ -292,20 +295,20 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-c48b3661f4` | 0.0.27 | — |
 | `p-c5401dbd7f` | 0.0.27 | — |
 | `p-c59eb782a0` | 0.0.27 | — |
-| `p-c5ccb46250` | 0.0.31 | another occurrence of `best-effort-side-channels`, to merge |
+| `p-c5ccb46250` | 0.0.31 | merged into the note `best-effort-side-channels`, *Evidence* |
 | `p-c604d1066e` | 0.0.29 | — |
 | `p-c6597e57b4` | 0.0.27 | — |
 | `p-c6ccf81eb7` | 0.0.24 | — |
 | `p-c8a0d1ee0b` | 0.0.27 | — |
 | `p-c8a732b813` | 0.0.27 | — |
 | `p-c8cc171d0c` | 0.0.26 | — |
-| `p-c986101c49` | 0.0.31 | another occurrence of `a-surviving-guard-mutation-means-a-missing-input`, to merge |
+| `p-c986101c49` | 0.0.31 | merged into the note `a-surviving-guard-mutation-means-a-missing-input`, *Evidence* |
 | `p-c9c6fa4459` | 0.0.27 | — |
 | `p-cabae99b5e` | 0.0.26 | — |
 | `p-cacafbf6a4` | 0.0.26 | — |
 | `p-cb1ba3bc96` | 0.0.26 | — |
-| `p-cc620f4084` | 0.0.31 | another occurrence of `prompt-update`, to merge |
-| `p-cd7569810c` | 0.0.31 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
+| `p-cc620f4084` | 0.0.31 | admitted into `prompt-update.md`, *Rules for the folder* (`--no-track`); recorded in the history |
+| `p-cd7569810c` | 0.0.31 | merged into the note `ratchet-in-a-pinned-environment`, *Evidence*, as observed |
 | `p-cd94f30172` | 0.0.27 | — |
 | `p-ce6e731325` | 0.0.27 | — |
 | `p-cf09c3b3a2` | 0.0.27 | — |
@@ -313,6 +316,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-d22d72f3fa` | 0.0.27 | — |
 | `p-d281eed90b` | 0.0.27 | — |
 | `p-d2d951b71e` | 0.0.24 | — |
+| `p-d2fa16b1fd` | 0.0.31 | another occurrence of `prompt-update`, to merge |
 | `p-d34301cac5` | 0.0.27 | — |
 | `p-d5b044935c` | 0.0.26 | — |
 | `p-d7956af6c5` | 0.0.27 | — |
@@ -328,6 +332,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-dcc52047a5` | 0.0.26 | — |
 | `p-dcf54666cf` | 0.0.27 | — |
 | `p-dd2d347a1d` | 0.0.27 | — |
+| `p-de14564c12` | 0.0.31 | answered by `bundle.py export --replace` (0.0.31); recorded in the history |
 | `p-de578f3f63` | 0.0.30 | queued as `new-entry-reads-the-logs-own-format` |
 | `p-dfd72fb9b6` | 0.0.26 | — |
 | `p-dff3130647` | 0.0.27 | — |
@@ -355,7 +360,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-f0576912a0` | 0.0.26 | — |
 | `p-f069b1157f` | 0.0.27 | — |
 | `p-f1d4188f8a` | 0.0.27 | — |
-| `p-f23391f5cc` | 0.0.31 | another occurrence of `order-writes-by-failure-residue`, to merge |
+| `p-f23391f5cc` | 0.0.31 | merged into the note `order-writes-by-failure-residue`, *Evidence* |
 | `p-f312ccbcd2` | 0.0.27 | — |
 | `p-f43f143cdd` | 0.0.27 | — |
 | `p-f4dea4b6c6` | 0.0.27 | — |
@@ -365,7 +370,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-f63866a6a4` | 0.0.27 | — |
 | `p-f692458588` | 0.0.31 | run logged against `copied-instruction-claims-its-origin` |
 | `p-f6cb6c9d22` | 0.0.27 | — |
-| `p-f76353b351` | 0.0.30 | another occurrence of `prompt-context`, to merge |
+| `p-f76353b351` | 0.0.30 | answered: admitted into `prompt-context.md` §15 in 0.0.30; recorded in the history |
 | `p-f860b8c6a1` | 0.0.27 | — |
 | `p-f94bec8bcc` | 0.0.31 | run logged against `a-check-must-be-seen-to-fail` |
 | `p-f99c1f6cc1` | 0.0.26 | — |

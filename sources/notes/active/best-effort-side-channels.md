@@ -56,3 +56,5 @@ Judgement, unmeasured.
 **2026-09-22 — occurrences in a transactional service.** Background tasks recording a link were dropped when the request raised; a capture scheduled before a handler refused recorded an account that never existed; and swallowing inside the code under test hid a broken dependency wiring from the suite. Occurrences, not a ratio: the note stays `reasoned`.
 
 What *would* settle it: count outbound calls in a service, classify each as critical or best-effort, and measure how many currently propagate by default. That ratio is the note's real evidence and it has not been taken.
+
+**2026-10-08, offered at 0.0.31 — a notification after a saved change, in a service repository.** A request saved a state change and then notified a device; when the device was unreachable the request answered with a server error although the change was saved. Found in a code review and recorded as debt, not fixed and not yet tested. The fix proposed reports the saved state and a separate notified flag, as a sibling path in the same service already does.

@@ -18,6 +18,22 @@ one of the home's proposals from the 0.0.30 close.
 | `ask-the-design-decisions-before-designing` | **folded** into `prompt-context.md` §15 as an occurrence, its text unchanged: the decision-review mode already covers more decisions than one message holds, and §15 already says a recommendation listed first acts as a default. Not the pre-flight, which asks facts that cannot be read. The literature supports asking before answering under ambiguity, bounded by the cost of interrupting; nothing compares this format with a complete answer, and its claim to be the only form that contains those risks is an argument, not a finding |
 | `counterbalance-positions-in-a-blind-comparison` | **refused** as a learning: position effects in choice and in model judges are an established result. Taken as a procedure for the home's own comparisons, `evals/README.md` §*Blind comparisons* |
 | `derived-copy-goes-stale-silently` | **extended**: a section looked up by its exact heading, with a test fixture repeating the old heading, into its *Evidence* |
+| `register-resolves-a-worktree-to-its-repository` | **answered**: fixed in 0.0.30, `release.py` resolves a linked worktree to its main repository; both the queued row and the second occurrence leave the queue |
+| `a-complex-task-reads-the-skill-catalogue` | **answered**: the catalogue and its trigger (one signal goes to its row, two or more read the table, at most three offered) are in `method/skills/README.md` since 0.0.30; the queued row, its offer again and the extension that replaced its trigger leave the queue |
+| `review-turn-shape-and-planning-skills` | **answered**: admitted into `prompt-context.md` §15 in 0.0.30 (a fixed review turn of short blocks, *review more*, the skills offered before a plan) |
+| `review-turn-comprehension-check` | **answered**: admitted into `prompt-context.md` §15 in 0.0.30 (the check's wrong answers are the other options' consequences, plus *none of these*; assumptions shown before an irreversible decision; *review more* only on decision questions) |
+| `gather-reads-a-branch-not-only-the-checkout` | **narrowed**: the pre-flight asks each carrier's integration branch and `gather` names the branches that hold a bundle; what stays queued is that `gather` reads proposals from a branch that holds its bundle when the checkout holds none, with a fix and a test |
+| `a-shared-rule-has-one-enforcer-per-copy` | **merged** into the queued row of this slug as an occurrence (tools copied between repositories drift, found only by diffing), in its *Evidence* |
+| `changelog-order-is-checked` | **merged** into the queued row of this slug as an occurrence (a shared log's format broken within days by a writer who had not read the procedure), in its *Evidence* |
+| `refusal-must-not-read-like-an-answer` | **extended**: a setup step carrying the runner's ignore-failure marker, into its *Evidence* |
+| `reproduce-the-checkout-not-only-the-environment` | **extended**: a gate that depended on an untracked credential file found by a fresh worktree, into its *Evidence* |
+| `best-effort-side-channels` | **extended**: a request that saved a change and answered with a server error when the notification failed, into its *Evidence* |
+| `a-surviving-guard-mutation-means-a-missing-input` | **extended**: a check tool's entry point whose exit status could be flipped with every test green, into its *Evidence* |
+| `order-writes-by-failure-residue` | **extended**: a retry that skipped the whole block because the first store was already marked, into its *Evidence* |
+| `ratchet-in-a-pinned-environment` | **extended**: three further ways a ratchet blames a change for violations it did not write, into its *Evidence*, as observed and not yet the note's rule |
+| `update-branch-tracks-previous-release` | **admitted into the method**: `prompt-update.md`, *Rules for the folder*: a branch cut from a remote-tracking branch tracks it, so cut it with `--no-track` or unset its upstream before any push |
+| `permission-rules-catch-by-products` | **admitted into the method**: `prompt-context.md` (a file rule catches a by-product edit, never intended work: `deny` only a file only a tool writes, `ask` on generated files and guards, no rule on originals), pointed to from `prompt-bootstrap.md` Phase 5 |
+| `bundle-tool-export` | **answered**: `bundle.py export --replace` (0.0.31) refreshes a folder holding only a previous release in one checked command |
 
 ## Taken out of the queue by the release 0.0.29
 

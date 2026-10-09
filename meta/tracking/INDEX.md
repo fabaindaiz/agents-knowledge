@@ -15,7 +15,7 @@ the notes in `sources/notes/`.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (112)
+## Candidates in the queue (110)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -101,9 +101,8 @@ the notes in `sources/notes/`.
 - `a-batch-child-gets-no-terminal` — K, since 0.0.27 · lacks a decision between a refusal as textbook and one *Working safely* sentence (a command an agent runs is non-interactive: standard …
 - `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); a second repository; one sentence in principle 7 or 18
 - `a-principle-can-have-no-subject-in-a-carrier` — M, since 0.0.27 · lacks a second carrier for the misfiling; a design: a trigger field on not-yet and declined entries that `check-local` or the update can …
-- `register-resolves-a-worktree-to-its-repository` — M, since 0.0.29 · lacks a fix with a test
 - `install-skills-names-a-shadowed-base-change` — M, since 0.0.29 · lacks a second carrier's occurrence of a replaced section; a tool change with a test
-- `gather-reads-a-branch-not-only-the-checkout` — M, since 0.0.29 · lacks a second meta-session
+- `gather-reads-a-branch-not-only-the-checkout` — M, since 0.0.29 · lacks a fix with a test
 - `a-machine-local-check-input-is-part-of-every-gate-that-reads-it` — M, since 0.0.29 · lacks a second occurrence
 - `timeout-is-not-an-outcome` — K, since 0.0.29 · lacks an occurrence; likely an occurrence of `retry-over-irreversible-effect` rather than a note of its own
 - `privacy-misses-a-derived-prefix-in-own-fields` — K, since 0.0.29 · lacks a rule that recognises a legacy record id's repo part as derived and flags it beside any descriptive text in `.agents/`
@@ -117,7 +116,6 @@ the notes in `sources/notes/`.
 - `the-log-path-is-a-carrier-field` — M, since 0.0.30 · lacks the key, its use in new entry and count, and a test
 - `close-stops-at-ready-for-review` — M, since 0.0.30 · lacks the wording in the close skill
 - `align-compares-against-the-tag` — M, since 0.0.30 · lacks a fix with a test
-- `a-complex-task-reads-the-skill-catalogue` — M, since 0.0.30 · lacks the rows' wording and the carrier check, in 0.0.30; the trimmed-listing arm of the trigger eval
 - `docs-drift-is-checked-not-reviewed` — M, since 0.0.30 · lacks the command, its tests and principle 16's wording, in 0.0.30; one carrier's map written first
 - `carrier-linters-exclude-the-bundle` — M, since 0.0.30 · lacks the wording in the bootstrap and update
 - `a-tracker-is-the-roadmaps-source` — M, since 0.0.30 · lacks the wording in artifact 8 and the adoption table
@@ -130,31 +128,36 @@ the notes in `sources/notes/`.
 - `a-plan-may-be-a-working-artifact` — M, since 0.0.30 · lacks the wording in the close skill and the plan guidance; a carrier outside that team
 - `a-card-enters-an-answer-as-a-mechanism` — M, since 0.0.31 · lacks more questions and more judges, none of whom has read an answer before; the same concern written as a principle and as a mechanism at …
 
-## Offered again, to merge (16)
+## Offered again, to merge (5)
 
-- `register-resolves-a-worktree-to-its-repository` — another occurrence to merge
-- `a-complex-task-reads-the-skill-catalogue` — another occurrence to merge
 - `prompt-context` — another occurrence to merge
-- `gather-reads-a-branch-not-only-the-checkout` — another occurrence to merge
-- `prompt-context` — another occurrence to merge
-- `prompt-context` — another occurrence to merge
-- `a-shared-rule-has-one-enforcer-per-copy` — another occurrence to merge
 - `prompt-update` — another occurrence to merge
-- `changelog-order-is-checked` — another occurrence to merge
-- `refusal-must-not-read-like-an-answer` — another occurrence to merge
-- `reproduce-the-checkout-not-only-the-environment` — another occurrence to merge
-- `best-effort-side-channels` — another occurrence to merge
-- `a-surviving-guard-mutation-means-a-missing-input` — another occurrence to merge
+- `user-walk` — another occurrence to merge
+- `prompt-context` — another occurrence to merge
 - `prompt-update` — another occurrence to merge
-- `ratchet-in-a-pinned-environment` — another occurrence to merge
-- `order-writes-by-failure-residue` — another occurrence to merge
 
-## Answered: admitted, folded, refused or dropped (248)
+## Answered: admitted, folded, refused or dropped (264)
 
 - `consult-knowledge-through-the-index` — **merged** into `index-unread-where-rules-absorbed-it` as its second repository, by another mechanism: the rule that wires the index in …
 - `ask-the-design-decisions-before-designing` — **folded** into `prompt-context.md` §15 as an occurrence, its text unchanged: the decision-review mode already covers more decisions than …
 - `counterbalance-positions-in-a-blind-comparison` — **refused** as a learning: position effects in choice and in model judges are an established result. Taken as a procedure for the home's …
 - `derived-copy-goes-stale-silently` — **extended**: a section looked up by its exact heading, with a test fixture repeating the old heading, into its *Evidence*
+- `register-resolves-a-worktree-to-its-repository` — **answered**: fixed in 0.0.30, `release.py` resolves a linked worktree to its main repository; both the queued row and the second …
+- `a-complex-task-reads-the-skill-catalogue` — **answered**: the catalogue and its trigger (one signal goes to its row, two or more read the table, at most three offered) are in …
+- `review-turn-shape-and-planning-skills` — **answered**: admitted into `prompt-context.md` §15 in 0.0.30 (a fixed review turn of short blocks, *review more*, the skills offered …
+- `review-turn-comprehension-check` — **answered**: admitted into `prompt-context.md` §15 in 0.0.30 (the check's wrong answers are the other options' consequences, plus *none of …
+- `gather-reads-a-branch-not-only-the-checkout` — **narrowed**: the pre-flight asks each carrier's integration branch and `gather` names the branches that hold a bundle; what stays queued …
+- `a-shared-rule-has-one-enforcer-per-copy` — **merged** into the queued row of this slug as an occurrence (tools copied between repositories drift, found only by diffing), in its …
+- `changelog-order-is-checked` — **merged** into the queued row of this slug as an occurrence (a shared log's format broken within days by a writer who had not read the …
+- `refusal-must-not-read-like-an-answer` — **extended**: a setup step carrying the runner's ignore-failure marker, into its *Evidence*
+- `reproduce-the-checkout-not-only-the-environment` — **extended**: a gate that depended on an untracked credential file found by a fresh worktree, into its *Evidence*
+- `best-effort-side-channels` — **extended**: a request that saved a change and answered with a server error when the notification failed, into its *Evidence*
+- `a-surviving-guard-mutation-means-a-missing-input` — **extended**: a check tool's entry point whose exit status could be flipped with every test green, into its *Evidence*
+- `order-writes-by-failure-residue` — **extended**: a retry that skipped the whole block because the first store was already marked, into its *Evidence*
+- `ratchet-in-a-pinned-environment` — **extended**: three further ways a ratchet blames a change for violations it did not write, into its *Evidence*, as observed and not yet …
+- `update-branch-tracks-previous-release` — **admitted into the method**: `prompt-update.md`, *Rules for the folder*: a branch cut from a remote-tracking branch tracks it, so cut it …
+- `permission-rules-catch-by-products` — **admitted into the method**: `prompt-context.md` (a file rule catches a by-product edit, never intended work: `deny` only a file only a …
+- `bundle-tool-export` — **answered**: `bundle.py export --replace` (0.0.31) refreshes a folder holding only a previous release in one checked command
 - `decision-log-status-decider-and-why` — **admitted into the method**, artifact 6: the Status cell, proposed rows only a person accepts, `unconfirmed:` and `accepting:`; the …
 - `decision-log-known-debt-and-criteria` — **admitted into the method**, artifact 6: *Looks deliberate, is not* and the criteria for a row
 - `decisions-check-and-migration` — **admitted into the tools**: `bundle.py decisions` and `--migrate`, tried read-only against every reachable carrier's log before release

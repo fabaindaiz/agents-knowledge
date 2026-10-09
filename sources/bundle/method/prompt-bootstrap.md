@@ -365,7 +365,7 @@ verify` (which runs `privacy`) and `bundle.py ids` over the files that hold
 record ids; wherever the gate runs, CI included, the tool needs Python 3.11 or
 newer. Add
 the schema if there is structured data. Add hooks for what must not be left to judgement. Add
-`permissions.deny` for the files that should not be hand-edited.
+`permissions.deny` for the files that should not be hand-edited (only a tool writes them; `ask` for generated files and guards: `prompt-context.md`, *A file rule catches a by-product edit*).
 
 **Commit attribution is set in the repository, not left to prose**: off in the
 committed settings, with a hook or gate step that fails on an attribution

@@ -1286,6 +1286,14 @@ required to change while the project's file showed no conflict. Read the scopes
 together, and at adoption test each deny against every file the workflow must
 write.
 
+**A file rule catches a by-product edit, never intended work.** `deny` goes only on a
+file that only a tool writes (a checksum list the build regenerates); `ask` goes on
+generated files and on the guards (hooks, settings, git hooks), so an intended change
+passes with one confirmation and an accidental one is seen; originals, incoming
+material, the carrier's own fields and proposals get no rule. An exception is a path
+left without a rule, never an allow, since a deny at any scope wins; a host may
+consult path rules for its edit tool only, so write them for that tool.
+
 **Deny per destructive subcommand, and know what a deny refuses.** A prefix rule
 catches every form of its subcommand, the read-only ones too: a deny on a stash
 prefix also refuses listing the stashes. A rule for one form misses its

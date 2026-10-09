@@ -51,3 +51,5 @@ A client application that imports user packages met the local form, with no netw
 ## Evidence
 
 **Reasoned, from four occurrences in one repository and three in another**; the local ones were exercised once each (a refused import, a failed pick, a failed build), not fault-injected. What would measure it: fault-inject a crash between each pair of writes in a test environment and classify the resulting state as recoverable or not.
+
+**2026-10-08, offered at 0.0.31 — a retry that skips the unrepaired half, in a service repository.** An operation marked a record in a primary store, then in a mirror. The mirror write failed; the retry saw the mark in the primary, took the work as done and skipped everything, so the mirror never got the flag. The fix keeps the original audit fields (first write wins) and always writes the state that must converge to both stores; a test seeds that residue and fails on the old code. The note covers write order and the acknowledgement point, not an idempotency guard that reads only the first half.

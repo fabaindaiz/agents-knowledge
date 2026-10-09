@@ -56,3 +56,5 @@ A second repository, building data artefacts from two real sources, met it sever
 ## Evidence
 
 **Reasoned, from occurrences in two repositories:** one guard deleted and restored with the test that bites; several surviving mutants in a week, each explained by a missing input or a missing assertion, one of them the only rescue for tens of real records. No rate. The experiment: for every surviving guard mutant over a period, record which of the four explanations held once it was investigated, and how many were found only by running the mutant over real data.
+
+**2026-10-08, offered at 0.0.31 — an untested entry point, in a service repository.** A check tool's tests covered its helpers but not the entry point where the verdict is decided: changing that entry point's failure exit status to success left every test green. One mutation made by hand on one gate tool; the missing input was a test that runs the entry point end to end and asserts its exit status, and two such tests now fail on the mutation. It overlaps the note's case of an untested call site.

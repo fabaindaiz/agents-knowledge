@@ -167,6 +167,9 @@ that file is absent, the deltas cannot be judged: say so and stop.
   scripts other than `tools/bundle.py`, is not triaged. `SHA256SUMS` proves the
   copy is whole, not who made it: take releases from the upstream in
   `carrier.toml`.
+- **Cut the update's branch without tracking.** A branch cut from a remote-tracking branch
+  (`git worktree add -b NEW origin/OLD`, `git switch -c NEW origin/OLD`) tracks it, so a plain push goes
+  to OLD: cut it with `--no-track`, or unset its upstream at once, before any push.
 - **Its repository fields are never taken.** `bundle.py export` leaves another
   carrier's `carrier.toml`, proposals and evaluation reports behind; a copy made
   any other way that brings them fails `verify --release`, and is taken again.
