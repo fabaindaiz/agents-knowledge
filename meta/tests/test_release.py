@@ -359,7 +359,7 @@ class Build(Base):
     def test_a_release_file_with_other_line_endings_is_not_up_to_date(self) -> None:
         path = self.agents / "method/prompt-update.md"
         path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
-        B.write_checksums(self.agents)
+        release().write_checksums(self.agents)
 
         self.assertIn("method/prompt-update.md", "\n".join(self.R.build(self.home, check=True)))
         self.R.build(self.home)
@@ -505,7 +505,7 @@ class Carry(Base):
         self.assertEqual(self.R.align([repo], self.home), [])
         # work built in the home after the release does not unalign a carrier that equals its tag
         (self.home / ".agents/method/prompt-update.md").write_text("built after the release\n")
-        B.write_checksums(self.home / ".agents")
+        release().write_checksums(self.home / ".agents")
         self.assertEqual(self.R.align([repo], self.home), [])
 
     def test_a_worktree_is_remembered_as_its_repository(self) -> None:
@@ -580,7 +580,7 @@ class Carry(Base):
         self.splice(repo)
         note = repo / ".agents/knowledge/notes/active/alpha.md"
         note.write_text(note.read_text() + "\na local edit\n")
-        B.write_checksums(repo / ".agents")
+        release().write_checksums(repo / ".agents")
         commit(repo, "fork, hidden")
 
         gathered = self.R.gather([repo], self.root / "out", self.home)

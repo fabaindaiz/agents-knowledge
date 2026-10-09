@@ -142,7 +142,7 @@ def d2_index(agents: Path) -> dict:
               + head.split(title, 1)[1].strip() + "\n\n" + "\n".join(s.rstrip() + "\n" for s in others))
     index.write_text(new_index)
     (agents / "knowledge" / "PHASES.md").write_text(phases)
-    _bundle_tool().write_checksums(agents)
+    _release_tool().write_checksums(agents)
     return {"index_chars": len(new_index), "phases_chars": len(phases), "index_chars_before": len(text)}
 
 ORACLE_HEADER = """
@@ -177,6 +177,15 @@ def _bundle_tool():
     spec = importlib.util.spec_from_file_location("bundle", BUNDLE / "tools" / "bundle.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules.setdefault("bundle", module)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _release_tool():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("release", ROOT / "meta/tools/release.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("release", module)
     spec.loader.exec_module(module)
     return module
 
@@ -305,7 +314,7 @@ def ablate(agents: Path, slugs: list[str]) -> dict:
         if len(kept) != len(lines) or kept != lines:
             p.write_text("".join(kept))
     # The ablated copy is a release without those notes: its checksums say so, so `verify` passes there too.
-    _bundle_tool().write_checksums(agents)
+    _release_tool().write_checksums(agents)
     return {"lines_touched": removed_lines}
 
 

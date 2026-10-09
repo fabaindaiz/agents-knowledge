@@ -19,7 +19,7 @@ import subprocess
 from unittest import mock
 from pathlib import Path
 
-from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, commit, git, init_repo, make_bundle, old_outbox
+from meta.tests.support import NOTE, ROOT, Base, a_proposal, bundle, commit, git, init_repo, make_bundle, old_outbox, release
 
 B = bundle
 
@@ -47,14 +47,14 @@ class Verify(Base):
     def test_each_kind_of_problem_fails_it(self) -> None:
         cases = {
             "checksum": lambda a: plant(a / "method/prompt-context.md", "edited"),
-            "link": lambda a: (plant(a / "method/prompt-context.md", "[gone](gone.md)"), B.write_checksums(a)),
+            "link": lambda a: (plant(a / "method/prompt-context.md", "[gone](gone.md)"), release().write_checksums(a)),
             "proposal": lambda a: (a / "proposals/p-0123456789.md").write_text("no header\n"),
             "old outbox": lambda a: old_outbox(a),
             "foreign proposal": lambda a: (a_proposal(a), B.write_carrier(a, {"carrier": "r-bbbbbb"})),
             "carrier": lambda a: (a / "carrier.toml").unlink(),
-            "invisible": lambda a: (plant(a / "method/prompt-context.md", "hidden \u202e text"), B.write_checksums(a)),
+            "invisible": lambda a: (plant(a / "method/prompt-context.md", "hidden \u202e text"), release().write_checksums(a)),
             "incoming": lambda a: (a / "incoming/settings.json").write_text("{}\n"),
-            "session": lambda a: ((a / "method/prompt-harvest.md").write_text("# no reads\n"), B.write_checksums(a)),
+            "session": lambda a: ((a / "method/prompt-harvest.md").write_text("# no reads\n"), release().write_checksums(a)),
         }
         for name, damage in cases.items():
             with self.subTest(name=name):
@@ -103,7 +103,7 @@ class Verify(Base):
         (out / "method/only-in-the-old.md").write_text("# old\n")
         (out / "empty-after").mkdir()
         (out / "empty-after/only.md").write_text("# old\n")
-        B.write_checksums(out)
+        release().write_checksums(out)
         return real, out
 
     def test_replace_updates_a_release_only_folder(self) -> None:
@@ -179,13 +179,13 @@ class Verify(Base):
         (out / "CLAUDE.md").write_text("instructions\n")
         (out / "tools/evil.py").write_text("print()\n")
         (out / "u16.md").write_bytes("text".encode("utf-16"))
-        B.write_checksums(out)
+        release().write_checksums(out)
 
         problems = "\n".join(B.verify_problems(out, release=True))
 
         self.assertIn("u16.md: not UTF-8", problems)
         (out / "u16.md").unlink()
-        B.write_checksums(out)
+        release().write_checksums(out)
         problems = "\n".join(B.verify_problems(out, release=True))
         self.assertIn("CLAUDE.md: assistant", problems)
         self.assertIn("tools/evil.py: a script", problems)
@@ -432,7 +432,7 @@ class CarrierIds(Base):
         make_bundle(one), make_bundle(two)
 
         with self.assertRaisesRegex(B.RefusedError, "both store"):
-            B.carrier_ids([one, two])
+            release().carrier_ids([one, two])
 
 
 class RecordIds(Base):
@@ -984,18 +984,18 @@ class ChangelogCommand(Base):
         code, out = run("proposals", "--pack", str(pack), str(agents))
 
         self.assertEqual(code, 0, out)
-        self.assertEqual(B.read_pack(pack), {path.name: path.read_text()})
+        self.assertEqual(release().read_pack(pack), {path.name: path.read_text()})
         evil = self.root / "evil.tar"
         with tarfile.open(evil, "w") as archive:
             archive.add(agents / "tools/bundle.py", arcname="proposals/../../tools/bundle.py")
         with self.assertRaisesRegex(B.RefusedError, "not a proposal file"):
-            B.read_pack(evil)
+            release().read_pack(evil)
         twice = self.root / "twice.tar"
         with tarfile.open(twice, "w") as archive:
             archive.add(path, arcname=f"proposals/{path.name}")
             archive.add(path, arcname=path.name)
         with self.assertRaisesRegex(B.RefusedError, "twice"):
-            B.read_pack(twice)
+            release().read_pack(twice)
 
 
 class OldInterpreter(Base):
@@ -1704,7 +1704,7 @@ class PrivateRecords(Base):
     def test_a_public_carrier_that_tracks_its_private_folder_fails_verify(self) -> None:
         repo = self.a_carrier("public", visibility="public")
         agents = repo / ".agents"
-        B.write_checksums(agents)
+        release().write_checksums(agents)
         self.assertEqual([p for p in B.verify_problems(agents) if "private" in p or "visibility" in p], [])
 
         (repo / ".private").mkdir(parents=True)

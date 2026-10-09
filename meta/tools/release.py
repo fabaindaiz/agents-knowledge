@@ -36,6 +36,7 @@ import importlib.util
 import io
 import re
 import subprocess
+import tarfile
 import tokenize
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -56,6 +57,59 @@ def _load_bundle():  # noqa: ANN202 -- a module
 
 B = _load_bundle()
 RefusedError = B.RefusedError
+
+PACK_LIMIT = 2**18  # bytes per proposal: far above a paragraph and its evidence, far below anything else
+
+
+def carrier_ids(repos: list[Path]) -> dict[Path, str]:
+    """Every repository's stored id, or a refusal when two of them store the same one.
+
+    A bundle copied whole into a new repository brings the old one's carrier file, id included, and the
+    two would then be one row of the carriers table and one prefix of records.
+    """
+    ids = {repo: B.repo_carrier_id(repo) for repo in repos}
+    seen: dict[str, Path] = {}
+    for repo, value in ids.items():
+        if value in seen:
+            raise RefusedError(
+                f"{seen[value]} and {repo} both store {value}: a bundle copied from one repository carries its id; "
+                f"delete `{B.CARRIER_FIELD}` from the copy's {B.CARRIER_FILE} and run `bundle.py carrier-id --mint` there")
+        seen[value] = repo
+    return ids
+
+
+def read_pack(path: Path) -> dict[str, str]:
+    """{file name: text} of the proposals in a pack; anything else in it is refused, never extracted."""
+    out = {}
+    with tarfile.open(path) as archive:
+        for member in archive.getmembers():
+            name = member.name.removeprefix(f"{B.PROPOSALS}/")
+            if not (member.isfile() and "/" not in name and name.endswith(".md") and B.PROPOSAL_NAME.match(name[:-3])):
+                raise RefusedError(f"{path}: {member.name!r} is not a proposal file; a pack holds proposals only")
+            if name in out:
+                raise RefusedError(f"{path}: {name} is in it twice; a pack holds each proposal once")
+            if member.size > PACK_LIMIT:
+                raise RefusedError(f"{path}: {member.name} is larger than a proposal can be")
+            data = archive.extractfile(member).read()  # type: ignore[union-attr]
+            try:
+                out[name] = data.decode("utf-8")
+            except UnicodeDecodeError as error:
+                raise RefusedError(f"{path}: {member.name} is not UTF-8") from error
+    return out
+
+
+def checksums_text(tree: Path) -> str:
+    """The `SHA256SUMS` content for a tree: GNU coreutils text format, `<hex>  <path>`, byte order."""
+    lines = []
+    for rel in B.shipped(tree):
+        if "\\" in rel or len(rel.splitlines()) != 1 or rel != rel.strip("\n"):
+            raise RefusedError(f"{rel!r}: a path GNU sha256sum would escape or split; rename it")
+        lines.append(f"{B.sha256_file(tree / rel)}  {rel}\n")
+    return "".join(lines)
+
+
+def write_checksums(tree: Path) -> None:
+    (tree / B.CHECKSUMS).write_text(checksums_text(tree), encoding="utf-8")
 
 
 # --- the build: sources/ -> .agents/knowledge/ -------------------------------------------------------
@@ -698,7 +752,7 @@ def build(root: Path = ROOT, check: bool = False) -> list[str]:
         if not ledger_path.is_file() or ledger_path.read_bytes() != ledger.encode("utf-8"):
             problems.append(f"{LEDGER}: generated, and not what the records produce (run `release.py build`)")
         if not problems and (not (bundle / B.CHECKSUMS).is_file()
-                             or (bundle / B.CHECKSUMS).read_bytes() != B.checksums_text(bundle).encode("utf-8")):
+                             or (bundle / B.CHECKSUMS).read_bytes() != checksums_text(bundle).encode("utf-8")):
             problems.append(f"{B.CHECKSUMS}: not the checksums of the bundle as it is (run `release.py build`)")
         return problems
     changes = []
@@ -714,7 +768,7 @@ def build(root: Path = ROOT, check: bool = False) -> list[str]:
     if not ledger_path.is_file() or ledger_path.read_text(encoding="utf-8") != ledger:
         ledger_path.write_text(ledger, encoding="utf-8")
         changes.append(f"wrote {LEDGER}")
-    B.write_checksums(bundle)
+    write_checksums(bundle)
     return changes
 
 
@@ -1112,7 +1166,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
 
     for pack in packs or []:
         found, problems = [], []
-        for name, text in sorted(B.read_pack(pack).items()):
+        for name, text in sorted(read_pack(pack).items()):
             proposal, issues = B.parse_proposal(text, f"{pack.name}:{name}")
             if proposal is not None and proposal.id != name.removesuffix(".md"):
                 issues.append(f"{pack.name}:{name}: its `proposal` field is {proposal.id}, not its file name")
@@ -1418,7 +1472,7 @@ def register(repos: list[Path], date: str | None = None, root: Path = ROOT, mani
     the repository it belongs to.
     """
     date = date or datetime.date.today().isoformat()
-    ids = B.carrier_ids(repos)
+    ids = carrier_ids(repos)
     if manifest is not None:
         remember([local_record(repo, date) for repo in repos], manifest)
     path = root / "meta/tracking/carriers.md"
@@ -1547,7 +1601,7 @@ def align(repos: list[Path], root: Path = ROOT, missing: tuple[Path, ...] = ()) 
     unnamed = [repo for repo in repos if B.stored_carrier_id(repo) is None]
     problems += [f"{repo.name}: no carrier id in carrier.toml" for repo in unnamed]
     repos = [repo for repo in repos if repo not in unnamed]
-    ids = B.carrier_ids(repos)
+    ids = carrier_ids(repos)
     version = B.bundle_version(root / ".agents")
     # The tagged release, not the working one: work built in the home after a release would otherwise unalign
     # every carrier that still equals its tag file for file (proposal `align-compares-against-the-tag`).

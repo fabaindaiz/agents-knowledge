@@ -958,7 +958,6 @@ SESSION_SOURCES: dict[str, tuple[str, int]] = {
     "harvest": ("method/prompt-harvest.md", 0),
     "review": ("agents/knowledge-reviewer.md", 0),
 }
-Sessions = "dict[str, list[tuple[str, str | None]]]"
 
 
 def reads_lists(text: str) -> list[list[tuple[str, str | None]]]:
@@ -1193,23 +1192,6 @@ def mint_carrier_id(repo: Path, today: str | None = None, upstream: str | None =
     minted = "r-" + secrets.token_hex(3)
     write_carrier(tree, {CARRIER_FIELD: minted, **data})
     return minted
-
-
-def carrier_ids(repos: list[Path]) -> dict[Path, str]:
-    """Every repository's stored id, or a refusal when two of them store the same one.
-
-    A bundle copied whole into a new repository brings the old one's carrier file, id included, and the
-    two would then be one row of the carriers table and one prefix of records.
-    """
-    ids = {repo: repo_carrier_id(repo) for repo in repos}
-    seen: dict[str, Path] = {}
-    for repo, value in ids.items():
-        if value in seen:
-            raise RefusedError(
-                f"{seen[value]} and {repo} both store {value}: a bundle copied from one repository carries its id; "
-                f"delete `{CARRIER_FIELD}` from the copy's {CARRIER_FILE} and run `bundle.py carrier-id --mint` there")
-        seen[value] = repo
-    return ids
 
 
 RECORD_KINDS = {"d": "decision", "i": "roadmap item", "s": "session entry"}
@@ -2302,9 +2284,6 @@ def convert_outbox(tree: Path, rows: list[tuple[str, list[str]]] | None = None, 
     return written
 
 
-PACK_LIMIT = 2**18
-
-
 def pack_proposals(tree: Path, out: Path) -> list[str]:
     """This carrier's proposals in one tar file, for a home that cannot open this repository."""
     found, problems = proposals_of(tree)
@@ -2317,26 +2296,6 @@ def pack_proposals(tree: Path, out: Path) -> list[str]:
             info.size, info.mtime, info.mode = len(data), 0, 0o644
             archive.addfile(info, io.BytesIO(data))
     return [p.id for p in found]
-
-
-def read_pack(path: Path) -> dict[str, str]:
-    """{file name: text} of the proposals in a pack; anything else in it is refused, never extracted."""
-    out = {}
-    with tarfile.open(path) as archive:
-        for member in archive.getmembers():
-            name = member.name.removeprefix(f"{PROPOSALS}/")
-            if not (member.isfile() and "/" not in name and name.endswith(".md") and PROPOSAL_NAME.match(name[:-3])):
-                raise RefusedError(f"{path}: {member.name!r} is not a proposal file; a pack holds proposals only")
-            if name in out:
-                raise RefusedError(f"{path}: {name} is in it twice; a pack holds each proposal once")
-            if member.size > PACK_LIMIT:
-                raise RefusedError(f"{path}: {member.name} is larger than a proposal can be")
-            data = archive.extractfile(member).read()
-            try:
-                out[name] = data.decode("utf-8")
-            except UnicodeDecodeError as error:
-                raise RefusedError(f"{path}: {member.name} is not UTF-8") from error
-    return out
 
 
 def shipped(tree: Path) -> list[str]:
@@ -2360,20 +2319,6 @@ def shipped(tree: Path) -> list[str]:
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def checksums_text(tree: Path) -> str:
-    """The `SHA256SUMS` content for a tree: GNU coreutils text format, `<hex>  <path>`, byte order."""
-    lines = []
-    for rel in shipped(tree):
-        if "\\" in rel or len(rel.splitlines()) != 1 or rel != rel.strip("\n"):
-            raise RefusedError(f"{rel!r}: a path GNU sha256sum would escape or split; rename it")
-        lines.append(f"{sha256_file(tree / rel)}  {rel}\n")
-    return "".join(lines)
-
-
-def write_checksums(tree: Path) -> None:
-    (tree / CHECKSUMS).write_text(checksums_text(tree), encoding="utf-8")
 
 
 CHECKSUM_LINE = re.compile(r"^([0-9a-f]{64}) [ *](.+)$")
@@ -3683,11 +3628,6 @@ def _tool_names(tools: object) -> list[str]:
     return [str(n).strip() for n in names if str(n).strip()]
 
 
-def surface_files(repo: Path, kinds: list[str]) -> dict[str, str]:
-    """{path: text} of every copy the named assistants get from this repository's sources."""
-    return _surface_build(repo, kinds)[0]
-
-
 def _surface_build(repo: Path, kinds: list[str]) -> tuple[dict[str, str], dict[str, str]]:
     """({path: text} of every copy, {source: why it could not be read}) — a source that does not parse is a
     problem to fix, and its copies stay as they are."""
@@ -3926,11 +3866,6 @@ def entry_format(log: Path, tree: Path = OWN_BUNDLE) -> tuple[str, list[str], li
     return own.rstrip("\n") + "\n" + "".join(line + "\n" for line in lines), [label for label, _ in added], []
 
 
-def entry_template(log: Path, tree: Path = OWN_BUNDLE) -> str:
-    """The log's own entry format, with the method's fields it lacks appended; else the method's."""
-    return entry_format(log, tree)[0]
-
-
 def new_entry(title: str, carrier: str, today: str, template: str, level: int = 2) -> str:
     """An entry skeleton: the heading with its minted id at the log's own level, then each field of the template
     with its description in a comment, which the writer replaces; bulleted when the template's fields are."""
@@ -4008,12 +3943,6 @@ def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[M
             repeats.append(mention)
         seen.update(texts)
     return [mention for mention, _ in entries], repeats
-
-
-def count_mentions(symptom: str, files: list[Path]) -> list[Mention]:
-    """The entries counted for a symptom (`count_report`): the count a close writes for a friction, instead of
-    one from memory."""
-    return count_report(symptom, files)[0]
 
 
 @dataclass(frozen=True)
