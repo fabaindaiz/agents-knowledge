@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import datetime as dt
+import functools
 import hashlib
 import json
 import os
@@ -181,6 +182,7 @@ def _bundle_tool():
     return module
 
 
+@functools.lru_cache(maxsize=None)
 def _release_tool():
     import importlib.util
     spec = importlib.util.spec_from_file_location("release", ROOT / "meta/tools/release.py")

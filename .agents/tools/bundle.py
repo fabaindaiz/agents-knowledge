@@ -2978,6 +2978,21 @@ def deny_covers(rule_path: str, files: list[str], repo: Path, settings_dir: Path
     return covered
 
 
+def _hooks_path_is(repo: Path, path: str, folder: str) -> bool:
+    """Whether `core.hooksPath` names `folder` of this repository or of the main checkout (a linked worktree
+    shares the configuration), as a relative or an absolute path."""
+    if not path:
+        return False
+    try:
+        top = Path(git(repo, "rev-parse", "--show-toplevel").strip())
+        common = Path(git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip())
+    except (subprocess.CalledProcessError, OSError):
+        return path.rstrip("/") == folder
+    given = Path(path)
+    resolved = (given if given.is_absolute() else top / given).resolve()
+    return resolved in {(top / folder).resolve(), (common.parent / folder).resolve()}
+
+
 def attribution_warnings(repo: Path) -> list[str]:
     """Where a repository would let the host credit an assistant, or its own hooks do not run: warnings.
 
@@ -3003,7 +3018,7 @@ def attribution_warnings(repo: Path) -> list[str]:
                 path = git(repo, "config", "--get", "core.hooksPath").strip()
             except (subprocess.CalledProcessError, OSError):
                 path = ""
-            if path.rstrip("/") != folder:
+            if not _hooks_path_is(repo, path, folder):
                 out.append(f"{folder}/ holds git hooks and core.hooksPath is {path or 'unset'}, so they do not run: "
                            f"git config core.hooksPath {folder}")
             break
@@ -4444,8 +4459,10 @@ def usage_set(args, today, repo=None):
              "[categories]  # optional overrides of the level", *[f"{c} = {str(on).lower()}" for c, on in overrides.items()],
              "[retention]  # days a record is kept", f"days = {days}", ""]
     _usage_write(usage_consent_path(), "\n".join(lines))
-    kept = key == "level" and level == "none" and repo and any(_usage_file(repo, c).is_file() for c in USAGE_CATEGORIES)
-    return [*usage_states(usage_consent()), *(["nothing more is stored; existing data is kept, and `usage forget` erases it"] if kept else [])]
+    held = bool(repo) and any(_usage_file(repo, c).is_file() for c in USAGE_CATEGORIES)
+    said = ("nothing more is stored; existing data is kept, and `usage forget` erases it" if held
+            else "nothing more is stored, and nothing is stored now; `usage forget` erases what is stored later")
+    return [*usage_states(usage_consent()), *([said] if key == "level" and level == "none" and repo else [])]
 
 
 def usage_states(consent, repo=None, today=None):
@@ -4468,6 +4485,18 @@ def usage_save(repo, category, records):
     _usage_write(_usage_file(repo, category), _usage_header(category) + "".join(json.dumps(r, sort_keys=True) + "\n" for r in records))
 
 
+def _usage_valid(category, record):
+    """Whether a stored line is a record of this category: the required fields present and of their type."""
+    if not isinstance(record, dict) or "agent-guides-usage" in record or not isinstance(record.get("at"), str):
+        return False
+    types = {"num": (int, float), "int": int, "steps": list}
+    needs = {name: kind for name, kind in _usage_spec(category).items() if kind[-1] == "!" or name in record}
+    if category == "preferences":
+        needs |= {"id": "text!", "last_used": "text!", "uses": "int!"}
+    return all(name in record and isinstance(record[name], types.get(kind.rstrip("!"), str)) and not isinstance(record[name], bool)
+               for name, kind in needs.items())
+
+
 def usage_records(repo, category, today):
     """A category's records within the retention window; older ones are deleted from the file as it is read."""
     path = _usage_file(repo, category)
@@ -4477,7 +4506,7 @@ def usage_records(repo, category, today):
             records.append(json.loads(line))
         except ValueError:
             pass
-    records = [r for r in records if isinstance(r, dict) and "agent-guides-usage" not in r]
+    records = [r for r in records if _usage_valid(category, r)]
     cutoff = str(today - datetime.timedelta(days=usage_days(usage_consent())))
     kept = [r for r in records if str(r.get("last_used" if category == "preferences" else "at", "")) >= cutoff]
     if len(kept) != len(records):
@@ -4501,7 +4530,8 @@ def usage_privacy_problems(text):
 
 def usage_add(repo, category, given, today):
     """Stores one record when the category is consented to; says so, and stores nothing, when it is not."""
-    if not usage_effective(usage_consent())[_usage_category(category)]:
+    _usage_category(category)
+    if not usage_effective(usage_consent())[category]:
         return f"not stored: no consent for {category}"
     spec, record = _usage_spec(category), {"v": 1, "at": str(today)}
     problems = [f"unknown {k}" for k in sorted(set(given) - set(spec))] + [f"missing {k}" for k, kind in spec.items() if kind[-1] == "!" and k not in given]

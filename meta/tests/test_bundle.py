@@ -1768,6 +1768,30 @@ class AttributionSetting(Base):
         git(repo, "config", "core.hooksPath", ".githooks")
         self.assertEqual(B.attribution_warnings(repo), [])
 
+    def test_a_path_to_the_same_folder_is_not_warned_and_another_is(self) -> None:
+        repo = self.repo(None, hooks=True)
+        for path in (".githooks", ".githooks/", str(repo / ".githooks"), str(repo / ".githooks") + "/"):
+            with self.subTest(path=path):
+                git(repo, "config", "core.hooksPath", path)
+                self.assertEqual(B.attribution_warnings(repo), [])
+        for path in ("elsewhere", str(self.root / "elsewhere"), ".hooks"):
+            with self.subTest(path=path):
+                git(repo, "config", "core.hooksPath", path)
+                self.assertEqual(len(B.attribution_warnings(repo)), 1)
+        git(repo, "config", "--unset", "core.hooksPath")
+        self.assertEqual(len(B.attribution_warnings(repo)), 1)
+
+    def test_a_linked_worktree_may_point_at_the_main_checkouts_folder(self) -> None:
+        repo = self.repo(None, hooks=True)
+        git_commit(repo, "chore: hooks")
+        linked = self.root / "linked"
+        git(repo, "worktree", "add", "-q", "-b", "side", str(linked))
+        git(repo, "config", "core.hooksPath", str(repo / ".githooks"))
+        self.assertEqual(B.attribution_warnings(linked), [])
+        self.assertEqual(B.attribution_warnings(repo), [])
+        git(repo, "config", "core.hooksPath", str(self.root / "elsewhere"))
+        self.assertEqual(len(B.attribution_warnings(linked)), 1)
+
     def test_check_local_prints_them_without_failing(self) -> None:
         repo = self.repo('{"permissions": {}}')
         code, out = run("check-local", str(repo))
@@ -2560,6 +2584,45 @@ class Usage(Base):
         self.assertIn("existing data is kept", said)
         self.assertIn("`usage forget`", said)
         self.assertTrue(self.state("frictions.jsonl").exists())
+
+    def test_a_record_missing_a_required_key_is_skipped_by_every_reader(self) -> None:
+        self.u("set", "level", "full")
+        for n in range(2):
+            self.pref(f"keep this one {n} please")
+        self.u("add", "frictions", "session=a")
+        self.u("add", "agent_costs", "kind=k", "model=m", "act_s=60", "act_ktok=2", "act_tools=1", "est_min=1", "est_ktok=1")
+        for arm in ("on", "off"):
+            self.u("add", "ablation", f"arm={arm}", "repeats=1", "corrections=0", "ktok=1")
+        good = {c: len(B.usage_records(self.repo, c, self.TODAY)) for c in B.USAGE_CATEGORIES}
+        day = "2026-10-09"
+        bad = {"preferences": [{"v": 1, "at": day}, {"v": 1, "at": day, "id": "u-x", "last_used": 5, "uses": 0, "text": "t", "why": "w"}],
+               "frictions": [{"v": 1, "at": day}, {"v": 1, "at": day, "session": 3}],
+               "agent_costs": [{"v": 1, "at": day}, {"v": 1, "at": day, "kind": "k", "act_ktok": "x"}],
+               "ablation": [{"v": 1, "at": day}, {"v": 1, "at": day, "arm": "on", "repeats": "x"}]}
+        for category, records in bad.items():
+            with B._usage_file(self.repo, category).open("a", encoding="utf-8") as out:
+                out.writelines(json.dumps(r) + "\n" for r in records)
+        for action in ("show", "brief", "summary", "report", "needs-consent"):
+            self.u(action)
+        self.u("use", self.prefs()[0]["id"])
+        self.assertEqual({c: len(B.usage_records(self.repo, c, self.TODAY)) for c in B.USAGE_CATEGORIES}, good)
+
+    def test_add_with_an_unknown_category_lists_the_valid_ones(self) -> None:
+        self.u("set", "level", "full")
+        for argv in (("add", "bogus", "x=1"), ("add", "bogus")):
+            with self.assertRaises(B.RefusedError, msg=argv) as caught:
+                self.u(*argv)
+            for category in B.USAGE_CATEGORIES:
+                self.assertIn(category, str(caught.exception))
+
+    def test_level_none_always_says_what_happens_to_the_data(self) -> None:
+        self.u("set", "level", "counts")
+        said = "\n".join(self.u("set", "level", "none"))
+        self.assertIn("nothing is stored", said)
+        self.assertIn("`usage forget`", said)
+        self.u("set", "level", "counts")
+        self.u("add", "frictions", "session=a")
+        self.assertIn("existing data is kept", "\n".join(self.u("set", "level", "none")))
 
     def test_tok_fields_pass_this_machines_private_terms(self) -> None:
         self.u("set", "level", "counts")

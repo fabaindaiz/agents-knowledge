@@ -64,3 +64,8 @@ class TaggedReleaseArm(Base):
         self.assertIn(H.ROUTING_V23B.strip(), (ws / "AGENTS.md").read_text())
         self.assertTrue((ws / ".claude/agents/knowledge-reviewer.md").is_file())
         self.assertEqual(info["condition"], "bundle_v29tag")
+
+
+class ReleaseToolLoader(Base):
+    def test_the_release_tool_is_loaded_once_per_process(self) -> None:
+        self.assertIs(H._release_tool(), H._release_tool())
