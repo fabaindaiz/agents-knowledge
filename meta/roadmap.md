@@ -79,6 +79,53 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-dfae87` · 0.1.0, the first stable release, aimed at this month.** The owner's objective: a stable
+  release in October 2026. 0.0.32 stays a patch (`d-5ed7e8-3110f3`) and is the first of the two releases in a row
+  that break no format which the minor asks for; **what points at the minor is 0.0.32's own proposals and
+  explorations**, the three items below among them. The release that cuts the first minor writes what the layout, the carrier
+  file's fields and the tools' command names then guarantee, and the carriers it reaches share one version.
+  *Estimate:* the policy paragraph and a migration note, about an hour, at the release that qualifies, plus the
+  three items. *Collides with:* `CHANGELOG.md`'s own statement of SemVer §4, and every carrier's `--since`
+  comparison.
+- **`i-5ed7e8-d6ecfe` · Persistent delegates: an agent kept open that receives tasks one at a time.** The harness
+  already allows it (a spawned delegate stays addressable, a listing shows what is active, a fork inherits the
+  parent's context), so what is missing is the method: when a warm delegate pays against a fresh one, how state is
+  handed to it, what a multi-task brief must carry that a one-task brief does not, how it is closed, and what a
+  check could verify. It would let planning be split instead of every task being planned and launched up front, and
+  it keeps the context of linked tasks. Researched 2026-10-15 (`meta/reviews/`); the design round with the owner
+  comes before any text. *Estimate:* a design round and about half a session to write. *Collides with:*
+  `prompt-context.md` §*Long runs and delegates*, which 0.0.32 has just changed for delegates
+  (`d-5ed7e8-6069fe`), and the delegate-brief bullet.
+- **`i-5ed7e8-023814` · The session proposes the split itself, after a thinking step.** The owner asked for
+  parallelising to be something the session offers, not something they have to ask for — and for the method to
+  carry the *reasoning* that reaches it, not only the rule. The step, as it worked in practice on 2026-10-15:
+  list the remaining work; group it by the **files each piece writes**; split only where those sets are disjoint
+  and nothing downstream waits on the piece; say why it is split that way, which model each piece gets and what
+  it is expected to cost; name what cannot be split and why (the same files, a generated artefact two pieces
+  would rebuild, a step the next one depends on). Three batches ran that way in one session — research,
+  bookkeeping, review — and the only collisions avoided were file collisions. What is missing is the method
+  text, where it lives (`prompt-context.md` beside delegation, or the plan's own procedure), and a check: a
+  session that delegated, with no split stated, is the thing to measure. It belongs with `i-5ed7e8-55e022`
+  (cost) and `i-5ed7e8-d6ecfe` (warm against fresh delegates), since the three answer one question — what a
+  session spends and on what. *Estimate:* a design round and about half a session to write. *Collides with:*
+  the delegation paragraphs of `prompt-context.md` and the batch and ledger candidates already queued.
+- **`i-5ed7e8-55e022` · Cost as a principle, with a check.** Today the bundle holds four scattered candidates
+  (a delegation priced before it starts, a plan's cost ledger, a remaining budget re-ordering the plan, a board of
+  what is active) and no principle. What the owner asks for: optimising tokens, recommending how to shape tasks,
+  reading the window and the kind of context available, and treating the launching of agents as a priced decision —
+  as one numbered principle with something a tool can measure. Researched 2026-10-15 (`meta/reviews/`).
+  *Estimate:* a design round, then a principle and its check. *Collides with:* the principles' numbering, the
+  coding session's token budget (about 215 tokens of room), and the four candidates, which the principle absorbs or
+  leaves as occurrences.
+- **`i-5ed7e8-7e0dd7` · Traditional development and the method in one repository.** A session that uses no agent,
+  or uses one without this method, changes files, takes decisions, edits procedures and merges work without minting
+  an id, writing a log entry or passing the gate; today that surfaces as a red check nobody can close, or as drift
+  nobody notices. The repository must hold both modes without either damaging the other or the method's purpose.
+  It is the one item of the three that can break the protocol from outside. Researched 2026-10-15
+  (`meta/reviews/`); it builds on the candidate that a convention only one party follows degrades to a suggestion.
+  *Estimate:* a design round, then the enforcement change and its check. *Collides with:* the git hooks, the gate,
+  `bundle.py ids`, `decisions`, `docs-drift`, the append-only log and the checksum manifest.
+
 - **`i-5ed7e8-2a2e86` · A partial gather waits for the remaining carriers before intake.** Four
   carriers were harvested and closed on 2026-10-15 and offer **44 proposals** between them (17, 17,
   6 and 4); the owner holds at least one more carrier whose harvest comes separately, so the intake
@@ -111,7 +158,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Collides with:* the planning documents a carrier keeps, and the pre-review the long skills open
   with.
 
-- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, and a hex hash. *Collides with:* the rules' tests, which must still fail on a real leak.
+- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
@@ -465,6 +512,13 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   the token. *After:* 0.0.30, so the frozen tag carries its cost levers. Plan: `meta/reviews/2026-10-07-benchmark-measurement-plan.md` §4.
 
 ## Blocked outside
+
+- **`i-5ed7e8-9a72da` · The method has never been validated against a carrier of another owner.** Every carrier of
+  this bundle belongs to one owner, so agreement between carriers on a method rule measures the reach of that
+  owner's global instruction file, not the rule's generality (`d-5ed7e8-5663c8`). Seven queued method rules rest on
+  that agreement alone. What unblocks it: a repository of another owner running the method, or a measured effect of
+  one of those rules in a single carrier. *Estimate:* nothing to build; it is a fact about the evidence, re-read at
+  each admission. *Collides with:* `sources/README.md` §1 and every method candidate's *Lacks*.
 
 - **0.0.31 carried to three more carriers on 2026-10-09** (the owner named them; each on its 0.0.30 branch with `main` merged in, then fast-forwarded to `main` and pushed). All three are registered and aligned (one's feature branch took `main` by a merge). Each update was then finished with the owner the same day: root-file wiring (`usage brief`, principle 15, the guide), decisions logs migrated to the Status column with the check in each gate, permission rules per 0.0.31 (two needed the owner's authorization to edit a settings file), `/next` run headless, and four proposals harvested from one carrier for the next intake. The rest of this machine's carriers (nine, two with no bundle on disk) wait until the owner names them.
 - **`i-5ed7e8-61171e` · The other machine's checklist: what its next session does first.** `git pull --tags`; carry 0.0.29
