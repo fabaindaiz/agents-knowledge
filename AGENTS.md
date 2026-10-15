@@ -153,13 +153,13 @@ python3 .agents/tools/bundle.py verify                 # checksums, links, routi
 python3 meta/tools/release.py check                    # the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets
 python3 meta/tools/release.py build [--check]          # the whole release and SHA256SUMS, from sources/
 python3 meta/tools/release.py report                   # sizes, budgets and the knowledge funnel
-python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible
+python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible; over a proposal, a warning no allowance answered fails, as the home's intake does
 python3 .agents/tools/bundle.py privacy --commits @{u}..HEAD   # the same, over what a push sends
 python3 .agents/tools/bundle.py trailers               # no commit message credits an assistant
 python3 .agents/tools/bundle.py docs-drift --range origin/main..HEAD   # documents a change left stale (docs-map.toml)
 python3 .agents/tools/bundle.py surfaces --only cursor copilot   # Cursor's and Copilot's copies of .claude/ (experimental)
 python3 .agents/tools/bundle.py close --base origin/main   # a close's deterministic checks in one command
-python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates
+python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates, a cited decision defined nowhere; `ids-allow: <reason>` on a line, inside the last cell of a table row
 python3 .agents/tools/bundle.py decisions meta/decisions.md   # the home's decisions log: status, supersession, a person over an agent
 pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads the same through PyYAML
 python3 evals/harness.py check                         # the experiment's graders are seen to fail and pass
