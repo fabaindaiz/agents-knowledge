@@ -32,27 +32,26 @@ generated proposal carries its title, the record-id scan honours an allowance an
 definition, the friction count matches on word boundaries, and a carrier's privacy run holds back what the home's
 intake would. Seven method changes, among them the delegate's foreground split, which reverses the old advice.
 Seventeen occurrences folded, one note admitted, one out of review; of 90 proposals offered, 78 taken in. Two
-reviewers in fresh contexts read it all before the cut, on disjoint halves and a cheaper model, and found nine
-real defects; four experiments ran, against none last release.
+fresh-context reviewers read it all before the cut, on disjoint halves and a cheaper model, and found nine real
+defects; four experiments ran, against none last release.
 
 **Next, in order:**
 1. **The three themes** `i-5ed7e8-d6ecfe`, `i-5ed7e8-55e022` and `i-5ed7e8-7e0dd7`, each with its research
    document written and its design round still to run, plus `i-5ed7e8-023814`. They are the road to **0.1.0,
    aimed at this month** (`i-5ed7e8-dfae87`).
-2. **Carry 0.0.32 to the carriers the owner names.** Eleven are not aligned; the canary's update is the template,
-   and its two pending edits — its own skill's paths, the author check in its gate — wait for the owner, because
-   they touch files its rules ask about.
-3. The cost pilot of 0.0.32 against 0.0.31; then `i-5ed7e8-36d9b1` and the four process items.
+2. **Carry 0.0.32 to the carriers the owner names.** Eleven are not aligned; the canary's update, both of its
+   pending edits included, is the template.
+3. The cost pilot of 0.0.32 against 0.0.31, then `i-5ed7e8-36d9b1` and the four process items.
 
-**Waiting on the owner:** which carriers take 0.0.32, and the 45 `unconfirmed:` reasons in `meta/decisions.md`.
-Five of those are new and are the owner's own ruling of 2026-10-15: where the choice is theirs and the reasoning
-the agent's, the row **starts** with `unconfirmed:` so the check counts it, which is why the count rose from 40.
+**Waiting on the owner:** which carriers take 0.0.32, and the 45 `unconfirmed:` reasons in `meta/decisions.md`
+— five of them new, by the owner's ruling that a row whose reasoning is the agent's **starts** with the marker so
+the check counts it, which is why the count rose from 40.
 
 **What went wrong.** The new privacy rule's first version never fired where it mattered, and the
 undefined-citation warning's first version gave 95 findings with nothing real in them; both were caught before the
 cut, one by a reviewer and one by reading the output. An estimate for three delegated agents was 2.5× to 4× their
 cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's scope,
-as given, excluded this repository, which the tool said and nobody acted on. It waits, with today's five.
+as given, excluded this repository, which the tool said and nobody acted on. It waits, with today's seven, three of them rules that lived only in this machine's memory.
 
 **To continue on another machine:** `git pull --tags`; everything of this close is on the remotes.
 
@@ -99,6 +98,21 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   comes before any text. *Estimate:* a design round and about half a session to write. *Collides with:*
   `prompt-context.md` §*Long runs and delegates*, which 0.0.32 has just changed for delegates
   (`d-5ed7e8-6069fe`), and the delegate-brief bullet.
+- **`i-5ed7e8-045188` · A delegation's estimate is written down before the launch.** Counted, not remembered: the
+  symptom appears twice, once in an earlier hand-off ("a large plan's estimate") and once on 2026-10-15, when
+  three research agents were announced at 120–200k tokens and 15–25 minutes each and cost 19k, 55k and 69k in
+  about a minute — **2.5× to 4× out**, and the announcement itself exists nowhere written, so the pair that would
+  have calibrated the next one does not exist. The fix is the cheap half of `i-5ed7e8-55e022`: the estimate goes
+  in the message that launches the batch *and* in the plan's ledger, and the actual is written beside it when the
+  agent returns. *Estimate:* a line in the method and a column in the ledger, under an hour. *Collides with:* the
+  cost ledger and board candidates already queued, and `i-5ed7e8-023814`.
+- **`i-5ed7e8-655151` · Moving a candidate row to the history is done by hand at every release.** Second
+  occurrence, counted: 0.0.31 and 0.0.32 both moved rows between `meta/tracking/candidates.md` and `history.md`
+  by hand, and 0.0.32 shipped nine answers whose rows a reviewer had to find — the release had left them queued.
+  A `release.py` subcommand that takes a slug, a verdict and a release, removes the row and writes the history
+  line would make it one checked command, and a check could refuse a release that ships an answer whose row is
+  still queued. *Estimate:* about two hours with tests. *Collides with:* `candidates.md`, `history.md` and the
+  ledger the build generates.
 - **`i-5ed7e8-023814` · The session proposes the split itself, after a thinking step.** The owner asked for
   parallelising to be something the session offers, not something they have to ask for — and for the method to
   carry the *reasoning* that reaches it, not only the rule. The step, as it worked in practice on 2026-10-15:
