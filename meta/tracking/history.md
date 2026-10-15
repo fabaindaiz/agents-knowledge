@@ -6,6 +6,55 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Offered again, merged or applied at 0.0.32
+
+Rows `release.py intake` set aside as occurrences of a slug already queued, answered or admitted. Those merged into a note are in its *Evidence*; those applied to the method are in `sources/bundle/`; those added to a queued row are in `candidates.md`.
+
+| Candidate | Where it went |
+|---|---|
+| `researcher` (its hook failing open) | **fixed at 0.0.32**: the interpreter-version refusal exits with the refusing status when the tool runs as the researcher's hook, and the handler declares that a failure blocks. The occurrence was measured against the 0.0.31 release copy, and the refusal was seen to fail before it was trusted |
+| `bundle-count` | **fixed in the tool at 0.0.32**: the friction count matches on word boundaries and names its unit where the count is printed |
+| `bundle-privacy` | **fixed in the tool at 0.0.32**: a carrier's own privacy run applies the home's rule over a proposal, so an unanswered warning there is a failure for the carrier too, and `verify` fails on it as well |
+| `bundle-ids` | **fixed in the tool at 0.0.32**: an `ids-allow: <reason>` marker on a line is honoured and listed, for an append-only record that quotes an id-shaped placeholder |
+| `extends state-review` | **applied to the method at 0.0.32**, where the mechanism actually lives: the base skills hold no carrier path, so the rule went to the bootstrap's own skill step and to the skills README — a skill's text reads its paths from that skill's `LOCAL.md` and falls back to finding the files |
+| `ids-reports-a-cited-id-defined-nowhere` | **fixed in the tool at 0.0.32**, narrowed by its own measurement: a cited **decision** of this carrier defined in none of the files read is a warning. Over this home's records the unnarrowed form fired 95 times with nothing real in it, because a roadmap item written as a bullet was not recognised as a definition; that recognition is part of the same fix |
+| `an-owner-instruction-file-is-one-source` | **applied to the admission steps and the harvest at 0.0.32** (`d-5ed7e8-5663c8`): carriers of one owner that restate a line of that owner's global instruction file are one occurrence, not several, and such a rule is still admitted on a mechanism plus a check, or on a measured effect in one carrier |
+| `a-workaround-that-writes-the-subject-destroys-the-measurement` | **admitted as a note at 0.0.32** (`d-5ed7e8-765b72`), with two incidents in two repositories and a literature section that says what was read at the source and what was only a bibliographic record |
+| `best-effort-side-channels` | **merged into the note as another occurrence at 0.0.32**: a request saved a state change, then failed to notify a device and answered with a server error although the change was saved |
+| `copied-instruction-claims-its-origin` | **an experiment run recorded at 0.0.32** (confirms): a dead-pointer audit on first adoption of a copied instruction set found about a score of dead pointers, most naming the origin repository's files |
+| `nested-partial-update-replaces` | **an experiment run recorded at 0.0.32** (confirms), with the cheaper check it adds: assert on the key an earlier delivery wrote, rather than reading the emitted update mask |
+| `prompt-update` (the update's pre-flight) | **applied to the method at 0.0.32**: the update's pre-flight carries the harvest's own questions with their defaults, the period first, instead of a second round of questions at step 4 |
+| `host-shell-traps` (an unquoted expansion not split in one shell) | **refused again, for the reason the first refusal gave**: one machine's host friction, of the same portability family, which belongs in that repository's own root file. The occurrence is real and documented in the shell's manual; what it is not is general |
+| `isolated-review-by-default` (measured yields) | **the figures recorded against the row already applied**: three reviews in a fresh context of batches already green and past their gates found six, seven and three important findings and no critical one, and re-running each delegate's claimed checks caught two false reports — a hidden exit status and a file an agent said did not exist. That is the whole-branch measurement its reopening lacked |
+| `questions-go-together-priced-and-before-the-writing` | **applied to the method at 0.0.32**: the shape was already principle 15; what this release adds is why its three parts matter — together, before the writing, and priced — because a procedure that lists them without the reason is answered as a formality |
+| `count-both-sides-and-use-a-control-window` | **merged into the note as another occurrence at 0.0.32**: a control window belongs to physical timing findings too, and its margin says whether a difference is real |
+| `ratchet-in-a-pinned-environment` | **merged into the note as another occurrence at 0.0.32**: two occurrences: pinning the type checker and linter does not pin what they count when a ratchet's baseline is a single total rather than a set of findings; and a new boundary, counting environments that cannot be pinned |
+| `test-double-fidelity` | **merged into the note as another occurrence at 0.0.32**: two occurrences: two test doubles of the same name in one file, where a method added to one is missed; and a double of a command-line tool that accepts arguments the real one rejects |
+| `validate-each-transformation-run` | **merged into the note as another occurrence at 0.0.32**: a transformation's scope is part of its contract: a wrapper that silently ignores the paths it was given |
+| `refusal-must-not-read-like-an-answer` | **merged into the note as another occurrence at 0.0.32**: a check piped into a filter inside an AND-chain that ends in a commit loses its exit status, so a red check reads as an answer |
+| `a-request-accepted-is-not-an-effect` | **merged into the note as another occurrence at 0.0.32**: two further occurrences of an accepted request that was not the effect, one a desktop mute |
+| `reproduce-the-checkout-not-only-the-environment` | **merged into the note as another occurrence at 0.0.32**: a new way the checkout decides a number: a toolchain pin found by walking up from the working directory |
+| `order-writes-by-failure-residue` | **merged into the note as another occurrence at 0.0.32**: an in-process occurrence: a core forwarding configuration to an engine copied the new value before the engine accepted it (reasoned from the code, not executed) |
+| `sweep-the-rendered-extremes` | **merged into the note as another occurrence at 0.0.32**: a layout defect on a phone-width line of transient notices that took four review rounds of narrowing |
+| `a-default-scope-is-the-widest-one` | **merged into the note as another occurrence at 0.0.32**: the widest default for test selection: an empty list of test files built by a shell fell back to the whole suite |
+| `coverage-measures-execution` | **merged into the note as another occurrence at 0.0.32**: a cheap substitute for a suite-wide mutation score when a new suite passes in full on its first run: plant one fault and see whether anything fails |
+| `a-check-must-be-seen-to-fail` | **merged into the note as another occurrence at 0.0.32**: two more occurrences, one of a form the note names and one of a boundary it lacked |
+| `a-surviving-guard-mutation-means-a-missing-input` | **merged into the note as another occurrence at 0.0.32**: two further guards that no test protected, shown by a reviewer's probes removing them |
+| `refuse-only-on-unassertable-evidence` | **merged into the note as another occurrence at 0.0.32**: a third party asserting a refusing signal about the victim: a panel counted wrong-token evidence as a refusal |
+| `a-rewrite-cleans-only-what-refs-reach` | **merged into the note as another occurrence at 0.0.32**: a new precondition for a history rewrite: run it in a full clone, never a shallow one |
+| `prompt-update` | **applied to the method at 0.0.32**: three offers; the step that verifies the incoming release now runs the incoming tool under an isolated interpreter when the live one fails with many findings of one kind (a bundle shape change), and a delta that changes the update procedure is read as data, diffed against the live procedure, before it is followed |
+| `prompt-harvest` | **applied to the method at 0.0.32**: two offers; the carrier file gains a field listing a span the human narrowed past, and the harvest shows its candidate list to the human in one message before writing the proposals |
+| `proposals-readme` | **applied to the method at 0.0.32**: the shared tool's proposal now carries its own title; older proposals cannot be given one, so a repository whose audit wants one top-level heading exempts `proposals/p-*.md` by path, as the proposals page now says |
+| `prompt-context` | **applied to the method at 0.0.32**: four offers; a delegate runs a long check in the foreground in pieces rather than waiting in the background; an ask rule is kept only through the edit tool, and a delegate brief says so; the author and committer identity is a second channel the attribution setting does not reach, so the gate reads it; and the delegate brief carries a fourth line, a commit chained on the check's own exit status |
+| `bundle-tool-export` | **already answered at 0.0.31** by `bundle.py export --replace`; the offer is the occurrence that motivated it (two template folders refreshed by hand in three steps), so the row leaves the queue with no further change |
+
+## Refused by carriers' harvests, taken in at 0.0.32
+
+| Candidate | Where it went |
+|---|---|
+| `domain-listening-findings` | refused: domain-specific; no claim survives without the domain's nouns |
+| `crossfade-law-follows-correlation` | refused: a fact of one domain (signal processing), and its general half is ordinary two-sided boundary testing |
+
 ## Taken out of the queue, or merged into a note, at the intake for 0.0.31
 
 The home's proposals from a four-arm pilot run in a repository with no carrier id, entered as the home's own

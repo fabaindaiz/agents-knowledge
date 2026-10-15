@@ -381,3 +381,81 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-a112d996ee` | 0.0.31 | another occurrence of `prompt-context`, to merge |
 | `p-d2fa16b1fd` | 0.0.31 | another occurrence of `prompt-update`, to merge |
 | `p-de14564c12` | 0.0.31 | answered by `bundle.py export --replace` (0.0.31); recorded in the history |
+| `p-0907e14e60` | 0.0.32 | queued as `questions-go-together-priced-and-before-the-writing` |
+| `p-5ed6279a27` | 0.0.32 | queued as `bundle-count` |
+| `p-61c0386538` | 0.0.32 | queued as `a-convention-only-one-party-follows-degrades-to-a-suggestion` |
+| `p-68b51667be` | 0.0.32 | queued as `a-delegation-is-priced-before-it-starts` |
+| `p-9594c7ac75` | 0.0.32 | another occurrence of `prompt-harvest`, to merge |
+| `p-96c1b445c5` | 0.0.32 | queued as `a-completeness-marker-must-survive-truncation` |
+| `p-9b2fbaad7a` | 0.0.32 | queued as `an-interaction-is-designed-one-decision-per-turn` |
+| `p-a710d381ad` | 0.0.32 | run logged against `nested-partial-update-replaces` |
+| `p-aaa9bac8d0` | 0.0.32 | queued as `ready-is-stated-in-the-humans-terms` |
+| `p-ad6874c637` | 0.0.32 | queued as `cited-identifiers-carry-their-names` |
+| `p-b79c6549b7` | 0.0.32 | queued as `proposals-readme` |
+| `p-c3405d47c0` | 0.0.32 | queued as `a-reservation-lock-and-an-atomicity-lock-are-not-the-same-wait` |
+| `p-c3aab40082` | 0.0.32 | queued as `instructions-arrive-through-three-channels` |
+| `p-df53430dec` | 0.0.32 | queued as `bundle-privacy` |
+| `p-eacfe1124f` | 0.0.32 | queued as `a-passing-observation-is-not-an-order-to-purge` |
+| `p-f5033c1cc7` | 0.0.32 | another occurrence of `prompt-harvest`, to merge |
+| `p-fbc5e24561` | 0.0.32 | queued as `a-lease-is-the-stranding-window-not-the-work-window` |
+| `p-10200ae07a` | 0.0.32 | another occurrence of `count-both-sides-and-use-a-control-window`, to merge |
+| `p-32b9f2d027` | 0.0.32 | queued as `a-workaround-that-writes-the-subject-destroys-the-measurement` |
+| `p-789fae0a47` | 0.0.32 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
+| `p-7a55883d4d` | 0.0.32 | queued as `an-injected-parameter-defeats-the-checker-and-its-usual-test` |
+| `p-a2a7b66e7d` | 0.0.32 | queued as `bundle-ids` |
+| `p-cc533b4818` | 0.0.32 | queued as `a-probe-catalogue-is-an-allow-list-not-a-shell` |
+| `p-3da35ed9c3` | 0.0.32 | queued as `a-typed-callable-can-be-the-unbound-declaration` |
+| `p-a17f44c746` | 0.0.32 | another occurrence of `test-double-fidelity`, to merge |
+| `p-ce0c867e01` | 0.0.32 | queued as `a-finding-belongs-to-the-repository-that-can-fix-it` |
+| `p-fa58a0105d` | 0.0.32 | another occurrence of `proposals-readme`, to merge |
+| `p-74aa2517d1` | 0.0.32 | queued as `an-exemption-must-fail-when-its-reason-is-gone` |
+| `p-c1f5e5068b` | 0.0.32 | another occurrence of `prompt-update`, to merge |
+| `p-c653e9969c` | 0.0.32 | another occurrence of `prompt-update`, to merge |
+| `p-d3aee52401` | 0.0.32 | another occurrence of `bundle-tool-export`, to merge |
+| `p-d4e7c33d0e` | 0.0.32 | another occurrence of `validate-each-transformation-run`, to merge |
+| `p-01b64707f7` | 0.0.32 | another occurrence of `refusal-must-not-read-like-an-answer`, to merge |
+| `p-031ead1231` | 0.0.32 | another occurrence of `instructions-arrive-through-three-channels`, to merge |
+| `p-10252a897c` | 0.0.32 | another occurrence of `a-request-accepted-is-not-an-effect`, to merge |
+| `p-15e0f40f16` | 0.0.32 | another occurrence of `host-shell-traps`, to merge |
+| `p-1a2eedf51d` | 0.0.32 | another occurrence of `test-double-fidelity`, to merge |
+| `p-26dc5c14cd` | 0.0.32 | another occurrence of `questions-go-together-priced-and-before-the-writing`, to merge |
+| `p-360caf783c` | 0.0.32 | another occurrence of `prompt-context`, to merge |
+| `p-3a5177156d` | 0.0.32 | queued as `researcher` |
+| `p-3aa4282e09` | 0.0.32 | run logged against `timeout-is-not-an-outcome` |
+| `p-3d3316d1ee` | 0.0.32 | queued as `state-review` |
+| `p-3d5f7e5d77` | 0.0.32 | another occurrence of `prompt-context`, to merge |
+| `p-4299e95d58` | 0.0.32 | queued as `control-messages-do-not-share-a-lossy-queue-with-telemetry` |
+| `p-4d00f226a1` | 0.0.32 | another occurrence of `isolated-review-by-default`, to merge |
+| `p-5a407946ce` | 0.0.32 | queued as `a-capped-key-list-and-a-ladder-by-form` |
+| `p-5e0bb60fc9` | 0.0.32 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-61ec6b0a14` | 0.0.32 | another occurrence of `a-worktree-check-needs-its-own-environment`, to merge |
+| `p-6ff0438253` | 0.0.32 | queued as `verification-load-competes-with-the-product` |
+| `p-778e62a33b` | 0.0.32 | another occurrence of `prompt-context`, to merge |
+| `p-7d6c334723` | 0.0.32 | queued as `kill-by-command-line-pattern-matches-own-shell` |
+| `p-8a31b505c4` | 0.0.32 | queued as `ids-reports-a-cited-id-defined-nowhere` |
+| `p-933d6dd2d0` | 0.0.32 | another occurrence of `ratchet-in-a-pinned-environment`, to merge |
+| `p-94b8414888` | 0.0.32 | another occurrence of `order-writes-by-failure-residue`, to merge |
+| `p-9b961f278a` | 0.0.32 | queued as `a-batch-states-why-it-is-split-and-which-model` |
+| `p-9ce408ea7a` | 0.0.32 | another occurrence of `sweep-the-rendered-extremes`, to merge |
+| `p-9d64b4aa5b` | 0.0.32 | another occurrence of `a-default-scope-is-the-widest-one`, to merge |
+| `p-a1d190ad15` | 0.0.32 | another occurrence of `a-plan-keeps-a-status-table`, to merge |
+| `p-a350eb7be0` | 0.0.32 | queued as `an-owner-instruction-file-is-one-source` |
+| `p-a794efaf45` | 0.0.32 | another occurrence of `coverage-measures-execution`, to merge |
+| `p-ad30abad01` | 0.0.32 | queued as `a-push-that-deploys-is-a-publish` |
+| `p-aede899fd0` | 0.0.32 | queued as `a-board-of-what-is-active-while-agents-run` |
+| `p-b67eebb06b` | 0.0.32 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-c457db22cd` | 0.0.32 | queued as `a-failure-before-the-limiter-counts-is-a-free-attempt` |
+| `p-c5257b91f6` | 0.0.32 | refused by its harvest; recorded in the history |
+| `p-ca617d2726` | 0.0.32 | queued as `a-remaining-budget-reorders-the-plan-toward-closing` |
+| `p-d403dcf9a0` | 0.0.32 | another occurrence of `a-workaround-that-writes-the-subject-destroys-the-measurement`, to merge |
+| `p-d9d4ea8c83` | 0.0.32 | another occurrence of `a-surviving-guard-mutation-means-a-missing-input`, to merge |
+| `p-db2fbd6bf8` | 0.0.32 | queued as `a-guided-test-holds-the-blind-in-the-agent` |
+| `p-ddd0740846` | 0.0.32 | another occurrence of `refuse-only-on-unassertable-evidence`, to merge |
+| `p-df414d871b` | 0.0.32 | another occurrence of `a-delegation-is-priced-before-it-starts`, to merge |
+| `p-e31a0177df` | 0.0.32 | queued as `a-plan-carries-a-cost-ledger` |
+| `p-e6b84078cb` | 0.0.32 | another occurrence of `prompt-context`, to merge |
+| `p-e6e2f44afe` | 0.0.32 | queued as `releasing-a-global-lock-per-short-call-convoys` |
+| `p-e8e7ae397b` | 0.0.32 | queued as `a-perceptual-comparison-switches-without-a-gap-with-confounds-matched` |
+| `p-f37ce3e959` | 0.0.32 | another occurrence of `a-rewrite-cleans-only-what-refs-reach`, to merge |
+| `p-fc9e89ae49` | 0.0.32 | refused by its harvest; recorded in the history |
+| `p-fefac267a4` | 0.0.32 | queued as `a-relative-priority-is-relative-to-an-inherited-one` |
