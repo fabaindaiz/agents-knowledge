@@ -43,9 +43,9 @@ found nine real defects; four experiments ran, against none last release.
    they touch files its rules ask about.
 3. The cost pilot of 0.0.32 against 0.0.31; then `i-5ed7e8-36d9b1` and the four process items.
 
-**Waiting on the owner:** the two pushes; which carriers take 0.0.32; the 40 `unconfirmed:` reasons in
-`meta/decisions.md`; and whether a decision whose choice is the owner's but whose reasoning is the agent's should
-read `unconfirmed:` — five rows were reworded that way today and the check does not count them.
+**Waiting on the owner:** which carriers take 0.0.32, and the 45 `unconfirmed:` reasons in `meta/decisions.md`.
+Five of those are new and are the owner's own ruling of 2026-10-15: where the choice is theirs and the reasoning
+the agent's, the row **starts** with `unconfirmed:` so the check counts it, which is why the count rose from 40.
 
 **What went wrong.** The first version of the new privacy rule never fired where it mattered, and the first
 version of the undefined-citation warning gave 95 findings with nothing real in them; both were caught before the
