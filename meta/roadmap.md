@@ -79,6 +79,38 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-2a2e86` · A partial gather waits for the remaining carriers before intake.** Four
+  carriers were harvested and closed on 2026-10-15 and offer **44 proposals** between them (17, 17,
+  6 and 4); the owner holds at least one more carrier whose harvest comes separately, so the intake
+  is deliberately **not** run: the pending state is the proposals themselves, committed in each
+  carrier and reported by `gather` as waiting, and `gather` is read-only and repeatable over the
+  full set. Verified at the time: every one passes the gathering step's privacy check, none held
+  back. Worth knowing before the intake: three of the method proposals restate instruction lines
+  this roadmap already records under *Blocked outside* for another machine (ids with a name table,
+  the interaction designed as a flow, a delegation priced on the cheapest model) — they arrive with
+  reasoning and evidence rather than as news, and the release decides whether that is enough to
+  make them notes. *Next session's first step:* re-run `gather` over every carrier the owner names,
+  including the one still to be harvested, and only then give the one table its verdicts.
+  *Estimate:* the gather is minutes; the verdicts are the work. *Collides with:* nothing, while the
+  intake is not run; a release cut before it would simply not carry them.
+- **`i-5ed7e8-f0680a` · Parallelisation only where it lowers cost, measured.** The owner's
+  short-term objective, stated 2026-10-15: improve how tasks run in parallel, **bounded to cost
+  optimisation** rather than to speed. So the pilot's question is not how many agents can run at
+  once but which splits pay for themselves — a delegated reading on a cheap model against the same
+  reading done in the main thread, with the price quoted before the launch and compared after.
+  *Estimate:* unknown until the cost pilot (`d-5ed7e8-5b183e`) has numbers; this item is its
+  acceptance criterion. *Collides with:* the cost pilot, which it scopes.
+- **`i-5ed7e8-be0f54` · A plan proposes decisions, prices risks and measures before executing.** The
+  owner's second objective, same day: more autonomous **plan generation** — the agent proposes the
+  decisions a piece of work needs, names its risks, and measures what it can before executing — on
+  the condition that the plan is always shown for validation and follows the standing guidelines.
+  The autonomy asked for is in the *preparation*, not in the execution: the owner was explicit that
+  continuous supervision has worked better than autonomous work (see the same day's close), so what
+  this item buys is a better-prepared decision, not an unattended one. *Estimate:* a procedure and
+  a skill change; the measuring half is the expensive part and is where the plan earns its keep.
+  *Collides with:* the planning documents a carrier keeps, and the pre-review the long skills open
+  with.
+
 - **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, and a hex hash. *Collides with:* the rules' tests, which must still fail on a real leak.
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
