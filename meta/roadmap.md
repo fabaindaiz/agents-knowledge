@@ -20,19 +20,20 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32` and taken by this home and by one canary
-carrier — and nothing is pushed.** Ten commits sit on `main` ahead of `origin/main`, of which the oldest two are
-another session's (`1c6a04e`, `d6f2064`): a push sends those too. The canary's commit sits on a branch of its own,
-cut `--no-track`, also unpushed.
+**State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32`, taken by this home and by one canary
+carrier, and pushed.** The home's `main` and the tag are on the remote, and that push carried two commits of
+another session that had committed here while this one worked (`1c6a04e`, `d6f2064`). In the canary the update's
+branch is pushed and its default branch fast-forwarded onto it; its range touches no path that repository's
+publishing workflow watches, checked first.
 
-**What 0.0.32 is.** A patch (`d-5ed7e8-3110f3`) that points at the first stable release through its own
+**What 0.0.32 is.** A patch (`d-5ed7e8-3110f3`) pointing at the first stable release through its own
 explorations. Five tool fixes, each with a test seen to fail first: the researcher's hook no longer fails open, a
-generated proposal carries its own title, the record-id scan honours an allowance and reads a roadmap bullet as a
+generated proposal carries its title, the record-id scan honours an allowance and reads a roadmap bullet as a
 definition, the friction count matches on word boundaries, and a carrier's privacy run holds back what the home's
 intake would. Seven method changes, among them the delegate's foreground split, which reverses the old advice.
-Seventeen occurrences folded, one note admitted, one out of review. Of 90 proposals offered, 78 taken in, 39
-queued. Two reviewers in fresh contexts read it all before the cut, on disjoint halves and a cheaper model, and
-found nine real defects; four experiments ran, against none last release.
+Seventeen occurrences folded, one note admitted, one out of review; of 90 proposals offered, 78 taken in. Two
+reviewers in fresh contexts read it all before the cut, on disjoint halves and a cheaper model, and found nine
+real defects; four experiments ran, against none last release.
 
 **Next, in order:**
 1. **The three themes** `i-5ed7e8-d6ecfe`, `i-5ed7e8-55e022` and `i-5ed7e8-7e0dd7`, each with its research
@@ -47,14 +48,13 @@ found nine real defects; four experiments ran, against none last release.
 Five of those are new and are the owner's own ruling of 2026-10-15: where the choice is theirs and the reasoning
 the agent's, the row **starts** with `unconfirmed:` so the check counts it, which is why the count rose from 40.
 
-**What went wrong.** The first version of the new privacy rule never fired where it mattered, and the first
-version of the undefined-citation warning gave 95 findings with nothing real in them; both were caught before the
+**What went wrong.** The new privacy rule's first version never fired where it mattered, and the
+undefined-citation warning's first version gave 95 findings with nothing real in them; both were caught before the
 cut, one by a reviewer and one by reading the output. An estimate for three delegated agents was 2.5× to 4× their
-real cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's
-scope, as given, did not include this repository, which the tool said plainly and nobody acted on. It waits, with
-the five written today.
+cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's scope,
+as given, excluded this repository, which the tool said and nobody acted on. It waits, with today's five.
 
-**To continue on another machine:** `git pull --tags`. The canary's branch is local to this machine.
+**To continue on another machine:** `git pull --tags`; everything of this close is on the remotes.
 
 ## Standing rules and facts
 
