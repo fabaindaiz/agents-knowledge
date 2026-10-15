@@ -20,38 +20,41 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-09, third close: 0.0.31 is cut, tagged `v0.0.31` and pushed** (`17aa53a`); this home took it
-(proposals pruned, agent copies and their surfaces refreshed, registered and aligned). No other carrier was reached,
-by the owner's choice: they are under *Blocked outside*.
+**State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32` and taken by this home and by one canary
+carrier — and nothing is pushed.** Ten commits sit on `main` ahead of `origin/main`, of which the oldest two are
+another session's (`1c6a04e`, `d6f2064`): a push sends those too. The canary's commit sits on a branch of its own,
+cut `--no-track`, also unpushed.
 
-**Done since the second close:**
-- **The cost pilot moved to 0.0.32 or the first minor release** (`d-5ed7e8-5b183e`).
-- **The trigger eval, lenient by decision** (`d-5ed7e8-7a95b5`: misfire at most 0.25): `next`, `close` and
-  `decision-review` pass; `user-walk` stays under the gate (`i-5ed7e8-36d9b1`). Record:
-  `meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`.
-- **The long skills open with a pre-review** (`d-5ed7e8-d7c0b7` to `d-5ed7e8-8e9ebe`): the open questions first, then
-  whether to run; the answers recorded even when declined.
-- **Descriptions capped by kind** (`d-5ed7e8-cf8021`): 2,776 in total, about 2,570 used.
-- **The carriers' audits** found a layout break older than 0.0.31 in three carriers still at 0.0.25; the changelog now
-  carries its **Layout:** line.
-- The user-level copy of `next` on this machine was deleted; the installed one replaces it.
+**What 0.0.32 is.** A patch (`d-5ed7e8-3110f3`) that points at the first stable release through its own
+explorations. Five tool fixes, each with a test seen to fail first: the researcher's hook no longer fails open, a
+generated proposal carries its own title, the record-id scan honours an allowance and reads a roadmap bullet as a
+definition, the friction count matches on word boundaries, and a carrier's privacy run holds back what the home's
+intake would. Seven method changes, among them the delegate's foreground split, which reverses the old advice.
+Seventeen occurrences folded, one note admitted, one out of review. Of 90 proposals offered, 78 taken in, 39
+queued. Two reviewers in fresh contexts read it all before the cut, on disjoint halves and a cheaper model, and
+found nine real defects; four experiments ran, against none last release.
 
 **Next, in order:**
-1. **Carry 0.0.31 to the carriers**, when the owner names them (Phase 2: splice on a branch per carrier, `attribution`
-   in the five that lack it, prune, their gates; three carriers' audits to adapt by the Layout line).
-2. The cost pilot of 0.0.31 against 0.0.30, at the next release.
-3. `i-5ed7e8-36d9b1` (`user-walk` routing), then the four process items `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`,
-   `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
+1. **The three themes** `i-5ed7e8-d6ecfe`, `i-5ed7e8-55e022` and `i-5ed7e8-7e0dd7`, each with its research
+   document written and its design round still to run, plus `i-5ed7e8-023814`. They are the road to **0.1.0,
+   aimed at this month** (`i-5ed7e8-dfae87`).
+2. **Carry 0.0.32 to the carriers the owner names.** Eleven are not aligned; the canary's update is the template,
+   and its two pending edits — its own skill's paths, the author check in its gate — wait for the owner, because
+   they touch files its rules ask about.
+3. The cost pilot of 0.0.32 against 0.0.31; then `i-5ed7e8-36d9b1` and the four process items.
 
-**Waiting on the owner:** the `unconfirmed:` reasons in `meta/decisions.md` (two are the agent's own rulings,
-`d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); which carriers take 0.0.31; a template's pointer to the knowledge index; judges
-for the follow-up experiment; the carriers' 0.0.30 branches; the credentials ticket; each assistant's terms.
+**Waiting on the owner:** the two pushes; which carriers take 0.0.32; the 40 `unconfirmed:` reasons in
+`meta/decisions.md`; and whether a decision whose choice is the owner's but whose reasoning is the agent's should
+read `unconfirmed:` — five rows were reworded that way today and the check does not count them.
 
-**To continue on another machine:** `git pull --tags`. Usage data and the trigger cases stay on this machine.
+**What went wrong.** The first version of the new privacy rule never fired where it mattered, and the first
+version of the undefined-citation warning gave 95 findings with nothing real in them; both were caught before the
+cut, one by a reviewer and one by reading the output. An estimate for three delegated agents was 2.5× to 4× their
+real cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's
+scope, as given, did not include this repository, which the tool said plainly and nobody acted on. It waits, with
+the five written today.
 
-**What went wrong:** the trigger eval's labels were first applied to an earlier run's case files too, in the same
-folder; restored from their last run's records and checked identical. A longer description bought nothing
-(`user-walk`), so it was not kept.
+**To continue on another machine:** `git pull --tags`. The canary's branch is local to this machine.
 
 ## Standing rules and facts
 
@@ -551,6 +554,18 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **0.0.32, 2026-10-15: cut, tagged `v0.0.32`, taken by this home and by one canary carrier** (unpushed). Its
+  scope: five tool fixes with their tests (the researcher's hook failing closed, the proposal title, the
+  record-id allowance and the bullet definition, the word-boundary count, the privacy parity over a proposal),
+  seven method changes (the delegate's foreground split; the commit rule in the delegate brief; what a permission
+  rule cannot see; the author and committer channel; why a question's three parts matter; the update reading a
+  delta that changes itself and naming which tool verifies across a shape change; the harvest showing its
+  candidates, reading its gaps and counting one owner as one source), a new optional carrier field
+  (`harvested_gaps`), the skill-path rule, seventeen folded occurrences, one admitted note
+  (`a-workaround-that-writes-the-subject-destroys-the-measurement`), one note out of review, and the intake of 78
+  proposals. Records: twelve decisions (`d-5ed7e8-5663c8` to `d-5ed7e8-1ed81d`), four review documents, four
+  experiments run. Two fresh-context reviews before the cut found nine defects, all fixed.
 
 Only the last release is kept here; the ones before 0.0.22 are in the home's
 `meta/archive/method-changelog.md`, and from 0.0.22 in `.agents/CHANGELOG.md`.

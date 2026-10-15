@@ -2,6 +2,39 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**State on 2026-10-09, third close: 0.0.31 is cut, tagged `v0.0.31` and pushed** (`17aa53a`); this home took it
+(proposals pruned, agent copies and their surfaces refreshed, registered and aligned). No other carrier was reached,
+by the owner's choice: they are under *Blocked outside*.
+
+**Done since the second close:**
+- **The cost pilot moved to 0.0.32 or the first minor release** (`d-5ed7e8-5b183e`).
+- **The trigger eval, lenient by decision** (`d-5ed7e8-7a95b5`: misfire at most 0.25): `next`, `close` and
+  `decision-review` pass; `user-walk` stays under the gate (`i-5ed7e8-36d9b1`). Record:
+  `meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`.
+- **The long skills open with a pre-review** (`d-5ed7e8-d7c0b7` to `d-5ed7e8-8e9ebe`): the open questions first, then
+  whether to run; the answers recorded even when declined.
+- **Descriptions capped by kind** (`d-5ed7e8-cf8021`): 2,776 in total, about 2,570 used.
+- **The carriers' audits** found a layout break older than 0.0.31 in three carriers still at 0.0.25; the changelog now
+  carries its **Layout:** line.
+- The user-level copy of `next` on this machine was deleted; the installed one replaces it.
+
+**Next, in order:**
+1. **Carry 0.0.31 to the carriers**, when the owner names them (Phase 2: splice on a branch per carrier, `attribution`
+   in the five that lack it, prune, their gates; three carriers' audits to adapt by the Layout line).
+2. The cost pilot of 0.0.31 against 0.0.30, at the next release.
+3. `i-5ed7e8-36d9b1` (`user-walk` routing), then the four process items `i-5ed7e8-1e9c1c`, `i-5ed7e8-780330`,
+   `i-5ed7e8-6cf312`, `i-5ed7e8-11e17f`.
+
+**Waiting on the owner:** the `unconfirmed:` reasons in `meta/decisions.md` (two are the agent's own rulings,
+`d-5ed7e8-dbd887`, `d-5ed7e8-eb2c2f`); which carriers take 0.0.31; a template's pointer to the knowledge index; judges
+for the follow-up experiment; the carriers' 0.0.30 branches; the credentials ticket; each assistant's terms.
+
+**To continue on another machine:** `git pull --tags`. Usage data and the trigger cases stay on this machine.
+
+**What went wrong:** the trigger eval's labels were first applied to an earlier run's case files too, in the same
+folder; restored from their last run's records and checked identical. A longer description bought nothing
+(`user-walk`), so it was not kept.
+
 **State on 2026-10-09, second close: 0.0.31's scope is built, reviewed and on `main` (`6f9e34b`, pushed).**
 `v0.0.30` is the last tag; 0.0.31 is open and not cut. The plan is `meta/reviews/2026-10-09-plan-0.0.31-release.md`.
 
