@@ -4,7 +4,7 @@ topic: "distributed-correctness"
 claim: "A request that a subsystem with its own policy accepts without error — a session manager, a daemon that rereads its configuration, an orchestrator bringing a service up — is not its effect: read the resulting state back after the request and after every event that re-runs the policy, and see that read-back fail on a planted diversion."
 confidence: "reasoned"
 phases: ["verify"]
-check: "the resulting state (what runs, the route taken, the value loaded) is read back after each event that re-runs the policy, and the read-back was seen red on a planted diversion"
+check: "the **effect** is read back after each event that re-runs the policy — what is heard, served or delivered, and not only the state that stands for it (what runs, the route taken, the value loaded), because one occurrence read back as applied while the effect was wrong; and the read-back was seen red on a planted diversion"
 about:
   - {do: "Change a running system through a subsystem with its own policy", wrong_when: "success is taken as the effect, or the read-back runs before the policy re-runs"}
 rests_on: "end-to-end argument, Saltzer, Reed & Clark 1984; RFC 9110 on 202 Accepted"
@@ -52,3 +52,5 @@ A self-hosted web service (2026-10): a local redeploy through a container-compos
 ## Evidence
 
 **Reasoned, from occurrences in two repositories:** four in the first (two silent overrides by a session manager's policy, one silently discarded configuration value, one effect a third off its nominal step), each caught only by reading the resulting state back; one in the second, an old container left serving after a successful deploy. No rate. The experiment: for each kind of request a repository sends to a subsystem with its own policy, read the resulting state back after the request and after each policy event, and count the disagreements.
+
+**Two further occurrences, 2026-10-15, one long-running service:** a mute was accepted, read back as muted and shown as muted, while one output kept sounding, because the mute was implemented as the master level at its floor and that output compensated for the master level; and capture levels were restored by a session manager from a value saved under a key shared by every stream of the same program, so a level the service had set was replaced with no request at all. Both were found by listening and by watching the effect over time, never by reading the state back after the request. **This contradicts the note's own check as it stood**: the state was read back, it agreed, and it was wrong, because what stood for the effect was not the effect — so the check now asks for the effect itself, which is the boundary this occurrence moved. The other half of the second incident, the investigator's own probes, is counted in `a-workaround-that-writes-the-subject-destroys-the-measurement`, not here.

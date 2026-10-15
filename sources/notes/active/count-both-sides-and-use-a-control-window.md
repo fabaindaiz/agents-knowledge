@@ -41,3 +41,5 @@ The control-group logic of difference-in-differences — e.g. **Card & Krueger, 
 ## Evidence
 
 **Measured in one repository:** a retracted finding whose two sides counted exactly equal, the key-coverage ramps, and control-window rates that put the incident below baseline. What would generalise it: for each join used in an investigation, publish per-side key coverage by month next to the finding.
+
+**A second repository, 2026-10-15, physical timing:** a fleet's recurring name-resolution failure was diagnosed as a boot race and the control — the same device with its router already up — passed by only about two seconds, because the fallback still ran. **Report the margin, not only the pass:** a control that clears the race by about the race's own window has not exonerated the configuration, it has shown the race is narrow, and without the margin it would have read as proof that nothing was wrong. The same diagnosis is counted in `a-workaround-that-writes-the-subject-destroys-the-measurement` for its other half — the probes that would have erased the state — and not as a second occurrence of this claim.

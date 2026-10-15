@@ -50,3 +50,5 @@ A transactional service's abuse controls. Letting a typed personal identifier re
 ## Evidence
 
 **Reasoned; the only number is the external 33.6 %.** No lockout attack was observed here. What would measure it: for each refusing signal, count how many distinct subjects share each value in production, and whether any value is settable by a client.
+
+**A further occurrence, 2026-10-15, reasoned from the request semantics and not run:** a panel counted wrong-token attempts per source address on plain requests carrying the token in the query string, and a page on another site can make a victim's browser fire those requests — a simple request sends no origin header — so a few image tags lock the victim's own address out for minutes, correct token included. The refusing signal was asserted by a third party about the victim. Count only requests whose fetch metadata says same-origin or user-initiated.

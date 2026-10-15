@@ -4,12 +4,12 @@ topic: "evolving-contracts"
 claim: "Rewriting published history removes a line only from what branches and tags still reach: the forge keeps the old commits by hash and any clone that merges brings them back, so a published line is left and documented, and a rewrite, when chosen, is range-limited, leased and followed on every other machine."
 confidence: "reasoned"
 phases: ["plan", "review"]
-check: "before any rewrite: every machine has pushed, the server's refs and a mirror are saved, the range starts at the first offending commit, each branch is pushed with a lease on its old hash, and every other clone rebases or re-clones instead of merging"
+check: "before any rewrite: every machine has pushed, the server's refs and a mirror are saved, the range starts at the first offending commit, each branch is pushed with a lease on its old hash; the repository is not shallow (`git rev-parse --is-shallow-repository`; if it is, `git fetch --unshallow` first, or rewrite in a full clone) and each branch's commit count equals the full history's, because identical trees do not show a lost commit; and every other clone rebases or re-clones instead of merging"
 about:
   - {do: "Remove an attribution line, or any other line, from commits already pushed", wrong_when: "the old commits are assumed gone once the branch is rewritten, or another machine still holds unpushed work and merges the old history back"}
 rests_on: "git-filter-repo's manual and the forge's documentation on removing data and on commit pages"
 strength: "documented behaviour, tried in a sandbox"
-our_evidence: "one repository rewritten once to this rule; the rest of the procedure from a sandbox, no second rewrite"
+our_evidence: "two repositories rewritten, one of them twice; the rest of the procedure from a sandbox"
 boundary: "A repository nobody else has cloned and the forge has not shown · a secret, which is rotated first and purged through the forge's own procedure, whatever the cost"
 cues: ["git rebase", "filter-branch", "force push", "force-with-lease", "amend", "rewrite history", "remove trailer", "co-authored-by", "git reset", "commit message", "published commits", "filter-repo", "reflog", "pushed branch"]
 ---
@@ -44,6 +44,6 @@ The bundle's home rewrote its own history once to remove attribution lines its c
 
 ## Evidence
 
-⚠ **Under review since 2026-10-05:** admitted at 0.0.29 on one repository's rewrite and a sandbox, by the owner's decision to publish it marked; it awaits a carrier's rewrite or its declining one, at the 0.0.30 harvest.
-
 **Reasoned, from one rewrite and a sandbox.** The home's rewrite and the sandbox are the only occurrences; no carrier has rewritten yet, and the published lines in three carriers were left and documented by decision (`d-5ed7e8-808dc7`).
+
+**A carrier's rewrite, 2026-10-15 — the occurrence this note's review awaited, and it failed.** An owner asked for an attribution line to be stripped from every published commit. The rewrite ran in a hosted container whose checkout was a **shallow clone** of a few dozen commits: in a shallow clone the oldest reachable commit is a graft with no parents, so the rewrite gave it a new hash as a new root, every tree compared identical — which this note's own procedure asks for — and the main branch lost about a fifth of its commits, folded away below the depth. The entry recording it said the commit count was unchanged, which was false. A later session found the missing commits in an older local clone, re-attached them to their original root and rewrote again. **Only the commit count would have shown it**, which is why it is now in the check; the clone documentation calls a depth-limited clone a truncated history, and no history-rewriting tool warns about it.
