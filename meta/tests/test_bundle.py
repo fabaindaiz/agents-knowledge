@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import subprocess
+import types
 from unittest import mock
 from pathlib import Path
 
@@ -1975,6 +1976,38 @@ class Lookup(Base):
 class ResearchHook(Base):
     """The researcher agent's shell: reads, or `curl` writing into a temporary folder outside the repository."""
 
+    def test_the_version_guard_refuses_with_2_in_hook_mode(self) -> None:
+        """An old interpreter must not let every command through (d-5ed7e8-fe6673).
+
+        The guard runs before any 3.11-only import, so it is executed here on its own source, with a
+        version below the minimum, rather than imported.
+        """
+        source = Path(B.__file__).read_text(encoding="utf-8")
+        guard = source.split("import argparse", 1)[0].replace("import sys\n", "", 1)
+        self.assertIn("research-hook", guard)
+
+        def run(argv: list[str]) -> int | str:
+            def exit_with(code: object) -> None:
+                raise SystemExit(code)
+
+            fake = types.ModuleType("sys")
+            fake.version_info = (3, 9, 0)
+            fake.version = "3.9.0 (fake)"
+            fake.executable = "/usr/bin/python3.9"
+            fake.argv = argv
+            fake.stderr = io.StringIO()
+            fake.exit = exit_with
+            try:
+                exec(compile(guard, "guard", "exec"), {"sys": fake})  # noqa: S102 -- the guard's own text
+            except SystemExit as exit_:
+                return exit_.code
+            return 0
+
+        self.assertEqual(run(["bundle.py", "research-hook"]), 2)
+        plain = run(["bundle.py", "verify"])
+        self.assertIsInstance(plain, str)
+        self.assertIn("3.11 or newer", plain)
+
     def test_only_reads_and_a_fetch_into_the_scratch_run(self) -> None:
         import tempfile
         repo = init_repo(self.root / "r")
@@ -2715,3 +2748,156 @@ class Usage(Base):
         with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(nested / "state")}):
             with self.assertRaises(B.RefusedError):
                 self.u("add", "frictions", "session=y")
+
+
+class ProposalTitle(Base):
+    """A generated proposal is an ordinary document: one top-level heading (d-5ed7e8-4d9d08)."""
+
+    def test_a_written_proposal_has_one_title_and_reads_back_without_it(self) -> None:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents, target="a-named-thing", claim="A claim with no project noun.")
+        text = path.read_text(encoding="utf-8")
+        body = text.split("---\n", 2)[2]
+        headings = [line for line in body.split("\n") if line.startswith("# ")]
+        self.assertEqual(headings, ["# Proposal: a-named-thing"])
+        parsed, problems = B.parse_proposal(text, path.name)
+        self.assertEqual(problems, [])
+        self.assertEqual(parsed.claim, "A claim with no project noun.")
+
+    def test_a_proposal_from_an_older_release_still_reads(self) -> None:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents, target="a-named-thing", claim="A claim with no project noun.")
+        older = path.read_text(encoding="utf-8").replace("# Proposal: a-named-thing\n\n", "", 1)
+        parsed, problems = B.parse_proposal(older, path.name)
+        self.assertEqual(problems, [])
+        self.assertEqual(parsed.claim, "A claim with no project noun.")
+
+
+class CitedButUndefined(Base):
+    """A plausible decision id written from memory (0.0.32, p-8a31b505c4)."""
+
+    def test_a_cited_decision_defined_nowhere_is_a_warning_and_other_kinds_are_not(self) -> None:
+        repo = init_repo(self.root / "r")
+        make_bundle(repo / ".agents")
+        B.write_carrier(repo / ".agents", {"carrier": "r-aaaaaa"})
+        log = repo / "log.md"
+        log.write_text("# Log\n\n## s-aaaaaa-000001 an entry\n\n"
+                       "It follows d-aaaaaa-111111, which nothing defines, and i-aaaaaa-222222 too.\n",
+                       encoding="utf-8")
+        errors, warnings, _ = B.record_id_check([log], "r-aaaaaa")
+        self.assertEqual(errors, [])
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("d-aaaaaa-111111", warnings[0])
+
+    def test_a_roadmap_bullet_defines_its_item(self) -> None:
+        roadmap = self.root / "roadmap.md"
+        roadmap.write_text("# Roadmap\n\n- **`i-aaaaaa-222222` · A thing to do.** Later, `i-aaaaaa-222222` again.\n",
+                           encoding="utf-8")
+        errors, _, counts = B.record_id_check([roadmap], "r-aaaaaa")
+        self.assertEqual(errors, [])
+        self.assertEqual((counts["definitions"], counts["citations"]), (1, 1))
+
+    def test_an_allowed_line_is_listed_and_not_an_error(self) -> None:
+        """The marker must excuse an id the scan really does flag, and say how many it excused."""
+        log = self.root / "log2.md"
+        malformed = "d-12345-abcdef"  # six hex expected in the first part: the scan reports this one
+        plain = self.root / "plain.md"
+        plain.write_text(f"# Log\n\nThe old shape {malformed} is quoted.\n", encoding="utf-8")
+        errors, _, _ = B.record_id_check([plain], "r-aaaaaa")
+        self.assertEqual(len(errors), 1, errors)  # seen to fail before the allowance is trusted
+        log.write_text(f"# Log\n\nThe old shape {malformed} is quoted. <!-- ids-allow: pre-rename, never rewritten -->\n",
+                       encoding="utf-8")
+        errors, warnings, _ = B.record_id_check([log], "r-aaaaaa")
+        self.assertEqual(errors, [])
+        self.assertTrue(any("allowed (ids-allow)" in w for w in warnings), warnings)
+
+    def test_a_marker_in_code_or_without_a_reason_does_not_excuse_the_line(self) -> None:
+        for line in ("The old shape d-12345-abcdef is quoted. `ids-allow: inside code`",
+                     "The old shape d-12345-abcdef is quoted. <!-- ids-allow: -->"):
+            path = self.root / f"log-{abs(hash(line))}.md"
+            path.write_text(f"# Log\n\n{line}\n", encoding="utf-8")
+            errors, _, _ = B.record_id_check([path], "r-aaaaaa")
+            self.assertEqual(len(errors), 1, (line, errors))
+
+    def test_an_allowance_says_when_it_excuses_more_than_one(self) -> None:
+        path = self.root / "two.md"
+        path.write_text("# Log\n\nBoth d-12345-abcdef and i-67890-abcdef. <!-- ids-allow: the rename entry -->\n",
+                        encoding="utf-8")
+        _, warnings, _ = B.record_id_check([path], "r-aaaaaa")
+        self.assertTrue(any("excuses 2 id-shaped tokens" in w for w in warnings), warnings)
+
+    def test_a_bullet_that_only_cites_an_id_is_not_a_definition(self) -> None:
+        """A changelog or roadmap bullet citing a decision must not read as a second definition of it."""
+        table = self.root / "decisions.md"
+        table.write_text("# Decisions\n\n| d-aaaaaa-111111 | accepted 2026-10-15 · h1 | A thing | why | - |\n",
+                         encoding="utf-8")
+        bullet = self.root / "notes.md"
+        bullet.write_text("# Notes\n\n- d-aaaaaa-111111 — the bullet that cites it\n", encoding="utf-8")
+        errors, _, counts = B.record_id_check([table, bullet], "r-aaaaaa")
+        self.assertEqual(errors, [])
+        self.assertEqual(counts["definitions"], 1)
+
+
+class ProposalWarningsHeldBack(Base):
+    """A warning in a proposal is a failure for the carrier too, because the home's intake holds it back."""
+
+    def _a_warning_in_a_proposal(self) -> tuple:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents, evidence="Seen 123456 times in one repository of this kind.")
+        return agents, path
+
+    def test_the_tree_walk_and_verify_both_hold_it(self) -> None:
+        agents, path = self._a_warning_in_a_proposal()
+        result = B.privacy_check(agents)
+        self.assertTrue(result.findings, "the planted warning must be found at all")
+        held = B.held_proposal_warnings(result)
+        self.assertTrue(held, f"the tree walk must hold it: {[f.where for f in result.findings]}")
+        self.assertTrue(any("holds it" in p or "proposal" in p for p in B.verify_problems(agents)),
+                        "verify must fail while a proposal carries an unanswered warning")
+
+    def test_a_path_given_relatively_is_held_too(self) -> None:
+        agents, path = self._a_warning_in_a_proposal()
+        result = B.privacy_check(paths=[path])
+        self.assertTrue(B.held_proposal_warnings(result), [f.where for f in result.findings])
+
+    def test_a_file_merely_named_like_one_is_not_held(self) -> None:
+        agents = make_bundle(self.root)
+        other = agents / "my-proposals-notes.md"
+        other.write_text("Seen 123456 times in one repository of this kind.\n", encoding="utf-8")
+        result = B.privacy_check(paths=[other])
+        self.assertEqual(B.held_proposal_warnings(result), [])
+
+    def test_an_answered_warning_is_not_held(self) -> None:
+        agents = make_bundle(self.root)
+        path = a_proposal(agents, evidence="Seen 123456 times here. privacy-allow: the count is the bundle's own")
+        result = B.privacy_check(paths=[path])
+        self.assertEqual(B.held_proposal_warnings(result), [])
+
+
+class HarvestGaps(Base):
+    """`harvested_gaps`: the spans a harvest has not read (d-5ed7e8-f4aef3)."""
+
+    def test_what_is_accepted_and_what_is_not(self) -> None:
+        self.assertEqual(B.harvest_gap_problems(None), [])
+        self.assertEqual(B.harvest_gap_problems([]), [])
+        self.assertEqual(B.harvest_gap_problems(["2026-09-01..2026-10-05", "2026-10-12..2026-10-15"]), [])
+        self.assertEqual(len(B.harvest_gap_problems("2026-09-01..2026-10-05")), 1)  # a string, not one per character
+        self.assertEqual(len(B.harvest_gap_problems(["2026-09-01"])), 1)
+        self.assertEqual(len(B.harvest_gap_problems(["2026-13-45..2026-99-99"])), 1)
+        self.assertEqual(len(B.harvest_gap_problems(["2026-10-05..2026-09-01"])), 1)
+        self.assertEqual(len(B.harvest_gap_problems(["2026-10-12..2026-10-15", "2026-09-01..2026-10-05"])), 1)
+
+
+class CountWordBoundaries(Base):
+    """A short symptom must not match inside a longer word (p-5ed6279a27)."""
+
+    def test_a_longer_word_is_not_a_hit_and_a_punctuated_symptom_matches_as_written(self) -> None:
+        log = self.root / "log.md"
+        log.write_text("# Log\n\n## one\n\nThe gate was red.\n\n## two\n\nA gateway timed out.\n"
+                       "\n## three\n\nRan `--no-verify` once.\n", encoding="utf-8")
+        hits, _ = B.count_report("gate", [log])
+        self.assertEqual([h.where for h in hits], ["one"])
+        hits, _ = B.count_report("--no-verify", [log])
+        self.assertEqual([h.where for h in hits], ["three"])
+        hits, _ = B.count_report("GATE", [log])
+        self.assertEqual([h.where for h in hits], ["one"])

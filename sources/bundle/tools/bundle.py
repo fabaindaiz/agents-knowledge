@@ -63,9 +63,15 @@ import sys
 
 # Before any import that needs 3.11 (`tomllib`): an older interpreter gets one line, not a traceback. Written
 # in syntax that 3.9 still parses, so the refusal is reached at all.
+# A guard refuses with the refusing status whatever stopped it deciding: as the researcher's hook, where the host
+# treats any status but 2 as a non-blocking error and lets the call through, this refusal exits 2 (d-5ed7e8-fe6673).
 if sys.version_info < (3, 11):
-    sys.exit(f"bundle.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
-             "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
+    _old = (f"bundle.py needs Python 3.11 or newer; this is {sys.version.split()[0]} at {sys.executable}. "
+            "Run it with a newer one: python3.11 .agents/tools/bundle.py ... (or uv run --python 3.11 ...)")
+    if "research-hook" in sys.argv[1:]:
+        sys.stderr.write(f"researcher: refused, the hook cannot decide ({_old})\n")
+        raise SystemExit(2)
+    sys.exit(_old)
 
 import argparse
 import ast
@@ -442,6 +448,9 @@ N_OF_M = re.compile(r"\b\d+\s+(?:of|out of)\s+(?:the\s+)?\d+\b")
 STANDARD_NUMBER = re.compile(r"\b(?:RFC|ISO|IEC|IEEE|PEP)[\s-]*(?:\d+\s*/\s*)*$")
 # The waiver. Assembled, so that this file's own source does not read as a waiver of this line.
 PRIVACY_ALLOW = re.compile("privacy-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
+# The same shape for the record-id scan (0.0.32, d-5ed7e8-9e947a): an append-only entry that quotes an
+# id-shaped placeholder is never rewritten, so without a marker its line is red for ever.
+IDS_ALLOW = re.compile("ids-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
 # A waiver written as documentation (`<reason>`) is an example of the syntax, not a waiver.
 PLACEHOLDER_REASON = re.compile(r"^<[^>]*>$")
 # What makes a fenced block an example rather than a record: a placeholder a reader has to replace.
@@ -821,6 +830,54 @@ def quotes_bundle(quote: str, text: str) -> bool:
     words of the bundle inside a longer sentence of its own is not a quote of it."""
     span = _squash(quote)
     return bool(span) and span in text
+
+
+def harvest_gap_problems(gaps: object) -> list[str]:
+    """What is wrong with a carrier's `harvested_gaps`: the spans before its harvest frontier that no harvest
+    has read (0.0.32). Each is `YYYY-MM-DD..YYYY-MM-DD` with real dates, the earlier one first, and the spans
+    themselves run earliest first. A value that is not a list is one problem, not one per character of it.
+    """
+    where = f"{CARRIER_FILE}: `harvested_gaps`"
+    if gaps is None:
+        return []
+    if not isinstance(gaps, list):
+        return [f"{where} must be a list of `YYYY-MM-DD..YYYY-MM-DD` strings"]
+    problems, last = [], None
+    for span in gaps:
+        if not isinstance(span, str) or not HARVEST_SPAN.match(span):
+            problems.append(f"{where} holds {span!r}; each is `YYYY-MM-DD..YYYY-MM-DD`, the unread span")
+            continue
+        start, _, end = span.partition("..")
+        try:
+            first, second = datetime.date.fromisoformat(start), datetime.date.fromisoformat(end)
+        except ValueError:
+            problems.append(f"{where} holds {span!r}, which is not two real dates")
+            continue
+        if first > second:
+            problems.append(f"{where} holds {span!r} backwards; a span runs from its earlier date to its later one")
+        elif last and first < last:
+            problems.append(f"{where} holds {span!r} after a later span; the spans run earliest first")
+        last = max(last, second) if last else second
+    return problems
+
+
+def held_proposal_warnings(result: "PrivacyResult") -> list:
+    """The warnings the home's intake would hold a proposal back for: a WARN on a file under `proposals/`
+    that no `privacy-allow` on its line answered (0.0.32). The carrier's own run reports them as failures,
+    so a carrier is not told it may commit work the home will stop (`release.py` `proposal_privacy`).
+
+    The test is on path components, not on a substring of the shown path: the tree walk shows a bundle-relative
+    path (`proposals/p-1.md:5`) and `--paths` shows what the caller typed, so a slash-wrapped substring matched
+    neither — the first version of this check never fired on the default invocation, found by review before release.
+    """
+    held = []
+    for f in result.findings:
+        if f.level != "WARN":
+            continue
+        path = f.where.rsplit(":", 1)[0].replace("\\", "/")
+        if PROPOSALS in [part for part in path.split("/") if part]:
+            held.append(f)
+    return held
 
 
 def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, terms_file: Path | None = None,
@@ -1348,7 +1405,13 @@ LEGACY_RECORD_ID = re.compile(r"\b[dis]-[0-9a-f]{6}-\d{3}\b")
 # (a digit dropped) and `D-ABCDEF-123456` (a case changed) are ids somebody meant, and a check that
 # only reads well-formed ids never sees the ones that went wrong.
 RECORD_ID_ATTEMPT = re.compile(r"(?<![\w-])[disDIS]-([0-9A-Za-z]{2,12})-([0-9A-Za-z]{2,12})(?![\w-])")
-RECORD_DEFINITION = re.compile(r"^\s*\|\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\s*\||^#{1,6}\s.*·\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\b")
+# Three shapes define a record: a table row whose first cell is the id (a decisions log), a heading that
+# ends in one (a session entry), and a list item that opens with one (a roadmap whose items are bullets —
+# 0.0.32: without this shape every such item read as a citation of an id defined nowhere, which is what
+# the new undefined-citation warning measured, 95 of them in this home alone).
+RECORD_DEFINITION = re.compile(r"^\s*\|\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\s*\|"
+                              r"|^#{1,6}\s.*·\s*([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})\b"
+                              r"|^\s*[-*]\s+\**`([dis]-[0-9a-f]{6}-[0-9a-f]{3,6})`\**\s*·")
 
 
 def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], list[str], dict[str, int]]:
@@ -1366,13 +1429,27 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
         files: The documents to read.
         carrier: This carrier's id (`r-...`), or None when it has none: then no prefix is checked.
 
+    A line carrying `ids-allow: <reason>` outside inline code is left to its reason, and the allowance is
+    listed among the warnings so that none is silent: it is written for an append-only record that quotes
+    an id-shaped placeholder, which policy forbids rewriting.
+
+    A citation of **a decision** of this carrier's own prefix that is defined in none of the files read is a
+    warning: a well-formed id written from memory passes every other check and the reader who follows it
+    finds nothing. Only decisions, because only their records are never removed. Measured in this home
+    before it was narrowed: over the records, 23 roadmap items and 2 session entries were cited and not
+    defined — the items because the method removes a *Done* item one release after it ships, the entries
+    because they are defined in the log; neither is a defect, and reporting them would have added 25 lines
+    to every close. A dangling citation of a removed item is a separate question, not this one.
+
     Returns:
-        (errors: duplicates and malformed ids, warnings: another carrier's prefix, counts).
+        (errors: duplicates and malformed ids, warnings: another carrier's prefix, an undefined citation of
+        this carrier's own prefix, and each allowance, counts).
     """
     errors: list[str] = []
     warnings: list[str] = []
     counts = {"ids": 0, "definitions": 0, "citations": 0, "legacy": 0}
     defined: dict[str, str] = {}
+    cited: dict[str, str] = {}
     own = carrier.removeprefix("r-") if carrier else None
     for path in files:
         lines = path.read_text(encoding="utf-8", errors="replace").split("\n")
@@ -1380,13 +1457,25 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
             if not prose:
                 continue
             where = f"{path}:{number}"
+            code = [m.span() for m in INLINE_CODE.finditer(line)]
+            allow = next((m for m in IDS_ALLOW.finditer(line)
+                          if not any(a <= m.start() < b for a, b in code)), None)
+            reason = allow.group(1).strip() if allow else ""
+            if allow and reason and not PLACEHOLDER_REASON.match(reason):
+                # The allowance covers the whole line, so it can hide a second mistake made on it (found by
+                # review before 0.0.32): say how many id-shaped tokens it excused, so the reader sees the count.
+                covered = sum(1 for m in RECORD_ID_ATTEMPT.finditer(line)
+                              if any(c.isdigit() for c in m.group(1) + m.group(2)))
+                warnings.append(f"{where}: allowed (ids-allow): {reason}"
+                                + (f" — it excuses {covered} id-shaped tokens on this line" if covered != 1 else ""))
+                continue
             found_here = sorted([*RECORD_ID.finditer(line), *LEGACY_RECORD_ID.finditer(line)], key=lambda m: m.start())
             well_formed = {m.group(0) for m in found_here}
             for m in RECORD_ID_ATTEMPT.finditer(line):
                 if m.group(0) not in well_formed and any(c.isdigit() for c in m.group(1) + m.group(2)):
                     errors.append(f"{where}: malformed record id {m.group(0)!r} (expected <d|i|s>-<6 hex>-<6 hex>)")
             definition = RECORD_DEFINITION.match(line)
-            name = definition and (definition.group(1) or definition.group(2))
+            name = definition and (definition.group(1) or definition.group(2) or definition.group(3))
             if name and name not in well_formed:
                 name = None  # a malformed id in a definition slot, reported above
             for index, occurrence in enumerate(found_here):
@@ -1395,6 +1484,7 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
                 counts["legacy"] += bool(LEGACY_RECORD_ID.fullmatch(found))
                 if found != name or index != [m.group(0) for m in found_here].index(name):
                     counts["citations"] += 1
+                    cited.setdefault(found, where)
                     continue
                 counts["definitions"] += 1
                 if found in defined:
@@ -1404,6 +1494,10 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
                 if own and found.split("-")[1] != own:
                     warnings.append(f"{where}: {found} is defined here under r-{found.split('-')[1]}, "
                                     f"not this carrier's {carrier}; fine only if this file keeps another carrier's records")
+    warnings += [f"{at}: the decision {found} is cited here and defined in none of the files read; "
+                 "an id is minted, never written from memory (`bundle.py id`)"
+                 for found, at in sorted(cited.items())
+                 if found not in defined and own and found.startswith("d-") and found.split("-")[1] == own]
     return errors, warnings, counts
 
 
@@ -1974,9 +2068,10 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 # "repository's own fields" of several headers. TOML, read by `tomllib`.
 CARRIER_FILE = "carrier.toml"
 CARRIER_TABLES = ("skills",)  # a role of the skill catalogue to the name installed here (method/skills/README.md)
-CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "adapted", "declined",
-               "visibility", "private_folder", "lineage")
+CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "harvested_gaps",
+               "adapted", "declined", "visibility", "private_folder", "lineage")
 VISIBILITIES = ("public", "private")
+HARVEST_SPAN = re.compile(r"^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$")
 
 
 def _toml_str(value: str) -> str:
@@ -2163,8 +2258,12 @@ def render_proposal(p: Proposal) -> str:
     else:
         fields.update({"action": p.action, "lacks": p.lacks})
     ordered = {k: fields[k] for k in PROPOSAL_KEYS if k in fields}
-    return (dump_frontmatter(ordered, comment=PROPOSAL_MARK, plain=True) + "\n" + p.claim.strip() + "\n\n"
-            + f"## {p.evidence_heading}\n\n" + p.evidence.strip() + "\n")
+    # The body opens with its own title (0.0.32, d-5ed7e8-4d9d08): a carrier whose audit asks every document for
+    # one top-level heading went red on freshly generated proposals, in two carriers independently, and the file
+    # cannot be corrected there because its name is a hash of its content. A proposal written by an older release
+    # has no title, and `parse_proposal` reads both.
+    return (dump_frontmatter(ordered, comment=PROPOSAL_MARK, plain=True) + "\n" + f"# Proposal: {p.target}\n\n"
+            + p.claim.strip() + "\n\n" + f"## {p.evidence_heading}\n\n" + p.evidence.strip() + "\n")
 
 
 def parse_proposal(text: str, where: str) -> tuple[Proposal | None, list[str]]:
@@ -2188,6 +2287,9 @@ def parse_proposal(text: str, where: str) -> tuple[Proposal | None, list[str]]:
     kind = values["kind"] or ""
     heading = "Result" if kind == "experiment" else "Evidence"
     claim, _, rest = body.partition(f"\n## {heading}\n")
+    first, sep, after = claim.strip().partition("\n")
+    if first.strip() == f"# Proposal: {values['target'] or ''}":  # the title written since 0.0.32; older ones have none
+        claim = after if sep else ""
     p = Proposal(kind=kind, target=values["target"] or "", claim=claim.strip(), evidence=rest.strip(),
                  seen=values["seen"] or "", action=values["action"] or "", lacks=values["lacks"] or "",
                  verdict=values["verdict"] or "", where=values["where"] or "", carrier=values["carrier"] or "",
@@ -2925,6 +3027,9 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
     problems += checksum_problems(tree) + link_problems(tree) + reachability_problems(tree) + sessions
     privacy = privacy if privacy is not None else privacy_check(tree)
     problems += [f"privacy: {f.where} {f.rule}: {f.match}" for f in privacy.failures]
+    problems += [f"privacy: {f.where} {f.rule}: {f.match} — a warning in a proposal, which the home's intake holds "
+                 "back until it is generalised or answered on its line with a reason"
+                 for f in held_proposal_warnings(privacy)]
     problems += invisible_characters(tree, [r for r in all_files(tree) if not r.startswith("incoming/")])
     problems += stray_problems(tree) if not release else [p for p in stray_problems(tree) if "hidden" in p]
     if release:
@@ -2942,8 +3047,12 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         if not CARRIER_ID.match(str(carrier.get(CARRIER_FIELD, ""))):
             problems.append(f"{CARRIER_FILE}: `{CARRIER_FIELD}` is missing or not `r-` and six hex (`bundle.py carrier-id --mint`)")
         problems += [f"{CARRIER_FILE}: unknown key `{k}`" for k in carrier if k not in CARRIER_KEYS]
-        problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined")
+        problems += [f"{CARRIER_FILE}: `{k}` must be a list of strings" for k in ("adapted", "declined", "harvested_gaps")
                      if k in carrier and not isinstance(carrier[k], list)]
+        # `harvested_gaps` (0.0.32, d-5ed7e8-f4aef3): the spans before `harvested_through` a harvest has not read,
+        # because the human narrowed its period. The frontier stays the frontier, and the gaps say what it does not
+        # cover; a harvest reads them before fixing its own period, and the home's gather reports them.
+        problems += harvest_gap_problems(carrier.get("harvested_gaps"))
         if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():  # a home writes releases from there
             problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
                             "the repository this one takes releases from (the release names it as `home` in README.md)")
@@ -4324,8 +4433,15 @@ def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[M
     Case-insensitive; once per entry of a log (a level-2 heading), once per line of a file with no entries.
     A repeat is counted, never subtracted: it may be one event copied into a later entry (a summary, a
     carried-over item) or the same friction recorded again in the same words, and only a reader can tell.
-    What is counted is entries that mention the symptom, not incidents."""
+    What is counted is entries that mention the symptom, not incidents.
+
+    The match is on word boundaries (0.0.32, p-5ed6279a27): a short symptom matched inside longer words and
+    a close read a count whose hits were almost all one unrelated word. A symptom whose own edges are not
+    word characters (a path, a flag, a punctuated phrase) is matched as written."""
     needle = symptom.lower()
+    edge = (r"\b" if needle[:1].isalnum() or needle[:1] == "_" else "",
+            r"\b" if needle[-1:].isalnum() or needle[-1:] == "_" else "")
+    pattern = re.compile(edge[0] + re.escape(needle) + edge[1])
     entries: list[tuple[Mention, list[str]]] = []
     for path in files:
         lines = path.read_text(encoding="utf-8").split("\n")
@@ -4333,7 +4449,7 @@ def count_report(symptom: str, files: list[Path]) -> tuple[list[Mention], list[M
         for number, line in enumerate(lines, 1):
             if line.startswith("## "):
                 heading = line[3:].strip()
-            if needle in line.lower():
+            if pattern.search(line.lower()):
                 where = heading or f"line {number}"
                 if where not in at:
                     at[where] = len(entries)
@@ -5245,10 +5361,17 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
                                (Path(args.repo), args.commits) if args.commits else None)
         for f in result.failures:
             print(f"  x FAIL {f.where} {f.rule}: {f.match}")
+        # The home's intake holds a proposal back on a WARN no allowance answered, so a carrier whose own run
+        # reported it as a warning closed and moved on, and the work was held at a door it never saw
+        # (0.0.32, d-5ed7e8-f4aef3's sibling p-df53430dec). Over a proposal, the carrier applies the home's rule.
+        held = held_proposal_warnings(result)
+        for f in held:
+            print(f"  x FAIL {f.where} {f.rule}: {f.match} — a warning in a proposal: the home's intake holds it "
+                  "back until it is generalised, or answered on its line with a reason")
         for note in result.notes():
             print(note)
-        print(result.summary())
-        return 1 if result.failures else 0
+        print(result.summary() + (f"; {len(held)} warnings in proposals, which the home's intake holds back" if held else ""))
+        return 1 if result.failures or held else 0
     if args.command == "trailers":
         if args.message:
             if args.range:
@@ -5467,7 +5590,8 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         for hit in hits:
             print(f"  {'=' if hit in repeats else ' '} {hit.file}:{hit.line}  {hit.where}"
                   + (": repeats an earlier line word for word" if hit in repeats else ""))
-        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}; entries that mention it, not incidents"
+        print(f"{len(hits)} entries or lines in {len(files)} files mention {args.symptom!r}, matched on word boundaries; "
+              "the unit is entries that mention it, not incidents: read each hit, and count incidents"
               + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
                  "or a recurrence" if repeats else ""))
         return 0

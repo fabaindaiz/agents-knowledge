@@ -1174,6 +1174,11 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
         entry["forked"] = [] if legacy or home else B.check_local(repo) + (_forked_from(base, snapshot) if base else [])
         entry["lost"] = [f"{rel}: {line[:120]}" for _, rel, line in lost(base, {name: snapshot}, root)] if legacy and base else []
         entry["proposals"], entry["problems"] = _offered(snapshot, base)
+        try:
+            gaps = (B.read_carrier(snapshot) or {}).get("harvested_gaps") or []
+        except RefusedError:
+            gaps = []
+        entry["harvested_gaps"] = [str(g) for g in gaps] if isinstance(gaps, list) else [str(gaps)]
         entry["privacy"] = [f"{pid}: {'; '.join(found)}" for pid, found in proposal_privacy(entry["proposals"]).items()]
         report["carriers"][name] = entry
         offered = entry["proposals"]
@@ -1181,6 +1186,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
         lines += [f"## {name} — holds {version or 'an unknown version'}" + (" (layout before 0.0.22)" if legacy else ""), "",
                   f"- base: {'tag v' + version if base else 'none: no release tag for this version; compare by hand'}",
                   f"- offers {len(offered)} proposals" + (f", {old} of them rows of its old outbox" if old else ""),
+                  *([f"- spans before its harvested_through that no harvest has read yet: {', '.join(entry['harvested_gaps'])}"] if entry["harvested_gaps"] else []),
                   *[f"- not readable as a proposal: {p}" for p in entry["problems"]],
                   *[f"- privacy, not taken in until generalised or answered: {p}" for p in entry["privacy"]],
                   *[f"- changed what only a release writes: {p}" for p in entry["forked"]],
