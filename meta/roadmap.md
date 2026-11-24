@@ -63,6 +63,18 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-a98470` · The decisions check counts what it means.** Two faults, found by using it on
+  2026-11-24 (`d-5ed7e8-2f51c2`). A row whose status is `superseded by` or `deprecated` still counts as
+  unconfirmed, though its reason is history and no person will ever be asked for it: six of forty-four. A row
+  decided by an agent can never clear, because its reason is an agent's by definition, while the status column
+  already says `· agent`: nine more. So fifteen of the warnings name nothing anyone can act on, and a count
+  that cannot reach zero stops being read — the same failure as a warning on standard error that nobody looks
+  at. The fix: skip superseded and deprecated rows, and report the agent-decided ones as their own line rather
+  than inside the same number. What is left is the rows a person accepted whose reason a person never gave,
+  which is what the warning was for. *Estimate:* about half an hour with tests, including one that a
+  superseded row stops counting and its successor starts. *Collides with:* `release.py check`'s own output,
+  which several closes quote by its totals.
+
 - **`i-5ed7e8-ee9f86` · Count what of the carrier tool a carrier never runs.** `tools/bundle.py` is 276,091
   bytes, 27% of the release and its single largest file, and nobody has asked which of its commands a carrier
   invokes. The question is the owner's, put on 2026-11-24: content whose only reader is a session that already
