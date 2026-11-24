@@ -912,10 +912,11 @@ def queue_problems(root: Path = ROOT) -> list[str]:
             for r in rows if not QUEUE_ROW.match(r[0].strip())]
 
 
-# `MANIFEST.md`'s checked limits. The export's cap was 0.0.29's shipped bytes, raised once to 1 MB and no further
-# (d-5ed7e8-efd0e2): the room is not a budget. It binds at the cut: between releases the export may grow past it and
-# `check` warns; `release` refuses.
-EXPORT_CAP = 1_000_000
+# `MANIFEST.md`'s checked limits. The export's cap was 0.0.29's shipped bytes, then 1 MB (d-5ed7e8-efd0e2), and is
+# now 1,250,000 (d-5ed7e8-929f2a, which supersedes it): the footprint is not what a session pays for, the context
+# caps below and in `MANIFEST.md` are, and they bind. The room is still not a budget: each growth is justified on
+# its own. It binds at the cut: between releases the export may grow past it and `check` warns; `release` refuses.
+EXPORT_CAP = 1_250_000
 DESCRIPTIONS_CAP = 2_776  # chars of the skill and agent descriptions a carrier loads on every turn, in total
 # Each description is capped by its kind, since a long process must recognise varied phrasing and an agent run only
 # on request need not (the descriptions' caps by kind, in meta/decisions.md).

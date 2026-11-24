@@ -20,40 +20,22 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32`, taken by this home and by one canary
-carrier, and pushed.** The home's `main` and the tag are on the remote, and that push carried two commits of
-another session that had committed here while this one worked (`1c6a04e`, `d6f2064`). In the canary the update's
-branch is pushed and its default branch fast-forwarded onto it; its range touches no path that repository's
-publishing workflow watches, checked first.
+**State on 2026-11-24, fifth close: 0.0.33 is cut, tagged `v0.0.33` and pushed. It was not spliced into any carrier**, by the owner's decision, so every carrier but this home still holds 0.0.32 or older. They are listed under *Blocked outside*.
 
-**What 0.0.32 is.** A patch (`d-5ed7e8-3110f3`) pointing at the first stable release through its own
-explorations. Five tool fixes, each with a test seen to fail first: the researcher's hook no longer fails open, a
-generated proposal carries its title, the record-id scan honours an allowance and reads a roadmap bullet as a
-definition, the friction count matches on word boundaries, and a carrier's privacy run holds back what the home's
-intake would. Seven method changes, among them the delegate's foreground split, which reverses the old advice.
-Seventeen occurrences folded, one note admitted, one out of review; of 90 proposals offered, 78 taken in. Two
-fresh-context reviewers read it all before the cut, on disjoint halves and a cheaper model, and found nine real
-defects; four experiments ran, against none last release.
+**What 0.0.33 is.** A harvest patch, and the largest so far: 213 proposals from 23 carriers, against 90 last release. 122 entered the queue, 6 were experiment runs, 44 were folded as occurrences, and 5 were refused a fold by the sessions doing it and became candidates of their own. One note admitted, `an-isolated-copy-is-not-the-working-checkout`. One principle added, 21, naming the four stages the work passes through — plan, settle the questions, build, review — with the failure and the check of each. The enforcement ladder gained its grounding in the hierarchy of controls and four narrowings. No shipped tool changed.
+
+**Ten carriers were cloned onto this machine** from the other one's inventory and harvested here; the manifest now lists 24. The export's cap was raised to 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`) when the cut was refused at 1,016,609.
 
 **Next, in order:**
-1. **The three themes** `i-5ed7e8-d6ecfe`, `i-5ed7e8-55e022` and `i-5ed7e8-7e0dd7`, each with its research
-   document written and its design round still to run, plus `i-5ed7e8-023814`. They are the road to **0.1.0,
-   aimed at this month** (`i-5ed7e8-dfae87`).
-2. **Carry 0.0.32 to the carriers the owner names.** Eleven are not aligned; the canary's update, both of its
-   pending edits included, is the template.
-3. The cost pilot of 0.0.32 against 0.0.31, then `i-5ed7e8-36d9b1` and the four process items.
+1. **The other machine's session: harvest and 0.0.34.** Its session transcripts never travel by git, so the spans listed in each carrier's `harvested_gaps` are there to be read, this release's carriers included. It pulls `v0.0.33` first.
+2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here. Start a session here with that, not with anything else: skipping two versions is the drift the queued candidate on a carrier only updating when a meta-session reaches it describes, and that this release measured in two carriers left on 0.0.25 and 0.0.26.
+3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which the four-stage flow of principle 21 is the skeleton; writing the full method is that release's work.
 
-**Waiting on the owner:** which carriers take 0.0.32, and the 45 `unconfirmed:` reasons in `meta/decisions.md`
-— five of them new, by the owner's ruling that a row whose reasoning is the agent's **starts** with the marker so
-the check counts it, which is why the count rose from 40.
+**Waiting on the owner:** the 46 `unconfirmed:` reasons in `meta/decisions.md`, one of them today's cap; whether the repository that holds a release but never minted a carrier id becomes one; and whether the carrier whose integration branch advanced two months without the bundle re-adopts it there.
 
-**What went wrong.** The new privacy rule's first version never fired where it mattered, and the
-undefined-citation warning's first version gave 95 findings with nothing real in them; both were caught before the
-cut, one by a reviewer and one by reading the output. An estimate for three delegated agents was 2.5× to 4× their
-cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's scope,
-as given, excluded this repository, which the tool said and nobody acted on. It waits, with today's seven, three of them rules that lived only in this machine's memory.
+**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit was undone before anything left the machine — the same class of failure this release wrote into the enforcement ladder. Two record slugs were written into the history table from memory and did not exist; corrected, and the principle about not asserting from memory was being written in the same session. One literature search reversed the conclusion a candidate was about to assert, which is the process working. `changelog --since` was found to answer for a version it no longer holds, silently (`i-5ed7e8-5e0415`).
 
-**To continue on another machine:** `git pull --tags`; everything of this close is on the remotes.
+**To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
 
 ## Standing rules and facts
 
@@ -559,6 +541,16 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   carried 0.0.30 by hand into one carrier: registered at 0.0.30 from its bundle branch, whose pull request is
   unmerged, so its integration branch holds no bundle yet and `align` over the manifest names it as not
   aligned with the branch that holds the bundle (`i-5ed7e8-e44264`, done).
+
+**At the close of 0.0.33**, none of the 23 carriers reachable on this machine was spliced: the owner
+  deferred phase 2 so the cut would land the same day, and the release is carried to them in the session that
+  also carries 0.0.34. Two carriers hold a bundle older than the one before last — one on 0.0.25 and one on
+  0.0.26 — and neither records an obstacle: nobody opened a meta-session over them. one repository holds a
+  release and has never minted a carrier id, so it is not a carrier and offers nothing; another has the bundle on
+  two branches that were never merged while its integration branch advanced two months without it, so `gather`
+  reads no bundle on disk for it. Both wait on the owner. Every carrier only the other machine holds
+  is reached from there, with its own session. *Blocked on:* a session with each open, and for the last two, the
+  owner's word.
 
 ## Closed by measurement
 

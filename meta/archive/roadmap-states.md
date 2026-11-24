@@ -2,6 +2,43 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32`, taken by this home and by one canary
+carrier, and pushed.** The home's `main` and the tag are on the remote, and that push carried two commits of
+another session that had committed here while this one worked (`1c6a04e`, `d6f2064`). In the canary the update's
+branch is pushed and its default branch fast-forwarded onto it; its range touches no path that repository's
+publishing workflow watches, checked first.
+
+**What 0.0.32 is.** A patch (`d-5ed7e8-3110f3`) pointing at the first stable release through its own
+explorations. Five tool fixes, each with a test seen to fail first: the researcher's hook no longer fails open, a
+generated proposal carries its title, the record-id scan honours an allowance and reads a roadmap bullet as a
+definition, the friction count matches on word boundaries, and a carrier's privacy run holds back what the home's
+intake would. Seven method changes, among them the delegate's foreground split, which reverses the old advice.
+Seventeen occurrences folded, one note admitted, one out of review; of 90 proposals offered, 78 taken in. Two
+fresh-context reviewers read it all before the cut, on disjoint halves and a cheaper model, and found nine real
+defects; four experiments ran, against none last release.
+
+**Next, in order:**
+1. **The three themes** `i-5ed7e8-d6ecfe`, `i-5ed7e8-55e022` and `i-5ed7e8-7e0dd7`, each with its research
+   document written and its design round still to run, plus `i-5ed7e8-023814`. They are the road to **0.1.0,
+   aimed at this month** (`i-5ed7e8-dfae87`).
+2. **Carry 0.0.32 to the carriers the owner names.** Eleven are not aligned; the canary's update, both of its
+   pending edits included, is the template.
+3. The cost pilot of 0.0.32 against 0.0.31, then `i-5ed7e8-36d9b1` and the four process items.
+
+**Waiting on the owner:** which carriers take 0.0.32, and the 45 `unconfirmed:` reasons in `meta/decisions.md`
+— five of them new, by the owner's ruling that a row whose reasoning is the agent's **starts** with the marker so
+the check counts it, which is why the count rose from 40.
+
+**What went wrong.** The new privacy rule's first version never fired where it mattered, and the
+undefined-citation warning's first version gave 95 findings with nothing real in them; both were caught before the
+cut, one by a reviewer and one by reading the output. An estimate for three delegated agents was 2.5× to 4× their
+cost. **This home's own proposal from the previous close (`p-03b03290a3`) was not taken in**: the gather's scope,
+as given, excluded this repository, which the tool said and nobody acted on. It waits, with today's seven, three of them rules that lived only in this machine's memory.
+
+**To continue on another machine:** `git pull --tags`; everything of this close is on the remotes.
+
 **State on 2026-10-09, third close: 0.0.31 is cut, tagged `v0.0.31` and pushed** (`17aa53a`); this home took it
 (proposals pruned, agent copies and their surfaces refreshed, registered and aligned). No other carrier was reached,
 by the owner's choice: they are under *Blocked outside*.

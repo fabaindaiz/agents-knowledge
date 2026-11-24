@@ -56,7 +56,7 @@ The checked ones fail `release.py check`; the measured one is read from the rele
 
 | Limit | Today | Cap | How |
 |---|---:|---:|---|
-| Export, shipped bytes | about 915 KB | 1,000,000 bytes, raised once and never further (`d-5ed7e8-efd0e2`); the room is not a budget: each growth is justified on its own; aim 550 KB; may grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
+| Export, shipped bytes | about 1,017 KB | 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`): the footprint is not what a session pays for — the context limits below are, and they bind. The room is not a budget: each growth is justified on its own, and what a session reads is still shrunk before anything is added. May grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
 | Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens) | about 2,570 chars | 2,776 in total; each by its kind: a long process 750, a light skill 250, an agent run on request 250, a delegated agent 200 (`d-5ed7e8-cf8021`) | checked |
 | A coding session's reads | about 10k tokens (estimate) | 10,100 | checked (existing) |
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |
@@ -68,6 +68,11 @@ The checked ones fail `release.py check`; the measured one is read from the rele
 
 - **Shrink before adding.** What the pilots measured as used is the index lookup and the cards; the rest has to
   prove itself or leave the export (`meta/reviews/2026-10-07-adversarial-shrink-review.md`).
+- **A carrier's copy is self-sufficient; what only the home needs stays in the home** (`i-5ed7e8-7618c2`). The
+  test for whether a file ships is whether a carrier can act on it with no home present: a carrier updates itself
+  from its own `incoming/` without one, so the changelog it reads to do that travels, while the release machinery,
+  the candidate queue, the history and the tracking records do not and never have. Where the export needs to
+  shrink, that is the line to look along — not the newest content.
 - **Every release is tested, in three layers.** Always: the gate and an internal cost pilot against `minimal`,
   registered before its trials, its discriminating tasks still passing (`d-5ed7e8-7cac23`); a release whose cost
   rises does not ship. When a skill's description changes: that skill's trigger eval runs again. Once: an external
