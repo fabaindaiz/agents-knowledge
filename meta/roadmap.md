@@ -63,6 +63,46 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-a6b77f` · Split the home's own commands out of the shipped tool, by who runs them.** The owner's
+  proposal of 2026-11-24 (`p-7b6ae101bc`): what only the home runs lives in a file of its own that does not
+  travel, so a carrier's copy is smaller to carry, to checksum and to keep in step, and the home's half has
+  somewhere to grow without charging every carrier for it. This supersedes the next step of `i-5ed7e8-ee9f86`,
+  whose count classified by *which file names a command* and returned zero: that measure cannot separate the two,
+  because the home's own procedures are themselves described in files a carrier receives and reads. The measure
+  that can is which session actually invokes a command, and the one bound taken that day puts the home's
+  exclusive code at roughly four to six per cent of the file, with a further five per cent that a call graph
+  reaches from no command at all. **Do the measure before the split**, command by command, and review the code as
+  it is traced: the owner asked for improvements the export would gain, and a reading that is already walking
+  every command is where they will be found. *Estimate:* half a session for the trace and the review, a session
+  for the split itself. *Collides with:* `verify`, which checksums one tool; every session file that names a
+  command; and the carriers, for which this is a breaking change in the shape of what they hold.
+- **`i-5ed7e8-74cbcd` · The gate's own cost is measured, and a redundant check can be retired.** The owner's
+  proposal of 2026-11-24 (`p-19e2887fcf`): the gate is the step between finishing a task and closing it, it is
+  chained to every commit, and it only ever grows — every incident adds a check and nothing retires one, so a
+  rung exists for adding a control and none for removing it. Four gates measured that day ran on the order of a
+  minute or two each over suites of several hundred to a thousand tests, and no repository's history shows a
+  check ever removed. The work: a counted run over one suite giving, per check, when it was last red and how many
+  of its failures another check already catches first; then a retirement rung written beside the addition one.
+  Read the literature on test-suite minimisation and on obsolete and flaky tests first, which has standard
+  measures for this. Bears on the queued candidate about a gate stopping at its first red step: a check after
+  that step is green by omission, so it looks useful and is never exercised. *Estimate:* a session for the
+  measurement, and the rung is a paragraph. *Collides with:* the enforcement ladder, which today only adds.
+
+- **`i-5ed7e8-fe15a8` · The fifty-four oldest candidates, read, and three defects the queue itself carries.**
+  Reviewed on 2026-11-24 (`meta/reviews/2026-11-24-oldest-candidates.md`): every row whose *Since* is the
+  twentieth or twenty-first patch, twelve or thirteen releases of waiting. The largest harvest so far rewrote
+  four of the fifty-four and cleared none: everything it added is marked in the rows themselves as one owner's,
+  so it adds occurrences, not sources. Seven are blocked by the owner-agreement item alone, fifteen want a
+  second repository, eight want a measurement nobody has run, and six want only a release's decision. Six could
+  be decided at the next intake, all extensions of active notes whose literature the note already carries, two
+  of them with a recorded experiment that confirms a form the note does not yet hold. **The queue's own
+  defects, which matter beyond those rows:** one row cites two slugs that exist nowhere — as a note, a row or a
+  history entry — one of them described as folded at a release; two rows are the same claim written twice; and
+  one row's *Lacks* asks for evidence its own *Evidence* column now carries. The slug check written the same
+  day does not catch these, because it reads only rows claiming a note was admitted. *Estimate:* the six
+  decisions belong to an intake, one turn each; the three defects are about twenty minutes. *Collides with:*
+  the next intake, which rewrites the same rows.
+
 - **`i-5ed7e8-a98470` · The decisions check counts what it means.** Two faults, found by using it on
   2026-11-24 (`d-5ed7e8-2f51c2`). A row whose status is `superseded by` or `deprecated` still counts as
   unconfirmed, though its reason is history and no person will ever be asked for it: six of forty-four. A row
@@ -81,9 +121,17 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   has a home open costs a carrier nothing to lose, which is not the same as reading it from the home over a
   network — a carrier has no route to one and must not need one. So the work is a count, not a change: for each
   command, which session's file names it, and whether any of them is reachable without a home. Only then is
-  there a decision to put. *Estimate:* about an hour for the count and the table; a split, if one is warranted,
-  is its own item and a breaking change for carriers. *Collides with:* every session file that names a command,
-  and `verify`, which checksums one tool.
+  there a decision to put. **Counted the same day** (`meta/reviews/2026-11-24-carrier-tool-commands.md`), and
+  the answer is no: of twenty-five subcommands, none is named only by a file that exists in a home. Every command
+  with a mention in the home's own method also has one in a file a carrier reads by itself, and the single command
+  no method file names at all is run by the home's pre-push hook, which does not ship. So there is no home-only
+  content in the tool by name, and that share of the release is not a saving. What the count does not show:
+  whether a carrier runs everything it names, and whether home-only code hides in shared helpers, which are
+  attributed to no command. A second, independent count the same day confirmed the verdict and
+  corrected the first one's line figures, which measure dispatch blocks and understate the size of a command
+  several times over; both are recorded in the review. Neither pass asked who actually *runs* a command, as
+  against who names it, and a count by that measure could still find a home-only class. *Left:* nothing to
+  build; the item closes at the next cut. *Collides with:* nothing.
 - **`i-5ed7e8-23e94e` · Re-examine the export cap once the changelog can be archived again.** The cap was
   raised to 1,250,000 bytes on 2026-11-24 (`d-5ed7e8-929f2a`) after the alternative — archiving the oldest
   changelog sections into the home — was rejected on a tool defect, `i-5ed7e8-5e0415`, and not on its merits.
@@ -100,15 +148,18 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   expect a build to fail on such a cue. What replaces it is nothing: generality is step 2 of admission, which a
   person applies, and a product name that would identify a carrier is the privacy check's. *Estimate:* about
   twenty minutes with the tests. *Collides with:* `_note_problems`' signature, which several callers pass
-  `nouns` into, and the changelog line that announced the check.
+  `nouns` into, and the changelog line that announced the check. It also closes `i-5ed7e8-6155a1`, which asked for the
+  same check to stop false-positiving on punctuated and short nouns: the item was removed from *Later* when the
+  check went, and its text is in the history at the 0.0.33 cut, kept here so nobody proposes it again.
 
 - **`i-5ed7e8-26a753` · The worktree's environment rule gains the exception its own note supports.** Decided by
   the owner on 2026-11-24 (`d-5ed7e8-381ef9`, superseding `d-5ed7e8-05fcd3`). Today the rule forbids a fresh
   environment inside a worktree outright and has every such result reported unproven; the note admitted at
   0.0.33 holds, on hermeticity literature, that an environment built for the copy is the better answer wherever
   it can be afforded. The rule becomes: build it where that is cheap and reproducible, and the result is proven;
-  otherwise use the main checkout's and say the result is unproven. Both places that carry the rule are
-  rewritten together, and the note gains the cross-reference. *Estimate:* a paragraph in each, about half an
+  otherwise use the main working copy's and say the result is unproven. The two places that carry the rule — the home's
+  sync method and §*4. Verify*, which is what a carrier reads — are rewritten together, and the note gains the
+  cross-reference. *Estimate:* a paragraph in each, about half an
   hour, plus a line in the note. *Collides with:* every carrier update that reports a gate's result, since the
   word *proven* now means different work in different repositories and the report must say which.
 
@@ -512,9 +563,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Later
 
-- **`i-5ed7e8-6155a1` · The product-noun check misses punctuated and short nouns.** Nouns with punctuation
-  (`pub/sub`, hyphens) and short nouns that may false-positive; add a unit test of the `load_notes` wiring and one
-  line on `meta/product-nouns.txt` in CONTRIBUTING. *Estimate:* about an hour. *Collides with:* `load_notes`.
 - **`i-5ed7e8-cd4d28` · `privacy --commits` and `--tracked` can excuse a quote with the working tree's own text.**
   A WARN only. *Estimate:* about an hour with a test. *Collides with:* the `quote` rule.
 - **`i-5ed7e8-8fd079` · `align` still stops on a malformed carrier id, and skips the name-collision check for
