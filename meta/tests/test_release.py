@@ -722,6 +722,25 @@ class Carry(Base):
         self.assertIn("two — not read: no bundle on disk", text)
         self.assertIn("# Gather — 1 carrier, 1 not read", text)
 
+    def test_gather_names_a_later_harvest_left_on_a_branch(self) -> None:
+        # 0.0.34: fifteen carriers' harvests sat on unmerged branches, so gather read the checkout's old frontier
+        # and none of the branch's proposals, and nothing said so.
+        one = make_carrier(self.root, "one")
+        B.mint_carrier_id(one, upstream="r-aaaaaa")
+        self.splice(one)
+        commit(one, "bundle")
+        start = git(one, "branch", "--show-current").strip()
+        git(one, "switch", "-q", "-c", "chore/harvest")
+        toml = one / ".agents/carrier.toml"
+        toml.write_text(toml.read_text() + 'harvested_through = "2026-11-24"\n')
+        (one / ".agents/proposals/p-0123456789.md").write_text("---\nproposal: p-0123456789\n---\n# Proposal: x\n")
+        commit(one, "harvest")
+        git(one, "switch", "-q", start)
+
+        self.assertEqual(self.R.later_harvests(one), ["chore/harvest: frontier 2026-11-24 (the checkout: none), 1 proposal the checkout lacks"])
+        self.R.gather([one], self.root / "out", self.home)
+        self.assertIn("a later harvest on chore/harvest", (self.root / "out/gather.md").read_text())
+
     def test_a_path_that_is_not_a_repository_is_not_read_instead_of_a_traceback(self) -> None:
         one = make_carrier(self.root, "one")
         B.mint_carrier_id(one, upstream="r-aaaaaa")

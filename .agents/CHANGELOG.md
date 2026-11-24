@@ -7,6 +7,61 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
+## [0.0.34] - 2026-11-24
+
+**What a carrier runs at this update: nothing new, and one check now stops.** The build no longer reads a note's
+`cues` against a list of public product names, and the list is gone from the home. If your own audit or a hook
+called that check, or copied its list, remove the call: nothing replaces it. Generality stays a person's
+judgement when a note is admitted, and a leak of a private name stays the privacy check's.
+
+**What this release is.** A harvest patch with five tool fixes the harvest itself asked for. 89 proposals were
+taken in from the home and the carriers one machine holds: 15 entered the queue as new candidates, 3 were
+experiment runs, and 71 were occurrences of something already written: 51 added to 41 queued candidates, 17
+to 11 notes, and 3 to rows already answered in the history.
+Every carrier here belongs to one owner, so the counts are one source; where a rule written by a second person
+of a shared repository arrived, its row says so and nothing was admitted on it.
+
+### Removed
+
+- **The product-noun check over a note's `cues`, and its list.** Twenty-one names seeded by hand let any
+  unlisted product through without a word, so it read as a gate and acted as a sieve; three of its entries were
+  ordinary English the method uses, and it broke a build on a correct cue. One confirmed catch in its life. The
+  cues it made rewritten stay rewritten.
+
+### Changed
+
+- **`reproduce-the-checkout-not-only-the-environment` narrows a boundary.** A pre-commit hook is no longer an
+  example of "the working tree is the subject": its subject is the staged snapshot, so a hook that reads the disk,
+  or runs the working tree's copy of the checker, has to reproduce the commit like any other gate. Four offers
+  from one owner's repositories, two of them contradicting the old bullet.
+- **`harvested_gaps` can name what was not read.** A span read from some sources and not others is written
+  `2026-10-15..2026-11-24: transcripts`; a span with nothing after it was not read at all, and `verify` now
+  refuses one that reaches `harvested_through`, because the frontier would then claim days nobody read. A gap
+  already written without a name and ending before the frontier stays valid.
+- **The close skill tells two pauses apart.** A pause asked with time finishes the step under way and writes
+  what the next session needs; an immediate pause writes only what would be lost and stops. Neither merges or
+  starts new work.
+- **`prompt-harvest.md` drops the quote an `overlaps` proposal carried.** Every candidate in `OPEN.md` has a
+  slug, so `--action overlaps --target <slug>` joins the two; the quote joined nothing more and was the privacy
+  check's most common warning on a proposal.
+- **A worktree builds its own environment where that is cheap and reproducible**, and its result is then
+  proven; where it is not, the main copy's environment is used and the result is reported unproven. The report
+  names which (`prompt-bootstrap.md` §4).
+- **`bundle.py changelog --since` exits non-zero** when the version given is older than the oldest section the
+  changelog keeps, because the list it printed is then incomplete; `prompt-update.md` says to go on and report
+  it.
+- **`bundle.py decisions` counts what it means.** A superseded or deprecated row's `unconfirmed:` reason is no
+  longer waiting on anyone, and an agent's own rows are counted apart.
+
+### Fixed
+
+- **`bundle.py turns` redacts credential shapes**, in the human's turns and in the `--context` lines: a harvest
+  copies what it prints into scratch files a delegate reads, and once a live token was copied that way.
+- **`bundle.py decisions` reads a legacy id split with a letter** (`D-022b`). About a twentieth of one log's
+  rows were skipped in silence, their status and supersession never checked.
+- **`bundle.py usage` leaves a `.gitignore` holding `*` beside its state folder**, so a home folder kept as a
+  working tree cannot commit the usage data.
+
 ## [0.0.33] - 2026-11-24
 
 **What a carrier runs at this update: nothing.** This release adds no field, removes no format and changes no

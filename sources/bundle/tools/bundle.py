@@ -832,10 +832,14 @@ def quotes_bundle(quote: str, text: str) -> bool:
     return bool(span) and span in text
 
 
-def harvest_gap_problems(gaps: object) -> list[str]:
+def harvest_gap_problems(gaps: object, through: object = None) -> list[str]:
     """What is wrong with a carrier's `harvested_gaps`: the spans before its harvest frontier that no harvest
     has read (0.0.32). Each is `YYYY-MM-DD..YYYY-MM-DD` with real dates, the earlier one first, and the spans
     themselves run earliest first. A value that is not a list is one problem, not one per character of it.
+
+    A span may name, after a colon, the sources it did not read (`..: transcripts`): the harvest read the rest,
+    so the frontier passed it on purpose (0.0.34). A span with no such name was not read at all, and cannot
+    reach `through`, the frontier: the frontier would then claim days nobody read, so it moves back instead.
     """
     where = f"{CARRIER_FILE}: `harvested_gaps`"
     if gaps is None:
@@ -847,7 +851,8 @@ def harvest_gap_problems(gaps: object) -> list[str]:
         if not isinstance(span, str) or not HARVEST_SPAN.match(span):
             problems.append(f"{where} holds {span!r}; each is `YYYY-MM-DD..YYYY-MM-DD`, the unread span")
             continue
-        start, _, end = span.partition("..")
+        match = HARVEST_SPAN.match(span)
+        start, _, end = match["span"].partition("..")
         try:
             first, second = datetime.date.fromisoformat(start), datetime.date.fromisoformat(end)
         except ValueError:
@@ -857,6 +862,9 @@ def harvest_gap_problems(gaps: object) -> list[str]:
             problems.append(f"{where} holds {span!r} backwards; a span runs from its earlier date to its later one")
         elif last and first < last:
             problems.append(f"{where} holds {span!r} after a later span; the spans run earliest first")
+        if not match["unread"] and through and str(through) <= end:
+            problems.append(f"{where} holds {span!r}, which reaches `harvested_through` ({through}) with nothing read; "
+                            "move the frontier back to the last day read, or name the source not read (`..: transcripts`)")
         last = max(last, second) if last else second
     return problems
 
@@ -1508,8 +1516,9 @@ def record_id_check(files: list[Path], carrier: str | None) -> tuple[list[str], 
 # session (`agent s-...`) or `found` (read from the code); blank, on a migrated row, it counts as a person.
 # Only a person accepts: an agent that would change a person's decision writes a `proposed` row. The table
 # under *Looks deliberate, is not* is known debt, with columns of its own. Fenced blocks are examples.
-# Ids of the first schemes (`D-001`, `d-abcdef-017`) stay valid as written, so they are rows too.
-_DECISION_ID = r"(?:d-[0-9a-f]{6}-[0-9a-f]{3,6}|D-\d{3,4})"
+# Ids of the first schemes (`D-001`, `d-abcdef-017`) stay valid as written, so they are rows too, and so is a
+# legacy id a log split with a letter (`D-022b`): read as anything else, its row was skipped in silence (0.0.34).
+_DECISION_ID = r"(?:d-[0-9a-f]{6}-[0-9a-f]{3,6}|D-\d{3,4}[a-z]?)"
 DECISION_STATUS = re.compile(
     rf"^(?P<state>proposed|accepted|declined|deprecated|superseded by (?P<by>{_DECISION_ID}))"
     r"\s+(?P<recorded>recorded\s+)?(?P<date>\d{4}-\d{2}-\d{2})"
@@ -2079,7 +2088,8 @@ CARRIER_TABLES = ("skills",)  # a role of the skill catalogue to the name instal
 CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "harvested_gaps",
                "adapted", "declined", "visibility", "private_folder", "lineage")
 VISIBILITIES = ("public", "private")
-HARVEST_SPAN = re.compile(r"^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$")
+# A span, and after a colon the sources it did not read (`2026-10-15..2026-11-24: transcripts`, 0.0.34).
+HARVEST_SPAN = re.compile(r"^(?P<span>\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2})(?::\s*(?P<unread>\S.*))?$")
 
 
 def _toml_str(value: str) -> str:
@@ -3069,7 +3079,7 @@ def verify_problems(tree: Path, privacy: PrivacyReport | None = None, release: b
         # `harvested_gaps` (0.0.32, d-5ed7e8-f4aef3): the spans before `harvested_through` a harvest has not read,
         # because the human narrowed its period. The frontier stays the frontier, and the gaps say what it does not
         # cover; a harvest reads them before fixing its own period, and the home's gather reports them.
-        problems += harvest_gap_problems(carrier.get("harvested_gaps"))
+        problems += harvest_gap_problems(carrier.get("harvested_gaps"), carrier.get("harvested_through"))
         if not str(carrier.get("upstream") or "").strip() and not (tree.parent / "sources/bundle").is_dir():  # a home writes releases from there
             problems.append(f"{CARRIER_FILE}: `upstream` is empty, which marks the home repository; set it to the id of "
                             "the repository this one takes releases from (the release names it as `home` in README.md)")
@@ -4625,8 +4635,29 @@ def _content_text(content: object) -> str:
     return "\n".join(p for p in parts if p.strip() and not p.lstrip().startswith(TRANSCRIPT_NOISE))
 
 
+# Credential shapes `turns` redacts before printing (0.0.34): a harvest copies what it prints into scratch files
+# a delegate reads, and once a live token was copied with the assistant's words before a turn. The well-known
+# prefixed shapes, a private-key block, a JSON web token, and a `key=value` whose key names a secret. A bare long
+# hex run is left alone: commit hashes are the most common one in a transcript.
+CREDENTIAL_SHAPES = re.compile(
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)"
+    r"|\b(?:sk|pk|rk)-[A-Za-z0-9_-]{20,}"
+    r"|\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})"
+    r"|\bxox[abprs]-[A-Za-z0-9-]{10,}"
+    r"|\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"
+    r"|\bAIza[0-9A-Za-z_-]{35}"
+    r"|\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"
+    r"|(?i:\b[\w.-]*(?:api[_-]?key|secret|token|passw(?:or)?d|credential)[\w.-]*\s*[:=]\s*)[\"']?[^\s\"',;]{8,}",
+    re.DOTALL)
+
+
+def redact_credentials(text: str) -> str:
+    """The text with every credential-shaped run replaced by `[redacted]`."""
+    return CREDENTIAL_SHAPES.sub("[redacted]", text)
+
+
 def _short(text: str, limit: int = TURN_LIMIT) -> str:
-    text = text.strip()
+    text = redact_credentials(text.strip())
     return text if len(text) <= limit else text[:limit] + f" [... {len(text) - limit} more characters]"
 
 

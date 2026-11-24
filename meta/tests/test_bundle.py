@@ -1502,6 +1502,20 @@ class Decisions(Base):
         self.assertEqual((errors, warnings), ([], []))
         self.assertEqual((counts["rows"], counts["debt"]), (4, 1))
 
+    def test_a_legacy_id_with_a_letter_suffix_is_a_row_too(self) -> None:
+        # 0.0.34: a log that split one early decision into `D-022`, `D-022b`, `D-022c` had about a twentieth of
+        # its rows skipped in silence, so their status and supersession were never checked.
+        path = self.log("| D-022 | accepted 2026-09-01 · h1 | One store | why | — |\n"
+                        "| D-022b | superseded by D-022c 2026-09-02 · h1 | A refinement | why | — |\n"
+                        "| D-022c | accepted 2026-09-02 · h1 | The refinement, again | supersedes D-022b | — |\n"
+                        "| D-023b | Accepted | A bad status on a suffixed row | why | — |\n")
+
+        errors, _, counts = self.check(path)
+
+        self.assertEqual(counts["rows"], 4)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("D-023b", errors[0])
+
     def test_a_status_that_does_not_parse_fails(self) -> None:
         path = self.log("| d-abcdef-111111 | Accepted | One store | why | — |\n"
                         "| d-abcdef-222222 | accepted 2026-13-01 · h1 | A bad date | why | — |\n"
@@ -2935,6 +2949,20 @@ class HarvestGaps(Base):
         self.assertEqual(len(B.harvest_gap_problems(["2026-13-45..2026-99-99"])), 1)
         self.assertEqual(len(B.harvest_gap_problems(["2026-10-05..2026-09-01"])), 1)
         self.assertEqual(len(B.harvest_gap_problems(["2026-10-12..2026-10-15", "2026-09-01..2026-10-05"])), 1)
+
+    def test_a_span_may_name_the_source_it_did_not_read(self) -> None:
+        # 0.0.34: harvests that read the records of a span but had no transcripts for it wrote the whole span as
+        # a gap, which then read as "nothing here was read" although the frontier had passed it on purpose.
+        self.assertEqual(B.harvest_gap_problems(["2026-10-15..2026-11-24: transcripts"], "2026-11-24"), [])
+        self.assertEqual(B.harvest_gap_problems(["2026-10-15..2026-11-10: transcripts, local memory"], "2026-11-24"), [])
+        self.assertEqual(len(B.harvest_gap_problems(["2026-10-15..2026-11-10:"], "2026-11-24")), 1)
+
+    def test_an_unlabelled_span_cannot_reach_the_frontier(self) -> None:
+        # A span with nothing read cannot end on the frontier: the frontier would then claim a day nobody read.
+        self.assertEqual(len(B.harvest_gap_problems(["2026-11-11..2026-11-24"], "2026-11-24")), 1)
+        self.assertEqual(len(B.harvest_gap_problems(["2026-11-11..2026-11-30"], "2026-11-24")), 1)
+        self.assertEqual(B.harvest_gap_problems(["2026-11-11..2026-11-23"], "2026-11-24"), [])
+        self.assertEqual(B.harvest_gap_problems(["2026-11-11..2026-11-24"]), [])  # no frontier given: not checked
 
 
 class CountWordBoundaries(Base):

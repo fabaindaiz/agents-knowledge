@@ -685,6 +685,27 @@ class Turns(Base):
 
         self.assertEqual([p.name for p in found], [encoded, encoded + "--claude-worktrees-side"])
 
+    def test_a_credential_shaped_string_is_redacted_in_the_turns_and_their_context(self) -> None:
+        # 0.0.34: `--context` copied the assistant's words verbatim into a harvest's scratch, a live token included.
+        # The fakes are assembled at run time so no credential-shaped literal sits in the repository.
+        github = "gh" + "p_" + "A1b2C3d4" * 5
+        aws = "AK" + "IA" + "ABCDEFGHIJKLMNOP"
+        assigned = "api_" + "key=" + "s3cr3tvalue123456"
+        folder = self.root / "projects/keys"
+        _transcript(folder, "cccccccc-3333", [
+            {"type": "assistant", "timestamp": "2026-03-03T09:00:00.000Z",
+             "message": {"content": [{"type": "text", "text": f"Here is the token you asked for: {github}"}]}},
+            _user("2026-03-03T09:01:00.000Z", f"use {aws} and {assigned} for the call"),
+        ])
+
+        text = "\n".join(B.turns_report([folder], context=True))
+
+        for secret in (github, aws, "s3cr3tvalue123456"):
+            self.assertNotIn(secret, text)
+        self.assertIn("[redacted]", text)
+        self.assertIn("for the call", text)
+        self.assertIn("the token you asked for", text)
+
     def test_the_command_prints_them(self) -> None:
         folder = self.sessions()
 

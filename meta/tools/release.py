@@ -1185,6 +1185,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
     out.mkdir(parents=True)
     (out / GATHER_MARKER).write_text("written by release.py gather; the whole folder is replaced by the next one\n")
     available = set(tags(root))
+    received = {row[0].strip("` ") for row in received_rows(root / "meta")}
     report: dict = {"carriers": {}, "packs": {}}
     lines = [f"# Gather — {len(repos)} carrier{'' if len(repos) == 1 else 's'}" + (f", {len(missing)} not read" if missing else "") + (f" and {len(packs)} pack{'' if len(packs) == 1 else 's'}" if packs else ""), ""]
     for path in missing:
@@ -1212,6 +1213,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
         except RefusedError:
             gaps = []
         entry["harvested_gaps"] = [str(g) for g in gaps] if isinstance(gaps, list) else [str(gaps)]
+        entry["later_harvests"] = [] if home else later_harvests(repo, received)
         entry["privacy"] = [f"{pid}: {'; '.join(found)}" for pid, found in proposal_privacy(entry["proposals"]).items()]
         report["carriers"][name] = entry
         offered = entry["proposals"]
@@ -1220,6 +1222,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
                   f"- base: {'tag v' + version if base else 'none: no release tag for this version; compare by hand'}",
                   f"- offers {len(offered)} proposals" + (f", {old} of them rows of its old outbox" if old else ""),
                   *([f"- spans before its harvested_through that no harvest has read yet: {', '.join(entry['harvested_gaps'])}"] if entry["harvested_gaps"] else []),
+                  *[f"- a later harvest on {h}; gather that branch, or a worktree of it, before taking this one in" for h in entry["later_harvests"]],
                   *[f"- not readable as a proposal: {p}" for p in entry["problems"]],
                   *[f"- privacy, not taken in until generalised or answered: {p}" for p in entry["privacy"]],
                   *[f"- changed what only a release writes: {p}" for p in entry["forked"]],
@@ -1643,6 +1646,36 @@ def bundle_branches(repo: Path) -> list[tuple[str, str]]:
         found.append((name, version if isinstance(version, str) and B.SEMVER.match(version)
                        else "the layout before 0.0.22"))
     return sorted(found, key=lambda pair: pair[0].encode())
+
+
+def later_harvests(repo: Path, received: set[str] = frozenset()) -> list[str]:
+    """The branches of `repo` holding a harvest its checkout does not: a later `harvested_through`, or proposal
+    files the checkout lacks (0.0.34). A harvest committed on a branch nobody merged left fifteen carriers'
+    checkouts showing an old frontier, and gather read none of the branch's proposals without saying so.
+    A proposal the home already received (`received`, by id) is no news: old branches keep pruned ones.
+    """
+    if not (repo / ".git").exists():
+        return []
+
+    def frontier(text: str) -> str:
+        found = re.search(r'^harvested_through\s*=\s*"([^"]+)"', text, re.M)
+        return found.group(1) if found else ""
+
+    toml = repo / ".agents" / B.CARRIER_FILE
+    mine = frontier(toml.read_text(encoding="utf-8")) if toml.is_file() else ""
+    have = {p.name for p in (repo / ".agents/proposals").glob("p-*.md")}
+    found = []
+    for branch, _ in bundle_branches(repo):
+        try:
+            theirs = frontier(str(git("show", f"{branch}:.agents/{B.CARRIER_FILE}", repo=repo)))
+            listed = str(git("ls-tree", "--name-only", f"{branch}:.agents/proposals", repo=repo)).split()
+        except Exception:  # noqa: BLE001 -- no carrier file or no proposals folder on that branch
+            continue
+        extra = [name for name in listed if name.startswith("p-") and name.endswith(".md") and name not in have and name[:-3] not in received]
+        if theirs > mine or extra:
+            found.append(f"{branch}: frontier {theirs or 'none'} (the checkout: {mine or 'none'}), "
+                         f"{len(extra)} proposal{'' if len(extra) == 1 else 's'} the checkout lacks")
+    return found
 
 
 def splice_report(name: str, actions: list[str], write: bool, backup: Path | None) -> list[str]:
