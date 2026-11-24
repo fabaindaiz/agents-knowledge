@@ -33,7 +33,7 @@ something else depends on — because that is what decides its order.
 
 **Decided after the cut,** in a review of the five reasons that still bind: five items queued (`i-5ed7e8-25ecc8`, `26a753`, `57358a`, `ee9f86`, `23e94e`), the product-noun check removed, a repository that is not active left out, and the carrier whose integration branch advanced re-adopting the bundle on that branch. The twenty-nine reasons an agent wrote under decisions the owner accepted wait for `i-5ed7e8-a98470`, which makes their count mean something.
 
-**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit undone before anything left the machine. Two record slugs were written into the history table from memory and did not exist. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`, each with a roadmap item. One literature search reversed a candidate's conclusion, the process working. `changelog --since` answers silently for a version it no longer holds (`i-5ed7e8-5e0415`).
+**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit undone before anything left the machine. Two record slugs were written into the history table from memory and did not exist. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`, each with a roadmap item. One literature search reversed a candidate's conclusion, the process working. `changelog --since` was found answering silently for a version it no longer holds, and was fixed the same day (`i-5ed7e8-5e0415`).
 
 **To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
 
@@ -103,7 +103,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   decisions belong to an intake, one turn each; the three defects are about twenty minutes. *Collides with:*
   the next intake, which rewrites the same rows.
 
-- **`i-5ed7e8-a98470` · The decisions check counts what it means.** Two faults, found by using it on
+- **`i-5ed7e8-a98470` · The decisions check counts what it means.** **Done 2026-11-24**: the count now reads twenty-nine, with the agent's own nine on their own line. Two faults, found by using it on
   2026-11-24 (`d-5ed7e8-2f51c2`). A row whose status is `superseded by` or `deprecated` still counts as
   unconfirmed, though its reason is history and no person will ever be asked for it: six of forty-four. A row
   decided by an agent can never clear, because its reason is an agent's by definition, while the status column
@@ -141,7 +141,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   the defect is fixed. *Collides with:* `i-5ed7e8-5e0415`, which it waits on, and any carrier reading
   `--since` across the archived boundary.
 
-- **`i-5ed7e8-57358a` · Remove the product-noun check and its list.** Decided by the owner on 2026-11-24
+- **`i-5ed7e8-57358a` · Remove the product-noun check and its list.** **Done 2026-11-24**, except the changelog line, which belongs to the next cut's section. Decided by the owner on 2026-11-24
   (`d-5ed7e8-aa5d67`, superseding `d-5ed7e8-e0a56e` and `d-5ed7e8-4f76c8`), who asked whether the ban was
   wanted at all. Delete `meta/product-nouns.txt`, the `product_nouns` and `_product_cues` helpers, the cue
   problem they raise, and the tests that cover them; say so in the changelog, since a carrier's audit may
@@ -163,7 +163,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   hour, plus a line in the note. *Collides with:* every carrier update that reports a gate's result, since the
   word *proven* now means different work in different repositories and the report must say which.
 
-- **`i-5ed7e8-25ecc8` · `usage` drops a `.gitignore` beside its state folder.** Decided by the owner on
+- **`i-5ed7e8-25ecc8` · `usage` drops a `.gitignore` beside its state folder.** **Done 2026-11-24**, with a test that a file symlinked out of the tool's folder leaves no `.gitignore` behind it. Decided by the owner on
   2026-11-24 (`d-5ed7e8-011bc5`, superseding `d-5ed7e8-eb2c2f`): the first write creates a `.gitignore` holding
   `*` in the tool's state folder, so a home folder that is itself a working tree cannot commit the usage data.
   The write there stays allowed and the warning stays, since it is still worth saying; what changes is that
@@ -171,7 +171,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   rewritten over a hand edit, and that the data is ignored by a repository rooted at the home folder.
   *Collides with:* nothing in the release; the tool's own tests of the refusal path.
 
-- **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** Today `ids` checks the
+- **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** **Done 2026-11-24, and not where this item said:** a carrier holds neither the tracking tables nor the note sources, so the check lives in the home's own `check`, not in the tool every carrier runs; and it reads only rows that claim a note was admitted, a naive pass having left seventy-eight slugs unresolved that are rightly not files. Today `ids` checks the
   format of record ids and catches a decision cited and defined nowhere, but a **note slug** written into a
   tracking table is read by nobody: it is prose to the tool. On 2026-11-24 two slugs were written into the
   history table as admitted at the release being cut, from memory, and neither existed; they were plausible in
@@ -183,7 +183,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   older slugs the tables already carry. *Collides with:* the tables' own retired and refused rows, whose slugs
   name files that no longer exist under any state, so the check needs the retired folder and the refused history
   in its resolution set before it can be made to fail a commit.
-- **`i-5ed7e8-5e0415` · `changelog --since` answers for a version it no longer holds, silently.** Asked for a
+- **`i-5ed7e8-5e0415` · `changelog --since` answers for a version it no longer holds, silently.** **Done 2026-11-24.** Asked for a
   version older than the oldest section the file still carries, it returns what it has and exits zero, saying
   nothing about the gap. A carrier two or three versions behind would therefore receive an answer that looks
   complete and is not, and the agent reading it has no way to tell. Found on 2026-11-24 while weighing whether to
