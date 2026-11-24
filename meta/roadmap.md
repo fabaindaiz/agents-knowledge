@@ -33,7 +33,7 @@ something else depends on — because that is what decides its order.
 
 **Waiting on the owner:** the 46 `unconfirmed:` reasons in `meta/decisions.md`, one of them today's cap; whether the repository that holds a release but never minted a carrier id becomes one; and whether the carrier whose integration branch advanced two months without the bundle re-adopts it there.
 
-**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit was undone before anything left the machine — the same class of failure this release wrote into the enforcement ladder. Two record slugs were written into the history table from memory and did not exist; corrected, and the principle about not asserting from memory was being written in the same session. One literature search reversed the conclusion a candidate was about to assert, which is the process working. `changelog --since` was found to answer for a version it no longer holds, silently (`i-5ed7e8-5e0415`).
+**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit was undone before anything left the machine — the same class of failure this release wrote into the enforcement ladder. Two record slugs were written into the history table from memory and did not exist; corrected, and the principle about not asserting from memory was being written in the same session. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`. One literature search reversed the conclusion a candidate was about to assert, which is the process working. `changelog --since` answers silently for a version it no longer holds (`i-5ed7e8-5e0415`).
 
 **To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
 
@@ -62,6 +62,28 @@ never committed; the names of private carriers are in the local private-terms li
 ## Next
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
+
+- **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** Today `ids` checks the
+  format of record ids and catches a decision cited and defined nowhere, but a **note slug** written into a
+  tracking table is read by nobody: it is prose to the tool. On 2026-11-24 two slugs were written into the
+  history table as admitted at the release being cut, from memory, and neither existed; they were plausible in
+  form and in subject, and were found by a later search rather than by any check. The table is what the next
+  release reads to know what was admitted, so an invented slug there is carried forward as fact. Every slug in
+  those tables is mechanically resolvable: it names a file under the notes folder, in one of the three states,
+  or a row of the queue. The check is therefore cheap and exact, and it is the `lacks` of the proposal this
+  session wrote (`p-75679cf56f`). *Estimate:* about an hour with tests, and a first run that will probably find
+  older slugs the tables already carry. *Collides with:* the tables' own retired and refused rows, whose slugs
+  name files that no longer exist under any state, so the check needs the retired folder and the refused history
+  in its resolution set before it can be made to fail a commit.
+- **`i-5ed7e8-5e0415` · `changelog --since` answers for a version it no longer holds, silently.** Asked for a
+  version older than the oldest section the file still carries, it returns what it has and exits zero, saying
+  nothing about the gap. A carrier two or three versions behind would therefore receive an answer that looks
+  complete and is not, and the agent reading it has no way to tell. Found on 2026-11-24 while weighing whether to
+  archive the oldest changelog sections to stay under the export cap; the archiving was rejected for this reason
+  and the cap was raised instead (`d-5ed7e8-929f2a`), so the defect is now the only thing standing between the
+  bundle and that option. *Estimate:* about half an hour with tests: name the oldest version held, and exit
+  non-zero when the requested one is older than it. *Collides with:* any carrier update session that reads
+  `--since` to decide what changed, and the archiving option this defect currently blocks.
 
 - **`i-5ed7e8-dfae87` · 0.1.0, the first stable release, aimed at this month.** The owner's objective: a stable
   release in October 2026. 0.0.32 stays a patch (`d-5ed7e8-3110f3`) and is the first of the two releases in a row
