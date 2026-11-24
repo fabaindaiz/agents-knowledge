@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import os
 import tomllib
 
@@ -159,6 +161,18 @@ class Versions(Base):
         self.assertIn("nine", since)
         self.assertNotIn("eight", since)
         self.assertLess(since.index("ten"), since.index("nine"))
+
+    def test_a_version_older_than_the_oldest_section_is_named_and_fails(self) -> None:
+        (self.root / "CHANGELOG.md").write_text("# Changelog\n\n## [0.0.10] - 2026-03-01\n\nten\n\n## [0.0.9] - 2026-02-01\n\nnine\n")
+
+        self.assertEqual(bundle.changelog_oldest(self.root), "0.0.9")
+        err = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            code = bundle.main(["changelog", "--since", "0.0.5", str(self.root)])
+            fine = bundle.main(["changelog", "--since", "0.0.9", str(self.root)])
+        self.assertEqual(code, 1)
+        self.assertIn("0.0.9", err.getvalue())
+        self.assertEqual(fine, 0)
 
 
 class Incoming(Base):

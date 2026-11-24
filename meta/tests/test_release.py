@@ -233,24 +233,6 @@ class Build(Base):
         self.assertEqual(B.verify_problems(self.agents), [])
         self.assertEqual(B.bundle_version(self.agents), "0.0.1")
 
-    def test_a_cue_naming_a_product_is_refused(self) -> None:
-        (self.home / "meta").mkdir(exist_ok=True)
-        (self.home / "meta/product-nouns.txt").write_text("# products\n\nAcmeDB\n")
-        nouns = self.R.product_nouns(self.home)
-        self.assertEqual(nouns, ["acmedb"])
-
-        def note(cues: list[str]):  # noqa: ANN202
-            meta = {"slug": "n", "topic": "t", "claim": "c", "confidence": "measured", "cues": cues}
-            return self.R.Note("n", "retired", meta, "", "sources/notes/retired/n.md")
-
-        problems = self.R._note_problems(note(["partial update", "acmedb update"]), nouns)
-        self.assertEqual(len(problems), 1)
-        self.assertIn("sources/notes/retired/n.md", problems[0])
-        self.assertIn("acmedb update", problems[0])
-        self.assertIn("say the mechanism", problems[0])
-        self.assertEqual(self.R._note_problems(note(["partial update", "dotted path"]), nouns), [])
-        self.assertEqual(self.R.product_nouns(self.home / "nowhere"), [])
-
     def test_a_shipped_note_is_short_and_carries_its_card(self) -> None:
         text = (self.agents / "knowledge/notes/active/alpha.md").read_text()
         meta, body = B.read_frontmatter(text)
@@ -892,6 +874,34 @@ class Queue(Base):
         queue.write_text(queue.read_text() + "| **A claim in bold, with no slug.** | K | nothing | here | 2026-01-01 | 0.0.1 |\n")
 
         self.assertIn("does not open with its slug", "\n".join(R.queue_problems(home)))
+
+
+class TrackingSlugs(Base):
+    def test_a_slug_claimed_as_a_file_must_name_one_and_a_gone_one_is_not_a_false_positive(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        notes = home / "sources/notes/active"
+        notes.mkdir(parents=True, exist_ok=True)
+        (notes / "a-real-note.md").write_text("---\nslug: a-real-note\n---\n")
+        track = home / "meta/tracking"
+        (track / "history.md").write_text(
+            "| Candidate | Where it went |\n|---|---|\n"
+            "| `a-real-note` | **admitted as a note at 0.0.1** |\n"
+            "| `an-invented-one` | **admitted as a note at 0.0.1** |\n"
+            "| `a-refused-idea` | refused: a preference |\n"
+            "| `folded-idea` | **folded** into `a-real-note` |\n")
+        (track / "experiments.md").write_text("| Note | Experiment | Cost | Would change |\n|---|---|---|---|\n"
+                                             "| a-real-note | run it | x | y |\n| a-ghost-note | run it | x | y |\n")
+        (track / "retired.md").write_text("| Date | Note | W | E | R |\n|---|---|---|---|---|\n"
+                                          "| 2026-01-01 | [vanished](../../sources/notes/retired/vanished.md) | s | e | r |\n")
+
+        problems, warnings = R.tracking_slug_problems(home)
+
+        self.assertEqual(len(problems), 2, problems)
+        self.assertTrue(any("an-invented-one" in p for p in problems), problems)
+        self.assertTrue(any("vanished.md" in p for p in problems), problems)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("a-ghost-note", warnings[0])
 
 
 class Ledger(Base):

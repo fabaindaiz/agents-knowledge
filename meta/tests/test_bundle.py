@@ -793,8 +793,10 @@ class ChangelogCommand(Base):
 
         code, out = run("changelog", "--since", "0.0.0", str(agents))
 
-        self.assertEqual(code, 0)
         self.assertIn("## [0.0.1]", out)
+        self.assertEqual(code, 1)  # 0.0.0 is older than the oldest section kept, 0.0.1: named on stderr, exit 1
+        code, _ = run("changelog", "--since", "0.0.1", str(agents))
+        self.assertEqual(code, 0)
 
     def test_a_proposal_is_written_listed_and_never_rewritten(self) -> None:
         agents = make_bundle(self.root)
@@ -1565,6 +1567,20 @@ class Decisions(Base):
         self.assertTrue(any("unconfirmed" in w for w in warnings), warnings)
         self.assertTrue(any("tools/old_audit.py" in w for w in warnings), warnings)
         self.assertEqual(counts["unconfirmed"], 1)
+
+    def test_a_superseded_row_stops_counting_its_successor_starts_and_an_agents_is_apart(self) -> None:
+        path = self.log(
+            "| d-abcdef-111111 | superseded by d-abcdef-222222 2026-09-02 · h1 | Old | unconfirmed: guessed | — |\n"
+            "| d-abcdef-222222 | accepted 2026-09-02 · h1 | New | unconfirmed: still guessed; supersedes d-abcdef-111111 | — |\n"
+            "| d-abcdef-333333 | deprecated 2026-09-03 · h1 | Gone | unconfirmed: guessed | — |\n"
+            "| d-abcdef-444444 | accepted 2026-09-04 · agent s-abcdef-555555 | Agent's | unconfirmed: agent's | — |\n")
+
+        errors, warnings, counts = self.check(path)
+
+        self.assertEqual(errors, [])
+        self.assertEqual((counts["unconfirmed"], counts["unconfirmed_agent"]), (1, 1))
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("d-abcdef-222222", warnings[0])
 
     def test_a_duplicate_row_fails_and_fences_are_examples(self) -> None:
         path = self.log("| d-abcdef-111111 | accepted 2026-09-01 · h1 | One | why | — |\n"
@@ -2748,6 +2764,39 @@ class Usage(Base):
         with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(nested / "state")}):
             with self.assertRaises(B.RefusedError):
                 self.u("add", "frictions", "session=y")
+
+    def test_the_first_write_leaves_a_gitignore_that_a_home_repository_honours(self) -> None:
+        home = self.root / "home"
+        init_repo(home)
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": str(home / "state")}), contextlib.redirect_stderr(io.StringIO()):
+            self.u("set", "level", "counts")
+            self.u("add", "frictions", "session=x")
+            ignore = home / "state/agent-guides/.gitignore"
+            self.assertEqual(ignore.read_text(), "*\n")
+            ignore.write_text("*\n!keep\n")
+            self.u("add", "frictions", "session=y")
+            self.assertEqual(ignore.read_text(), "*\n!keep\n")
+        data = [p for p in (home / "state/agent-guides").rglob("*") if p.is_file() and p.name != ".gitignore"]
+        self.assertTrue(data)
+        ignored = subprocess.run(["git", "-C", str(home), "check-ignore", "--no-index", str(data[0])], capture_output=True)
+        self.assertEqual(ignored.returncode, 0)
+
+    def test_a_symlinked_file_does_not_leave_a_gitignore_in_the_folder_it_resolves_into(self) -> None:
+        """The folder is found in the path as given, never in the resolved one: a file symlinked out of the
+        tool's own folder resolves somewhere this tool does not own, and a `*` written there would silence
+        every new file of whatever lives in it."""
+        home = self.root / "home"
+        elsewhere = home / "dotfiles"
+        elsewhere.mkdir(parents=True)
+        state = home / "state/agent-guides"
+        state.mkdir(parents=True)
+        target, link = elsewhere / "usage.toml", state / "usage.toml"
+        target.write_text("", encoding="utf-8")
+        link.symlink_to(target)
+        B._usage_write(link, "level = \"counts\"\n")
+        self.assertEqual(target.read_text(encoding="utf-8"), 'level = "counts"\n')
+        self.assertFalse((elsewhere / ".gitignore").exists())
+        self.assertEqual((state / ".gitignore").read_text(encoding="utf-8"), "*\n")
 
 
 class ProposalTitle(Base):

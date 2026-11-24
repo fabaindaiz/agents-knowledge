@@ -273,7 +273,6 @@ def load_notes(sources: Path, strict_cards: bool = True) -> list[Note]:
     renders the old tables, which had no card column).
     """
     notes, problems = [], []
-    nouns = product_nouns(sources.parent)
     for state in NOTE_STATES:
         for path in sorted((sources / "notes" / state).glob("*.md"), key=lambda p: p.name.encode()):
             where = path.relative_to(sources.parent).as_posix()
@@ -283,7 +282,7 @@ def load_notes(sources: Path, strict_cards: bool = True) -> list[Note]:
                 problems.append(str(error))
                 continue
             note = Note(path.stem, state, meta, body, where)
-            problems += [p for p in _note_problems(note, nouns) if strict_cards or "boundary" not in p]
+            problems += [p for p in _note_problems(note) if strict_cards or "boundary" not in p]
             notes.append(note)
     slugs = [n.slug for n in notes]
     problems += [f"note {s!r} is in more than one state folder" for s in sorted({s for s in slugs if slugs.count(s) > 1})]
@@ -305,33 +304,8 @@ def principles(notes: list[Note]) -> dict[str, list[Note]]:
     return out
 
 
-def product_nouns(root: Path) -> list[str]:
-    """The lower-cased product names in `meta/product-nouns.txt`; none when the file is absent."""
-    path = root / "meta" / "product-nouns.txt"
-    if not path.is_file():
-        return []
-    lines = (line.strip().lower() for line in path.read_text(encoding="utf-8").splitlines())
-    return [line for line in lines if line and not line.startswith("#")]
-
-
-def _product_cues(cues: list, nouns: list[str]) -> list[tuple[str, str]]:
-    """[(cue, noun)] for every cue that holds a listed product name as a word (or a phrase)."""
-    found = []
-    for cue in cues:
-        folded = str(cue).casefold()
-        words = set(re.findall(r"[a-z0-9_]+", folded))
-        for noun in nouns:
-            if noun in words or (" " in noun and noun in folded):
-                found.append((str(cue), noun))
-    return found
-
-
-def _note_problems(note: Note, nouns: list[str] | None = None) -> list[str]:
+def _note_problems(note: Note) -> list[str]:
     meta, problems = note.meta, []
-    nouns = product_nouns(ROOT) if nouns is None else nouns
-    cues = meta.get("cues")
-    problems += [f"{note.where}: cue {cue!r} names a product ({noun}); say the mechanism"
-                 for cue, noun in _product_cues(cues if isinstance(cues, list) else [], nouns)]
     missing = [k for k in REQUIRED if not str(meta.get(k) or "").strip()]
     if note.state == "retired":
         missing = [k for k in ("slug", "claim") if not meta.get(k)]
@@ -893,12 +867,14 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
     problems += queue_problems(root) + manifest_problems(root)
+    slug_problems, slug_warnings = tracking_slug_problems(root)
+    problems += slug_problems
     log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
     errors, warnings, _ = B.decision_check([log]) if log.is_file() else ([], [], {})
     problems += [f"decisions: {e}" for e in errors]
     over = export_over_cap(root, EXPORT_CAP)
     return problems, (privacy.notes() + home.notes() + [f"  ! decisions: {w}" for w in warnings]
-                      + ([f"  ! WARN {over}"] if over else [])
+                      + ([f"  ! WARN {over}"] if over else []) + [f"  ! {w}" for w in slug_warnings]
                       + [f"  ! {w}" for w in B.user_deny_warnings(root)])
 
 
@@ -910,6 +886,62 @@ def queue_problems(root: Path = ROOT) -> list[str]:
     rows = read_table(root / "meta/tracking/candidates.md", CANDIDATES_HEADER, prefix=True)
     return [f"meta/tracking/candidates.md: {r[0][:50]!r}: does not open with its slug (`slug — claim`)"
             for r in rows if not QUEUE_ROW.match(r[0].strip())]
+
+
+# anchored at the start of the cell, so `refused: not admitted as a note` cannot match it, and loose after
+# that, so `admitted as the note`, `as an active note`, `as notes` and `admitted note` all read the same
+_NOTE_CLAIM = re.compile(r"^\W*admitted\b[^|]*\bnotes?\b")
+
+
+def tracking_slug_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
+    """Slugs the tracking tables name as files that no file backs (i-5ed7e8-8b542b).
+
+    This lives in the home's check, not in `bundle.py`: a carrier holds neither `meta/tracking/` nor
+    `sources/notes/`, so the tool every carrier runs has nothing to resolve a slug against.
+
+    Only claims that name a file are read, since the tables also hold rows whose slug is rightly gone (a
+    refused candidate, a retired note, a candidate folded into another):
+      * a history row that says it was *admitted as a note* must have its own slug, or a slug it cites in
+        backticks, as a note file in one of the three states;
+      * the `Note` column of the experiments tables must be a note in any state, a queued candidate, or a slug
+        the history already answered;
+      * a link in `retired.md` to `sources/notes/<state>/<slug>.md` must point at an existing file.
+
+    Returns:
+        (problems, warnings): the first two claims fail the check; the experiments column only warns, since an
+        experiment may be queued for a note not written yet and the first pass found one such row.
+    """
+    notes = {p.stem for state in NOTE_STATES for p in (root / "sources/notes" / state).glob("*.md")}
+    tracking = root / "meta/tracking"
+
+    def rows(name: str) -> list[list[str]]:
+        path = tracking / name
+        if not path.is_file():
+            return []
+        return [split_row(l) for l in path.read_text(encoding="utf-8").split("\n")
+                if l.startswith("| ") and not B.TABLE_SEPARATOR.match(l.strip())]
+    queued = {slug_of(r[0]) for r in rows("candidates.md")}
+    history = {r[0].strip("`") for r in rows("history.md") if r and re.fullmatch(r"`[\w-]+`", r[0])}
+    problems, warnings = [], []
+    for r in rows("history.md"):
+        if len(r) < 2 or not re.fullmatch(r"`[\w-]+`", r[0]) or not _NOTE_CLAIM.search(r[1].replace("*", "")):
+            continue
+        named = [r[0].strip("`")] + [x for x in re.findall(r"`([a-z0-9][\w-]*-[\w-]*)`", r[1]) if not re.match(r"[dpis]-[0-9a-f]{6}", x)]
+        if not any(x in notes for x in named):
+            problems.append(f"meta/tracking/history.md: {r[0]}: says it was admitted as a note, and no note file "
+                            f"carries {r[0]} or any slug the row cites")
+    resolvable = notes | queued | history
+    for r in rows("experiments.md"):
+        col = 1 if r and re.fullmatch(r"\d{4}-\d{2}-\d{2}", r[0]) else 0
+        slug = r[col].strip("`") if len(r) > col else ""
+        warning = f"meta/tracking/experiments.md: {slug}: names no note in any state, queued candidate or answered slug"
+        if re.fullmatch(r"[a-z0-9][\w-]*-[\w-]*", slug) and slug not in resolvable and warning not in warnings:
+            warnings.append(warning)
+    path = tracking / "retired.md"
+    for target in (re.findall(r"\]\(([^)]*sources/notes/[^)]+\.md)\)", path.read_text(encoding="utf-8")) if path.is_file() else []):
+        if not (path.parent / target).resolve().is_file():
+            problems.append(f"meta/tracking/retired.md: {target}: no such file")
+    return problems, warnings
 
 
 # `MANIFEST.md`'s checked limits. The export's cap was 0.0.29's shipped bytes, then 1 MB (d-5ed7e8-efd0e2), and is

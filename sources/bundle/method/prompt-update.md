@@ -64,6 +64,11 @@ builds do not exist (that is bootstrap in repair mode, not an update).
 **2. List the deltas.** Run `python3 .agents/tools/bundle.py changelog --since
 <our version> .agents/incoming/release`. One line per item of its Changed, Added,
 Deprecated, Removed, Fixed and Security lists: what is new, not a diff of prose.
+It exits non-zero, saying so, when our version is older than the oldest section
+the release still carries: the list it printed is then incomplete, and what lies
+between the two versions is recorded nowhere this repository can read. That is
+not a failure of the step — go on with the list it gave, and say in the update's
+report that the delta starts later than our version does.
 
 **3. Triage each delta against THIS repository.** Read `adapted` and `declined`
 in `carrier.toml` **first**: an adaptation is not re-proposed, and a refusal is

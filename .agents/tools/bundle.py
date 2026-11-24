@@ -1485,12 +1485,14 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
     a name cited enforces nothing.
 
     Returns:
-        (errors, warnings, counts: rows, proposed, unconfirmed, debt).
+        (errors, warnings, counts: rows, proposed, unconfirmed, unconfirmed_agent, debt). `unconfirmed` counts
+        live rows a person accepted whose reason no person gave; superseded and deprecated rows are skipped, and
+        an agent's own rows are counted apart in `unconfirmed_agent`.
     """
     today = today or datetime.date.today()
     errors: list[str] = []
     warnings: list[str] = []
-    counts = {"rows": 0, "proposed": 0, "unconfirmed": 0, "debt": 0}
+    counts = {"rows": 0, "proposed": 0, "unconfirmed": 0, "unconfirmed_agent": 0, "debt": 0}
     for path in files:
         if not path.is_file():
             raise RefusedError(f"{path}: no such file; give the decisions log this repository keeps (its root file's map names it)")
@@ -1533,9 +1535,13 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
                     counts["proposed"] += 1
                     warnings.append(f"{where}: {row.id}: proposed since {decided} ({(today - decided).days} days); "
                                     f"only a person accepts it; waits on {status.group('decides') or 'a person'}")
-                if re.sub(r"^[\s*_`]+", "", row.why).lower().startswith("unconfirmed:"):
-                    counts["unconfirmed"] += 1
-                    warnings.append(f"{where}: {row.id}: why unconfirmed; a person confirms it or gives the reason")
+                if (re.sub(r"^[\s*_`]+", "", row.why).lower().startswith("unconfirmed:")
+                        and not row.state.startswith(("superseded", "deprecated"))):
+                    if (status.group("decider") or "").startswith("agent"):
+                        counts["unconfirmed_agent"] += 1
+                    else:
+                        counts["unconfirmed"] += 1
+                        warnings.append(f"{where}: {row.id}: why unconfirmed; a person confirms it or gives the reason")
                 for token in re.findall(r"`([^`\s]+)`", row.enforced):
                     if any(c in token for c in "*?[") or not _PATHLIKE.match(token):
                         continue
@@ -2511,6 +2517,15 @@ def changelog_since(tree: Path, since: str) -> str:
         end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
         out.append(text[m.start() : end].rstrip() + "\n")
     return "\n".join(out)
+
+
+def changelog_oldest(tree: Path) -> str | None:
+    """The oldest released version the changelog still keeps a section for, or None when it keeps none."""
+    path = tree / CHANGELOG
+    if not path.is_file():
+        return None
+    kept = [m.group(1) for m in CHANGELOG_SECTION.finditer(path.read_text(encoding="utf-8")) if m.group(1) != "Unreleased"]
+    return min(kept, key=semver_key) if kept else None
 
 
 def bundle_version(tree: Path) -> str | None:
@@ -4493,7 +4508,9 @@ def _usage_warn(path):
 
 
 def _usage_write(path, text, append=False):
-    """Writes outside every repository but one at the home folder (warned). A rewrite can lose an append made
+    """Writes outside every repository but one at the home folder (warned), and leaves a `.gitignore` holding `*`
+    in the tool's own folder, so a repository rooted at the home folder cannot commit what is kept there
+    (d-5ed7e8-011bc5). A rewrite can lose an append made
     at the same instant: a single-user local tool accepts that."""
     resolved, home = path.expanduser().resolve(), Path.home().resolve()
     tops = [p for p in resolved.parents if (p / ".git").exists()]
@@ -4502,6 +4519,12 @@ def _usage_write(path, text, append=False):
     if tops:
         _usage_warn(str(resolved))
     resolved.parent.mkdir(parents=True, exist_ok=True)
+    folder = next((p for p in path.expanduser().absolute().parents if p.name == "agent-guides"), None)
+    if folder is not None:
+        ignore = folder / ".gitignore"
+        if not ignore.exists():
+            folder.mkdir(parents=True, exist_ok=True)
+            ignore.write_text("*\n", encoding="utf-8")
     with resolved.open("a" if append else "w", encoding="utf-8") as out:
         out.write(text)
 
@@ -5067,6 +5090,9 @@ def _run(args: argparse.Namespace) -> int:
         print(f"decisions in {len(files)} files: {counts['rows']} rows, {counts['proposed']} proposed, "
               f"{counts['unconfirmed']} unconfirmed, {counts['debt']} known-debt rows; "
               f"{len(errors)} errors, {len(warnings)} warnings")
+        if counts["unconfirmed_agent"]:
+            print(f"  of the agent's own: {counts['unconfirmed_agent']} rows an agent decided say `unconfirmed:`; "
+                  "their reason is an agent's by definition, so none is waiting on a person")
         return 1 if errors else 0
     if args.command == "privacy":
         if args.tracked:
@@ -5130,6 +5156,11 @@ def _run(args: argparse.Namespace) -> int:
         return 0
     if args.command == "changelog":
         print(changelog_since(Path(args.tree), args.since), end="")
+        oldest = changelog_oldest(Path(args.tree))
+        if oldest is not None and semver_key(args.since) < semver_key(oldest):
+            print(f"  x --since {args.since} is older than the oldest section this changelog keeps ({oldest}); "
+                  f"what changed between them is not recorded here, so the answer above may be incomplete", file=sys.stderr)
+            return 1
         return 0
     if args.command == "home":
         print("\n".join(home_report(Path(args.tree))))
