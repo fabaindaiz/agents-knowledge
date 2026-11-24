@@ -63,6 +63,15 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.**
+  Second occurrence on 2026-11-24: a push chained after a check was refused by the host's permission
+  classifier, and the same push alone went through. The root instruction file already carries the rule —
+  never put an edit in the same command as something a permission rule may refuse — which means the rule is
+  text, and text is the ladder's weakest rung. What would hold instead: the close and the release procedures
+  spell the push as its own step, so no agent composes it; and where a repository has a command that runs the
+  gate and commits (`i-5ed7e8-bd65a0`), that command never takes a push. *Estimate:* a line in each
+  procedure, about twenty minutes. *Collides with:* `i-5ed7e8-bd65a0`, whose shape this constrains.
+
 - **`i-5ed7e8-9ef5d1` · A voluntary, anonymised path for usage evidence to enter a record.** The owner's ask of
   2026-11-24. The standing rule is that usage data stays on its machine and only a generalised figure the owner
   approves enters a record. That rule has no procedure behind it, so in practice nothing ever enters: on the day
@@ -231,7 +240,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   comes before any text. *Estimate:* a design round and about half a session to write. *Collides with:*
   `prompt-context.md` §*Long runs and delegates*, which 0.0.32 has just changed for delegates
   (`d-5ed7e8-6069fe`), and the delegate-brief bullet.
-- **`i-5ed7e8-045188` · A delegation's estimate is written down before the launch.** Counted, not remembered: the
+- **`i-5ed7e8-045188` · A delegation's estimate is written down before the launch.** **Eight pairs counted on 2026-11-24**, the first set this repository holds: every estimate was too high, the bounded read-only ones by ten to fifteen times, the editing one by about six, the reviews by five to fifteen. The direction is consistent, which is what makes it correctable; the pairs are in that day's session-log entry and in the local usage store. Counted, not remembered: the
   symptom appears twice, once in an earlier hand-off ("a large plan's estimate") and once on 2026-10-15, when
   three research agents were announced at 120–200k tokens and 15–25 minutes each and cost 19k, 55k and 69k in
   about a minute — **2.5× to 4× out**, and the announcement itself exists nowhere written, so the pair that would
@@ -308,7 +317,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Collides with:* the planning documents a carrier keeps, and the pre-review the long skills open
   with.
 
-- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
+- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** **Two more on 2026-11-24, so eight over three sessions:** a decision id beside the ordinary English word for a working copy, reworded, and one beside a figure in a record. Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
@@ -322,7 +331,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   cannot verify; a script written to a file runs. Say it once in the method's worktree rule. *Estimate:* a few lines.
   *Collides with:* `prompt-sync.md`, the `close` skill.
 - **`i-5ed7e8-6cf312` · `bundle.py new entry` refuses a missing log in one line, and the home names its session
-  log.** Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
+  log.** **Half done on 2026-11-24:** this repository now names its session log, and the file exists with its first entry. The other half stands and is worse than recorded — asked to write into a log that does not exist, the command does not refuse in one line, it raises an unhandled error and prints a traceback. Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
   close skill's step 3 does not know. *Estimate:* an hour with a test. *Collides with:* `new entry`, the close skill.
 - **`i-5ed7e8-11e17f` · `memory-diff` from a linked worktree reads the repository's memory.** It reads the
   worktree's own, empty, folder; `--memory` is the workaround. *Estimate:* an hour with a test. *Collides with:*
