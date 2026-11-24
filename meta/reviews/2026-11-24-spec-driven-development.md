@@ -97,6 +97,67 @@ not yet known** (Spec Kit's `[NEEDS CLARIFICATION]`, PEP *Open Issues*, RFC *Unr
 refuses to ship with; and **a step that moves a change into the kept truth** (OpenSpec's archive), without which a
 spec drifts.
 
+## 6. The spec as the input to a build, not documentation of one
+
+Sections 3 and 5 answer *how a project is recorded and explained*. Asked the same day, the narrower question: what
+must a spec hold when an agent is to **build** from it, and how is the result checked against it?
+
+### The fields a buildable spec needs
+
+| # | Field | Why it is there | Source |
+|---|---|---|---|
+| 1 | **Goal and users** | the reason an agent decides an ambiguous case by | Spec Kit: "Focus on WHAT users need and WHY" (ASSUMPTION: quoted by the survey, not re-checked) |
+| 2 | **Scope and non-goals** | the cheapest guard against overbuilding, the practitioner test's main complaint | Anthropic's guide: the interview asks "what's out of scope"; Böckeler: the bug that became 16 criteria |
+| 3 | **Requirements with stable ids**, normative wording (EARS, SHALL) | tasks and tests can cite them | OpenSpec `### Requirement:`; EARS (§3) |
+| 4 | **Scenarios per requirement**, WHEN/THEN | they become the acceptance tests | OpenSpec `#### Scenario:`; Gherkin; Specification by Example (ASSUMPTION, Adzic not read) |
+| 5 | **Interfaces**: commands, file formats, schemas | the agent cannot guess them from the repository; a schema is checked by machine | ASSUMPTION (OpenAPI, JSON Schema not read) |
+| 6 | **Quality attributes, each with a number** | an unmeasured adjective cannot be checked | Spec Kit `analyze`: "Flag vague adjectives (fast, scalable, secure, intuitive, robust) lacking measurable criteria" |
+| 7 | **Constraints and project principles** | stack, dependencies, compatibility | Spec Kit `memory/constitution.md` |
+| 8 | **Open questions**, marked | the agent must not fill a gap silently | Spec Kit `[NEEDS CLARIFICATION: …]`, none may remain |
+| 9 | **Definition of done**: the commands that must pass | without one the agent cannot tell done from not done | Anthropic: "A check that has to pass before anything counts as done"; the failure it names: "Claude said it was done and it wasn't quite, usually because it had no way to check its own work" |
+
+Design notes (a `design.md`) are better kept beside the spec than inside its requirement fields: they change for
+reasons the requirements do not.
+
+### The verification ladder, cheapest first
+
+1. **Review of the spec** before any code: ambiguity, contradiction. Spec Kit's checklists "act as 'unit tests' for
+   the specification".
+2. **A mechanical lint of the spec**: no open-question marker left, no vague adjective, every requirement with a
+   task and every task with a requirement. Spec Kit's `analyze` does exactly this, "STRICTLY READ-ONLY", with
+   findings ranked CRITICAL, HIGH, MEDIUM and LOW.
+3. **Acceptance tests named by requirement id**: one per scenario, so a script lists the requirements no test
+   covers. Spec Kit's constitution makes it a rule: no implementation code before the tests are written, approved
+   by the user, and "confirmed to FAIL (Red phase)".
+4. **Contract and property tests** where a rule reads "for every input": parsers, converters, round trips
+   (ASSUMPTION: Hypothesis, QuickCheck, Pact not read).
+5. **A formal model** (TLA+) only where the design itself can be wrong: concurrency, distributed protocols. Amazon's
+   use is reported by Newcombe et al., CACM 2015 (ASSUMPTION: abstract seen, page refused).
+
+Beyond the ladder, the real thing run: Anthropic's guide asks for "something it can run that comes back pass or
+fail".
+
+### How an agent consumes it
+
+Goal and non-goals first, then constraints, then requirements with their scenarios, then interfaces, then the open
+questions; **stop and ask** while any remain (Anthropic's pattern: "Interview me until you could write the spec,
+then write it to SPEC.md"); derive tasks that each cite requirement ids; write the failing tests per scenario; build;
+report the result **per requirement id**.
+
+### Evidence
+
+Vendor guidance agrees and is not measurement. The studies found are of adjacent questions and were read through
+abstracts only (ASSUMPTION): interactive test-based clarification raising pass rates (TiCoder, TSE 2024), and in a
+test-driven loop, new tests breaking earlier passing ones in about a third of problems (LLM4TDD), which argues for
+re-running the whole suite every round. **No controlled study was found of acceptance criteria in a prompt against
+prose alone**, nor of a spec length past which an agent stops complying.
+
+### What this changes in the recommendation
+
+Shape B (§5) stands, and gains its build half: `spec.md` carries fields 1-9, the requirement ids are what tests
+are named by, and a lint (rung 2) refuses a spec with an open-question marker or an uncovered requirement before
+the build starts. The decision log keeps the *why*; the spec keeps the *what* and the check.
+
 ## Open questions
 
 1. What the ESEM 2026 paper measured, from a URL that resolves.
@@ -119,6 +180,8 @@ spec drifts.
 - https://diataxis.fr/ and https://diataxis.fr/compass/
 - https://tom.preston-werner.com/2010/08/23/readme-driven-development.html
 - https://llmstxt.org/
+- https://code.claude.com/docs/en/best-practices
+- GitHub Spec Kit repository, file `templates/commands/analyze.md` on its main branch
 
 Not checked (summary or search only): https://kiro.dev/docs/specs/, https://tessl.io/blog/tessl-launches-spec-driven-framework-and-registry/,
 the BMAD-METHOD repository README, https://arxiv.org/html/2602.00180v1, the ESEM 2026 PDF (404).
