@@ -6,6 +6,45 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Admitted at 0.0.33
+
+| Candidate | Where it went |
+|---|---|
+| `an-isolated-worktree-is-not-the-checkout` | admitted as the note `an-isolated-copy-is-not-the-working-checkout`, with the literature on hermetic builds consulted and the procedural part named as what we add |
+| `no-foreign-shell-constructs` | folded into the enforcement ladder, which already held the rule; the release added its grounding in the hierarchy of controls and four narrowings, and named the trigger as what the method adds |
+
+## Refused by carriers' harvests, taken in at 0.0.33
+
+| Candidate | Where it went |
+|---|---|
+| `a-humans-answers-departing-from-the-recommendation` | refused: a preference, and a preference never enters a proposal |
+| `an-install-tool-reads-the-first-words-of-a-free-text-field` | refused: a tool-interface quirk with one occurrence; it is feedback to the home, not a rule for any repository |
+| `a-type-baseline-that-differs-by-one-between-environments` | refused: the shape is already inside the note on a ratchet in a pinned environment, and the measurement predates the period |
+| `a-comment-opening-with-a-tool-directive-is-parsed-as-one` | refused: one toolchain's trap, one occurrence; it falls under the answered candidate on traps of a single toolchain |
+| `unmerged-work-is-reviewed-by-default` | refused: one owner's stated preference, with no mechanism and no measurement |
+| `a-number-written-outside-its-one-home-goes-false` | refused: an occurrence of the existing note on documented defaults drifting from code; nothing was fixed here, so no check was seen red |
+| `an-append-only-log-conflict-is-a-union` | refused: no mechanism built and no check; one session, although the manual resolutions were counted |
+| `a-guard-asks-whether-it-may-have-opened-not-whether-it-is-active` | refused: cannot be generalised without the domain nouns that carry the claim |
+| `a-sweep-over-a-stale-checkout-concludes-wrongly` | refused: one incident, and it overlaps the queued candidate that a gather reads a branch and not only the checkout |
+| `a-streaming-response-after-the-client-leaves` | refused: the claim cannot be stated without the nouns of one framework |
+| `a-rotating-log-with-no-backup-count-is-not-one-file` | refused: domain-bound and small |
+| `normalise-accents-before-comparing-typed-labels` | refused: one occurrence and a known property of text encoding |
+| `a-manual-lever-behind-a-source-that-fails-closed` | refused: a product decision, and the existing note on failing closed already carries the case where the refusal lands on someone who cannot act |
+| `a-deterministic-identifier-as-a-uniqueness-constraint` | refused: textbook, one occurrence |
+| `a-sweep-by-search-finds-a-fraction-of-what-a-reading-finds` | refused: measured but in one carrier, and it overlaps the answered candidate that conformance to a specification is swept rather than remembered |
+| `restore-a-planted-defect-from-a-copy-not-from-version-control` | refused: one carrier; the neighbouring note on routine tools leaving the tree as found covers the risk |
+| `a-negative-assertion-needs-a-positive-twin` | refused: an occurrence count for the existing rule that a check must be seen to fail, not a rule of its own |
+| `an-existence-oracle-before-the-scope-check` | refused: textbook enumeration, one carrier, and already recorded in that repository's own invariants |
+| `prompt-context.md` | refused: one owner's repositories are one source; the method already states it, and the agreement measures that owner's instruction file, not the rule's generality |
+| `delegated-reviewers-report-in-the-message` | refused: host-specific permission behaviour, not a property of the work |
+| `ask-every-minor-decision` | refused: a one-session preference that the pre-flight already asks |
+| `a-palette-whose-value-derives-from-list-position` | refused: covered by the answered candidate that copied code carries its logic and not the values it compares |
+| `a-copy-edit-that-reverts-a-recorded-decision` | refused: one occurrence, and the check that would catch it is the decisions log itself, already in the method |
+| `publishing-through-a-review-rather-than-a-direct-push` | refused: a repository-local rule that differs from the owner's global default, recorded in that repository and not in the bundle |
+| `merge-by-content-after-a-squash` | refused: one occurrence, and it is a property of one version-control workflow |
+| `a-flag-that-changes-hardware-belongs-where-the-hardware-is-driven` | refused: a design decision about one product, not a general claim |
+| `a-library-that-assigns-inside-a-continuation-leaks` | refused: a trap of one framework, one occurrence; the answered candidate on single-toolchain traps covers it |
+
 ## Offered again, merged or applied at 0.0.32
 
 Rows `release.py intake` set aside as occurrences of a slug already queued, answered or admitted. Those merged into a note are in its *Evidence*; those applied to the method are in `sources/bundle/`; those added to a queued row are in `candidates.md`.
@@ -25,7 +64,7 @@ Rows `release.py intake` set aside as occurrences of a slug already queued, answ
 | `nested-partial-update-replaces` | **an experiment run recorded at 0.0.32** (confirms), with the cheaper check it adds: assert on the key an earlier delivery wrote, rather than reading the emitted update mask |
 | `prompt-update` (the update's pre-flight) | **applied to the method at 0.0.32**: the update's pre-flight carries the harvest's own questions with their defaults, the period first, instead of a second round of questions at step 4 |
 | `host-shell-traps` (an unquoted expansion not split in one shell) | **refused again, for the reason the first refusal gave**: one machine's host friction, of the same portability family, which belongs in that repository's own root file. The occurrence is real and documented in the shell's manual; what it is not is general |
-| `isolated-review-by-default` (measured yields) | **the figures recorded against the row already applied**: three reviews in a fresh context of batches already green and past their gates found six, seven and three important findings and no critical one, and re-running each delegate's claimed checks caught two false reports — a hidden exit status and a file an agent said did not exist. That is the whole-branch measurement its reopening lacked |
+| `isolated-review-by-default` (measured yields) | **the figures recorded against the row already applied**: three reviews in a fresh context of batches already green and past their gates found six, seven and three important findings and no critical one, and re-running each delegate's claimed checks caught two false reports — a hidden exit status and a file an agent said did not exist. That is the whole-branch measurement its reopening lacked; **another occurrence, verdict unchanged:** one carrier of the same owner, 2026-11-20, three isolated passes over one body of work, each finding what the author's own reviews had missed: the first one blocker (an information leak between accounts) and two warnings, the second one warning and two minor items, the third no blocker, four warnings and five minor items; one stated finding of the third, that a disabled actor keeps working, was false and was refuted by reading the code, so a verification step between a reviewer's finding and the fix is not optional. The counts measure the reach of the owner's own closing procedure, which offers the reviewer, as much as the rule's |
 | `questions-go-together-priced-and-before-the-writing` | **applied to the method at 0.0.32**: the shape was already principle 15; what this release adds is why its three parts matter — together, before the writing, and priced — because a procedure that lists them without the reason is answered as a formality |
 | `count-both-sides-and-use-a-control-window` | **merged into the note as another occurrence at 0.0.32**: a control window belongs to physical timing findings too, and its margin says whether a difference is real |
 | `ratchet-in-a-pinned-environment` | **merged into the note as another occurrence at 0.0.32**: two occurrences: pinning the type checker and linter does not pin what they count when a ratchet's baseline is a single total rather than a set of findings; and a new boundary, counting environments that cannot be pinned |
@@ -170,7 +209,7 @@ Method changes resting on one carrier's evidence were published marked so, and a
 | `a-delegated-change-to-a-check-is-a-finding` | **applied to the method**: the moment table's "the plan runs" row and the close skill's step 9, a delegate's change to a check (a filter on its output, a skipped red run, an added exemption) is a finding the controller reviews. one carrier's evidence; reviewed at the next release |
 | `walk-the-rulings-before-the-plan-runs` | **answered by the method** of this release: §15's decision-review mode and the `decision-review` skill, whose opening cites this occurrence. One carrier for the before-the-plan claim; open: the reversal rate of rulings taken during execution |
 | `measure-a-ui-change-as-a-task` | refused as knowledge by its own harvest, rightly; **the home disagrees in part**: it is **fixed** in 0.0.27 as evidence behind the `user-walk` skill (measure the walked task in actions, page changes and dead ends) |
-| `a-prose-rule-loses-to-a-tool-default` | refused by its own harvest as an occurrence of an admitted note; **the home disagrees** with the target: **folded** into the attribution change of `a-local-memory-is-not-a-handoff`, to which it gave the remedy, the host's setting in the committed project settings |
+| `a-prose-rule-loses-to-a-tool-default` | refused by its own harvest as an occurrence of an admitted note; **the home disagrees** with the target: **folded** into the attribution change of `a-local-memory-is-not-a-handoff`, to which it gave the remedy, the host's setting in the committed project settings; **another occurrence, verdict unchanged:** one carrier of the same owner, 2026-10-12 to 2026-10-14, a root-file rule forbidding heredocs and commands that read standard input was broken in five of five sessions, always by the main agent and never by a delegate, and none hung; the repository's hook decision is pending (a figure only) |
 | `summaries-of-reference-pages-invent-syntax` | refused by its own harvest as an occurrence of principle 6; **the home disagrees** in part: its automatic-summary half is **folded** into `a-fetched-specification-is-a-summary`, its second carrier; the delegated-report half stays an occurrence of principle 6 |
 | `template-id-format-matches-the-checker` | **fixed** in 0.0.27: the roadmap template puts an item's id after the middle dot, where the id checker reads it. Further carriers met it at this release, one with a check green while blind on these ids (`experiments.md`) |
 | `roadmap-heading-id-position` | **fixed** in 0.0.27, see the row above |
@@ -296,7 +335,7 @@ Each proposal by its id; one offered for a note or an answered item is named by 
 | `write-permission-rules-match-nothing` | refused (`p-3ad6ecc680`): artifact 4 already says path rules for writes are accepted, never consulted, and warned about; an occurrence that confirms it |
 | `one-place-defines-a-record-id` | refused (`p-4fdfbfa55b`): the method's single-source rule, and the id checker caught it |
 | `a-warning-is-accepted-an-allowlist-is-justified` | refused (`p-a3b4441308`): already embodied in the bundle's override marker, which needs a reason and is listed on every run |
-| `a-check-by-location-sweeps-in-new-kinds` | refused (`p-c5401dbd7f`): repository-local, and the failure was loud; a weak occurrence noted under the queued `a-new-case-must-reach-every-classifier`, not its second repository |
+| `a-check-by-location-sweeps-in-new-kinds` | refused (`p-c5401dbd7f`): repository-local, and the failure was loud; a weak occurrence noted under the queued `a-new-case-must-reach-every-classifier`, not its second repository; **another occurrence, verdict unchanged:** re-offered 2026-09-29 with measured detail (possibly the same event as the refused one): an audit requiring every immutable input in a directory to be registered with its digest met a third-party package holding, beside the four inputs wanted, images, sound files and a readme, and reported six failures where the real debt was four; narrowing the rule to the one file extension it meant, written as a failing check first, left the audit at zero. The symptom is a count inflated by unrelated kinds, which reads as debt and so is acted on |
 | `a-non-portable-utility-option-garbles-a-comparison` | refused (`p-11b5e09dda`): portable shell options are textbook |
 | `a-binary-copied-over-a-run-binary-is-killed` | refused (`p-39841077c7`): platform code-signing behaviour, kept in the repository's own notes |
 | `one-concern-commits-from-hand-staged-blobs` | refused (`p-428932cd54`): textbook atomic-commit practice |
