@@ -97,7 +97,9 @@ fork of the release: take it back from the release, and offer the change as a pr
 One [Semantic Versioning](https://semver.org/spec/v2.0.0.html) version for the whole bundle, in this
 file's frontmatter; the home repository tags each release `vX.Y.Z`. While the version is `0.0.z`,
 every release may change what a carrier depends on. To read what changed since the version this
-repository holds: `python3 .agents/tools/bundle.py changelog --since X.Y.Z`.
+repository holds: `python3 .agents/tools/bundle.py changelog --since X.Y.Z`. It exits non-zero, saying
+so, when that version is older than the oldest section the release still carries: what it printed is then
+all it has, and the rest is recorded only in the home.
 
 ## How a copy travels
 
