@@ -63,6 +63,51 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-ee9f86` · Count what of the carrier tool a carrier never runs.** `tools/bundle.py` is 276,091
+  bytes, 27% of the release and its single largest file, and nobody has asked which of its commands a carrier
+  invokes. The question is the owner's, put on 2026-11-24: content whose only reader is a session that already
+  has a home open costs a carrier nothing to lose, which is not the same as reading it from the home over a
+  network — a carrier has no route to one and must not need one. So the work is a count, not a change: for each
+  command, which session's file names it, and whether any of them is reachable without a home. Only then is
+  there a decision to put. *Estimate:* about an hour for the count and the table; a split, if one is warranted,
+  is its own item and a breaking change for carriers. *Collides with:* every session file that names a command,
+  and `verify`, which checksums one tool.
+- **`i-5ed7e8-23e94e` · Re-examine the export cap once the changelog can be archived again.** The cap was
+  raised to 1,250,000 bytes on 2026-11-24 (`d-5ed7e8-929f2a`) after the alternative — archiving the oldest
+  changelog sections into the home — was rejected on a tool defect, `i-5ed7e8-5e0415`, and not on its merits.
+  When that defect is fixed the alternative returns: the changelog is 59,339 bytes, about 6% of the release,
+  and `proposals/RECEIVED.md` already keeps only the last two releases' verdicts, with the rest in the home's
+  ledger, so the shape is proven in the bundle. *Estimate:* nothing to build; a re-reading at the release after
+  the defect is fixed. *Collides with:* `i-5ed7e8-5e0415`, which it waits on, and any carrier reading
+  `--since` across the archived boundary.
+
+- **`i-5ed7e8-57358a` · Remove the product-noun check and its list.** Decided by the owner on 2026-11-24
+  (`d-5ed7e8-aa5d67`, superseding `d-5ed7e8-e0a56e` and `d-5ed7e8-4f76c8`), who asked whether the ban was
+  wanted at all. Delete `meta/product-nouns.txt`, the `product_nouns` and `_product_cues` helpers, the cue
+  problem they raise, and the tests that cover them; say so in the changelog, since a carrier's audit may
+  expect a build to fail on such a cue. What replaces it is nothing: generality is step 2 of admission, which a
+  person applies, and a product name that would identify a carrier is the privacy check's. *Estimate:* about
+  twenty minutes with the tests. *Collides with:* `_note_problems`' signature, which several callers pass
+  `nouns` into, and the changelog line that announced the check.
+
+- **`i-5ed7e8-26a753` · The worktree's environment rule gains the exception its own note supports.** Decided by
+  the owner on 2026-11-24 (`d-5ed7e8-381ef9`, superseding `d-5ed7e8-05fcd3`). Today the rule forbids a fresh
+  environment inside a worktree outright and has every such result reported unproven; the note admitted at
+  0.0.33 holds, on hermeticity literature, that an environment built for the copy is the better answer wherever
+  it can be afforded. The rule becomes: build it where that is cheap and reproducible, and the result is proven;
+  otherwise use the main checkout's and say the result is unproven. Both places that carry the rule are
+  rewritten together, and the note gains the cross-reference. *Estimate:* a paragraph in each, about half an
+  hour, plus a line in the note. *Collides with:* every carrier update that reports a gate's result, since the
+  word *proven* now means different work in different repositories and the report must say which.
+
+- **`i-5ed7e8-25ecc8` · `usage` drops a `.gitignore` beside its state folder.** Decided by the owner on
+  2026-11-24 (`d-5ed7e8-011bc5`, superseding `d-5ed7e8-eb2c2f`): the first write creates a `.gitignore` holding
+  `*` in the tool's state folder, so a home folder that is itself a working tree cannot commit the usage data.
+  The write there stays allowed and the warning stays, since it is still worth saying; what changes is that
+  ignoring it no longer leaks. *Estimate:* about half an hour with a test that the file is created once, is not
+  rewritten over a hand edit, and that the data is ignored by a repository rooted at the home folder.
+  *Collides with:* nothing in the release; the tool's own tests of the refusal path.
+
 - **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** Today `ids` checks the
   format of record ids and catches a decision cited and defined nowhere, but a **note slug** written into a
   tracking table is read by nobody: it is prose to the tool. On 2026-11-24 two slugs were written into the
