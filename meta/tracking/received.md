@@ -672,3 +672,92 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-e12eb75ad2` | 0.0.33 | queued as `a-retained-value-has-no-arrival-time` |
 | `p-f0c33844ff` | 0.0.33 | refused by its harvest; recorded in the history |
 | `p-ff0872a211` | 0.0.33 | refused by its harvest; recorded in the history |
+| `p-19e2887fcf` | 0.0.34 | queued as `a-gate-is-pruned-as-well-as-grown` |
+| `p-75679cf56f` | 0.0.34 | another occurrence of `cite-or-read-before-asserting`, to merge |
+| `p-7b6ae101bc` | 0.0.34 | queued as `classify-shipped-code-by-who-runs-it` |
+| `p-88cc26de4e` | 0.0.34 | another occurrence of `no-foreign-shell-constructs`, to merge |
+| `p-07342d3860` | 0.0.34 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-21ad4c3b0c` | 0.0.34 | another occurrence of `repeated-friction-becomes-a-build-check`, to merge |
+| `p-296baf47a1` | 0.0.34 | another occurrence of `one-device-plan-at-a-time-on-a-small-host`, to merge |
+| `p-3a76bf3c23` | 0.0.34 | another occurrence of `two-rules-of-one-repository-can-collide`, to merge |
+| `p-4eebaabe13` | 0.0.34 | another occurrence of `cite-or-read-before-asserting`, to merge |
+| `p-577dd2f78f` | 0.0.34 | another occurrence of `an-unmeasured-constraint-written-as-a-measurement`, to merge |
+| `p-d97f37d074` | 0.0.34 | another occurrence of `a-review-fix-is-a-new-change-and-gets-its-own-pass`, to merge |
+| `p-f84889284a` | 0.0.34 | another occurrence of `an-inventory-of-live-branches-with-its-merge-order`, to merge |
+| `p-348b99a34d` | 0.0.34 | queued as `a-gap-is-an-unread-span-not-a-missing-source` |
+| `p-3f46f661f4` | 0.0.34 | queued as `writing-from-model-memory-reproduces-the-source` |
+| `p-61ff345fef` | 0.0.34 | another occurrence of `clean-context-review-closes-a-batch`, to merge |
+| `p-c16a644f30` | 0.0.34 | queued as `calibrate-a-static-rule-then-break-it` |
+| `p-c64ce00cd5` | 0.0.34 | another occurrence of `examples-tested-by-assembly`, to merge |
+| `p-44de8dbf56` | 0.0.34 | another occurrence of `a-wide-change-maps-its-live-collisions`, to merge |
+| `p-4cab5bbc94` | 0.0.34 | another occurrence of `a-credential-pasted-into-the-conversation-is-spent`, to merge |
+| `p-59cdcd6c64` | 0.0.34 | run logged against `a-version-bump-spends-the-forward-compatibility-it-was-protecting` |
+| `p-9266137a9d` | 0.0.34 | another occurrence of `a-scripted-edit-is-validated-by-the-set-it-selected`, to merge |
+| `p-ea5fd22dc1` | 0.0.34 | another occurrence of `a-pause-hides-work-from-record-readers`, to merge |
+| `p-8e45427c3c` | 0.0.34 | another occurrence of `a-final-harvest-retires-the-carrier`, to merge |
+| `p-5e0703226e` | 0.0.34 | run logged against `decision-review` |
+| `p-881a079866` | 0.0.34 | another occurrence of `fix-at-the-call-site-leaves-the-others`, to merge |
+| `p-8b8b36e26c` | 0.0.34 | another occurrence of `an-answer-to-a-misdescribed-option-is-superseded`, to merge |
+| `p-8b90e73028` | 0.0.34 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-c2eeab7d4d` | 0.0.34 | another occurrence of `steps-readable-by-a-permission-layer`, to merge |
+| `p-de60e53a1e` | 0.0.34 | another occurrence of `a-prose-rule-loses-to-a-tool-default`, to merge |
+| `p-e04018b710` | 0.0.34 | another occurrence of `a-confirmation-needs-a-terminal`, to merge |
+| `p-f3a7857093` | 0.0.34 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-03e34f7f8f` | 0.0.34 | another occurrence of `drift-is-published-minus-spliced`, to merge |
+| `p-3442086fca` | 0.0.34 | queued as `a-redaction-keeps-the-class-the-decision-reads` |
+| `p-6a0b5e2ba4` | 0.0.34 | another occurrence of `remote-mutation-names-target-effect-reversal`, to merge |
+| `p-90fb6e90b5` | 0.0.34 | another occurrence of `cite-or-read-before-asserting`, to merge |
+| `p-d3c4fa7951` | 0.0.34 | queued as `machine-local-lists-give-one-commit-two-verdicts` |
+| `p-0be6c64422` | 0.0.34 | another occurrence of `a-development-configuration-that-resolves-to-a-live-machine`, to merge |
+| `p-c1d3144c88` | 0.0.34 | another occurrence of `an-unmeasured-constraint-written-as-a-measurement`, to merge |
+| `p-e218306b8a` | 0.0.34 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-ed267b32f7` | 0.0.34 | another occurrence of `an-end-to-end-test-passes-through-the-environments-own-behaviour`, to merge |
+| `p-05e03ff71e` | 0.0.34 | another occurrence of `a-credential-pasted-into-the-conversation-is-spent`, to merge |
+| `p-33dcf4406f` | 0.0.34 | another occurrence of `ready-is-stated-in-the-humans-terms`, to merge |
+| `p-34b1cc73d4` | 0.0.34 | another occurrence of `derive-state-from-one-clock`, to merge |
+| `p-57a7b60f83` | 0.0.34 | another occurrence of `cite-or-read-before-asserting`, to merge |
+| `p-90881430a6` | 0.0.34 | another occurrence of `a-request-accepted-is-not-an-effect`, to merge |
+| `p-a54735cd61` | 0.0.34 | queued as `a-graceful-stop-is-a-deadline-not-a-cut` |
+| `p-c9fae607bd` | 0.0.34 | another occurrence of `kill-by-command-line-pattern-matches-own-shell`, to merge |
+| `p-efa810ad3e` | 0.0.34 | another occurrence of `a-convention-only-one-party-follows-degrades-to-a-suggestion`, to merge |
+| `p-f0796da18d` | 0.0.34 | another occurrence of `edit-tools-for-unrebuildable-artefacts-default-to-reporting`, to merge |
+| `p-f0a6cbc260` | 0.0.34 | another occurrence of `a-ratchet-counts-the-actor-not-the-form`, to merge |
+| `p-f4cf0013c4` | 0.0.34 | another occurrence of `a-review-fix-is-a-new-change-and-gets-its-own-pass`, to merge |
+| `p-ad8414bff1` | 0.0.34 | another occurrence of `gather-reads-a-branch-not-only-the-checkout`, to merge |
+| `p-80072dc30b` | 0.0.34 | queued as `a-permission-deny-outlives-the-rule-it-served` |
+| `p-a924ff5d16` | 0.0.34 | another occurrence of `explain-a-term-before-asking-about-it`, to merge |
+| `p-28058e84f7` | 0.0.34 | another occurrence of `a-budgeted-root-file-needs-a-named-displacement-target`, to merge |
+| `p-84e5d69988` | 0.0.34 | another occurrence of `a-guardrail-states-its-real-status`, to merge |
+| `p-9010dbb333` | 0.0.34 | another occurrence of `gate-reads-untracked-derived-state`, to merge |
+| `p-aa79751640` | 0.0.34 | another occurrence of `a-check-must-be-seen-to-fail`, to merge |
+| `p-b81fc43ac4` | 0.0.34 | queued as `decisions-skips-suffixed-ids` |
+| `p-c98c6db087` | 0.0.34 | another occurrence of `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check`, to merge |
+| `p-dbccef40a4` | 0.0.34 | queued as `a-validator-reporting-first-finding-per-subject` |
+| `p-f4877c2e70` | 0.0.34 | queued as `turns-context-carries-secrets` |
+| `p-fb8691e1a5` | 0.0.34 | another occurrence of `a-selective-gate-needs-a-forced-full-run-and-the-right-base`, to merge |
+| `p-fb89d1188c` | 0.0.34 | another occurrence of `verification-load-competes-with-the-product`, to merge |
+| `p-31f61957e3` | 0.0.34 | queued as `a-granted-parallelism-is-kept-filled` |
+| `p-33939afb98` | 0.0.34 | another occurrence of `cleanup-belongs-to-the-supervisor`, to merge |
+| `p-35568c4b08` | 0.0.34 | another occurrence of `a-board-of-what-is-active-while-agents-run`, to merge |
+| `p-35fc30265a` | 0.0.34 | another occurrence of `a-regenerated-golden-certifies-the-generator`, to merge |
+| `p-3f4d37d256` | 0.0.34 | another occurrence of `no-simultaneous-deploy`, to merge |
+| `p-73ebc3ab8f` | 0.0.34 | another occurrence of `a-changelog-needs-a-sequence-check`, to merge |
+| `p-77dbe0f7b3` | 0.0.34 | another occurrence of `one-device-plan-at-a-time-on-a-small-host`, to merge |
+| `p-9355b54cc7` | 0.0.34 | queued as `a-property-that-needs-a-filter-to-pass-is-a-finding` |
+| `p-a02fb7de8b` | 0.0.34 | another occurrence of `a-double-cannot-show-what-it-does-not-model`, to merge |
+| `p-b62b4412ca` | 0.0.34 | another occurrence of `gather-reads-a-branch-not-only-the-checkout`, to merge |
+| `p-bb8c24806a` | 0.0.34 | queued as `a-pairwise-rule-is-not-an-order-until-acyclic` |
+| `p-c412a4a6b1` | 0.0.34 | another occurrence of `routine-tools-leave-the-tree-as-found`, to merge |
+| `p-ee717436fe` | 0.0.34 | another occurrence of `kill-by-command-line-pattern-matches-own-shell`, to merge |
+| `p-f599058a12` | 0.0.34 | another occurrence of `decide-which-side-is-wrong-from-a-trace`, to merge |
+| `p-fd25a3cfcf` | 0.0.34 | another occurrence of `sweep-the-rendered-extremes`, to merge |
+| `p-fe3c434185` | 0.0.34 | another occurrence of `close-the-loop-in-the-actuators-frame`, to merge |
+| `p-004f87cd99` | 0.0.34 | run logged against `remote-mutation-names-target-effect-reversal` |
+| `p-3b166531b9` | 0.0.34 | another occurrence of `cleanup-belongs-to-the-supervisor`, to merge |
+| `p-7bd5b288fd` | 0.0.34 | another occurrence of `two-contradicting-answers-need-a-third-question`, to merge |
+| `p-82b6c9144d` | 0.0.34 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |
+| `p-8514718316` | 0.0.34 | another occurrence of `same-answer-or-refuse`, to merge |
+| `p-a0d6d191cd` | 0.0.34 | another occurrence of `sweep-the-rendered-extremes`, to merge |
+| `p-a4af960922` | 0.0.34 | another occurrence of `report-coverage-before-findings`, to merge |
+| `p-b865300e6b` | 0.0.34 | another occurrence of `index-unread-where-rules-absorbed-it`, to merge |
+| `p-c6083df1c2` | 0.0.34 | another occurrence of `explain-a-term-before-asking-about-it`, to merge |

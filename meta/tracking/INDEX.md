@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (264)
+## Candidates in the queue (279)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -48,7 +48,7 @@ None.
 - `bumping-a-monotone-counter-is-not-idempotent` — M, since 0.0.20 · lacks **the second occurrence arrived; what it still lacks is a second *tool***, which is the same gap `a-default-scope-is-the-widest-one` …
 - `a-budgeted-root-file-needs-a-named-displacement-target` — M, since 0.0.20 · lacks a second repository; and whether it is a form of `a-second-source-of-truth-diverges-in-silence` rather than a claim of its own. …
 - `conformance-to-an-artefact-spec-is-swept-not-remembered` — M, since 0.0.20 · lacks a second repository, and a boundary on how much of the sweep belongs in the shared method versus in the carrier's own gate — a spec …
-- `edit-tools-for-unrebuildable-artefacts-default-to-reporting` — M, since 0.0.20 · lacks a second repository of another owner (the second occurrence has arrived, from the same owner), and the boundary for an artefact that …
+- `edit-tools-for-unrebuildable-artefacts-default-to-reporting` — M, since 0.0.20 · lacks a ruling on whether a second person of a shared repository, who wrote the rule there (0.0.34), counts as another owner; otherwise a …
 - `address-by-content-coordinates-not-by-artefact-id` — K, since 0.0.20 · lacks a second repository. It reads close to *natural keys over surrogate keys*, and the literature on that was not consulted; what may be …
 - `a-contentless-index-makes-row-identity-a-contract` — K, since 0.0.20 · lacks a second repository, and a check on whether this is specific to one engine's contentless mode or general to any positional index
 - `the-narrower-artefact-declares-its-absorber` — K, since 0.0.20 · lacks a second occurrence. The boundary is untested: it assumes containment is total, and a *mostly* narrower artefact would silently lose …
@@ -60,7 +60,7 @@ None.
 - `a-guardrail-states-its-real-status` — M, since 0.0.20 · lacks This is about how a *method artefact* is written, not about building software, so it belongs in `method/` if anywhere. Raised there …
 - `gate-sequence-stops-at-the-first-red-step` — K, since 0.0.21 · lacks whether it is its own note or a boundary of `a-check-must-be-seen-to-fail` (a check can be *un-run*, not only *un-failed*) …
 - `the-enforcer-is-exempt-from-nothing` — K / M, since 0.0.21 · lacks an occurrence outside a bundle adoption; the remedy (exclude the tool, or make it conform) is a repository choice and is not settled
-- `fix-at-the-call-site-leaves-the-others` — K, since 0.0.21 · lacks a second occurrence outside one repository; overlaps `kill-switch-reaches-every-path` in shape (one predicate, every path)
+- `fix-at-the-call-site-leaves-the-others` — K, since 0.0.21 · lacks an occurrence outside one owner's repositories (a second repository of the same owner arrived at 0.0.34); overlaps …
 - `unconsulted-parameter-is-still-a-contract` — K, since 0.0.21 · lacks literature; and a boundary — when honouring the parameter is the right repair rather than deleting it. The second repository arrived …
 - `configuration-read-at-import-is-an-environment-test` — K, since 0.0.21 · lacks a second occurrence; literature (the twelve-factor method states the principle, not this consequence)
 - `a-projection-turns-not-requested-into-absent` — K, since 0.0.21 · lacks a second occurrence; overlaps `absence-is-a-third-value` strongly enough that it may be an extension
@@ -102,11 +102,11 @@ None.
 - `a-regenerated-golden-certifies-the-generator` — M, since 0.0.27 · lacks novelty (snapshot and approval-testing literature); a second repository of another owner (another repository of the same owner has …
 - `a-principle-can-have-no-subject-in-a-carrier` — M, since 0.0.27 · lacks a second carrier for the misfiling; a design: a trigger field on not-yet and declined entries that `check-local` or the update can …
 - `install-skills-names-a-shadowed-base-change` — M, since 0.0.29 · lacks a second carrier's occurrence of a replaced section; a tool change with a test
-- `gather-reads-a-branch-not-only-the-checkout` — M, since 0.0.29 · lacks a fix with a test
+- `gather-reads-a-branch-not-only-the-checkout` — M, since 0.0.29 · lacks a fix with a test: proposals and, since 0.0.34, the harvest frontier read per branch, a disagreement between branches reported, and a …
 - `a-machine-local-check-input-is-part-of-every-gate-that-reads-it` — M, since 0.0.29 · lacks a second occurrence
 - `timeout-is-not-an-outcome` — K, since 0.0.29 · lacks an occurrence; likely an occurrence of `retry-over-irreversible-effect` rather than a note of its own
 - `privacy-misses-a-derived-prefix-in-own-fields` — K, since 0.0.29 · lacks a rule that recognises a legacy record id's repo part as derived and flags it beside any descriptive text in `.agents/`
-- `a-confirmation-needs-a-terminal` — K, since 0.0.29 · lacks an occurrence (the first live session is pending); may be the harness form of `a-default-scope-is-the-widest-one` rather than a claim …
+- `a-confirmation-needs-a-terminal` — K, since 0.0.29 · lacks a carrier of another owner (the first live occurrence arrived at 0.0.34, from the same owner); may be the harness form of …
 - `ids-cannot-read-a-history-that-quotes-a-placeholder` — K, since 0.0.29 · lacks a rule for what is an example rather than a record: inline code, a placeholder form the method names, or an ignore list
 - `invariant-survives-a-refactor` — M, since 0.0.29 · lacks a place in `prompt-bootstrap.md` beside that sentence
 - `read-output-is-untrusted-input` — K, since 0.0.29 · lacks an occurrence in a carrier; the literature is strong (two measured studies of instructions planted in operational logs, where …
@@ -127,7 +127,7 @@ None.
 - `new-entry-reads-the-logs-own-format` — M, since 0.0.30 · lacks a fix with a test
 - `a-plan-may-be-a-working-artifact` — M, since 0.0.30 · lacks the wording in the close skill and the plan guidance; a carrier outside that team
 - `a-card-enters-an-answer-as-a-mechanism` — M, since 0.0.31 · lacks more questions and more judges, none of whom has read an answer before; the same concern written as a principle and as a mechanism at …
-- `a-convention-only-one-party-follows-degrades-to-a-suggestion` — M, since 0.0.32 · lacks a second occurrence where the convention is not a record format, and a check: per rule, what it does to work from outside
+- `a-convention-only-one-party-follows-degrades-to-a-suggestion` — M, since 0.0.32 · lacks a check: per rule, what it does to work from outside (attribution filtered on the owner's identities, others advisory); a carrier of …
 - `a-delegation-is-priced-before-it-starts` — M, since 0.0.32 · lacks an occurrence with figures: a delegated reading, its quote and what it actually cost (0.0.32 added counts of priced runs and tokens …
 - `a-completeness-marker-must-survive-truncation` — M, since 0.0.32 · lacks nothing: the change is one line in whichever runner prints the marker
 - `an-interaction-is-designed-one-decision-per-turn` — M, since 0.0.32 · lacks the natural experiment it names: per procedure, which steps carriers adapted or declined; a carrier of another owner, **or** a …
@@ -149,7 +149,7 @@ None.
 - `kill-by-command-line-pattern-matches-own-shell` — M, since 0.0.32 · lacks a repository of another owner or host; the typed refusal rule is unbuilt in both repositories seen
 - `a-batch-states-why-it-is-split-and-which-model` — M, since 0.0.32 · lacks a second occurrence
 - `a-push-that-deploys-is-a-publish` — M, since 0.0.32 · lacks a second occurrence
-- `a-board-of-what-is-active-while-agents-run` — M, since 0.0.32 · lacks a second occurrence
+- `a-board-of-what-is-active-while-agents-run` — M, since 0.0.32 · lacks a carrier of another owner, or a check (a second occurrence arrived at 0.0.34, from the same owner)
 - `a-failure-before-the-limiter-counts-is-a-free-attempt` — K, since 0.0.32 · lacks a second occurrence
 - `a-remaining-budget-reorders-the-plan-toward-closing` — M, since 0.0.32 · lacks a second occurrence
 - `a-guided-test-holds-the-blind-in-the-agent` — M, since 0.0.32 · lacks a second occurrence
@@ -164,8 +164,8 @@ None.
 - `an-idempotence-key-coarser-than-the-write-unit-drops-data` — K, since 0.0.33 · lacks a second occurrence
 - `presence-check-admits-a-placeholder` — K, since 0.0.33 · lacks a second occurrence
 - `alternate-the-two-versions-in-one-window` — M, since 0.0.33 · lacks a second occurrence
-- `an-unmeasured-constraint-written-as-a-measurement` — K, since 0.0.33 · lacks a second occurrence
-- `examples-tested-by-assembly` — M, since 0.0.33 · lacks a second occurrence in another carrier
+- `an-unmeasured-constraint-written-as-a-measurement` — K, since 0.0.33 · lacks a carrier of another owner (the second and third occurrences arrived at 0.0.34, from one owner); whether the relayed-premise form …
+- `examples-tested-by-assembly` — M, since 0.0.33 · lacks a carrier of another owner (the second carrier arrived at 0.0.34, from the same owner)
 - `reference-from-code-cited` — M, since 0.0.33 · lacks a second occurrence in another carrier
 - `count-outputs-when-too-fast` — M, since 0.0.33 · lacks a second occurrence in another carrier
 - `assert-unique-match` — M, since 0.0.33 · lacks a second occurrence in another carrier
@@ -208,14 +208,14 @@ None.
 - `a-decision-read-outside-its-transaction` — K, since 0.0.33 · lacks a real-store run, a carrier of another owner, and the lost-update and write-skew literature
 - `a-handoff-carries-what-no-artefact-holds` — M, since 0.0.33 · lacks nothing
 - `parallel-sessions-partition-by-write-surface` — M, since 0.0.33 · lacks nothing
-- `a-ratchet-counts-the-actor-not-the-form` — K, since 0.0.33 · lacks nothing beyond the note's own second-carrier requirement
+- `a-ratchet-counts-the-actor-not-the-form` — K, since 0.0.33 · lacks nothing beyond the note's own second-carrier requirement; a ruling on whether a second person of a shared repository, who authored …
 - `a-premise-of-sole-ownership-lives-in-a-comment` — K, since 0.0.33 · lacks a second incident, a check that lists the writers of a stored structure, and the pending fix
 - `an-empty-restriction-reads-as-no-restriction` — K, since 0.0.33 · lacks a carrier of another owner
 - `a-regenerated-baseline-is-read-by-entry` — M, since 0.0.33 · lacks a second carrier; may be a facet of the regenerated-golden rule
 - `a-shared-vocabulary-hides-opposite-defaults` — K, since 0.0.33 · lacks nothing
 - `list-consumers-by-who-calls-the-client` — K, since 0.0.33 · lacks a second occurrence
 - `a-stored-ceiling-goes-wrong-in-a-merge-with-no-conflict` — K, since 0.0.33 · lacks a carrier of another owner
-- `a-double-cannot-show-what-it-does-not-model` — K, since 0.0.33 · lacks a run against the real service or an emulator, and a carrier of another owner
+- `a-double-cannot-show-what-it-does-not-model` — K, since 0.0.33 · lacks a run against the real service or an emulator for the transactional cases (two other properties a double did not model arrived at …
 - `a-claim-built-by-hand-proves-only-what-follows-it` — M, since 0.0.33 · lacks a carrier of another owner; the literature on this class of proof not consulted
 - `a-model-default-is-written-back-as-data` — K, since 0.0.33 · lacks a carrier of another owner; it may survive only as an occurrence
 - `a-relayed-closed-enum-turns-an-unknown-value-into-a-refusal` — K, since 0.0.33 · lacks an independent second carrier: both halves are one owner's and one ticket's
@@ -226,7 +226,7 @@ None.
 - `bundle-count-resolves-log-from-tool-path` — M, since 0.0.33 · lacks nothing: a defect
 - `a-pause-hides-work-from-record-readers` — M, since 0.0.33 · lacks a second source; a measured cost
 - `one-device-plan-at-a-time-on-a-small-host` — M, since 0.0.33 · lacks a carrier under a second owner
-- `a-final-harvest-retires-the-carrier` — M, since 0.0.33 · lacks a mechanism (a carrier-record field the gather reads) and a second occurrence
+- `a-final-harvest-retires-the-carrier` — M, since 0.0.33 · lacks a mechanism (a carrier-record field the gather reads); a second source (the second occurrence arrived at 0.0.34, from the same owner)
 - `a-rename-stops-at-names-owned-elsewhere` — K, since 0.0.33 · lacks a second occurrence
 - `a-simulated-audience-is-checked-against-real-observations` — M, since 0.0.33 · lacks a second occurrence; and its one citation verified
 - `explain-a-term-before-asking-about-it` — M, since 0.0.33 · lacks a carrier of another owner (one owner's repositories are one source)
@@ -250,7 +250,7 @@ None.
 - `read-the-state-before-deleting-a-branch` — M, since 0.0.33 · lacks a carrier under a second owner
 - `a-wide-change-maps-its-live-collisions` — M, since 0.0.33 · lacks a carrier under a second owner
 - `a-decision-row-never-speaks-for-the-owner` — M, since 0.0.33 · lacks a carrier under a second owner
-- `cite-or-read-before-asserting` — M, since 0.0.33 · lacks a carrier under a second owner
+- `cite-or-read-before-asserting` — M, since 0.0.33 · lacks a carrier under a second owner; for the identifier form (0.0.34), a counted run of how many cited identifiers resolve to what they …
 - `repeated-friction-becomes-a-build-check` — M, since 0.0.33 · lacks a carrier under a second owner
 - `decisions-migrate` — M, since 0.0.33 · lacks a test in the home; one occurrence
 - `values-that-must-agree-need-an-agreement-test` — K, since 0.0.33 · lacks a carrier under a second owner
@@ -266,7 +266,7 @@ None.
 - `a-gates-stand-in-for-the-build-is-not-the-build` — K, since 0.0.33 · lacks a second carrier, and the claim stated without one framework's nouns
 - `an-artefact-derived-from-the-design-shares-its-blind-spots` — K, since 0.0.33 · lacks a second carrier
 - `a-name-that-does-not-resolve-falls-back-silently` — K, since 0.0.33 · lacks a second occurrence in another carrier
-- `an-end-to-end-test-passes-through-the-environments-own-behaviour` — K, since 0.0.33 · lacks a second carrier; the client-specific sub-claims set apart
+- `an-end-to-end-test-passes-through-the-environments-own-behaviour` — K, since 0.0.33 · lacks a carrier of another owner (a second carrier of the same owner arrived at 0.0.34); the client-specific sub-claims set apart
 - `a-document-about-a-check-is-a-second-implementation` — M, since 0.0.33 · lacks nothing beyond what the queued row states: this is the second carrier it waited for
 - `a-development-configuration-that-resolves-to-a-live-machine` — K, since 0.0.33 · lacks one owner's global preference restated; the independent part is the mechanism and its check
 - `a-check-is-verified-by-the-case-it-rejects-and-the-case-it-accepts` — K, since 0.0.33 · lacks a second carrier
@@ -281,13 +281,39 @@ None.
 - `an-optional-field-entering-a-digest-changes-it` — K, since 0.0.33 · lacks a second carrier
 - `an-extraction-with-history-carries-the-origins-private-content` — K, since 0.0.33 · lacks a carrier under a second owner
 - `a-filter-that-prints-nothing-is-not-a-verdict` — K, since 0.0.33 · lacks a carrier under a second owner
+- `a-gate-is-pruned-as-well-as-grown` — M, since 0.0.34 · lacks a counted run over one suite: for each check, when it was last red, and how many of its failures another check already catches first …
+- `classify-shipped-code-by-who-runs-it` — K, since 0.0.34 · lacks the running measure itself, each command traced to the session that invokes it; a second owner's bundle, since both counts are of …
+- `a-gap-is-an-unread-span-not-a-missing-source` — M, since 0.0.34 · lacks whether the use was intended; a second occurrence
+- `writing-from-model-memory-reproduces-the-source` — M, since 0.0.34 · lacks a second occurrence; the memorisation literature checked; applies a line of the owner's global instruction file, so one source
+- `calibrate-a-static-rule-then-break-it` — K, since 0.0.34 · lacks a second repository; whether it folds into one-adversarial-generator-per-promise
+- `a-redaction-keeps-the-class-the-decision-reads` — K, since 0.0.34 · lacks a second occurrence; the class-preserving masking literature checked
+- `machine-local-lists-give-one-commit-two-verdicts` — M, since 0.0.34 · lacks a second occurrence of this facet; a mechanism and its check; possibly the same event as …
+- `a-graceful-stop-is-a-deadline-not-a-cut` — K, since 0.0.34 · lacks novelty (documented runtime behaviour, not checked against its source here) and a second occurrence
+- `a-permission-deny-outlives-the-rule-it-served` — M, since 0.0.34 · lacks a carrier of another owner; overlaps two-rules-of-one-repository-can-collide; the fix may be judged repository-local
+- `decisions-skips-suffixed-ids` — M, since 0.0.34 · lacks a fix with a test; whether to count unparsed rows or accept the shape
+- `a-validator-reporting-first-finding-per-subject` — K, since 0.0.34 · lacks a second occurrence; to join gate-sequence-stops-at-the-first-red-step
+- `turns-context-carries-secrets` — M, since 0.0.34 · lacks a decision: redact in the tool or treat the output as sensitive; a test
+- `a-granted-parallelism-is-kept-filled` — M, since 0.0.34 · lacks thin: one owner, one carrier, no measured effect; in tension with one-device-plan-at-a-time-on-a-small-host
+- `a-property-that-needs-a-filter-to-pass-is-a-finding` — K, since 0.0.34 · lacks thin: one occurrence; literature cited narrows it to what rate-based discard checks miss
+- `a-pairwise-rule-is-not-an-order-until-acyclic` — K, since 0.0.34 · lacks thin: one occurrence; the sort library's behaviour on a violated contract is unverified
 
 ## Offered again, to merge (0)
 
 None.
 
-## Answered: admitted, folded, refused or dropped (324)
+## Answered: admitted, folded, refused or dropped (335)
 
+- `reproduce-the-checkout-not-only-the-environment` — **merged into the note as four more occurrences at 0.0.34**, all one owner's: a tree changed while the gate runs, a suite that reads files …
+- `a-check-must-be-seen-to-fail` — **merged into the note as two more occurrences at 0.0.34**: test-first slipping where the red run is slow, with its two remedies, and a …
+- `derive-state-from-one-clock` — **merged into the note as another occurrence at 0.0.34**: a wait measured by wall-clock subtraction across a time-synchronisation step
+- `a-request-accepted-is-not-an-effect` — **merged into the note as another occurrence at 0.0.34**: a component reporting success in the same instant its state machine logged failure
+- `a-decoder-that-degrades-to-plausible-output-needs-an-out-of-band-check` — **merged into the note as another occurrence at 0.0.34**: an alignment estimator locked onto the wrong structure, a fourth domain
+- `cleanup-belongs-to-the-supervisor` — **merged into the note as two more occurrences at 0.0.34**: a setting the run's own connection changed as a side effect, and a backup that …
+- `no-simultaneous-deploy` — **merged into the note as another occurrence at 0.0.34**: an install that migrates a device's store, and an older build reinstalled over …
+- `sweep-the-rendered-extremes` — **merged into the note as two more axes at 0.0.34**: a device's clock format, and a locale's region
+- `close-the-loop-in-the-actuators-frame` — **merged into the note as another occurrence at 0.0.34**: a layout pass that counted an item anchored to its own entry as an obstacle
+- `same-answer-or-refuse` — **merged into the note as another occurrence at 0.0.34**: a reimplementation of a product rule that still disagreed after its defect was …
+- `report-coverage-before-findings` — **merged into the note as another occurrence at 0.0.34**: a prefix-limited count and a sampling verifier
 - `an-isolated-worktree-is-not-the-checkout` — admitted as the note `an-isolated-copy-is-not-the-working-checkout`, with the literature on hermetic builds consulted and the procedural …
 - `no-foreign-shell-constructs` — folded into the enforcement ladder, which already held the rule; the release added its grounding in the hierarchy of controls and four …
 - `a-humans-answers-departing-from-the-recommendation` — refused: a preference, and a preference never enters a proposal
