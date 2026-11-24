@@ -20,20 +20,20 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-24, fifth close: 0.0.33 is cut, tagged `v0.0.33` and pushed. It was not spliced into any carrier**, by the owner's decision, so every carrier but this home still holds 0.0.32 or older. They are listed under *Blocked outside*.
+**State on 2026-11-24, sixth close. 0.0.33 is cut, tagged `v0.0.33` and pushed, and was spliced into no carrier** by the owner's decision: every carrier but this home still holds 0.0.32 or older, listed under *Blocked outside*. **After the cut, in the same session, the work did not stop**, so this home now holds tool and method changes that no release carries. They ship at 0.0.34.
 
-**What 0.0.33 is.** A harvest patch, and the largest so far: 213 proposals from 23 carriers, against 90 last release. 122 entered the queue, 6 were experiment runs, 44 were folded as occurrences, and 5 were refused a fold by the sessions doing it and became candidates of their own. One note admitted, `an-isolated-copy-is-not-the-working-checkout`. One principle added, 21, naming the four stages the work passes through — plan, settle the questions, build, review — with the failure and the check of each. The enforcement ladder gained its grounding in the hierarchy of controls and four narrowings. No shipped tool changed.
+**What 0.0.33 was.** The largest harvest so far: 213 proposals from 23 carriers, 122 queued, 44 folded, one note admitted, principle 21 added (the four stages of the work), the enforcement ladder grounded. Ten carriers were cloned here and harvested; the manifest lists 24. The export cap rose to 1,250,000 bytes.
 
-**Ten carriers were cloned onto this machine** from the other one's inventory and harvested here; the manifest now lists 24. The export's cap was raised to 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`) when the cut was refused at 1,016,609.
+**What landed after it.** The owner walked the five reasons that still bind and decided all five. Six of the items they queued were built the same day: `usage` leaves a `.gitignore` where it writes (and never outside its own folder), `changelog --since` names the gap instead of answering silently, `bundle.py decisions` counts only what waits on a person, a tracking-slug check lives in the home's own `check`, the product-noun check and its list are gone, and the worktree rule now builds a hermetic environment where that is cheap. Two more were answered by counting rather than building. Four reviews ran in fresh context and found a `.gitignore` that could have silenced an unrelated repository, a pattern that would have failed builds on `not admitted as a note`, and records that said the opposite of the code. All fixed.
 
-**Next, in order:**
-1. **The other machine's session: harvest and 0.0.34.** Its session transcripts never travel by git, so the spans listed in each carrier's `harvested_gaps` are there to be read, this release's carriers included. It pulls `v0.0.33` first.
-2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here. Start a session here with that, not with anything else: skipping two versions is the drift the queued candidate on a carrier only updating when a meta-session reaches it describes, and that this release measured in two carriers left on 0.0.25 and 0.0.26.
-3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which the four-stage flow of principle 21 is the skeleton; writing the full method is that release's work.
+**Next, in order.**
+1. **The other machine: its harvest, then 0.0.34.** It pulls first — `git pull --tags` — and what is here is already most of that release's content. Before anything, it pushes the work that exists only there: seven branches of one repository and one worktree's commit, fifteen commits this harvest could not read.
+2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here, the one whose integration branch advanced re-adopting the bundle on that branch (`d-5ed7e8-c5d303`).
+3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which principle 21 is the skeleton.
 
-**Decided after the cut,** in a review of the five reasons that still bind: five items queued (`i-5ed7e8-25ecc8`, `26a753`, `57358a`, `ee9f86`, `23e94e`), the product-noun check removed, a repository that is not active left out, and the carrier whose integration branch advanced re-adopting the bundle on that branch. The twenty-nine reasons an agent wrote under decisions the owner accepted wait for `i-5ed7e8-a98470`, which makes their count mean something.
+**Waiting here, tomorrow:** the twenty-nine agent-written reasons, once `i-5ed7e8-a98470`'s count is trusted; the six candidates a review says could be admitted; three defects the queue itself carries; one orphan slug the new check warns about on every run.
 
-**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit undone before anything left the machine. Two record slugs were written into the history table from memory and did not exist. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`, each with a roadmap item. One literature search reversed a candidate's conclusion, the process working. `changelog --since` was found answering silently for a version it no longer holds, and was fixed the same day (`i-5ed7e8-5e0415`).
+**Waiting on the owner:** the design of `i-5ed7e8-9ef5d1`, a voluntary path for usage evidence to enter a record, one decision at a time.
 
 **To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
 
@@ -62,6 +62,27 @@ never committed; the names of private carriers are in the local private-terms li
 ## Next
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
+
+- **`i-5ed7e8-9ef5d1` · A voluntary, anonymised path for usage evidence to enter a record.** The owner's ask of
+  2026-11-24. The standing rule is that usage data stays on its machine and only a generalised figure the owner
+  approves enters a record. That rule has no procedure behind it, so in practice nothing ever enters: on the day
+  it was raised, four weeks of local usage data were read, produced a picture of how the work actually goes, and
+  **not one figure of it reached any record**, while *a measurement nobody has run* is the blocking reason on
+  eight of the fifty-four oldest candidates. The rule is not wrong; what is missing is the step that lets it be
+  obeyed and still used.
+  **The shape, to be designed with the owner one decision at a time, not written straight out:** the tool already
+  holds the local store, a consent level, a retention and a `brief`. What it lacks is a step that takes a
+  question — *how often does this happen, over what* — and returns an answer already generalised to a ratio or an
+  order of magnitude, with the raw figure shown only to the owner, who then approves or refuses it entering a
+  named record. Three things that decide whether it works: the generalisation must happen in the tool, not in an
+  agent's prose, or the rule relies on the thing it is guarding against; the approval must name the record the
+  figure enters, since a figure approved once is not approved for everywhere; and a refused figure must leave a
+  trace saying a measurement exists and was withheld, so the candidate's *Lacks* stops claiming nobody has run
+  one. Whether a second machine's figures may be combined is its own decision, and the answer is probably no
+  while each machine is one person.
+  *Estimate:* a design round with the owner, then about a session to build with tests. *Collides with:* the
+  standing rule itself, which this makes executable; `usage`'s consent model; every candidate whose *Lacks* is a
+  measurement; and the privacy check, which must still fail on a figure that identifies anything.
 
 - **`i-5ed7e8-a6b77f` · Split the home's own commands out of the shipped tool, by who runs them.** The owner's
   proposal of 2026-11-24 (`p-7b6ae101bc`): what only the home runs lives in a file of its own that does not

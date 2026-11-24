@@ -703,3 +703,26 @@ reached a carrier's remote, most by a check, two by the owner.
    phase whose records close waits for its own session, a timing test still absolute in one carrier.
 7. `i-5ed7e8-ef066e` and `i-5ed7e8-543516`, as before. One repository holds a bundle with no `carrier.toml` (a
    paused bootstrap).
+
+## Archived 2026-11-24, at the close that followed the 0.0.33 cut
+
+### Where we were
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**State on 2026-11-24, fifth close: 0.0.33 is cut, tagged `v0.0.33` and pushed. It was not spliced into any carrier**, by the owner's decision, so every carrier but this home still holds 0.0.32 or older. They are listed under *Blocked outside*.
+
+**What 0.0.33 is.** A harvest patch, and the largest so far: 213 proposals from 23 carriers, against 90 last release. 122 entered the queue, 6 were experiment runs, 44 were folded as occurrences, and 5 were refused a fold by the sessions doing it and became candidates of their own. One note admitted, `an-isolated-copy-is-not-the-working-checkout`. One principle added, 21, naming the four stages the work passes through — plan, settle the questions, build, review — with the failure and the check of each. The enforcement ladder gained its grounding in the hierarchy of controls and four narrowings. No shipped tool changed.
+
+**Ten carriers were cloned onto this machine** from the other one's inventory and harvested here; the manifest now lists 24. The export's cap was raised to 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`) when the cut was refused at 1,016,609.
+
+**Next, in order:**
+1. **The other machine's session: harvest and 0.0.34.** Its session transcripts never travel by git, so the spans listed in each carrier's `harvested_gaps` are there to be read, this release's carriers included. It pulls `v0.0.33` first.
+2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here. Start a session here with that, not with anything else: skipping two versions is the drift the queued candidate on a carrier only updating when a meta-session reaches it describes, and that this release measured in two carriers left on 0.0.25 and 0.0.26.
+3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which the four-stage flow of principle 21 is the skeleton; writing the full method is that release's work.
+
+**Decided after the cut,** in a review of the five reasons that still bind: five items queued (`i-5ed7e8-25ecc8`, `26a753`, `57358a`, `ee9f86`, `23e94e`), the product-noun check removed, a repository that is not active left out, and the carrier whose integration branch advanced re-adopting the bundle on that branch. The twenty-nine reasons an agent wrote under decisions the owner accepted wait for `i-5ed7e8-a98470`, which makes their count mean something.
+
+**What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit undone before anything left the machine. Two record slugs were written into the history table from memory and did not exist. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`, each with a roadmap item. One literature search reversed a candidate's conclusion, the process working. `changelog --since` was found answering silently for a version it no longer holds, and was fixed the same day (`i-5ed7e8-5e0415`).
+
+**To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
