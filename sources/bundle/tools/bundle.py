@@ -413,12 +413,22 @@ DOMAIN_NOUNS = (
     "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
     "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
     "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
-    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "merchant", "retail",
+    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "checkout", "merchant", "retail",
     "restaurant", "booking", "hotel", "flight", "dating", "social network")
 DOMAIN_NOUN = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in DOMAIN_NOUNS) + r")(?:e?s)?\b", re.IGNORECASE)
-# Where a noun names no domain (i-5ed7e8-b8c4b2): a unit after a number ("40 characters" wide), and the
-# engineering idiom. `checkout` is left out of the list: in a repository it is git's working copy.
-DOMAIN_NOUN_IDIOM = re.compile(r"(?:\d[\d.,]*\s*(?:-\s*)?$)|(?:\b(?:technical|tech)\s+$)", re.IGNORECASE)
+# Where a noun names no domain (i-5ed7e8-b8c4b2), each exception as narrow as the false positive it answers
+# (the 0.0.35 review found wider ones let real evidence through): characters as a unit of length after a
+# number, *technical debt*, and git's working copy (a main, local or fresh checkout).
+DOMAIN_NOUN_IDIOM = {
+    "character": re.compile(r"\d[\d.,]*\s*-?\s*$"),
+    "debt": re.compile(r"\b(?:technical|tech)\s+$", re.IGNORECASE),
+    "checkout": re.compile(r"\b(?:git|main|local|fresh|clean|working|sparse|own|repository's|repo's)\s+$", re.IGNORECASE),
+}
+
+
+def _idiom(text: str, m: re.Match) -> bool:
+    rule = DOMAIN_NOUN_IDIOM.get(re.sub(r"e?s$", "", m.group(0).lower()))
+    return bool(rule and rule.search(text[:m.start()]))
 
 # Names in code: `camelCase`, `PascalCase` with two humps or more, `snake_case`, `SCREAMING_CASE`.
 CODE_NAME_FORMS = (
@@ -445,7 +455,7 @@ BUNDLE_NAMES = frozenset({"forked_at", "retired_because", "superseded_by", "toke
 QUOTE = re.compile(r"\"([^\"\n]+)\"|“([^”\n]+)”")
 BLOCKQUOTE = re.compile(r"^\s*>\s+(.*\S)")
 # A large number, with or without thousands separators; years, dates, ids and decimals are not read.
-LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥{-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
+LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
 N_OF_M = re.compile(r"\b\d+\s+(?:of|out of)\s+(?:the\s+)?\d+\b")
 # A number that names a standard ("RFC 7396", "RFC 7396 / 6902") is not a count.
 STANDARD_NUMBER = re.compile(r"\b(?:RFC|ISO|IEC|IEEE|PEP)[\s-]*(?:\d+\s*/\s*)*$")
@@ -531,17 +541,19 @@ OWN_VERSION = re.compile(r"(?:^|[\s\"])v?0\.0\.\d+\"?$")
 NAMED_STANDARDS = re.compile(r"(?i)(?:semantic versioning|semver|keep a changelog|changelog|versioning)\s+v?\d+\.\d+\.\d+$")
 # A release number after the words a release is spoken of with: the bundle's next one, or the host's minimum.
 RELEASE_WORDS = re.compile(r"(?i)^(?:release[sd]?|requires?|cuts?|cutting|minor|major|patch|version|tag)\s+v?\d+\.\d+\.\d+$")
+# ...but only where no name stands before the word: a package name before *requires* and a version is a pin.
+RELEASE_SUBJECT = re.compile(r"(?i)(?:^|[(\[,;:.]|\b(?:the|a|an|this|that|its|it|next|first|last|each|every|our|home|bundle|which|and|or))\s*$")
 
 
 def _version_pins(text: str) -> list[str]:
     return [m.group(0) for m in VERSION_PIN.finditer(text)
             if not OWN_VERSION.search(m.group(0)) and not NAMED_STANDARDS.search(m.group(0))
-            and not RELEASE_WORDS.match(m.group(0))]
+            and not (RELEASE_WORDS.match(m.group(0)) and RELEASE_SUBJECT.search(text[:m.start()]))]
 
 
 def _ids_beside_domains(text: str) -> list[str]:
     ids = [m.group(0) for m in CARRIER_OR_RECORD_ID.finditer(text) if (m.group(1) or m.group(2)) not in EXAMPLE_ID_HEX]
-    nouns = [m.group(0) for m in DOMAIN_NOUN.finditer(text) if not DOMAIN_NOUN_IDIOM.search(text[:m.start()])]
+    nouns = [m.group(0) for m in DOMAIN_NOUN.finditer(text) if not _idiom(text, m)]
     return [f"{ids[0]} beside {nouns[0]!r}"] if ids and nouns else []
 
 
@@ -564,8 +576,11 @@ def _large_counts(text: str) -> list[str]:
             continue  # one significant figure: an order of magnitude, which is what the rule asks for
         if STANDARD_NUMBER.search(text[:m.start(1)]):
             continue  # a standard's number
-        if 7 <= len(digits) <= 40 and text[m.start(1) - 1 : m.start(1)] == "`" and text[m.end(1) : m.end(1) + 1] == "`":
+        if m.group(1).isdigit() and 7 <= len(digits) <= 40 and text[m.start(1) - 1 : m.start(1)] == "`" \
+                and text[m.end(1) : m.end(1) + 1] == "`":
             continue  # a commit hash that happens to hold digits only
+        if text[m.start(1) - 1 : m.start(1)] == "{" and text[m.end(1) : m.end(1) + 1] in ("}", ","):
+            continue  # a regular expression's repeat count
         found.append(m.group(1))
     return found
 
@@ -4818,8 +4833,8 @@ def usage_state_dir(repo):
     home = Path.home()
     if sys.platform == "win32":
         base = Path(os.environ.get("LOCALAPPDATA") or home / "AppData/Local")
-    elif os.environ.get("XDG_STATE_HOME"):
-        base = Path(os.environ["XDG_STATE_HOME"])
+    elif os.environ.get("XDG_STATE_HOME") and Path(os.environ["XDG_STATE_HOME"]).is_absolute():
+        base = Path(os.environ["XDG_STATE_HOME"])  # a relative one is ignored, as the XDG specification says
     else:
         base = home / ("Library/Application Support" if sys.platform == "darwin" else ".local/state")
     return base / "agent-guides" / (name if CARRIER_ID.match(name) else "_none")

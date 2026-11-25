@@ -648,19 +648,36 @@ class Privacy(Base):
         """i-5ed7e8-b8c4b2: eight false positives over three sessions, each worked around by rewording."""
         an_id = "d-5ed7e8-" + "2ca3ef"
         # a domain noun used as a unit after a number, the git word for a working copy, technical debt
-        self.assertEqual(B._ids_beside_domains(f"{an_id} took about 40 " + "songs of reading"), [])
+        self.assertEqual(B._ids_beside_domains(f"{an_id} took about 40 " + "characters of width"), [])
         self.assertEqual(B._ids_beside_domains(f"{an_id} left the main " + "checkout behind"), [])
         self.assertEqual(B._ids_beside_domains(f"{an_id} pays the technical " + "debt"), [])
         self.assertNotEqual(B._ids_beside_domains(f"{an_id} is the " + "music app"), [])
         self.assertNotEqual(B._ids_beside_domains(f"{an_id} sends the " + "debt reminders"), [])
         # a release number after release, requires or cuts is the bundle's, not a dependency pin
-        for said in ("the release ", "it requires ", "the session cuts ", "the next minor "):
+        for said in ("the release ", "it requires ", "the home cuts ", "the next minor ", "Release "):
             self.assertEqual(B._version_pins(said + "0.1" + ".0"), [], said)
         self.assertNotEqual(B._version_pins("requests " + "2.31" + ".0"), [])
         # a commit hash of digits only, and a regular expression's repeat count, are not counts
         self.assertEqual(B._large_counts("commit `" + "4815162" + "`"), [])
-        self.assertEqual(B._large_counts(r"a `\\d{" + "1000" + "}` repeat"), [])
         self.assertEqual(B._large_counts("it read " + "12,345" + " rows"), ["12,345"])
+
+    def test_the_review_of_the_false_positive_fixes_found_leaks_they_let_through(self) -> None:
+        """The isolated review of 0.0.35: each exception was wider than the false positive it answered."""
+        an_id = "d-5ed7e8-" + "2ca3ef"
+        for leak in ("serves 300 " + "patients", "moved 5 " + "payments", "a 12-" + "patient trial",
+                     "the high-tech " + "banking app", "tech " + "payment rails", "the " + "checkout flow"):
+            self.assertNotEqual(B._ids_beside_domains(f"{an_id} {leak}"), [], leak)
+        self.assertEqual(B._ids_beside_domains(f"{an_id} wraps at 80 " + "characters"), [])
+        for pin in ("django requires " + "4.2" + ".1", "Node version " + "18.17" + ".1",
+                    "stripe release " + "7.1" + ".0", "libfoo patch " + "1.2" + ".3"):
+            self.assertNotEqual(B._version_pins(pin), [], pin)
+        self.assertEqual(B._large_counts("it read `" + "1,234,567" + "` rows"), ["1,234,567"])
+        self.assertEqual(B._large_counts("{" + "48213" + " customers}"), ["48213"])
+        self.assertEqual(B._large_counts(r"a `\\d{" + "1234" + "}` repeat"), [])
+
+    def test_a_relative_state_home_is_ignored(self) -> None:
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": "rel/state"}), mock.patch.object(B.sys, "platform", "darwin"):
+            self.assertTrue(B.usage_state_dir(self.root).is_absolute())
 
     def test_an_allowance_inside_a_table_cell_is_read_when_backticks_follow(self) -> None:
         row = "| `a` | it held " + "privacy" + "-allow: the owner said so | `b` |"
@@ -1674,8 +1691,10 @@ class Decisions(Base):
 
     def test_split_row_is_table_cells_without_code_spans(self) -> None:
         """One parser: the tracking tables' reader differs from the decisions' only where a code span holds a pipe."""
-        for row in ("| a | b |", "| a \\| b | c |", "| a | |", "| a | b", "| a | b | ", "| x |"):
-            self.assertEqual(B.split_row(row), B.table_cells(row, code_spans=False))
+        expected = {"| a | b |": ["a", "b"], "| a \\| b | c |": ["a | b", "c"], "| a | |": ["a", ""],
+                    "| a | b": ["a", "b"], "| a | b | ": ["a", "b"], "| x |": ["x"], "| a | ": ["a"]}
+        for row, cells in expected.items():
+            self.assertEqual(B.split_row(row), cells, row)
         self.assertEqual(B.split_row("| a | `x | y` |"), ["a", "`x", "y`"])
         self.assertEqual(B.table_cells("| a | `x | y` |"), ["a", "`x | y`"])
 

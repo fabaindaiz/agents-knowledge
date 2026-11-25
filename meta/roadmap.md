@@ -99,6 +99,13 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
   Then 0.0.36 is checked against the first minor's criteria (`i-5ed7e8-3e6760`). *Collides with:* tasks 1 and 2
   write the same skills, so they run in that order, not at once; 5 and 6 share the template folder.
+- **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the
+  session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
+  ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own
+  prediction. What would: the host's command hook refuses a command that expands an unquoted variable holding
+  spaces where zsh is the shell, naming the fix (an argument vector, or `${=var}`), with a test of each form.
+  Received as `p-069d110c27`. *Estimate:* 30–45 min wall, 100k tokens, one review round. *Collides with:* the
+  privacy guard, the other command hook, which must keep running first.
 - **`i-5ed7e8-a3a0a1` · Private channels for what does not travel between machines: research, then a pilot.** The owner's
   note at `d-5ed7e8-5751b6`: the manifest, the private-terms list and the agent's local memory never travel
   through a public repository; which private channels could carry them (a private configuration repository, an
