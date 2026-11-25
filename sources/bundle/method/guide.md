@@ -11,19 +11,20 @@ order of magnitude). Both are estimates.
 ## The development flow, in order
 
 One change goes through these steps in this order; a small one skips what it does not need, and says which. Each
-step's improvements live in its own skill or file, not in an orchestrating one (`d-5ed7e8-cbb288`).
+step's improvements live in its own skill or file, not in an orchestrating one (`d-5ed7e8-cbb288`). The tables below
+say what each one does when started.
 
-| Step | Takes | Hands on | Closes when |
-|---|---|---|---|
-| 1. Idea | a request or a problem | a first design, or the reason to stop | the human agrees the design is the one to write down |
-| 2. Spec | the design | the spec: goal, non-goals, acceptance criteria, each true or false, and its open decisions | every criterion can be checked by a test or a command |
-| 3. Decisions | the spec's open decisions | each one answered and recorded as a decision row; the agent's own marked unconfirmed | no `proposed` row the plan depends on is left |
-| 4. User flow, when a person goes through one | the flow | the ideal path and every setback, the kept ones as failing tests | each kept case has its test |
-| 5. Plan | the decisions | tasks, each with its test, its estimate in wall minutes, tokens and rounds, its collisions, and the criteria it serves | each criterion maps to a task and each task to a criterion |
-| 6. The plan's fresh read | the plan, read by an agent that did not write it | findings on order, gaps and estimates | its findings fixed or answered, before the first task |
-| 7. Execution | one task at a time | a commit per task on the gate, its actual beside its estimate | the task's test fails before and passes after, and the gate is green |
-| 8. Review | each task's diff, then the whole branch | findings by severity, fixed, re-reviewed | a round finds only low findings, or five rounds ran and the human decided |
-| 9. Close | the session | every part of the request accounted for, the log entry, the hand-off, the push when asked | `bundle.py close` passes and the hand-off works from another machine |
+| Step | Start with | Takes | Hands on | Closes when |
+|---|---|---|---|---|
+| 1. Idea | a brainstorming skill, if installed | a request or a problem | a first design, or the reason to stop | the human chooses to write it down |
+| 2. Spec, for a change worth one | a spec skill or the repository's format | the design | goal, acceptance criteria each true or false, open decisions | each criterion names how it is checked |
+| 3. Decisions | `/decision-review` | the open decisions | each answered and recorded, the agent's own marked unconfirmed | the human confirmed the final list and no `proposed` row the plan needs is left |
+| 4. User flow, when a person goes through one; before or between 3 | `/user-walk` | the flow | the ideal path and every setback, the kept ones as failing tests | each kept case has its test |
+| 5. Plan | a planning skill, or the repository's plan format | the decisions | tasks with their tests; for several, criteria mapped both ways; for a large one, estimates in wall minutes, tokens and rounds | each criterion maps to a task and each task to a criterion |
+| 6. The plan's fresh read, for a large plan | a fresh-context agent given the plan and the code | the plan | findings on order, gaps, collisions and estimates | each finding fixed or answered, before the first task |
+| 7. Execution | "test first" | one task at a time | a commit per task on the gate, its actual beside its estimate | the task's test failed before and passes after, and the gate is green |
+| 8. Review, when asked or accepted | "review it in a fresh context" | each task's diff, then the whole branch | findings by severity, fixed, re-reviewed | a round finds only low findings, or five ran and the human decided |
+| 9. Close | `/close` | the session | every part of the request accounted for, the log entry, the hand-off, the push when asked | `bundle.py close` passes, the close's judgement steps are done, and the hand-off works from another machine |
 
 ## Decide and design
 
