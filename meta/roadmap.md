@@ -21,8 +21,9 @@ something else depends on — because that is what decides its order.
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
 **State on 2026-11-25, a pause asked by the owner in the middle of 0.0.35's splice.** 0.0.35 is cut and tagged
-`v0.0.35` here (`06f8d86`) and in the template (`5aab920`, on its own branch), **neither pushed**: the owner has not
-asked for this push. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
+`v0.0.35` here (`53c57ae`) and in the template (`01ce79b`, on its own branch). It was **cut twice**: an isolated review
+at the close found the first cut's privacy exceptions too wide, and since its tag had reached no remote, the owner
+chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
 `d-5ed7e8-5dc49a`), two research documents and the 0.0.36 plan (`i-5ed7e8-516d7a`).
 
 **What 0.0.35 is.** A patch: a harvest's notes take fixed sections and list frontiers first; the shell case on the
@@ -32,7 +33,8 @@ positives; the usage folder honours `XDG_STATE_HOME`.
 **The splice, stopped mid-way.** Three delegates were splicing it into sixteen carriers when the owner paused; they
 were stopped and their gates killed. Every worktree, and the backups, were moved out of the temporary folder to this
 machine's durable state folder (`~/.local/state/agent-guides/wt35/` and `backup35/`), branch
-`chore/agent-guides-0.0.35` in each. **Three are committed** with their gate green. **Thirteen are spliced and
+`chore/agent-guides-0.0.35` in each. All sixteen hold the second cut and verify. **Three were committed** on the first cut with their gate green, and now
+carry the second cut uncommitted on top: re-run their gate and amend. **Thirteen are spliced and
 uncommitted**: their changelog entry may or may not be written and their gate did not finish — re-run each one's
 gate there and commit, or remove the worktree and splice again; the splice is deterministic from the tag. One of
 the thirteen jumps from 0.0.32 and its gate is red before any splice (`i-5ed7e8-88cd88`): leave it uncommitted. An
@@ -42,18 +44,16 @@ is `backup35/carriers.toml.bak`: restore it if `register` writes worktree paths 
 **Next, in order.**
 1. **Finish the splice**: per worktree, the steps of `prompt-sync.md` Phase 2 from step 4, then `register` and
    `align` (Phase 3). Two carriers' 0.0.34 harvest branches are still only local, waiting on the owner's push.
-2. **The push of the home and its tag, and the template's**, when the owner asks.
+2. Pushed at this close: the home's `main` and its tag, and the template's, at the owner's word.
 3. **The 0.0.36 plan** (`i-5ed7e8-516d7a`), task by task, then the first minor's criteria.
 4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
 
-**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`); the pushes;
-the private-channel research (`i-5ed7e8-a3a0a1`).
+**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`); the
+private-channel research (`i-5ed7e8-a3a0a1`). A zsh guard is priced (`i-5ed7e8-4cf7df`), third incident.
 
-**Delegation pairs this session** (estimate, then actual): a carrier study, 40–60 min and 150k tokens, ran about
-10 min and 276k; the documentation research, 30–45 min and 120k, ran about 4 min and 112k; the splice delegates,
-20–45 min each, were still running at about 45 min when stopped.
+**Delegation pairs this session** are in the session log's entry (*Measured*).
 
-**To continue on another machine:** `git pull --tags` once pushed; the worktrees live only on this machine.
+**To continue on another machine:** `git pull --tags`; the carriers' worktrees live only on this machine.
 
 ## Standing rules and facts
 
