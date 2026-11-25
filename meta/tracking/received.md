@@ -761,3 +761,4 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-a4af960922` | 0.0.34 | another occurrence of `report-coverage-before-findings`, to merge |
 | `p-b865300e6b` | 0.0.34 | another occurrence of `index-unread-where-rules-absorbed-it`, to merge |
 | `p-c6083df1c2` | 0.0.34 | another occurrence of `explain-a-term-before-asking-about-it`, to merge |
+| `p-e11b709c71` | 0.0.34 | another occurrence of `two-rules-of-one-repository-can-collide`, to merge |

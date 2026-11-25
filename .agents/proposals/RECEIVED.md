@@ -664,6 +664,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-dff3130647` | 0.0.27 | — |
 | `p-e04018b710` | 0.0.34 | another occurrence of `a-confirmation-needs-a-terminal`, to merge |
 | `p-e0ce4d142d` | 0.0.27 | — |
+| `p-e11b709c71` | 0.0.34 | another occurrence of `two-rules-of-one-repository-can-collide`, to merge |
 | `p-e12eb75ad2` | 0.0.33 | queued as `a-retained-value-has-no-arrival-time` |
 | `p-e191a3b34f` | 0.0.27 | — |
 | `p-e218306b8a` | 0.0.34 | another occurrence of `reproduce-the-checkout-not-only-the-environment`, to merge |

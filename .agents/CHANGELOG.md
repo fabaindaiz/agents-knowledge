@@ -14,9 +14,9 @@ version it holds with `bundle.py changelog --since <its version>`.
 called that check, or copied its list, remove the call: nothing replaces it. Generality stays a person's
 judgement when a note is admitted, and a leak of a private name stays the privacy check's.
 
-**What this release is.** A harvest patch with five tool fixes the harvest itself asked for. 89 proposals were
+**What this release is.** A harvest patch with six tool fixes the harvest itself asked for. 90 proposals were
 taken in from the home and the carriers one machine holds: 15 entered the queue as new candidates, 3 were
-experiment runs, and 71 were occurrences of something already written: 51 added to 41 queued candidates, 17
+experiment runs, and 72 were occurrences of something already written: 52 added to 41 queued candidates, 17
 to 11 notes, and 3 to rows already answered in the history.
 Every carrier here belongs to one owner, so the counts are one source; where a rule written by a second person
 of a shared repository arrived, its row says so and nothing was admitted on it.
@@ -57,6 +57,8 @@ of a shared repository arrived, its row says so and nothing was admitted on it.
 
 - **`bundle.py turns` redacts credential shapes**, in the human's turns and in the `--context` lines: a harvest
   copies what it prints into scratch files a delegate reads, and once a live token was copied that way.
+- **`bundle.py turns` shows a `!` command as one the human ran in the shell, and drops its output**, which it
+  printed as a second human turn, and which can name a remote or a path.
 - **`bundle.py decisions` reads a legacy id split with a letter** (`D-022b`). About a twentieth of one log's
   rows were skipped in silence, their status and supersession never checked.
 - **`bundle.py usage` leaves a `.gitignore` holding `*` beside its state folder**, so a home folder kept as a

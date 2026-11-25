@@ -706,6 +706,20 @@ class Turns(Base):
         self.assertIn("for the call", text)
         self.assertIn("the token you asked for", text)
 
+    def test_a_shell_escape_is_shown_as_a_command_and_its_output_is_dropped(self) -> None:
+        # 0.0.34: a `!` command and its output printed as two human turns, and the output carried a remote's address.
+        folder = self.root / "projects/shell"
+        _transcript(folder, "dddddddd-4444", [
+            _user("2026-03-04T09:00:00.000Z", "<bash-input>git push origin topic</bash-input>"),
+            _user("2026-03-04T09:00:01.000Z", "<bash-stdout>To host.example:someone/private-thing.git\n  a..b  topic</bash-stdout><bash-stderr></bash-stderr>"),
+        ])
+
+        text = "\n".join(B.turns_report([folder]))
+
+        self.assertIn("ran in the shell: git push origin topic", text)
+        self.assertNotIn("private-thing", text)
+        self.assertNotIn("human: <bash", text)
+
     def test_the_command_prints_them(self) -> None:
         folder = self.sessions()
 

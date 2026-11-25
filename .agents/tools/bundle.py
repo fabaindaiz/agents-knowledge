@@ -4437,6 +4437,11 @@ def read_turns(path: Path, since: str = "", context: bool = False) -> list[tuple
                     found.append(f"- {stamp} command: {command.group(1)}" + (f" {_short(args.group(1))}" if args and args.group(1).strip() else ""))
                 elif text.startswith("[Request interrupted"):
                     found.append(f"- {stamp} interrupted the assistant")
+                elif text.startswith("<bash-input>"):
+                    shell = re.search(r"<bash-input>(.*?)</bash-input>", text, re.DOTALL)
+                    found.append(f"- {stamp} ran in the shell: {_short(shell.group(1) if shell else text)}")
+                elif text.startswith(("<bash-stdout>", "<bash-stderr>")):
+                    pass
                 elif text and not text.startswith(TRANSCRIPT_NOISE):
                     if context and last:
                         found.append(f"  (after the assistant said: {_short(last, 300)!r})")
