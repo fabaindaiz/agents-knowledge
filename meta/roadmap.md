@@ -21,7 +21,7 @@ something else depends on — because that is what decides its order.
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
 **State on 2026-11-25, a pause asked by the owner in the middle of 0.0.35's splice.** 0.0.35 is cut and tagged
-`v0.0.35` here (`53c57ae`) and in the template (`01ce79b`, on its own branch). It was **cut twice**: an isolated review
+`v0.0.35` here (`fced8e3`) and in the template (`01ce79b`, on its own branch). It was **cut twice**: an isolated review
 at the close found the first cut's privacy exceptions too wide, and since its tag had reached no remote, the owner
 chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
 `d-5ed7e8-5dc49a`), two research documents and the 0.0.36 plan (`i-5ed7e8-516d7a`).
