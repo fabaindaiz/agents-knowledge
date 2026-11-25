@@ -1154,3 +1154,25 @@ class ShippedTool(Base):
         R = release()
         src = '#!/usr/bin/env python3\n# whole line\nx = "# not a comment"  # a comment\n\ny = 1\n'
         self.assertEqual(R.strip_comments(src), '#!/usr/bin/env python3\nx = "# not a comment"\n\ny = 1\n')
+
+
+class UnattendedRule(Base):
+    """Both built prompts carry the shared unattended rule in their pre-flight, with every choice it may never take."""
+
+    ROOT = Path(__file__).resolve().parents[2]
+    NEVER = ("a privacy warning or allowance", "step 3's candidate list", "a delete outside an approved table",
+             "a merge or push")
+
+    def test_the_harvest_and_the_update_state_the_unattended_rule_before_they_start(self) -> None:
+        for name in ("prompt-harvest.md", "prompt-update.md"):
+            text = (self.ROOT / ".agents/method" / name).read_text(encoding="utf-8")
+            start = text.index("\n## Before you start")
+            end = text.find("\n## ", start + 1)
+            preflight = " ".join(text[start:end if end != -1 else None].split())
+            with self.subTest(prompt=name):
+                self.assertIn("**Unattended run (no one to answer).**", preflight)
+                self.assertIn("`unattended: <question> -> <default>`", preflight)
+                self.assertIn("Never take a choice that needs the human's yes", preflight)
+                for choice in self.NEVER:
+                    self.assertIn(choice, preflight)
+                self.assertIn("Record it as pending and leave it unwritten. Stop rules still stop.", preflight)

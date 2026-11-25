@@ -346,10 +346,8 @@ line in its header; otherwise the step has no slot and quietly stops. **Keep the
 repository's linters, formatters and ratchets, which would count its tool as new
 violations the moment it is committed, and where an editor's permission rules
 cannot deny a folder while allowing files inside it, list the release's paths
-from `SHA256SUMS` instead. Mint the repository's carrier id once with
-`bundle.py carrier-id --mint`, which creates `.agents/carrier.toml`, and seed
-the decisions log, the roadmap and the changelog with ids from `bundle.py id
-d|i|s TEXT` (`prompt-context.md` §*Workspaces: several repositories at once*).
+from `SHA256SUMS` instead. The carrier id and the records' ids are minted as
+the opening block says.
 
 ### Phase 5 — Make the rules executable
 

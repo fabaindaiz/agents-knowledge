@@ -21,7 +21,6 @@ read only this:
 
 Reads:
 - method/prompt-harvest.md
-- method/prompt-bootstrap.md §8. The closing review — return what the session learned
 - method/prompt-context.md §20. Nothing private travels, directly or by reconstruction
 - knowledge/README.md
 - knowledge/INDEX.md
@@ -42,7 +41,7 @@ check `.agents/knowledge/OPEN.md` for what the home is
 already waiting for, and write what it learned that the bundle does not know —
 **as proposals, one per learning, written with `bundle.py propose` into
 `.agents/proposals/`, and nowhere else in `.agents/`** except `harvested_through`,
-which moves to the last date read, and `harvested_gaps`, which lists any earlier span left unread. `bundle.py proposals` lists the ones already
+which moves to the last date whose records were read, and `harvested_gaps`, which lists any earlier span left unread. `bundle.py proposals` lists the ones already
 written. Every other file there belongs to the release; a note edited here is a
 fork of it.
 
@@ -73,6 +72,11 @@ waits for the next release.
 ## Before you start — ask these
 
 **Ask all of them in one message, then stop.**
+
+**Unattended run (no one to answer).** Say so first, take every proposed default, and write each one taken
+as `unattended: <question> -> <default>` at the head of the report and in the log entry. Never take a choice
+that needs the human's yes: a privacy warning or allowance, step 3's candidate list, a delete outside an
+approved table, a merge or push. Record it as pending and leave it unwritten. Stop rules still stop.
 
 ~~~text
 Before I harvest this repository, four things — reply `defaults` to take them
@@ -128,9 +132,10 @@ the second occurrence admission asks for; a carrier that is not open is named in
 harvested, never reached into.
 
 **Before the first carrier is read, list every carrier's frontier** — `harvested_through`, its
-`harvested_gaps`, and any branch holding a later harvest (`release.py gather` names one) — and call the harvest
+`harvested_gaps`, and any branch holding a later harvest (from the home, `release.py gather` names one; in a carrier,
+`git show BRANCH:.agents/carrier.toml` for each branch ahead of the current one) — and call the harvest
 complete only when each has been read to today or named as not reachable. A carrier missed in the first pass is
-found by that list, not by memory (0.0.34: one was found only this way).
+found by that list, not by memory.
 
 ## The working notes: fixed sections, set before reading
 
@@ -213,7 +218,8 @@ session without being told: the uncommitted diff is their work.
    nothing found is written as "none known".
 3. **Show the candidate list before writing it, in one message**, and let the human pick. Where this
    repository's pass is a delegated agent with no human on the other end, the list goes back in its
-   report and the proposals wait for the session that can show it. Only they can
+   report and the proposals wait for the session that can show it; its refusals wait too, named in the
+   report. Only they can
    tell their own one-off instruction from their own rule: an agent reading a record sees both as
    sentences the human said. Each line is the slug, the claim in one sentence, and what it lacks; the
    human's own reason, given while picking, is better evidence than a reconstruction of it, and goes into
@@ -235,8 +241,7 @@ session without being told: the uncommitted diff is their work.
    names what it extends (`--action extends --target <slug>`) and carries the evidence. A learning that
    is near a listed candidate without being the same one is offered with `--action overlaps --target <its
    slug>`, saying in the claim where the two part; every candidate carries a slug, so the slug joins them
-   and no quote of the candidate's words is needed (0.0.34: the quotes were the privacy check's most common
-   warning on a proposal, and joined nothing the slug did not). A claim a
+   and no quote of the candidate's words is needed. A claim a
    measurement here contradicts is a proposal of kind `experiment` with the verdict — *confirms*,
    *moves the boundary* or *falsifies*.
 6. **Run the cheap queued experiments** from `knowledge/OPEN.md` that this repository can answer, and
@@ -248,23 +253,24 @@ session without being told: the uncommitted diff is their work.
 7. **Friction that belongs to this repository** — a command that is awkward here, a check this host
    needs — goes in **this repository's** roadmap. Only the part that is true of any repository is a
    method candidate.
-8. **Check and commit**: set `harvested_through` in `carrier.toml` to the last date read, **and when the
+8. **Check and commit**: set `harvested_through` in `carrier.toml` to the last date whose records were read, **and when the
    human narrowed the period, write the span you did not read in `harvested_gaps`** (`YYYY-MM-DD..YYYY-MM-DD`,
    earliest first). **Where a span was read from some sources and not others** — the records read, the
    session transcripts not on this machine — write it with the sources missing after a colon
-   (`2026-10-15..2026-11-24: transcripts`), so the next machine that holds them knows what it owes and a reader
+   (`2026-10-15..2026-11-24: transcripts`; a span whose transcripts were not read is always written so), so the next machine that holds them knows what it owes and a reader
    does not take the whole span for unread. A span with no such name was not read at all, and `verify` refuses
    one that reaches `harvested_through`: move the frontier back to the last day read instead. A single frontier
    cannot say "read to here, except that" — moving it discards the gap in
    silence, leaving it reads the recent work again — and a note in the repository's own roadmap is the one
    place the next harvest is not sent. The next harvest reads the gaps before fixing its period, and the
    home's `gather` reports them. Then
-   `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local .` pass; then one commit in this
+   `bundle.py new entry "harvest" --write` writes the harvest's own log entry, unless this repository's rules say
+   a harvest writes none; then `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local .` pass; then one commit in this
    repository's own style, under its own commit rules and bar: offered and left to the user where those
    rules say so. An allowance the privacy check lists exists only because the user asked for
    it. A proposal is never edited: if one is wrong, delete it before it is committed, or write a second
-   one that says what the first got wrong. An outbox from 0.0.22 or 0.0.23 still in `tracking/` is
-   converted first, with `bundle.py proposals --from-outbox`.
+   one that says what the first got wrong. An outbox from 0.0.22 or 0.0.23 still in `tracking/` is named by
+   `bundle.py verify`: run it before Phase 1, and convert what it names first, with `bundle.py proposals --from-outbox`.
 8. **Report**, per repository: what was found, what was refused and the reason for each, what
    experiments ran and what they showed, and what now waits for the next release — plus, once, the
    carriers that were not open here and so were not harvested.
@@ -292,5 +298,6 @@ session without being told: the uncommitted diff is their work.
 - **Never harvest over an unclosed session in silence.** Either it is closed first, or what was left
   out is named in the report. A harvest that quietly misses the last week's work will be trusted.
 - **Never leave a refusal unwritten.** A learning that did not pass the generality test is a proposal
-  with `--lacks "refused: <reason>"`, and is named in the report: the home records it in its
+  with `--lacks "refused: <reason>"`, written once step 3's list is shown (a delegated agent reports it instead),
+  and is named in the report: the home records it in its
   history, and `knowledge/OPEN.md` lists it among the answered, so no later harvest offers it again.

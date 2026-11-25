@@ -9,6 +9,19 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Changed
+
+- **The harvest and the update, followable unattended** (criterion 2 of the first minor, `i-5ed7e8-b9628b`): both
+  open with a rule for a run with no one to answer (each default taken written as `unattended: …`, never a choice
+  that needs the owner's yes), and the eleven gaps two copy runs found are closed: a delegated harvest's refusals,
+  how to see an old outbox and a later harvest on a branch, the frontier when only records were read, the harvest's
+  own log entry; the update's export from any tree that holds the release, the live procedure followed, the
+  decisions migration's two steps, the wiring lines read only when needed, the entry's id, a host without an agent
+  folder.
+- **The update's harvest runs in a session of its own** (`d-5ed7e8-87d7b9`), and a carrier's own audit no longer
+  re-checks the release's index and cards, which `verify` covers (`d-5ed7e8-1d9ff1`); the update and harvest read
+  less (`i-5ed7e8-0ae753`).
+
 ## [0.0.36] - 2026-11-25
 
 **What a carrier runs at this update: `install-skills`, for the new `edit-docs` skill.** The method gains the
