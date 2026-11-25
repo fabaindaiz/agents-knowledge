@@ -92,6 +92,20 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
   Then 0.0.36 is checked against the first minor's criteria (`i-5ed7e8-3e6760`). *Collides with:* tasks 1 and 2
   write the same skills, so they run in that order, not at once; 5, 6 and 9 share the template folder; 9 follows 4.
+- **`i-5ed7e8-b9628b` · The harvest and update texts leave steps an agent guesses: criterion 2 of the first minor, run on copies.**
+  On 2026-11-25 two agents ran a harvest and an update on disposable copies of two carriers, from `prompt-harvest.md`
+  and `prompt-update.md` alone; both ended with `verify` passing and nothing of the carrier's own lost, but the
+  harvest guessed about ten steps and the update about twelve. About half come from having no one to ask; the text has
+  no rule for an unattended run (take the defaults and say so). The rest are gaps. *Harvest:* step 3 says a delegated
+  agent writes nothing, while the last rule says never leave a refusal unwritten; no way to tell an old outbox is
+  there; no carrier-side way to find a branch holding a later harvest (`gather` is the home's); "the last date read"
+  when only the records were read; whether a harvest writes a log entry. *Update:* how the release reaches
+  `incoming/` when no home is at hand; whether the live or the incoming procedure is followed; step 4 points at
+  `prompt-harvest.md`, which its `Reads:` omits; the decisions migration needs `--migrate --write` and says nothing of
+  a log's "open" section; the root-file lines "Phase 4 names" live in another document; `new entry` and `id s` mint
+  different ids; nothing for a host other than Claude Code. The owner chose to record them and cut 0.0.36
+  (`d-5ed7e8-e09f5f`). *Estimate:* the text fixes 45 min wall, 150k tokens, one round; the re-run on fresh copies
+  30 min, 250k tokens. *Collides with:* the update and harvest sessions' token budgets.
 - **`i-5ed7e8-468621` · A fix's test written beside it, so its red is never seen: three incidents in one session.**
   In the 0.0.36 plan's review rounds, three fixes went in with their test in the same command, so the test was never
   seen failing, against §18's "say which red each test showed"; the roadmap's plan table names each. The sentence

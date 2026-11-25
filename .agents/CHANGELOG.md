@@ -9,6 +9,16 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+## [0.0.36] - 2026-11-25
+
+**What a carrier runs at this update: `install-skills`, for the new `edit-docs` skill.** The method gains the
+development flow as one map, review by severity, estimates in measured units and templates for a spec, a plan and
+its page; the tools gain `spec`, `docs`, `plan page`, `machine` and `usage measure`; the carrying tools are fixed so a
+splice, an intake or an export never loses or doubles a carrier's record. A carrier that copied the old plan or close
+skill text by hand reads *Changed*. Still a patch: criteria 2 and 3 of the first minor are not met (2 was run on
+copies and its gaps recorded) and 1 is unproven; 5's adversarial review ran, and every finding that lost or doubled a
+record is fixed below.
+
 ### Added
 
 - **The development flow, as one map** (`d-5ed7e8-cbb288`): `guide.md` lists idea, spec, decisions, user flow, plan,
