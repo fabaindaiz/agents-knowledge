@@ -9,6 +9,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+### Added
+
+- **The development flow, as one map** (`d-5ed7e8-cbb288`): `guide.md` lists idea, spec, decisions, user flow, plan,
+  the plan's fresh read, execution, review and close, each with what it takes, what it hands on and the check that
+  closes it. Each step's improvements stay inside its own skill; there is no orchestrating skill.
+
 ### Changed
 
 - **A review's rounds end by severity, not by count** (`d-5ed7e8-6db1f7`): another round runs while the last found

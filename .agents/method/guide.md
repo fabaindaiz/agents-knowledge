@@ -9,6 +9,23 @@ that block yourself always works. Not sure which one fits? Ask what to do next, 
 **Cost** is what it takes from you (turns or minutes of your attention) · what it takes from the model (tokens, by
 order of magnitude). Both are estimates.
 
+## The development flow, in order
+
+One change goes through these steps in this order; a small one skips what it does not need, and says which. Each
+step's improvements live in its own skill or file, not in an orchestrating one (`d-5ed7e8-cbb288`).
+
+| Step | Takes | Hands on | Closes when |
+|---|---|---|---|
+| 1. Idea | a request or a problem | a first design, or the reason to stop | the human agrees the design is the one to write down |
+| 2. Spec | the design | the spec: goal, non-goals, acceptance criteria, each true or false, and its open decisions | every criterion can be checked by a test or a command |
+| 3. Decisions | the spec's open decisions | each one answered and recorded as a decision row; the agent's own marked unconfirmed | no `proposed` row the plan depends on is left |
+| 4. User flow, when a person goes through one | the flow | the ideal path and every setback, the kept ones as failing tests | each kept case has its test |
+| 5. Plan | the decisions | tasks, each with its test, its estimate in wall minutes, tokens and rounds, its collisions, and the criteria it serves | each criterion maps to a task and each task to a criterion |
+| 6. The plan's fresh read | the plan, read by an agent that did not write it | findings on order, gaps and estimates | its findings fixed or answered, before the first task |
+| 7. Execution | one task at a time | a commit per task on the gate, its actual beside its estimate | the task's test fails before and passes after, and the gate is green |
+| 8. Review | each task's diff, then the whole branch | findings by severity, fixed, re-reviewed | a round finds only low findings, or five rounds ran and the human decided |
+| 9. Close | the session | every part of the request accounted for, the log entry, the hand-off, the push when asked | `bundle.py close` passes and the hand-off works from another machine |
+
 ## Decide and design
 
 | When | Say, or run | What happens | Cost |
