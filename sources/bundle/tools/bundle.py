@@ -4012,21 +4012,19 @@ def docs_fingerprint(text: str) -> dict[str, Counter]:
     flat = re.sub(r"\s+", " ", words)
     placed = [f"{word} in sentence {i}" for i, s in enumerate(re.split(r"(?<=[.!?])\s+|\n\s*\n", words), 1)
               for word in DOCS_CAPS.findall(s)]
-    chains, current, gap = [], [], False
-    for line in lines:  # one chain per list; a step is known by its first three words, so a copy edit is no reorder
-        m = re.match(r"^(\s*)\d+[.)]\s+(.*)", line)
+    chains, current = [], []
+    for line in lines:  # one chain per list, blank lines inside it kept (a loose list); a list restarting at 1 or
+        # a paragraph ends it; a step is known by its first three words, so a copy edit is no reorder
+        m = re.match(r"^(\s*)(\d+)[.)]\s+(.*)", line)
         if m and not m.group(1):
-            if gap and current:
+            if m.group(2) == "1" and current:
                 chains.append(current)
                 current = []
-            current.append(" ".join(re.findall(r"\w+", m.group(2).lower())[:3]))
-            gap = False
-        elif not line.strip():
-            gap = True
-        elif not line.startswith((" ", "\t")):
+            current.append(" ".join(re.findall(r"\w+", m.group(3).lower())[:3]))
+        elif line.strip() and not line.startswith((" ", "\t")):
             if current:
                 chains.append(current)
-            current, gap = [], False
+            current = []
     if current:
         chains.append(current)
     links = [m.group(3) for line in prose for m in DOCS_LINK.finditer(line)]

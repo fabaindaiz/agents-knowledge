@@ -3617,6 +3617,10 @@ Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-11111
             (self.root / "old.md").write_text(base)
             (self.root / "new.md").write_text(new)
             self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], code_wanted, new)
+        loose = "# T\n\n1. Alpha beta gamma.\n\n2. Delta eps zeta.\n\n3. Eta theta iota.\n"
+        (self.root / "old.md").write_text(loose)
+        (self.root / "new.md").write_text(loose.replace("Alpha beta gamma", "@").replace("Eta theta iota", "Alpha beta gamma").replace("@", "Eta theta iota"))
+        self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 1)
 
     def test_a_large_shrink_is_a_warning(self) -> None:
         code, out = self.compare(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
