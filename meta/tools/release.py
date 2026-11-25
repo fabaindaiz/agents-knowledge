@@ -959,6 +959,7 @@ DESCRIPTIONS_CAP = 2_776  # chars of the skill and agent descriptions a carrier 
 # on request need not (the descriptions' caps by kind, in meta/decisions.md).
 DESCRIPTION_KIND_CAPS = {"long process": 750, "light skill": 250, "agent on request": 250, "delegated agent": 200}
 DESCRIPTION_KINDS = {"close": "long process", "decision-review": "long process", "user-walk": "long process",
+                     "edit-docs": "long process",
                      "next": "light skill", "knowledge-reviewer": "agent on request", "researcher": "delegated agent"}
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 

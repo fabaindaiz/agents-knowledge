@@ -3512,3 +3512,86 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         for slot in ("{{title}}", "{{lead}}", "{{body}}"):
             self.assertIn(slot, html)
         self.assertIn("prefers-color-scheme: dark", html)
+
+
+class DocsFingerprint(Base):
+    """`bundle.py docs fingerprint`: what an edit must keep, compared before and after."""
+
+    OLD = """# Title
+
+The tool MUST write a checksum, and it should not write twice. It runs only at least 3 times, never after 5 s.
+
+```sh
+make check
+```
+
+Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-111111`, version 1.2.3.
+"""
+
+    def compare(self, new: str) -> tuple[int, str]:
+        (self.root / "old.md").write_text(self.OLD)
+        (self.root / "new.md").write_text(new)
+        return run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))
+
+    def test_a_wording_change_that_keeps_every_fact_passes(self) -> None:
+        code, out = self.compare(self.OLD.replace("and it should not write twice", "and it should not write it twice"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("nothing that carries meaning changed", out)
+
+    def test_each_meaning_bearing_change_is_named(self) -> None:
+        for edit, why in [(("MUST", "should"), "MUST"), (("should not", "must not"), "must"), (("only ", ""), "only"),
+                          (("never", "rarely"), "never"), (("5 s", "10 s"), "10 s"), (("make check", "make test"), "code block"),
+                          (("`bundle.py verify`", "`bundle.py check`"), "bundle.py check"), (("(notes.md)", "(other.md)"), "other.md"),
+                          (("d-aaaaaa-111111", "d-aaaaaa-222222"), "d-aaaaaa-222222"), (("1.2.3", "1.2.4"), "1.2.4"),
+                          (("# Title", "# Another"), "heading")]:
+            code, out = self.compare(self.OLD.replace(*edit))
+            self.assertEqual(code, 1, why)
+            self.assertIn(why, out, why)
+
+    def test_a_large_shrink_is_a_warning(self) -> None:
+        code, out = self.compare(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
+        (self.root / "old.md").write_text(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
+        (self.root / "new.md").write_text(self.OLD)
+        code, out = run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("shorter", out)
+
+    def test_a_revision_of_a_tracked_file_is_the_before(self) -> None:
+        repo = self.root / "repo"
+        init_repo(repo)
+        (repo / "doc.md").write_text(self.OLD)
+        commit(repo, "docs: a doc")
+        (repo / "doc.md").write_text(self.OLD.replace("MUST", "should"))
+        code, out = run("docs", "fingerprint", "--rev", "HEAD", str(repo / "doc.md"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("MUST", out)
+
+
+class DocsLint(Base):
+    """`bundle.py docs lint`: the mechanical rules, no dependency."""
+
+    def lint(self, text: str, name: str = "doc.md") -> tuple[int, str]:
+        (self.root / name).write_text(text)
+        (self.root / "other.md").write_text("# Other\n\n## A part\n")
+        return run("docs", "lint", str(self.root / name))
+
+    def test_a_clean_document_passes(self) -> None:
+        code, out = self.lint("# Title\n\nText with [the guide](other.md#a-part) and ![a diagram](other.md).\n\n## Next\n\nMore.\n")
+        self.assertEqual(code, 0, out)
+
+    def test_each_mechanical_fault_is_named(self) -> None:
+        for text, why in [("# A\n\n# B\n", "one level-1"), ("# A\n\n### C\n", "skips"), ("# A\n\n## \n", "empty heading"),
+                          ("# A\n\n## Part.\n", "punctuation"), ("# A\n\n![](x.png)\n", "alt text"),
+                          ("# A\n\nSee [click here](other.md).\n", "click here"), ("# A\n\n[x](missing.md)\n", "missing.md"),
+                          ("# A\n\n[x](other.md#nowhere)\n", "#nowhere"), ("# A\n\n[x](#nowhere)\n", "#nowhere"),
+                          ("# A\n\n[same](other.md) and [same](doc.md)\n", "same text"), ("# A\n\ntrailing  \n", "trailing")]:
+            code, out = self.lint(text)
+            self.assertEqual(code, 1, why)
+            self.assertIn(why, out, why)
+
+    def test_warnings_do_not_fail_and_fenced_text_is_not_read(self) -> None:
+        code, out = self.lint("# A\n\n```\n# not a heading\n[x](missing.md)\n```\n\nSee https://example.org and so on, etc.\n")
+        self.assertEqual(code, 0, out)
+        self.assertIn("language", out)
+        self.assertIn("bare URL", out)
+        self.assertIn("etc.", out)

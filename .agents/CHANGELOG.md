@@ -36,6 +36,13 @@ version it holds with `bundle.py changelog --since <its version>`.
   given twice, a requirement with no *shall*, decision or scenario, a decision in no row, a broken link, an open
   `[NEEDS CLARIFICATION: …]` (which blocks the plan), and with `--plan` a requirement no task cites; a vague quality
   with no number is a warning.
+- **The `edit-docs` skill, and `bundle.py docs`** (`d-5ed7e8-3a85e8`): documentation is improved level by level
+  (inventory, a read-only audit, structure, style, copy, mechanics, verification, report), each level its own
+  commit; it never changes meaning, drops a constraint, adds a fact or edits a frozen text. `docs lint FILE...`
+  checks headings, links and anchors, alt text, link text and whitespace; `docs fingerprint OLD NEW` (or `--rev REV
+  FILE`) compares normative words, negations and quantifiers, numbers, code, links, headings and record ids before
+  and after, and warns on a large shrink. Standard library only; building or showing documentation may need more.
+  Install it with `bundle.py install-skills`.
 - **The plan page** (`d-5ed7e8-09facc`): `method/templates/plan.md` fixes a plan's sections (the question now, where
   we are, device runs, milestones, running now, the owner's, the task tables with estimate and actual, the
   calibration); `bundle.py plan page PLAN --out FILE` renders them on `method/templates/plan-page.html`, a layout

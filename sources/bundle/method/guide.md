@@ -43,6 +43,7 @@ say what each one does when started.
 | Writing any code | "test first" (principle 18, or a test-driven skill) | a test that fails before the code | none · part of the work |
 | A failure whose cause is unknown | "debug this systematically" (a debugging skill) | reproduce, isolate, then fix | a few turns · 1e4–1e5 |
 | A change to look over | "review this diff" | findings with evidence | minutes · 1e4–1e5 |
+| Documentation to improve or format | "improve these docs", or `/edit-docs` | level by level, audit to mechanics, each commit reviewable; `bundle.py docs lint` and `docs fingerprint` check it kept the meaning, and a fresh reader reads the diff | a few turns · 1e5 |
 | A branch at its end, or a risky change | "review it in a fresh context" | the `knowledge-reviewer` agent checks the diff against the knowledge cards and returns only findings | minutes to read it · 1e5 |
 | About to say it is done | "verify before you say done" | the checks run, and their output is shown | none · 1e3–1e4 |
 
@@ -67,7 +68,7 @@ say what each one does when started.
 **A host without skills** (an assistant that does not load them) runs any of the method's skills from its file:
 
 ~~~text
-Follow .agents/method/skills/<name>/SKILL.md for this request. (<name>: next, decision-review, user-walk, close)
+Follow .agents/method/skills/<name>/SKILL.md for this request. (<name>: next, decision-review, user-walk, edit-docs, close)
 ~~~
 
 ## Your own shortcuts

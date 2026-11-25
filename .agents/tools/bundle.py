@@ -3709,6 +3709,145 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
 
 
 
+DOCS_CAPS = re.compile(r"\b(?:MUST NOT|SHALL NOT|SHOULD NOT|NOT RECOMMENDED|MUST|SHALL|SHOULD|MAY|REQUIRED|RECOMMENDED|OPTIONAL)\b")
+DOCS_LOWER = re.compile(r"\b(?:must|shall|should|may)\b")
+DOCS_LOGIC = re.compile(r"\b(?:not|never|only|all|any|except|unless|at least|at most|before|after|no|none|every|each)\b", re.I)
+DOCS_NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,:]\d+)*(?:\s?(?:%|[A-Za-zµ]+\b))?")
+DOCS_LINK = re.compile(r"(!?)\[([^\]]*)\]\(\s*<?([^()\s<>]+)>?(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
+DOCS_HEADING = re.compile(r"^(#{1,6})(?:[ \t]+(.*?))?[ \t]*#*[ \t]*$")
+DOCS_VAGUE_LINK = {"click here", "here", "this", "this document", "this link", "link", "this page", "read more", "more"}
+
+
+def _docs_parts(text: str) -> tuple[list[str], list[str], list[str]]:
+    """(prose lines with inline code removed, fenced blocks, inline code spans)."""
+    lines = text.split("\n")
+    prose_mask, prose, fences, current = _prose(lines), [], [], None
+    for line, is_prose in zip(lines, prose_mask):
+        if is_prose:
+            if current is not None:
+                fences.append("\n".join(current[1:]))
+                current = None
+            prose.append(line)
+        else:
+            current = (current or []) + [line]
+            prose.append("")
+    if current is not None:
+        fences.append("\n".join(current[1:]))
+    spans = [m.group(0).strip("`").strip() for line in prose for m in INLINE_CODE.finditer(line)]
+    return [INLINE_CODE.sub(" ", line) for line in prose], fences, spans
+
+
+def docs_fingerprint(text: str) -> dict[str, Counter]:
+    prose, fences, spans = _docs_parts(text)
+    words = "\n".join(re.sub(r"<!--.*?-->", " ", line) for line in prose)
+    return {
+        "normative words in capitals": Counter(DOCS_CAPS.findall(words)),
+        "normative words in lower case": Counter(DOCS_LOWER.findall(words)),
+        "negations and quantifiers": Counter(m.lower() for m in DOCS_LOGIC.findall(words)),
+        "numbers": Counter(DOCS_NUMBER.findall(DOCS_LINK.sub(lambda m: m.group(2), words))),
+        "code blocks": Counter(hashlib.sha256(f.encode()).hexdigest()[:10] + " " + (f.strip().split("\n")[0][:40]) for f in fences),
+        "inline code": Counter(spans),
+        "links": Counter(m.group(3) for line in prose for m in DOCS_LINK.finditer(line)),
+        "headings": Counter((m.group(1) + " " + (m.group(2) or "")) for line in prose if (m := DOCS_HEADING.match(line))),
+        "record ids": Counter(RECORD_ID.findall(text)),
+    }
+
+
+def docs_compare(old: str, new: str) -> tuple[list[str], list[str]]:
+    """(differences that carry meaning, warnings)."""
+    before, after = docs_fingerprint(old), docs_fingerprint(new)
+    problems = []
+    for key in before:
+        lost, gained = before[key] - after[key], after[key] - before[key]
+        if lost or gained:
+            show = lambda c: ", ".join(f"{k!r}" + (f" ×{n}" if n > 1 else "") for k, n in sorted(c.items()))
+            problems.append(f"{key}: " + "; ".join(part for part in (f"lost {show(lost)}" if lost else "",
+                                                                      f"gained {show(gained)}" if gained else "") if part))
+    warnings = []
+    if old.strip() and len(new.strip()) < 0.8 * len(old.strip()):
+        warnings.append(f"the new text is {100 - round(100 * len(new.strip()) / len(old.strip()))}% shorter: read the diff "
+                        "for a dropped constraint, caveat or example")
+    return problems, warnings
+
+
+def _docs_slug(heading: str) -> str:
+    """The anchor a forge gives a heading: lower case, punctuation dropped, spaces to hyphens."""
+    text = re.sub(r"[`*_~]", "", INLINE_CODE.sub(lambda m: m.group(0).strip("`"), heading)).strip().lower()
+    return re.sub(r"\s", "-", re.sub(r"[^\w\s-]", "", text))
+
+
+def _docs_anchors(path: Path) -> set[str]:
+    prose, _, _ = _docs_parts(path.read_text(encoding="utf-8")) if path.is_file() else ([], [], [])
+    seen: Counter = Counter()
+    anchors = set()
+    for line in prose:
+        if (m := DOCS_HEADING.match(line)) and m.group(2):
+            slug = _docs_slug(m.group(2))
+            anchors.add(slug if not seen[slug] else f"{slug}-{seen[slug]}")
+            seen[slug] += 1
+    return anchors
+
+
+def docs_lint(path: Path) -> tuple[list[str], list[str]]:
+    """(problems, warnings) of the mechanical rules over one Markdown file."""
+    text = path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+    mask = _prose(lines)
+    problems, warnings, level, h1, texts = [], [], 0, 0, {}
+    for n, (line, is_prose) in enumerate(zip(lines, mask), 1):
+        where = f"{path.name}:{n}"
+        if FENCE.match(line) and not is_prose and (n == 1 or mask[n - 2]):
+            if not line.strip().lstrip("`~").strip():
+                warnings.append(f"{where}: a fenced block with no language")
+        if line != line.rstrip():
+            problems.append(f"{where}: trailing whitespace")
+        if not is_prose:
+            continue
+        bare = re.sub(r"<!--.*?-->", "", INLINE_CODE.sub(" ", line))
+        if m := DOCS_HEADING.match(bare):
+            depth, title = len(m.group(1)), (m.group(2) or "").strip()
+            if not title:
+                problems.append(f"{where}: an empty heading")
+            elif title[-1] in ".:;!,":
+                problems.append(f"{where}: a heading ends in punctuation ({title[-1]})")
+            if depth == 1:
+                h1 += 1
+                if h1 == 2:
+                    problems.append(f"{where}: more than one level-1 heading")
+            elif level and depth > level + 1:
+                problems.append(f"{where}: the heading skips from level {level} to {depth}")
+            level = depth
+        plain = re.sub(r"<!--.*?-->", "", line)
+        code = [s.span() for s in INLINE_CODE.finditer(plain)]
+        for m in DOCS_LINK.finditer(plain):
+            if any(a <= m.start() < b for a, b in code):
+                continue
+            image, label, target = m.group(1), m.group(2).strip(), m.group(3)
+            if image and not label:
+                problems.append(f"{where}: an image with no alt text ({target})")
+            if not image:
+                if label.lower() in DOCS_VAGUE_LINK or re.match(r"^https?://", label):
+                    problems.append(f"{where}: the link text {label!r} says nothing of where it goes")
+                if texts.setdefault(label.lower(), target) != target:
+                    problems.append(f"{where}: the same text {label!r} links to two targets")
+            file, _, anchor = target.partition("#")
+            if re.match(r"^[a-z][a-z0-9+.-]*:", file):
+                continue
+            dest = (path.parent / file) if file else path
+            if file and not dest.exists():
+                problems.append(f"{where}: the link to {file} resolves to nothing")
+            elif anchor and dest.suffix == ".md" and anchor not in _docs_anchors(dest):
+                problems.append(f"{where}: #{anchor} is no heading of {dest.name}")
+        for m in re.finditer(r"(?<![(<\[])\bhttps?://[^\s)>\]]+", DOCS_LINK.sub(" ", bare)):
+            warnings.append(f"{where}: a bare URL ({m.group(0)}); give it link text")
+        if re.search(r"\b(?:etc\.|and so on)", bare):
+            warnings.append(f"{where}: a list that ends in 'etc.' or 'and so on' says less than it seems")
+    if text and not text.endswith("\n"):
+        problems.append(f"{path.name}: no newline at the end")
+    return problems, warnings
+
+
+
 PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones", "Running now", "The owner's", "Tasks")
 PLAN_PLACEHOLDER = re.compile(r"YYYY-MM-DD|<[a-z][^<>\n]* [^<>\n]*>")
 PLAN_STATES = (("done", ("done", "approved", "merged", "landed", "passed", "in your hands")),
@@ -5518,6 +5657,11 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
+    p = sub.add_parser("docs", help="fingerprint OLD NEW (or --rev REV FILE): what carries meaning, before and after an edit; "
+                       "lint FILE...: the mechanical rules. Standard library only; exit 1 on a difference or a problem")
+    p.add_argument("action", choices=("fingerprint", "lint"))
+    p.add_argument("files", nargs="+")
+    p.add_argument("--rev", help="fingerprint: compare FILE with its text at this git revision")
     p = sub.add_parser("plan", help="plan page: a plan file's fixed sections (method/templates/plan.md) rendered as a page on "
                        "the shipped template, standard library only; exit 1 while a section is missing or a placeholder left")
     p.add_argument("action", choices=("page",))
@@ -5932,6 +6076,40 @@ def _run(args: argparse.Namespace) -> int:
               + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
                  "or a recurrence" if repeats else ""))
         return 0
+    if args.command == "docs":
+        if args.action == "lint":
+            problems, warnings = [], []
+            for name in args.files:
+                found = docs_lint(Path(name)) if Path(name).is_file() else ([f"{name}: no such file"], [])
+                problems += found[0]
+                warnings += found[1]
+            for line in problems:
+                print("  x " + line)
+            for line in warnings:
+                print("  ! " + line)
+            print(f"docs lint: {len(args.files)} files, {len(problems)} problems, {len(warnings)} warnings")
+            return 1 if problems else 0
+        if args.rev:
+            if len(args.files) != 1:
+                raise RefusedError("docs fingerprint --rev REV FILE: one file")
+            path = Path(args.files[0])
+            shown = subprocess.run(["git", "-C", str(path.resolve().parent), "show", f"{args.rev}:./{path.name}"],
+                                   capture_output=True, text=True)
+            if shown.returncode:
+                raise RefusedError(f"git show {args.rev}:{path.name}: {shown.stderr.strip()}")
+            old, new = shown.stdout, path.read_text(encoding="utf-8")
+        elif len(args.files) == 2:
+            old, new = (Path(f).read_text(encoding="utf-8") for f in args.files)
+        else:
+            raise RefusedError("docs fingerprint OLD NEW, or --rev REV FILE")
+        problems, warnings = docs_compare(old, new)
+        for line in problems:
+            print("  x " + line)
+        for line in warnings:
+            print("  ! " + line)
+        print("docs fingerprint: " + (f"{len(problems)} kinds of meaning changed; each must be one the request asked for"
+                                      if problems else "nothing that carries meaning changed"))
+        return 1 if problems else 0
     if args.command == "plan":
         page, problems = plan_page(Path(args.file), Path(args.template) if args.template else None, args.lang)
         for line in problems:
