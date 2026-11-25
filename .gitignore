@@ -20,3 +20,4 @@ evals/runs/
 .agents/incoming/*
 !.agents/incoming/README.md
 .agents/evaluation-*
+meta/tracking/.intake-running

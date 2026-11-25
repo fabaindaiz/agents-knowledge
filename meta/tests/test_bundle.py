@@ -3592,12 +3592,12 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         self.assertIn("Needs, risks and the fresh read", out)
 
     def test_a_bare_none_in_needs_and_risks_is_refused_and_one_with_its_reason_passes(self) -> None:
-        for bare in ("none.", "none", "None."):
+        for bare in ("none.", "none", "None.", "none;", "_none_", "`none`"):
             code, out, _ = self.page(self.PLAN.replace("none: nothing unmerged is used.", bare))
             self.assertNotEqual(code, 0, bare)
             self.assertIn("none", out)
             self.assertIn("why", out)
-        for reasoned in ("none, since nothing unmerged is used.", "None: the plan reads only main."):
+        for reasoned in ("none, since nothing unmerged is used.", "None: the plan reads only main.", "none needed because main holds it."):
             self.assertEqual(self.page(self.PLAN.replace("none: nothing unmerged is used.", reasoned))[0], 0, reasoned)
 
     def test_a_placeholder_is_reported_on_its_own_line_below_a_comment(self) -> None:
@@ -3742,6 +3742,10 @@ class DocsLint(Base):
         self.assertEqual(code, 0, out)
         code, out = self.lint("Title\n=====\n\n#### Deep\n")
         self.assertNotEqual(code, 0, out)
+
+    def test_a_comment_or_indented_code_over_a_rule_is_no_setext_heading(self) -> None:
+        code, out = self.lint("# A\n\n<!-- c -->\n---\n\n    code\n---\n")
+        self.assertEqual(code, 0, out)
 
     def test_code_in_headings_tables_front_matter_and_fences_are_not_false_alarms(self) -> None:
         text = ("---\nname: x # not a heading\ndescription: a, b, etc.\n---\n\n# A\n\n## The `docs` tool\n\n## `docs`\n\n## my_var\n\n"

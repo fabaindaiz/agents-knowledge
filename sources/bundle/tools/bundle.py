@@ -4089,7 +4089,7 @@ def _docs_setext(lines: list[str], mask: list[bool]) -> list[str]:
     for i in range(len(out) - 1):
         under = re.fullmatch(r" {0,3}(=+|-+)\s*", out[i + 1])
         if (under and mask[i] and mask[i + 1] and out[i].strip() and (i == 0 or not out[i - 1].strip())
-                and not re.match(r"\s*(?:#|[-*+>|]|\d+[.)]\s)", out[i])):
+                and not re.match(r"\s*(?:#|[-*+>|<]|\d+[.)]\s)| {4}|\t", out[i])):
             out[i] = ("# " if under.group(1)[0] == "=" else "## ") + out[i].strip()
             out[i + 1] = ""
     return out
@@ -4350,7 +4350,7 @@ def plan_page(plan: Path, template: Path | None = None, lang: str = "en") -> tup
     for heading, body in sections:  # a bare "none" says nothing: it says why (`d-5ed7e8-d0d593`)
         if heading == "Needs, risks and the fresh read":
             problems += [f"`## {heading}`: {line.strip()!r} is a bare none; say why there is none"
-                         for line in body if re.fullmatch(r"\s*[-*]\s*(?:\*\*[^*]+\*\*\s*)?none\.?\s*", line, re.I)]
+                         for line in body if re.fullmatch(r"\s*[-*]?\s*(?:\*\*[^*]+\*\*:?|[^:*`_]+:)?\s*[_*`]*none[_*`]*\s*[.;!]?\s*", line, re.I)]
     problems += [f"line {n}: {m.group(0)!r} is a template placeholder still to fill (wrap real angle brackets in backticks)"
                  for n, line in enumerate(lines, 1) for m in [PLAN_PLACEHOLDER.search(INLINE_CODE.sub("", line))] if m]
     if problems:

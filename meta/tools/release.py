@@ -1318,7 +1318,13 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
     except FileExistsError:
         raise RefusedError(f"{marker}: an intake was interrupted or is running; when none runs, restore the records "
                            "it half wrote (`git checkout -- meta/tracking`), remove this file and run it again") from None
-    result = _intake(out, version, root, report)
+    wrote: list[bool] = []
+    try:
+        result = _intake(out, version, root, report, wrote)
+    except BaseException:
+        if not wrote:  # refused before its first write: nothing is half written, so nothing blocks the next run
+            marker.unlink()
+        raise
     marker.unlink()
     return result
 
@@ -1326,7 +1332,7 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
 INTAKE_MARKER = "meta/tracking/.intake-running"
 
 
-def _intake(out: Path, version: str, root: Path, report: dict) -> dict:
+def _intake(out: Path, version: str, root: Path, report: dict, wrote: list[bool]) -> dict:
     import json
 
     queue_path, runs_path = root / "meta/tracking/candidates.md", root / "meta/tracking/experiments.md"
@@ -1381,6 +1387,7 @@ def _intake(out: Path, version: str, root: Path, report: dict) -> dict:
                 result["moved"].append(f"{p.id}: `{p.target}` changed after {p.base}, which it was written against; read it again before merging")
             ledger.append(_row([f"`{p.id}`", version, verdict]))
             result["received"].append(p.id)
+    wrote.append(True)
     _insert_rows(queue_path, CANDIDATES_HEADER, new_rows, at_top=False)
     if again:
         # Another occurrence of something known is evidence: kept, for the release to add to its row or note.
@@ -1529,8 +1536,7 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, a
     if rows and not B.CARRIER_ID.match(carrier):
         raise RefusedError(f"{repo}: {len(rows)} outbox rows cannot become proposals without a carrier id; mint one first")
     ships, present = set(B.shipped(source)) | {B.CHECKSUMS}, set(B.all_files(target))
-    keep = {r for r in present if (B.is_carrier_owned(r) or any(part.startswith(".") for part in Path(r).parts))
-            and not (r.startswith("tracking/") and (legacy or r in B.OUTBOX))}
+    keep = {r for r in present if B.is_carrier_owned(r) and not (r.startswith("tracking/") and (legacy or r in B.OUTBOX))}
     actions = [f"write {r}" for r in sorted(ships, key=str.encode)]
     actions += [f"remove {r}" for r in sorted(present - ships - keep, key=str.encode)]
     actions += [f"convert {len(rows)} outbox rows into {B.PROPOSALS}/"] if rows else []
@@ -1729,8 +1735,9 @@ def splice_report(name: str, actions: list[str], write: bool, backup: Path | Non
     comparing file lists by hand.
     """
     removed = [a.removeprefix("remove ") for a in actions if a.startswith("remove ")]
+    into = next((a.removeprefix("back up into ") for a in actions if a.startswith("back up into ")), backup)
     head = (f"{name}: {'spliced' if write else 'would splice'} {sum(a.startswith('write') for a in actions)} files, "
-            f"remove {len(removed)}" + (f" (backup {backup})" if write else ""))
+            f"remove {len(removed)}" + (f" (backup {into})" if write else ""))
     return [head, *(f"  - {rel}" for rel in removed)]
 
 

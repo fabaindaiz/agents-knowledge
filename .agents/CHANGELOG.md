@@ -78,13 +78,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The carrying tools, from an adversarial review** (criterion 5 of the first minor, `d-5ed7e8-c11cbb`):
   - `release.py splice --backup` refuses a backup folder that is the carrier or inside it (one at the carriers'
     parent folder used to delete the carrier's `.agents/`), and never replaces an earlier backup: a second one goes
-    beside it, `NAME.2/`, named in the report.
+    beside it, `NAME.2/`, named in the splice's report.
   - A carrier on the layout before 0.0.22 keeps the `carrier.toml` it already has (its `log`, frontier and gaps
     were overwritten), and the file is written before the shipped ones, so an interruption leaves no own field only
     in the backup.
-  - A hidden file of the carrier inside `.agents/` is kept.
   - `release.py intake` holds a marker while it writes: a run over the records an interrupted one half wrote, or
-    two at once, is refused, so no proposal is taken in twice.
+    two at once, is refused, so no proposal is taken in twice; one refused before it writes leaves no marker.
   - `bundle.py export --replace` removes old names before copying, so a file renamed only in case survives on a
     filesystem blind to case.
   - A carrier file's frontier reads as TOML, whatever its quotes.

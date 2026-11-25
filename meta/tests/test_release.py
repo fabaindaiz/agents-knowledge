@@ -477,18 +477,21 @@ class Carry(Base):
         kept = self.root / "backup/one/.agents/kept.md"
         kept.parent.mkdir(parents=True)
         kept.write_text("the only clean copy\n")
-        self.assertIn(f"back up into {(self.root / 'backup/one.2/.agents').resolve()}", self.splice(repo))
+        actions = self.splice(repo)
+        self.assertIn(f"back up into {(self.root / 'backup/one.2/.agents').resolve()}", actions)
+        self.assertIn("one.2", " ".join(self.R.splice_report("one", actions, True, self.root / "backup")))
         self.assertEqual(kept.read_text(), "the only clean copy\n")
         self.assertTrue((self.root / "backup/one.2/.agents/carrier.toml").is_file())
 
-    def test_a_hidden_file_of_the_carrier_inside_the_bundle_is_kept(self) -> None:
+    def test_a_hidden_file_inside_the_bundle_is_named_removed_and_kept_in_the_backup(self) -> None:
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo, today="2026-01-05", upstream="r-aaaaaa")
         (repo / ".agents/.notes").write_text("mine\n")
         commit(repo, "a hidden note")
-        self.assertNotIn("remove .notes", self.R.splice(repo, False, None, root=self.home))
+        self.assertIn("remove .notes", self.R.splice(repo, False, None, root=self.home))
         self.splice(repo)
-        self.assertTrue((repo / ".agents/.notes").is_file())
+        self.assertEqual((self.root / "backup/one/.agents/.notes").read_text(), "mine\n")
+        self.assertEqual(B.verify_problems(repo / ".agents"), [])
 
     def test_an_untagged_home_is_not_carried(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -619,6 +622,13 @@ class Carry(Base):
         gathered = self.R.gather([repo], self.root / "out", self.home)
 
         self.assertIn("knowledge/notes/active/alpha.md: differs from the tagged release", " ".join(gathered["carriers"]["one"]["forked"]))
+
+    def test_an_intake_that_fails_before_writing_leaves_no_marker(self) -> None:
+        (self.root / "out").mkdir()
+        (self.root / "out/gather.json").write_text('{"packs": {}}')
+        with self.assertRaises(Exception):
+            self.R.intake(self.root / "out", "0.0.2", self.home)
+        self.assertFalse((self.home / self.R.INTAKE_MARKER).exists())
 
     def test_a_frontier_reads_as_toml_whatever_its_quotes(self) -> None:
         for text in ('harvested_through = "2026-11-24"\n', "harvested_through = '2026-11-24'\n", 'harvested_through="2026-11-24" # c\n'):
@@ -862,7 +872,7 @@ class Carry(Base):
         own = {"log": "docs/log.md", "harvested_through": "2026-03-01", "harvested_gaps": ["2026-02-01..2026-02-03 unread"]}
         (repo / ".agents" / B.CARRIER_FILE).write_text(B.dump_carrier(own))
         commit(repo, "a carrier file")
-        self.splice(repo, allow_dirty=True) if "allow_dirty" in self.R.splice.__code__.co_varnames else self.splice(repo)
+        self.splice(repo, allow_dirty=True)
         data = B.read_carrier(repo / ".agents")
         self.assertEqual((data.get("log"), data.get("harvested_through"), data.get("harvested_gaps")),
                          (own["log"], own["harvested_through"], own["harvested_gaps"]))
