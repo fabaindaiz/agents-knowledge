@@ -135,6 +135,10 @@ ask which to measure.
 
 ## 7. The roadmap and the hand-off
 
+**The plan page**, where the work has a plan in the template's form (`method/templates/plan.md`): render it with
+`bundle.py plan page <plan> --out <a file outside the repository>` and republish it as the plan's artifact, at a
+pause as at a close; the owner may ask for it at any other time.
+
 The roadmap: where we are, the states of the items touched, pending items, and **to continue**: the
 setup another machine needs (what is not in the repository, such as local configuration, devices,
 sibling repositories) and the first concrete step.

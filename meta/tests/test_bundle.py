@@ -3164,9 +3164,9 @@ class MachineRegister(Base):
 
     def test_the_path_rule_catches_quoted_bracketed_home_and_drive_paths(self) -> None:
         for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "${HOME}/x", "%USERPROFILE%/x", "C:/x",
-                      "/root/x", "./x", "path=/srv/x", "\\\\host\\share"):
+                      "/root/x", "a,~/repo", "/workspace/x", "path=/srv/x", "\\\\host\\share"):
             self.assertTrue(B.MACHINE_PATH.search(waits), waits)
-        for waits in ("and/or", "I/O", "two gates"):
+        for waits in ("and/or", "I/O", "two gates", "re-run ./gradlew check", "ratio: 3/4"):
             self.assertFalse(B.MACHINE_PATH.search(waits), waits)
 
 
@@ -3235,6 +3235,21 @@ class UsageMeasure(Usage):
         self.measure("agent-cost-ratio")
         self.u("forget")
         self.assertFalse(self.state("measures.jsonl").exists())
+
+    def test_the_minimum_counts_the_estimated_records_and_settled_rows_outlive_the_retention(self) -> None:
+        self.u("set", "level", "counts")
+        for _ in range(12):
+            self.u("add", "agent_costs", "kind=review", "model=m", "act_s=60", "act_ktok=9", "act_tools=1")
+        self.u("add", "agent_costs", "kind=review", "model=m", "est_min=10", "act_s=60", "act_ktok=9", "act_tools=1")
+        self.assertIn("too few", "\n".join(self.measure("agent-cost-ratio")))
+        self.costs()
+        ident = re.search(r"u-[0-9a-f]{6}", "\n".join(self.measure("agent-cost-ratio"))).group(0)
+        self.measure(ident, "into", "a-record")
+        self.measure("agent-cost-ratio")
+        kept = B._measures(self.repo, self.after(200))[1]
+        self.assertEqual([r["id"] for r in kept], [ident])
+        self.u("forget", "agent_costs")
+        self.assertEqual(B._measures(self.repo, self.TODAY)[1], [])
 
     def test_one_significant_figure_even_where_rounding_crosses_a_power_of_ten(self) -> None:
         for value, shown in ((0.96, "1"), (0.0096, "0.01"), (9.6, "10"), (0.13, "0.1"), (23, "20"), (0, "0")):
@@ -3348,6 +3363,31 @@ None.
             self.assertEqual(code, 1, why)
             self.assertIn(why, out, why)
 
+    def test_the_review_s_false_passes_now_fail(self) -> None:
+        for broken, why in [
+            (self.GOOD.replace("The tool shall refuse an empty file.", "It does things.").replace(
+                "THEN it is refused", "THEN the tool shall refuse it"), "REQ-2: no shall"),
+            (self.GOOD.replace("### REQ-2 · second", "### REQ-2 · show withdrawn items").replace("The tool shall", "It"),
+             "REQ-2: no shall"),
+            (self.GOOD.replace("Decided in: `d-aaaaaa-222222`", "Decided in: `d-aaaaaa-999999`"), "d-aaaaaa-999999"),
+            (self.GOOD.replace("(notes.md)", "(/etc/hosts)"), "absolute"),
+        ]:
+            if why == "d-aaaaaa-999999":
+                (self.dir / "decisions.md").write_text("| status | id |\n|---|---|\n| accepted | d-aaaaaa-111111 |\n")
+            code, out = self.check(broken)
+            self.assertEqual(code, 1, why)
+            self.assertIn(why if why != "d-aaaaaa-999999" else "no decision ids", out, out)
+            (self.dir / "decisions.md").write_text(self.LOG)
+
+    def test_a_decision_not_accepted_does_not_set_a_requirement(self) -> None:
+        (self.dir / "decisions.md").write_text(self.LOG.replace("| d-aaaaaa-222222 | accepted", "| d-aaaaaa-222222 | rejected"))
+        code, out = self.check(self.GOOD)
+        self.assertEqual(code, 1, out)
+        self.assertIn("not accepted", out)
+
+    def test_a_missing_file_is_refused_not_a_traceback(self) -> None:
+        self.assertEqual(run("spec", str(self.dir / "none.md"))[0], 2)
+
     def test_a_vague_quality_is_a_warning_and_a_plan_must_cite_every_requirement(self) -> None:
         code, out = self.check(self.GOOD.replace("A save takes under 50 ms on the reference fixture.", "Saving is fast."))
         self.assertEqual(code, 0, out)
@@ -3366,3 +3406,109 @@ None.
         plan.write_text("Task 1 covers REQ-1.\n")
         code, out = self.check(text, "--plan", str(plan))
         self.assertEqual(code, 0, out)
+
+
+class PlanPage(Base):
+    """`bundle.py plan page`: the plan's fixed sections rendered on the shipped template, never written by hand."""
+
+    PLAN = """# Plan: a sample
+
+State on 2026-11-25: two lanes running.
+
+## The question now
+
+**About two hours, in two steps.**
+
+1. **Task 3**: in review.
+2. **Join the lanes**: waiting, 30 min.
+
+Note: then milestone M1.
+
+## Where we are
+
+- **Lane A:** tasks 1 and 2 merged (`abc1234`).
+
+## Device runs
+
+| Build | What ran | Result | What it is |
+|---|---|---|---|
+| B1 | a suite | 9/10 | one <flaky> case |
+
+## Milestones
+
+- **M1** · the first thing to try · running — two steps left.
+- **M0** · the start · done — merged.
+
+## Running now
+
+### Lane A · core
+
+- Task 3 · in review
+- → M1
+
+## The owner's
+
+- [now] **Try M0**: ten minutes.
+
+## Tasks: core
+
+| # | Task | State | Milestone | Est. (min) | Actual (min) |
+|---|---|---|---|---|---|
+| 1 | first | done | M0 | 30 | 10 |
+| 2 | second | done | M0 | 60 | 20 |
+| 3 | third | running | M1 | 40 | |
+| 4 | fourth | waiting | M1 | 20 | |
+
+Calibration: earlier plans ran at ×0.3 of their time estimate.
+"""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.plan = self.root / "plan.md"
+        self.out = self.root / "page.html"
+
+    def page(self, text: str | None = None) -> tuple[int, str, str]:
+        self.plan.write_text(self.PLAN if text is None else text)
+        code, out = run("plan", "page", str(self.plan), "--out", str(self.out))
+        return code, out, self.out.read_text() if self.out.is_file() else ""
+
+    def test_every_section_renders_in_order_on_the_template_escaped(self) -> None:
+        code, out, html = self.page()
+        self.assertEqual(code, 0, out)
+        self.assertTrue(html.startswith("<!doctype html>"))
+        self.assertIn("<title>Plan: a sample</title>", html)
+        positions = [html.index(f">{h}</h2>") for h in B.PLAN_SECTIONS[:6]]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("&lt;flaky&gt;", html)
+        self.assertNotIn("<flaky>", html)
+        self.assertIn("<b>About two hours, in two steps.</b>", html)
+        self.assertIn("<code>abc1234</code>", html)
+        self.assertNotIn("{{", html)
+
+    def test_states_get_their_class_and_the_totals_are_computed(self) -> None:
+        _, _, html = self.page()
+        self.assertIn('class="st done">done</span>', html)
+        self.assertIn('class="st run">running</span>', html)
+        self.assertIn('class="st wait">waiting</span>', html)
+        self.assertIn("done: 2 tasks, 90 min estimated, 30 actual (×0.3)", html)
+        self.assertIn("left: 2 tasks, 60 min estimated", html)
+        self.assertIn("earlier plans ran at ×0.3", html)
+
+    def test_a_missing_section_or_a_placeholder_left_is_refused_and_nothing_written(self) -> None:
+        code, out, html = self.page(self.PLAN.replace("## The owner's\n\n- [now] **Try M0**: ten minutes.\n\n", ""))
+        self.assertEqual(code, 1, out)
+        self.assertIn("The owner's", out)
+        self.assertEqual(html, "")
+        template = (ROOT / "sources/bundle/method/templates/plan.md").read_text()
+        code, out, html = self.page(template)
+        self.assertEqual(code, 1)
+        self.assertIn("placeholder", out)
+
+    def test_the_shipped_templates_carry_every_section_and_name_no_project(self) -> None:
+        template = (ROOT / "sources/bundle/method/templates/plan.md").read_text()
+        for section in B.PLAN_SECTIONS:
+            self.assertIn(f"## {section}", template)
+        html = (ROOT / "sources/bundle/method/templates/plan-page.html").read_text()
+        for slot in ("{{title}}", "{{lead}}", "{{body}}"):
+            self.assertIn(slot, html)
+        self.assertIn("prefers-color-scheme: dark", html)

@@ -4,7 +4,8 @@
 <!-- The template of an optional format (`d-5ed7e8-cb0531`). Copy it beside the repository's decisions log, replace
 each comment, and check it with `python3 .agents/tools/bundle.py spec <this file>`. The spec holds *what* and the
 check; the decisions log holds *why*, append-only, with the options rejected. A requirement is never renumbered:
-a dropped one keeps its id, marked `Withdrawn`. -->
+a dropped one keeps its id, its heading ending `· Withdrawn`. The decisions log's rows read `| id | status | ...`,
+and a requirement's decision must be accepted. -->
 
 ## Summary
 

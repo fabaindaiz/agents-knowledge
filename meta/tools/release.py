@@ -167,6 +167,11 @@ def with_banner(rel: str, text: str) -> str:
         if text.startswith("---\n"):
             return "---\n# " + COPY_BANNER + "\n" + text[4:]
         return "<!-- " + COPY_BANNER + " -->\n" + text
+    if rel.endswith(".html"):
+        first, _, rest = text.partition("\n")
+        if first.lower().startswith("<!doctype"):
+            return first + "\n<!-- " + COPY_BANNER + " -->\n" + rest
+        return "<!-- " + COPY_BANNER + " -->\n" + text
     raise BuildError(f"{ORIGINALS}/{rel}: no banner form for this kind of file")
 
 

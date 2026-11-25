@@ -80,6 +80,7 @@ import collections
 import datetime
 import functools
 import hashlib
+import html
 import io
 import json
 import math
@@ -3963,6 +3964,172 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
     return "\n".join(parts)
 
 
+# --- the plan page ---------------------------------------------------------------------------------------------
+# A plan's state is shown to the owner as a page generated from the plan file, never written by hand
+# (`d-5ed7e8-09facc`): `method/templates/plan.md` fixes the sections, `method/templates/plan-page.html` the layout,
+# both anonymised from a page one carrier's agent first wrote by hand. Standard library only.
+
+PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones", "Running now", "The owner's", "Tasks")
+PLAN_PLACEHOLDER = re.compile(r"YYYY-MM-DD|<[a-z][^<>\n]* [^<>\n]*>")
+PLAN_STATES = (("done", ("done", "approved", "merged", "landed", "passed", "in your hands")),
+               ("bad", ("blocked", "failed", "red", "broken")),
+               ("run", ("running", "in review", "review", "in progress", "active", "now")),
+               ("wait", ()))
+
+
+def _plan_state(text: str) -> str:
+    low = text.lower()
+    return next(cls for cls, words in PLAN_STATES if not words or any(re.search(rf"\b{re.escape(w)}\b", low) for w in words))
+
+
+def _plan_inline(text: str) -> str:
+    out = html.escape(text, quote=False)
+    out = re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", out)
+
+
+def _plan_num(cell: str) -> float | None:
+    m = re.fullmatch(r"~?\s*(\d+(?:[.,]\d+)?)\s*\w*", cell.strip())
+    return float(m.group(1).replace(",", ".")) if m else None
+
+
+def _plan_fmt(value: float) -> str:
+    return str(int(value)) if value == int(value) else f"{value:.1f}"
+
+
+def _plan_blocks(lines: list[str]) -> list[tuple[str, list[str]]]:
+    """('p'|'ul'|'ol'|'table'|'h3', lines) runs of a section's body."""
+    blocks: list[tuple[str, list[str]]] = []
+    for line in lines:
+        kind = ("" if not line.strip() else "h3" if line.startswith("### ") else "table" if line.lstrip().startswith("|")
+                else "ul" if re.match(r"^\s*[-*] ", line) else "ol" if re.match(r"^\s*\d+\. ", line) else "p")
+        if not kind:
+            blocks.append(("", []))
+        elif blocks and blocks[-1][0] == kind and kind != "h3":
+            blocks[-1][1].append(line)
+        else:
+            blocks.append((kind, [line]))
+    return [b for b in blocks if b[0]]
+
+
+def _plan_items(lines: list[str]) -> list[str]:
+    return [re.sub(r"^\s*(?:[-*]|\d+\.)\s+", "", line) for line in lines]
+
+
+def _plan_table(lines: list[str], tasks: bool = False) -> tuple[str, list[str]]:
+    rows = [split_row(line) for line in lines if not set(line.strip()) <= set("|-: ")]
+    head, body = rows[0], rows[1:]
+    col = {name.split(" (")[0].rstrip(".").lower(): i for i, name in enumerate(head)}
+    numeric = {i for i, name in enumerate(head) if name.lower().startswith(("est", "actual", "hours", "min"))}
+    cells = []
+    for row in body:
+        tds = []
+        for i, cell in enumerate(row):
+            if (tasks and i == col.get("state")) or (not tasks and i == col.get("result") and re.fullmatch(r"\d+/\d+", cell)):
+                cls = (_plan_state(cell) if tasks else "done" if cell.split("/")[0] == cell.split("/")[1] else "bad")
+                tds.append(f'<td><span class="st {cls}">{_plan_inline(cell)}</span></td>')
+            else:
+                tds.append(f'<td class="n">{_plan_inline(cell)}</td>' if i in numeric else f"<td>{_plan_inline(cell)}</td>")
+        cells.append("<tr>" + "".join(tds) + "</tr>")
+    notes = []
+    if tasks and "state" in col and (est := next((i for i, h in enumerate(head) if h.lower().startswith("est")), None)) is not None:
+        act = next((i for i, h in enumerate(head) if h.lower().startswith("actual")), None)
+        unit = (re.search(r"\(([^)]+)\)", head[est]) or [None, ""])[1]
+        done = [r for r in body if len(r) > est and _plan_state(r[col["state"]]) == "done"]
+        left = [r for r in body if len(r) > est and _plan_state(r[col["state"]]) != "done"]
+        d_est = sum(_plan_num(r[est]) or 0 for r in done)
+        d_act = sum(_plan_num(r[act]) or 0 for r in done) if act is not None else 0
+        ratio = f" (×{_sig1(d_act / d_est)})" if d_est and d_act else ""
+        notes.append(f"done: {len(done)} tasks, {_plan_fmt(d_est)} {unit} estimated, {_plan_fmt(d_act)} actual{ratio}".replace("  ", " "))
+        notes.append(f"left: {len(left)} tasks, {_plan_fmt(sum(_plan_num(r[est]) or 0 for r in left))} {unit} estimated".replace("  ", " "))
+    table = ('<div class="tbl"><table><thead><tr>' + "".join(f"<th>{_plan_inline(h)}</th>" for h in head)
+             + "</tr></thead><tbody>" + "".join(cells) + "</tbody></table></div>")
+    return table, notes
+
+
+def _plan_section(name: str, heading: str, lines: list[str]) -> str:
+    parts = []
+    for kind, block in _plan_blocks(lines):
+        if kind == "table":
+            table, notes = _plan_table(block, tasks=name == "Tasks")
+            parts.append(table)
+            parts += [f'<p class="note">{_plan_inline(n)}</p>' for n in notes]
+        elif kind == "h3":
+            parts.append(("</div>" if any(p.startswith('<div class="lane">') for p in parts) and not parts[-1].endswith("</div>") else "")
+                         + f'<div class="lane"><span class="st lane-name">{_plan_inline(block[0][4:])}</span>')
+        elif kind in ("ul", "ol") and name == "Milestones":
+            for item in _plan_items(block):
+                m = re.match(r"\*\*(.+?)\*\*\s*·\s*(.+?)\s*·\s*(.+?)\s*(?:—\s*(.*))?$", item)
+                if not m:
+                    parts.append(f"<p>{_plan_inline(item)}</p>")
+                    continue
+                cls = _plan_state(m.group(3))
+                parts.append(f'<div class="card"><span class="tag {cls}">{_plan_inline(m.group(1))}</span><div class="body">'
+                             f'<h3>{_plan_inline(m.group(2))} <span class="st {cls}">{_plan_inline(m.group(3))}</span></h3>'
+                             + (f"<p>{_plan_inline(m.group(4))}</p>" if m.group(4) else "") + "</div></div>")
+        elif kind in ("ul", "ol") and name == "Running now":
+            for item in _plan_items(block):
+                if item.startswith("→"):
+                    parts.append(f'<span class="ms">{_plan_inline(item)}</span>')
+                else:
+                    task, _, state = item.rpartition(" · ")
+                    parts.append(f'<div class="step"><span>{_plan_inline(task or state)}</span>'
+                                 + (f'<span class="m">{_plan_inline(state)}</span>' if task else "") + "</div>")
+        elif kind in ("ul", "ol") and name == "The owner's":
+            items = []
+            for item in _plan_items(block):
+                m = re.match(r"\[([^\]]+)\]\s*(.*)$", item)
+                items.append(f'<li><span class="st you">{_plan_inline(m.group(1))}</span> {_plan_inline(m.group(2))}</li>' if m
+                             else f"<li>{_plan_inline(item)}</li>")
+            parts.append("<ul>" + "".join(items) + "</ul>")
+        elif kind in ("ul", "ol"):
+            parts.append(f"<{kind}>" + "".join(f"<li>{_plan_inline(i)}</li>" for i in _plan_items(block)) + f"</{kind}>")
+        else:
+            text = " ".join(line.strip() for line in block)
+            note = re.match(r"^(?:Note|Calibration):\s*", text)
+            parts.append(f'<p class="note">{_plan_inline(text[note.end():] if note and note.group(0).startswith("Note") else text)}</p>'
+                         if note else f"<p>{_plan_inline(text)}</p>")
+    inner = "".join(parts)
+    if name == "Running now":
+        inner = '<div class="lanes">' + inner + ("</div>" if '<div class="lane">' in inner else "") + "</div>"
+    elif name == "Milestones":
+        inner = f'<div class="cards">{inner}</div>'
+    elif name in ("The question now", "Where we are"):
+        inner = f'<div class="box{" hero" if name == "The question now" else ""}">{inner}</div>'
+    return f"  <section>\n    <h2>{_plan_inline(heading)}</h2>\n    {inner}\n  </section>\n"
+
+
+def plan_page(plan: Path, template: Path | None = None, lang: str = "en") -> tuple[str | None, list[str]]:
+    """(the page, problems): the page is None while any problem stands."""
+    text = re.sub(r"<!--.*?-->", "", plan.read_text(encoding="utf-8"), flags=re.S)
+    lines = text.split("\n")
+    title = next((line[2:].strip() for line in lines if line.startswith("# ")), "")
+    first = next((i for i, line in enumerate(lines) if line.startswith("## ")), len(lines))
+    lead = " ".join(line.strip() for line in lines[:first] if line.strip() and not line.startswith("# "))
+    sections, current = [], None
+    for line in lines[first:]:
+        if line.startswith("## "):
+            current = (line[3:].strip(), [])
+            sections.append(current)
+        elif current is not None:
+            current[1].append(line)
+    problems = [] if title else ["no `# ` title line"]
+    names = [next((s for s in PLAN_SECTIONS if h == s or (s == "Tasks" and h.startswith("Tasks"))), None) for h, _ in sections]
+    problems += [f"no `## {s}` section" for s in PLAN_SECTIONS if s not in names]
+    order = [PLAN_SECTIONS.index(n) for n in names if n]
+    if order != sorted(order):
+        problems.append("the sections are out of the template's order: " + ", ".join(PLAN_SECTIONS))
+    problems += [f"line {n}: {m.group(0)!r} is a template placeholder still to fill"
+                 for n, line in enumerate(lines, 1) for m in [PLAN_PLACEHOLDER.search(INLINE_CODE.sub("", line))] if m]
+    if problems:
+        return None, problems
+    shell = (template or Path(__file__).resolve().parent.parent / "method/templates/plan-page.html").read_text(encoding="utf-8")
+    shell = re.sub(r"<!-- [^\n]*Generated by the release build[^\n]*-->\n", "", shell, count=1)
+    body = "".join(_plan_section(name, heading, body) for (heading, body), name in zip(sections, names) if name)
+    page = shell.replace("{{lang}}", html.escape(lang)).replace("{{title}}", _plan_inline(title).replace("<b>", "").replace("</b>", ""))
+    return page.replace("{{lead}}", _plan_inline(lead)).replace("{{body}}", body), []
+
+
 # --- a spec, shape B ------------------------------------------------------------------------------------------
 # An optional format (`d-5ed7e8-cb0531`, template in `method/templates/spec.md`): the spec holds what and its check,
 # the decisions log why. The check is what makes two files safe: every requirement links a decision that exists,
@@ -3971,10 +4138,11 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
 SPEC_SECTIONS = ("Summary", "For a newcomer", "Goal and users", "Scope and non-goals", "Requirements", "Interfaces",
                  "Quality attributes", "Constraints", "Open questions", "Definition of done")
 SPEC_REQ = re.compile(r"^### (REQ-\d+)\b(.*)$")
-SPEC_REQ_ID = re.compile(r"\bREQ-\d+\b")
+SPEC_REQ_ID = re.compile(r"\bREQ-\d+\b(?!\.\d)")
 SPEC_OPEN = re.compile(r"\[NEEDS CLARIFICATION:[^\]]*\]")
 SPEC_VAGUE = re.compile(r"\b(fast|quick|slow|scalable|secure|intuitive|robust|simple|easy|efficient|user-friendly)\b", re.I)
-SPEC_DECISION_ROW = re.compile(r"^\|\s*`?([dis]-[0-9a-f]{6}-[0-9a-f]{6})`?\s*\|")
+SPEC_DECISION_ROW = re.compile(r"^\|\s*`?([dis]-[0-9a-f]{6}-[0-9a-f]{6})`?\s*\|\s*([^|]*)\|")
+SPEC_WITHDRAWN = re.compile(r"·\s*Withdrawn\s*$")
 
 
 def _spec_text(text: str) -> list[tuple[int, str]]:
@@ -3986,13 +4154,18 @@ def _spec_text(text: str) -> list[tuple[int, str]]:
 
 def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = None) -> tuple[list[str], list[str], int]:
     """(problems, warnings, requirements read) for a spec in shape B."""
+    for path in (spec, plan):
+        if path is not None and not path.is_file():
+            raise RefusedError(f"{path}: no such file")
     lines = _spec_text(spec.read_text(encoding="utf-8"))
     decisions = decisions or spec.parent / "decisions.md"
-    known = ({m.group(1) for line in decisions.read_text(encoding="utf-8").splitlines() if (m := SPEC_DECISION_ROW.match(line))}
-             if decisions.is_file() else set())
+    known = ({m.group(1): m.group(2).strip().lower() for line in decisions.read_text(encoding="utf-8").splitlines()
+              if (m := SPEC_DECISION_ROW.match(line))} if decisions.is_file() else {})
     problems, warnings = [], []
     if not decisions.is_file():
         problems.append(f"{decisions}: no decisions log beside the spec (`--decisions`)")
+    elif not known:
+        problems.append(f"{decisions.name}: no decision ids read (each row's first cell an id, its second the status)")
     headings = [line[3:].strip() for _, line in lines if line.startswith("## ")]
     problems += [f"no `## {s}` section" + (" (the template has each)" if not i else "")
                  for i, s in enumerate(s for s in SPEC_SECTIONS if s not in headings)]
@@ -4005,15 +4178,18 @@ def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = No
             problems.append(f"{spec.name}:{n}: {m.group(0)} is open, and an open marker blocks the plan")
         for target in LINK.findall(INLINE_CODE.sub("", line)):
             path = target.split("#")[0]
-            if path and not re.match(r"^[a-z][a-z0-9+.-]*:", path) and not (spec.parent / path).exists():
+            if path.startswith("/") or re.match(r"^[A-Za-z]:[\\/]", path):
+                problems.append(f"{spec.name}:{n}: the link to {path} is absolute; a link is relative to the spec")
+            elif path and not re.match(r"^[a-z][a-z0-9+.-]*:", path) and not (spec.parent / path).exists():
                 problems.append(f"{spec.name}:{n}: the link to {path} resolves to nothing")
         if section == "Requirements" and (m := SPEC_REQ.match(line)):
             if m.group(1) in reqs:
                 problems.append(f"{spec.name}:{n}: {m.group(1)} twice; an id once given is frozen")
-            current = reqs.setdefault(m.group(1), {"line": n, "withdrawn": "withdrawn" in m.group(2).lower(),
+            current = reqs.setdefault(m.group(1), {"line": n, "withdrawn": bool(SPEC_WITHDRAWN.search(m.group(2))),
                                                     "shall": False, "decided": [], "scenario": False})
         elif current is not None:
-            current["shall"] |= bool(re.search(r"\bshall\b", line, re.I))
+            if not re.match(r"^\s*(?:[-*] Scenario:|Decided in:)", line):
+                current["shall"] |= bool(re.search(r"\bshall\b", line, re.I))
             if line.lstrip().startswith("Decided in:"):
                 current["decided"] += RECORD_ID.findall(line)
             current["scenario"] |= bool(re.match(r"^\s*[-*] Scenario:.*\bWHEN\b.*\bTHEN\b", line))
@@ -4028,6 +4204,8 @@ def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = No
         if not r["decided"]:
             problems.append(f"{where}: no decision (`Decided in: d-...`)")
         problems += [f"{where}: {d} is in no row of {decisions.name}" for d in r["decided"] if known and d not in known]
+        problems += [f"{where}: {d} is {known[d] or 'of no status'}, not accepted" for d in r["decided"]
+                     if d in known and not known[d].startswith("accepted")]
         if not r["scenario"]:
             problems.append(f"{where}: no scenario (`- Scenario: WHEN ... THEN ...`)")
     if not reqs:
@@ -4037,6 +4215,7 @@ def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = No
         live = {rid for rid, r in reqs.items() if not r["withdrawn"]}
         problems += [f"{rid}: no task of {plan.name} cites it" for rid in sorted(live - cited)]
         problems += [f"{plan.name} cites {rid}, which the spec does not hold" for rid in sorted(cited - set(reqs))]
+        warnings += [f"{plan.name} cites {rid}, which is withdrawn" for rid in sorted(cited & (set(reqs) - live))]
     return problems, warnings, len(reqs)
 
 
@@ -4049,8 +4228,7 @@ MACHINE_REGISTER = "meta/tracking/machines.md"
 MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
 MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
 MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} (?:\d+\.\d+\.\d+|unreleased)$")
-MACHINE_PATH = re.compile(r"(?:^|[\s(`\"'\[:=])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|\.\.?/|"
-                          r"/(?:Users|home|root|etc|srv|Library|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:[\\/])")
+MACHINE_PATH = re.compile(r"(?<![\w.~-])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|/[\w.-]+/|[A-Za-z]:[\\/])")
 
 
 def _config_dir() -> Path:
@@ -4096,7 +4274,8 @@ def machine_carriers() -> str:
         records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
     except tomllib.TOMLDecodeError as error:
         raise RefusedError(f"{path}: not readable TOML ({error})") from error
-    return ", ".join(sorted(f"{r['carrier']} {r.get('version') or 'unreleased'}" for r in records if r.get("carrier")))
+    return ", ".join(sorted(f"{r['carrier']} {r.get('version') or 'unreleased'}" for r in records
+                            if isinstance(r, dict) and r.get("carrier")))
 
 
 def _machine_rows(text: str) -> list[tuple[int, list[str]]]:
@@ -5282,6 +5461,12 @@ def usage_use(repo, pref_id, today):
 
 def usage_forget(repo, category):
     paths = [_usage_file(repo, c) for c in ([_usage_category(category)] if category else USAGE_CATEGORIES)]
+    measures = usage_state_dir(repo) / "measures.jsonl"
+    if category and measures.is_file():
+        path, rows = _measures(repo, datetime.date.today())
+        kept = [r for r in rows if USAGE_QUESTIONS.get(r.get("question"), ("",))[0] != category]
+        if len(kept) != len(rows):
+            _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in kept))
     gone = [p for p in paths + ([] if category else [usage_consent_path(), usage_state_dir(repo) / "measures.jsonl"]) if p.is_file()]
     for path in gone:
         path.unlink()
@@ -5381,12 +5566,13 @@ def _order(n):
 
 
 def _measure_costs(records):
-    if len(records) < MEASURE_MIN:
-        return "too few"
     time = [r["act_s"] / 60 / r["est_min"] for r in records if r.get("est_min")]
     tokens = [r["act_ktok"] / r["est_ktok"] for r in records if r.get("est_ktok")]
     if not time and not tokens:
         return None
+    time, tokens = (v if len(v) >= MEASURE_MIN else [] for v in (time, tokens))
+    if not time and not tokens:
+        return "too few"
     def general(values, what):
         return f"{what} ×{_sig1(statistics.median(values))} (×{_sig1(min(values))} to ×{_sig1(max(values))})" if values else f"{what} not estimated"
     def raw(values, what):
@@ -5414,7 +5600,7 @@ def _measure_ablation(records):
         return "too few"
     mean = {a: sum(r["repeats"] for r in rs) / len(rs) for a, rs in arms.items()}
     ratio = mean["on"] / mean["off"] if mean["off"] else None
-    general = (f"repeats with preferences on ×{_sig1(ratio)} of off" if ratio is not None else
+    general = (f"repeats with preferences on at ×{_sig1(ratio)} the rate with them off" if ratio is not None else
                "no repeats with preferences off" + ("; some with them on" if mean["on"] else ""))
     return (general + f", over {_order(len(arms['on']))} sessions on and {_order(len(arms['off']))} off",
             f"mean repeats on {mean['on']:.2f} (n={len(arms['on'])}), off {mean['off']:.2f} (n={len(arms['off'])})")
@@ -5441,7 +5627,7 @@ def _measures(repo, today):
         if isinstance(row, dict) and MEASURE_ID.match(str(row.get("id", ""))) and isinstance(row.get("at"), str):
             rows.append(row)
     cutoff = str(today - datetime.timedelta(days=usage_days(usage_consent())))
-    kept = [r for r in rows if r["at"] >= cutoff]
+    kept = [r for r in rows if r["at"] >= cutoff or r.get("state") != "pending"]  # a settled row is the approval's trail
     if len(kept) != len(rows):
         _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in kept))
     return path, kept
@@ -5646,6 +5832,13 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
+    p = sub.add_parser("plan", help="plan page: a plan file's fixed sections (method/templates/plan.md) rendered as a page on "
+                       "the shipped template, standard library only; exit 1 while a section is missing or a placeholder left")
+    p.add_argument("action", choices=("page",))
+    p.add_argument("file")
+    p.add_argument("--out", help="the page to write (default: standard output); keep it outside the repository")
+    p.add_argument("--template", help="another page template with {{title}}, {{lead}} and {{body}}")
+    p.add_argument("--lang", default="en", help="the page's language tag (default en)")
     p = sub.add_parser("spec", help="a spec in shape B (method/templates/spec.md): sections, requirement ids, decisions that "
                        "exist, scenarios, links; an open marker blocks the plan (exit 1)")
     p.add_argument("file")
@@ -6055,6 +6248,19 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
               "the unit is entries that mention it, not incidents: read each hit, and count incidents"
               + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
                  "or a recurrence" if repeats else ""))
+        return 0
+    if args.command == "plan":
+        page, problems = plan_page(Path(args.file), Path(args.template) if args.template else None, args.lang)
+        for line in problems:
+            print("  x " + line)
+        if page is None:
+            print(f"plan page: {len(problems)} problems, nothing written")
+            return 1
+        if args.out:
+            Path(args.out).write_text(page, encoding="utf-8")
+            print(f"plan page: wrote {args.out}; publish it as the plan's artifact, at a pause, a close or when asked")
+        else:
+            sys.stdout.write(page)
         return 0
     if args.command == "spec":
         problems, warnings, n = spec_check(Path(args.file), Path(args.decisions) if args.decisions else None,

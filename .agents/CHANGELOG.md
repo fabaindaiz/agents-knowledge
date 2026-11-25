@@ -36,6 +36,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   given twice, a requirement with no *shall*, decision or scenario, a decision in no row, a broken link, an open
   `[NEEDS CLARIFICATION: …]` (which blocks the plan), and with `--plan` a requirement no task cites; a vague quality
   with no number is a warning.
+- **The plan page** (`d-5ed7e8-09facc`): `method/templates/plan.md` fixes a plan's sections (the question now, where
+  we are, device runs, milestones, running now, the owner's, the task tables with estimate and actual, the
+  calibration); `bundle.py plan page PLAN --out FILE` renders them on `method/templates/plan-page.html`, a layout
+  anonymised from one a carrier's agent wrote by hand, computes the totals done and left and their ratio, escapes
+  the text, and writes nothing while a section is missing or a placeholder left. The close and a pause republish it.
 - **A usage figure enters a record only through `usage measure`** (`d-5ed7e8-7b6df4`): it answers a named question
   (`agent-cost-ratio`, `frictions-per-session`, `ablation-effect`) from this machine's records alone, already
   generalised to one significant figure with counts as orders of magnitude, shows you the raw figure marked never to
