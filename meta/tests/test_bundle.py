@@ -1648,6 +1648,13 @@ class Decisions(Base):
         self.assertEqual(B.table_cells("| a | `x | y` | b \\| c |"), ["a", "`x | y`", "b | c"])
         self.assertEqual(B.table_cells("| a | an unclosed ` tick | b |"), ["a", "an unclosed ` tick", "b"])
 
+    def test_split_row_is_table_cells_without_code_spans(self) -> None:
+        """One parser: the tracking tables' reader differs from the decisions' only where a code span holds a pipe."""
+        for row in ("| a | b |", "| a \\| b | c |", "| a | |", "| a | b", "| a | b | ", "| x |"):
+            self.assertEqual(B.split_row(row), B.table_cells(row, code_spans=False))
+        self.assertEqual(B.split_row("| a | `x | y` |"), ["a", "`x", "y`"])
+        self.assertEqual(B.table_cells("| a | `x | y` |"), ["a", "`x | y`"])
+
     def test_split_row_reads_an_escaped_pipe_as_part_of_its_cell(self) -> None:
         # 0.0.35: a planted fault that turned the unescaped pipe into another character failed no test.
         self.assertEqual(B.split_row("| a \\| b | c |"), ["a | b", "c"])

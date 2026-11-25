@@ -18,6 +18,11 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The enforcement ladder names the shell construct that is the agent's own habit**: under zsh an unquoted
   list variable is one argument, and a list passed as a program's argument vector removes the construct
   (`prompt-context.md`).
+- **The close skill makes the push a step of its own**: one command, after the checks it depends on have printed,
+  never chained to a check, a commit or an edit, since a host may refuse a command whole for one part of it and
+  then nothing in it lands.
+- **`bundle.py` reads a table row with one parser**: the tracking tables' reader is the decisions' reader without
+  code spans, so a fix to one is a fix to both; every table row in the home reads the same as before.
 
 ### Fixed
 

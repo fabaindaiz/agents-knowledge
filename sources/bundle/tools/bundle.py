@@ -1532,22 +1532,26 @@ _PATHLIKE = re.compile(r"^[\w./-]*(/[\w.-]+|\w\.(?:py|pyi|md|mdc|json|jsonc|ya?m
 # A dotted name with no such extension (`permissions.deny`, `Stores.start`) is a key or a symbol, not a file.
 
 
-def table_cells(line: str) -> list[str]:
-    """The cells of a markdown table row; a `|` escaped, or inside a code span, is part of its cell.
+def table_cells(line: str, code_spans: bool = True) -> list[str]:
+    """The cells of a markdown table row; a `|` escaped (`\\|`) is part of its cell.
 
-    A code span opens with a run of backticks and closes with the next run of the same length (CommonMark),
-    so ```` ``` ```` is one span holding a fence; a run never closed is literal text.
+    With `code_spans`, a `|` inside a code span is part of its cell too: a span opens with a run of backticks
+    and closes with the next run of the same length (CommonMark), so ```` ``` ```` is one span holding a fence;
+    a run never closed is literal text. Without it, only the escape protects a pipe (the tracking tables).
+    A row's closing pipe opens no cell; without a closing pipe, the text after the last one is a cell (an empty
+    one only without `code_spans`).
     """
     cells, cell, i = [], [], 0
     body = line.strip()
     body = body[1:] if body.startswith("|") else body
+    closed = body.endswith("|") and not body.endswith("\\|")
     while i < len(body):
         ch = body[i]
         if ch == "\\" and i + 1 < len(body) and body[i + 1] == "|":
             cell.append("|")
             i += 2
             continue
-        if ch == "`":
+        if ch == "`" and code_spans:
             run = len(body[i:]) - len(body[i:].lstrip("`"))
             close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(body, i + run)
             end = close.end() if close else i + run
@@ -1560,7 +1564,7 @@ def table_cells(line: str) -> list[str]:
         else:
             cell.append(ch)
         i += 1
-    if "".join(cell).strip():
+    if not closed and ("".join(cell).strip() or not code_spans):
         cells.append("".join(cell).strip())
     return cells
 
@@ -2184,22 +2188,8 @@ def is_carrier_owned(rel: str) -> bool:
 
 
 def split_row(line: str) -> list[str]:
-    """The cells of one markdown table row; `\\|` is a pipe inside a cell."""
-    cells, current, i, inner = [], [], 0, line.strip()[1:]
-    inner = inner[:-1] if inner.endswith("|") and not inner.endswith("\\|") else inner
-    while i < len(inner):
-        if inner[i] == "\\" and inner[i + 1 : i + 2] == "|":
-            current.append("|")
-            i += 2
-            continue
-        if inner[i] == "|":
-            cells.append("".join(current).strip())
-            current = []
-        else:
-            current.append(inner[i])
-        i += 1
-    cells.append("".join(current).strip())
-    return cells
+    """The cells of one tracking-table row: only `\\|` is a pipe inside a cell (`table_cells` without code spans)."""
+    return table_cells(line, code_spans=False)
 
 
 def read_table(path: Path, header: str, prefix: bool = False) -> list[list[str]]:
