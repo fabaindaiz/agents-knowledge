@@ -56,6 +56,10 @@ free text of question answers (it overrides the options). List each part as **do
   `python3 .agents/tools/bundle.py decisions <the decisions log>` (`docs/decisions.md` unless the root file's map
   names another): each `proposed` row is a decision for
   the human, and each `unconfirmed:` reason a fact question; ask them in the hand-off, never decide them.
+- **Rulings taken during execution** (a plan's ledger) become decision rows or are reversed, before the plan
+  closes; a ruling left only in a ledger is a decision nobody will find.
+- **Copy a person sees that an agent wrote** (screen text, messages, a page) stays marked proposed in its record
+  until the owner has seen it; the hand-off lists what is still proposed.
 - A proposal written this session that `bundle.py privacy` warns on is a question too: "is this
   private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`. A proposal
   cannot be edited, since its id seals its content: answering means deleting it while it is unreceived and
@@ -130,6 +134,9 @@ ask which to measure.
 The roadmap: where we are, the states of the items touched, pending items, and **to continue**: the
 setup another machine needs (what is not in the repository, such as local configuration, devices,
 sibling repositories) and the first concrete step.
+
+**Worktrees and workspaces the plan made**: list those whose branch is merged, and each plan workspace that is
+done; offer to remove each, in one question, and remove only what the human says, the worktree before its branch.
 
 ## 8. Ledgers travel
 

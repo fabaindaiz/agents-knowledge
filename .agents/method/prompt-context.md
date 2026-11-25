@@ -874,6 +874,12 @@ its own that repeats and reports an interval — on a machine other sessions sha
 an absolute time measures the load. A test found red on the untouched base gets
 the strict expected-failure mark, not a sentence in the commit message.
 
+**Say which red each test showed**, in the report and in the review: a failing
+assertion; only a compile or import failure, which is weak, since the test never
+ran; none possible here (a device or a service absent), so the run is owed; passed
+on arrival, which makes it a *guard*, named so; or a mutation of the code standing
+in. A task whose tests are all weak is marked so, whatever its review says.
+
 **Prevents:** a suite that certifies the implementation's bugs, and the specific
 agent failure of writing a green test around code it just wrote.
 
@@ -1036,9 +1042,18 @@ estimated in what is later measured** (agent wall minutes, tokens, review rounds
 per task), the actual written beside each as it lands, and the plan shows the
 ratio earlier plans measured; human hours only when asked, with their
 conversion — plans priced in them landed twenty to forty times faster, and
-nothing calibrated; *sessions* are no unit once agents run in parallel.
+nothing calibrated; *sessions* are no unit once agents run in parallel. The
+plan also lists **what it needs from unmerged work**, where that lives and which
+tasks wait on it, and a need with no row stops the task to report; **the risks a
+review must probe**, three to five, each with the test that pins it, which become
+the review's brief; and where the answer to an unknown would move tasks, it
+**opens with a priced spike** on a branch never merged, whose committed note maps
+each answer to the tasks it moves. **A large plan gets a fresh read before its
+first task**: an agent that did not write it reads it against the code, for
+order, gaps, collisions and estimates, and each finding is fixed or answered.
 **Check:** the plan names the branches it collides with, or says there are none,
-and every landed task has its actual beside its estimate.
+every landed task has its actual beside its estimate, and a large plan's fresh
+read is recorded.
 
 **2. Settle the questions — an approval is not a confirmation.**
 Decisions the agent reasoned on its own stay marked unconfirmed until the human
@@ -1063,7 +1078,9 @@ version control ignores, a delegate created in one starts from the branch it was
 cut from and not the one being worked on, and checks run inside it walk paths
 that only exist there. A gate runs against the index or a clean copy, never
 against the dirty tree, and a merge is chained to the gate exactly as a commit
-is. Work that was never run in its real environment is marked unverified in the
+is — by a hook, since the sentence alone recurred four times in one carrier: git
+runs `pre-merge-commit` before a merge that commits, so the gate there holds it,
+and `merge --no-commit`, the gate, then the commit is the form by hand. Work that was never run in its real environment is marked unverified in the
 first line of the report and goes into a batch with a named owner, because it
 fails almost entirely on its first real run and always for the same handful of
 reasons. Two written rules of one repository can contradict each other and the
@@ -2226,6 +2243,17 @@ open, a keep-awake held), or attend it.
   an `&&` chain returns the filter's status, so a red check lets the commit
   through. Where a gate is composed by hand, make it one script under
   `set -euo pipefail` so nobody composes it again.
+- **A red run is reported, never retried away**: a test that failed and then
+  passed on a rerun is a flaky test, a finding with both runs, not a pass; the
+  commit waits on the owner's word or a fix. Measured: a brief that named the case
+  did not stop one delegate from rerunning until green.
+- **Two roles, named in the plan, when work runs in lanes**: the *coordinator*
+  assigns tasks, dispatches the reviews, integrates onto the integration branch
+  and keeps the build the human tests; a *lane* owns a branch, a worktree and a
+  set of files, reports its base commit and its range, and never merges another
+  lane's dependency itself, since a merge made in two lanes is a conflict solved
+  twice. Heavy gates in several lanes on one machine slow each other more than
+  the split saves: serialise them, as above.
 - **A stalled delegate is not a failed task**: read its scratch directory and
   `git status`, then resume it by message. Check every report first-hand.
 

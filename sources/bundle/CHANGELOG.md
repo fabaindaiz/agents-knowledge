@@ -13,6 +13,17 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The development flow, as one map** (`d-5ed7e8-cbb288`): `guide.md` lists idea, spec, decisions, user flow, plan,
   the plan's fresh read, execution, review and close, each with what it takes, what it hands on and the check that
   closes it. Each step's improvements stay inside its own skill; there is no orchestrating skill.
+- **What a plan carries, and its fresh read** (`d-5ed7e8-21f670`, from one carrier's practice): the needs on unmerged
+  work with a stop rule, the three to five risks a review must probe each with its test, a priced spike first where
+  an unknown would move tasks, and for a large plan a fresh-context read against the code before the first task
+  (`prompt-context.md` §21.1).
+- **Which red each test showed** (§18): a failing assertion, a compile failure only (weak), none possible here
+  (owed), passed on arrival (a guard), or a mutation; a task with only weak reds is marked so.
+- **A merge held by a hook** (§21.3): `pre-merge-commit` runs the gate, since the sentence alone recurred.
+- **Delegates** (*Long runs and delegates*): a red run reported, never retried away, a flaky test a finding; the
+  coordinator and lane roles, and heavy gates serialised rather than split across lanes.
+- **The close** (`skills/close`): execution rulings become decision rows or are reversed; copy an agent wrote that a
+  person sees stays proposed until the owner has seen it; merged worktrees and done workspaces offered for removal.
 
 ### Changed
 

@@ -86,7 +86,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
   | # | Task | Decision | Est. wall | Est. tokens | Rounds | Actual |
   |---|---|---|---|---|---|---|
-  | 1 | The development flow's map in `guide.md`: each step's input, output and closing check | `d-5ed7e8-cbb288` | 20–40 min | 80k | 1–2 | |
+  | 1 | The development flow's map in `guide.md`: each step's input, output and closing check | `d-5ed7e8-cbb288` | 20–40 min | 80k | 1–2 | ~10 min main thread; round 1: 4 medium, 3 low (~0.5 min, ~70k tokens); `0685a27`, `da1b5af` |
   | 2 | A carrier's practices into the skills: the plan's dependency table and stop rule, review focus, priced spike; the plan's fresh read; the classified red; a merge-commit hook; at close, rulings promoted, merged worktrees offered for removal, roles, proposed copy | `d-5ed7e8-21f670` | 60–90 min | 250k | 2–3 | |
   | 3 | Re-review by severity, hard stop at five, a fix's own pass (`prompt-bootstrap.md`, §21.4) | `d-5ed7e8-6db1f7` | 10–20 min | 50k | 1 | ~6 min main thread; review shared with 4 |
   | 4 | Estimates in measured units with the calibration shown (§21.1, the bootstrap, the ledger column) | `d-5ed7e8-9dc00d` | 15–30 min | 60k | 1 | ~8 min main thread; with 3: 3 review rounds (2 medium, then 1 medium, then low only, listed), ~1 min and ~55k tokens each; `e2c1f89`, `85d0389`, `09e2a92`, `538099e` |
