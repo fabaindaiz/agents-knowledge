@@ -3164,9 +3164,10 @@ class MachineRegister(Base):
 
     def test_the_path_rule_catches_quoted_bracketed_home_and_drive_paths(self) -> None:
         for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "${HOME}/x", "%USERPROFILE%/x", "C:/x",
-                      "/root/x", "a,~/repo", "/workspace/x", "path=/srv/x", "\\\\host\\share"):
+                      "/root/x", "a,~/repo", "/workspace/x", "path=/srv/x", "../sib", "../other-repo/x", "\\\\host\\share"):
             self.assertTrue(B.MACHINE_PATH.search(waits), waits)
-        for waits in ("and/or", "I/O", "two gates", "re-run ./gradlew check", "ratio: 3/4"):
+        for waits in ("and/or", "I/O", "two gates", "re-run ./gradlew check", "ratio: 3/4", "see https://h/a/b",
+                      "the /review/ skill"):
             self.assertFalse(B.MACHINE_PATH.search(waits), waits)
 
 
@@ -3250,6 +3251,17 @@ class UsageMeasure(Usage):
         self.assertEqual([r["id"] for r in kept], [ident])
         self.u("forget", "agent_costs")
         self.assertEqual(B._measures(self.repo, self.TODAY)[1], [])
+
+    def test_too_few_of_one_figure_says_so_and_withheld_rows_follow_the_retention(self) -> None:
+        self.u("set", "level", "counts")
+        for i in range(12):
+            self.u("add", "agent_costs", "kind=review", "model=m", "act_s=60", "act_ktok=9", "act_tools=1", "est_ktok=10",
+                   *(["est_min=10"] if i < 7 else []))
+        line = next(l for l in self.measure("agent-cost-ratio") if l.startswith("generalised:"))
+        self.assertIn("time too few to generalise", line)
+        ident = re.search(r"u-[0-9a-f]{6}", "\n".join(self.measure("agent-cost-ratio"))).group(0)
+        self.measure(ident, "withhold", "a-record")
+        self.assertEqual(B._measures(self.repo, self.after(200))[1], [])
 
     def test_one_significant_figure_even_where_rounding_crosses_a_power_of_ten(self) -> None:
         for value, shown in ((0.96, "1"), (0.0096, "0.01"), (9.6, "10"), (0.13, "0.1"), (23, "20"), (0, "0")):
@@ -3490,7 +3502,7 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         self.assertIn('class="st done">done</span>', html)
         self.assertIn('class="st run">running</span>', html)
         self.assertIn('class="st wait">waiting</span>', html)
-        self.assertIn("done: 2 tasks, 90 min estimated, 30 actual (×0.3)", html)
+        self.assertIn("done: 2 tasks, 90 min estimated, 30 min actual (×0.3)", html)
         self.assertIn("left: 2 tasks, 60 min estimated", html)
         self.assertIn("earlier plans ran at ×0.3", html)
 
@@ -3503,6 +3515,34 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         code, out, html = self.page(template)
         self.assertEqual(code, 1)
         self.assertIn("placeholder", out)
+
+    def test_lanes_nest_right_with_any_count_and_balance_the_page(self) -> None:
+        for lanes in (0, 1, 2, 3):
+            block = "".join(f"### Lane {i}\n\n- t · in review\n- → M1\n\n" for i in range(lanes)) or "- loose · waiting\n\n"
+            text = re.sub(r"## Running now\n\n.*?(?=## The owner's)", "## Running now\n\n" + block, self.PLAN, flags=re.S)
+            code, out, html = self.page(text)
+            self.assertEqual(code, 0, out)
+            self.assertEqual(html.count("<div"), html.count("</div>"), lanes)
+            self.assertEqual(html.count('<div class="lane">'), lanes)
+
+    def test_states_read_the_first_word_and_the_ratio_only_rows_with_both_figures(self) -> None:
+        for cell, cls in (("not done yet", "wait"), ("reviewed, now waiting", "wait"), ("ready for review", "wait"),
+                          ("done", "done"), ("running", "run"), ("blocked by X", "bad")):
+            self.assertEqual(B._plan_state(cell), cls, cell)
+        text = self.PLAN.replace("| 1 | first | done | M0 | 30 | 10 |", "| 1 | first | done | M0 | 30 | |")
+        _, _, html = self.page(text)
+        self.assertIn("(×0.3)", html)
+        self.assertIn("20 min actual", html)
+
+    def test_slots_fill_in_one_pass_bold_stays_outside_code_and_an_unknown_section_is_refused(self) -> None:
+        _, _, html = self.page(self.PLAN.replace("# Plan: a sample", "# Plan: {{lead}} `x`").replace(
+            "State on 2026-11-25: two lanes running.", "State {{body}} and `**a` b**."))
+        self.assertIn("<title>Plan: {{lead}} x</title>", html)
+        self.assertEqual(html.count("<h2>The question now</h2>"), 1)
+        self.assertIn("<code>**a</code> b**", html)
+        code, out, _ = self.page(self.PLAN.replace("## Milestones", "## Extra\n\nx\n\n## Milestones"))
+        self.assertEqual(code, 1)
+        self.assertIn("Extra", out)
 
     def test_the_shipped_templates_carry_every_section_and_name_no_project(self) -> None:
         template = (ROOT / "sources/bundle/method/templates/plan.md").read_text()

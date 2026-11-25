@@ -22,9 +22,9 @@ Note: <what that gives the owner, and what comes after it>.
 
 ## Device runs
 
-| Build | What ran | Result | What it is |
+| Version | What ran | Result | What it is |
 |---|---|---|---|
-| <build> | <test class or check> | <passed/total> | <the cause, and the fix's state> |
+| <the version tried> | <the suite or check> | <passed/total> | <the cause, and the fix's state> |
 
 ## Milestones
 

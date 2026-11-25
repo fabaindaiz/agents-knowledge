@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{{title}}</title>
-<!-- The plan page's template (`d-5ed7e8-09facc`): `bundle.py plan page` fills {{title}}, {{lead}} and {{body}} from
+<!-- The plan page's template (`d-5ed7e8-09facc`): `bundle.py plan page` fills the title, lead and body slots from
 the plan file's fixed sections. The layout puts the owner's question first, then where things stand, the device runs,
 the milestones to try, what runs now per lane, what is the owner's, and the task tables with their totals. -->
 <style>
@@ -41,8 +41,9 @@ table{border-collapse:collapse;width:100%;font-size:.9rem}
 th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
 th{font-size:.76rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 td.n{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
-code{font-size:.86em}
-.st{display:inline-block;white-space:nowrap;font-size:.76rem;font-weight:600;border-radius:99px;padding:1px 9px}
+code{font-size:.86em;overflow-wrap:anywhere}
+li,p,td{overflow-wrap:anywhere}
+.st{display:inline-block;font-size:.76rem;font-weight:600;border-radius:99px;padding:1px 9px}
 .done{background:var(--doneBg);color:var(--done)} .run{background:var(--runBg);color:var(--run)}
 .wait{background:var(--waitBg);color:var(--wait)} .bad{background:var(--badBg);color:var(--bad)}
 .you{background:var(--youBg);color:var(--you)}

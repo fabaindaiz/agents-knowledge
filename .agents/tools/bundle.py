@@ -3850,21 +3850,21 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
 
 PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones", "Running now", "The owner's", "Tasks")
 PLAN_PLACEHOLDER = re.compile(r"YYYY-MM-DD|<[a-z][^<>\n]* [^<>\n]*>")
-PLAN_STATES = (("done", ("done", "approved", "merged", "landed", "passed", "in your hands")),
-               ("bad", ("blocked", "failed", "red", "broken")),
-               ("run", ("running", "in review", "review", "in progress", "active", "now")),
-               ("wait", ()))
+PLAN_STATES = {"done": "done", "approved": "done", "merged": "done", "landed": "done", "passed": "done",
+               "running": "run", "active": "run", "in review": "run", "in progress": "run", "reviewing": "run",
+               "blocked": "bad", "failed": "bad", "broken": "bad", "red": "bad"}
 
 
 def _plan_state(text: str) -> str:
-    low = text.lower()
-    return next(cls for cls, words in PLAN_STATES if not words or any(re.search(rf"\b{re.escape(w)}\b", low) for w in words))
+    """The class of a state cell, read from its first words only: the template's states and their synonyms."""
+    words = re.findall(r"[a-z]+", text.lower())
+    return PLAN_STATES.get(" ".join(words[:2]), PLAN_STATES.get(words[0] if words else "", "wait"))
 
 
 def _plan_inline(text: str) -> str:
-    out = html.escape(text, quote=False)
-    out = re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
-    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", out)
+    parts = re.split(r"(`[^`]+`)", text)
+    return "".join(f"<code>{html.escape(part[1:-1], quote=False)}</code>" if i % 2 else
+                   re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", html.escape(part, quote=False)) for i, part in enumerate(parts))
 
 
 def _plan_num(cell: str) -> float | None:
@@ -3897,6 +3897,8 @@ def _plan_items(lines: list[str]) -> list[str]:
 
 def _plan_table(lines: list[str], tasks: bool = False) -> tuple[str, list[str]]:
     rows = [split_row(line) for line in lines if not set(line.strip()) <= set("|-: ")]
+    if not rows:
+        return "", []
     head, body = rows[0], rows[1:]
     col = {name.split(" (")[0].rstrip(".").lower(): i for i, name in enumerate(head)}
     numeric = {i for i, name in enumerate(head) if name.lower().startswith(("est", "actual", "hours", "min"))}
@@ -3917,25 +3919,30 @@ def _plan_table(lines: list[str], tasks: bool = False) -> tuple[str, list[str]]:
         done = [r for r in body if len(r) > est and _plan_state(r[col["state"]]) == "done"]
         left = [r for r in body if len(r) > est and _plan_state(r[col["state"]]) != "done"]
         d_est = sum(_plan_num(r[est]) or 0 for r in done)
-        d_act = sum(_plan_num(r[act]) or 0 for r in done) if act is not None else 0
-        ratio = f" (×{_sig1(d_act / d_est)})" if d_est and d_act else ""
-        notes.append(f"done: {len(done)} tasks, {_plan_fmt(d_est)} {unit} estimated, {_plan_fmt(d_act)} actual{ratio}".replace("  ", " "))
-        notes.append(f"left: {len(left)} tasks, {_plan_fmt(sum(_plan_num(r[est]) or 0 for r in left))} {unit} estimated".replace("  ", " "))
+        pairs = [(_plan_num(r[est]), _plan_num(r[act])) for r in done if act is not None and len(r) > act]
+        pairs = [(e, a) for e, a in pairs if e and a is not None]
+        d_act = sum(a for _, a in pairs)
+        ratio = f" (×{_sig1(d_act / sum(e for e, _ in pairs))})" if pairs and d_act else ""
+        tasks_word = lambda n: f"{n} task" + ("" if n == 1 else "s")
+        notes.append(f"done: {tasks_word(len(done))}, {_plan_fmt(d_est)} {unit} estimated, {_plan_fmt(d_act)} {unit} actual{ratio}".replace("  ", " "))
+        notes.append(f"left: {tasks_word(len(left))}, {_plan_fmt(sum(_plan_num(r[est]) or 0 for r in left))} {unit} estimated".replace("  ", " "))
     table = ('<div class="tbl"><table><thead><tr>' + "".join(f"<th>{_plan_inline(h)}</th>" for h in head)
              + "</tr></thead><tbody>" + "".join(cells) + "</tbody></table></div>")
     return table, notes
 
 
 def _plan_section(name: str, heading: str, lines: list[str]) -> str:
-    parts = []
+    parts, lane_open = [], False
     for kind, block in _plan_blocks(lines):
         if kind == "table":
             table, notes = _plan_table(block, tasks=name == "Tasks")
             parts.append(table)
             parts += [f'<p class="note">{_plan_inline(n)}</p>' for n in notes]
         elif kind == "h3":
-            parts.append(("</div>" if any(p.startswith('<div class="lane">') for p in parts) and not parts[-1].endswith("</div>") else "")
-                         + f'<div class="lane"><span class="st lane-name">{_plan_inline(block[0][4:])}</span>')
+            if lane_open:
+                parts.append("</div>")
+            parts.append(f'<div class="lane"><span class="st lane-name">{_plan_inline(block[0][4:])}</span>')
+            lane_open = True
         elif kind in ("ul", "ol") and name == "Milestones":
             for item in _plan_items(block):
                 m = re.match(r"\*\*(.+?)\*\*\s*·\s*(.+?)\s*·\s*(.+?)\s*(?:—\s*(.*))?$", item)
@@ -3968,9 +3975,9 @@ def _plan_section(name: str, heading: str, lines: list[str]) -> str:
             note = re.match(r"^(?:Note|Calibration):\s*", text)
             parts.append(f'<p class="note">{_plan_inline(text[note.end():] if note and note.group(0).startswith("Note") else text)}</p>'
                          if note else f"<p>{_plan_inline(text)}</p>")
-    inner = "".join(parts)
+    inner = "".join(parts) + ("</div>" if lane_open else "")
     if name == "Running now":
-        inner = '<div class="lanes">' + inner + ("</div>" if '<div class="lane">' in inner else "") + "</div>"
+        inner = '<div class="lanes">' + inner + "</div>"
     elif name == "Milestones":
         inner = f'<div class="cards">{inner}</div>'
     elif name in ("The question now", "Where we are"):
@@ -3995,18 +4002,21 @@ def plan_page(plan: Path, template: Path | None = None, lang: str = "en") -> tup
     problems = [] if title else ["no `# ` title line"]
     names = [next((s for s in PLAN_SECTIONS if h == s or (s == "Tasks" and h.startswith("Tasks"))), None) for h, _ in sections]
     problems += [f"no `## {s}` section" for s in PLAN_SECTIONS if s not in names]
+    problems += [f"`## {h}` is no section of the template ({', '.join(PLAN_SECTIONS)}); its text would be lost"
+                 for (h, _), n in zip(sections, names) if n is None]
     order = [PLAN_SECTIONS.index(n) for n in names if n]
     if order != sorted(order):
         problems.append("the sections are out of the template's order: " + ", ".join(PLAN_SECTIONS))
-    problems += [f"line {n}: {m.group(0)!r} is a template placeholder still to fill"
+    problems += [f"line {n}: {m.group(0)!r} is a template placeholder still to fill (wrap real angle brackets in backticks)"
                  for n, line in enumerate(lines, 1) for m in [PLAN_PLACEHOLDER.search(INLINE_CODE.sub("", line))] if m]
     if problems:
         return None, problems
     shell = (template or Path(__file__).resolve().parent.parent / "method/templates/plan-page.html").read_text(encoding="utf-8")
     shell = re.sub(r"<!-- [^\n]*Generated by the release build[^\n]*-->\n", "", shell, count=1)
     body = "".join(_plan_section(name, heading, body) for (heading, body), name in zip(sections, names) if name)
-    page = shell.replace("{{lang}}", html.escape(lang)).replace("{{title}}", _plan_inline(title).replace("<b>", "").replace("</b>", ""))
-    return page.replace("{{lead}}", _plan_inline(lead)).replace("{{body}}", body), []
+    values = {"lang": html.escape(lang), "title": re.sub(r"</?(?:b|code)>", "", _plan_inline(title)),
+              "lead": _plan_inline(lead), "body": body}
+    return re.sub(r"\{\{(lang|title|lead|body)\}\}", lambda m: values[m.group(1)], shell), []
 
 
 
@@ -4017,7 +4027,7 @@ SPEC_REQ_ID = re.compile(r"\bREQ-\d+\b(?!\.\d)")
 SPEC_OPEN = re.compile(r"\[NEEDS CLARIFICATION:[^\]]*\]")
 SPEC_VAGUE = re.compile(r"\b(fast|quick|slow|scalable|secure|intuitive|robust|simple|easy|efficient|user-friendly)\b", re.I)
 SPEC_DECISION_ROW = re.compile(r"^\|\s*`?([dis]-[0-9a-f]{6}-[0-9a-f]{6})`?\s*\|\s*([^|]*)\|")
-SPEC_WITHDRAWN = re.compile(r"·\s*Withdrawn\s*$")
+SPEC_WITHDRAWN = re.compile(r"·\s*Withdrawn\s*$", re.I)
 
 
 def _spec_text(text: str) -> list[tuple[int, str]]:
@@ -4034,7 +4044,7 @@ def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = No
             raise RefusedError(f"{path}: no such file")
     lines = _spec_text(spec.read_text(encoding="utf-8"))
     decisions = decisions or spec.parent / "decisions.md"
-    known = ({m.group(1): m.group(2).strip().lower() for line in decisions.read_text(encoding="utf-8").splitlines()
+    known = ({m.group(1): m.group(2).strip(" *_`").lower() for line in decisions.read_text(encoding="utf-8").splitlines()
               if (m := SPEC_DECISION_ROW.match(line))} if decisions.is_file() else {})
     problems, warnings = [], []
     if not decisions.is_file():
@@ -4099,7 +4109,7 @@ MACHINE_REGISTER = "meta/tracking/machines.md"
 MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
 MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
 MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} (?:\d+\.\d+\.\d+|unreleased)$")
-MACHINE_PATH = re.compile(r"(?<![\w.~-])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|/[\w.-]+/|[A-Za-z]:[\\/])")
+MACHINE_PATH = re.compile(r"(?<![\w.~:/-])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|/(?![\w-]+/(?:\s|$))[\w.-]+/|\.\./|\./[\w.-]+/|[A-Za-z]:[\\/])")
 
 
 def _config_dir() -> Path:
@@ -4177,7 +4187,7 @@ def _machine_text_problems(text: str, name: str) -> list[str]:
             problems.append(f"{where}: carriers must be `r-xxxxxx X.Y.Z` only, not {bad[0]!r}")
         if re.search(r"\br-[0-9a-f]{6}\b", waits):
             problems.append(f"{where}: a carrier id in *Waits here*, beside a description of it; say it without the id")
-        if MACHINE_PATH.search(waits):
+        if MACHINE_PATH.search(re.sub(r"\b[a-z][a-z0-9+.-]*://\S*", " ", waits)):
             problems.append(f"{where}: a path in *Waits here*; paths never travel")
         try:
             datetime.date.fromisoformat(updated)
@@ -5395,11 +5405,15 @@ def _measure_costs(records):
     tokens = [r["act_ktok"] / r["est_ktok"] for r in records if r.get("est_ktok")]
     if not time and not tokens:
         return None
+    counted = {"time": len(time), "tokens": len(tokens)}
     time, tokens = (v if len(v) >= MEASURE_MIN else [] for v in (time, tokens))
     if not time and not tokens:
         return "too few"
+
     def general(values, what):
-        return f"{what} ×{_sig1(statistics.median(values))} (×{_sig1(min(values))} to ×{_sig1(max(values))})" if values else f"{what} not estimated"
+        if values:
+            return f"{what} ×{_sig1(statistics.median(values))} (×{_sig1(min(values))} to ×{_sig1(max(values))})"
+        return f"{what} too few to generalise" if counted[what] else f"{what} not estimated"
     def raw(values, what):
         return f"{what} median {statistics.median(values):.2f}, range {min(values):.2f} to {max(values):.2f}, n={len(values)}" if values else f"{what} none"
     n = max(len(time), len(tokens))
@@ -5452,7 +5466,7 @@ def _measures(repo, today):
         if isinstance(row, dict) and MEASURE_ID.match(str(row.get("id", ""))) and isinstance(row.get("at"), str):
             rows.append(row)
     cutoff = str(today - datetime.timedelta(days=usage_days(usage_consent())))
-    kept = [r for r in rows if r["at"] >= cutoff or r.get("state") != "pending"]
+    kept = [r for r in rows if r["at"] >= cutoff or r.get("state") == "entered"]
     if len(kept) != len(rows):
         _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in kept))
     return path, kept
