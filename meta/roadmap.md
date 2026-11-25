@@ -140,36 +140,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   section and no researcher; a test importing a package its requirements do not declare, so a fresh environment
   fails; a gate whose ratchet baseline is ignored, so a worktree cannot run it; a gate that checks trailers but
   not the author; a sibling path an audit reads that a worktree cannot resolve. *Estimate:* one read per carrier.
-- **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.** **Done 2026-11-25 in 0.0.35:** the close skill and `prompt-sync.md` spell the push as a step of its own.
-  Second occurrence on 2026-11-24: a push chained after a check was refused by the host's permission
-  classifier, and the same push alone went through. The root instruction file already carries the rule —
-  never put an edit in the same command as something a permission rule may refuse — which means the rule is
-  text, and text is the ladder's weakest rung. What would hold instead: the close and the release procedures
-  spell the push as its own step, so no agent composes it; and where a repository has a command that runs the
-  gate and commits (`i-5ed7e8-bd65a0`), that command never takes a push. *Estimate:* a line in each
-  procedure, about twenty minutes. *Collides with:* `i-5ed7e8-bd65a0`, whose shape this constrains.
-
-- **`i-5ed7e8-9ef5d1` · A voluntary, anonymised path for usage evidence to enter a record.** The owner's ask of
-  2026-11-24. The standing rule is that usage data stays on its machine and only a generalised figure the owner
-  approves enters a record. That rule has no procedure behind it, so in practice nothing ever enters: on the day
-  it was raised, four weeks of local usage data were read, produced a picture of how the work actually goes, and
-  **not one figure of it reached any record**, while *a measurement nobody has run* is the blocking reason on
-  eight of the fifty-four oldest candidates. The rule is not wrong; what is missing is the step that lets it be
-  obeyed and still used.
-  **The shape, to be designed with the owner one decision at a time, not written straight out:** the tool already
-  holds the local store, a consent level, a retention and a `brief`. What it lacks is a step that takes a
-  question — *how often does this happen, over what* — and returns an answer already generalised to a ratio or an
-  order of magnitude, with the raw figure shown only to the owner, who then approves or refuses it entering a
-  named record. Three things that decide whether it works: the generalisation must happen in the tool, not in an
-  agent's prose, or the rule relies on the thing it is guarding against; the approval must name the record the
-  figure enters, since a figure approved once is not approved for everywhere; and a refused figure must leave a
-  trace saying a measurement exists and was withheld, so the candidate's *Lacks* stops claiming nobody has run
-  one. Whether a second machine's figures may be combined is its own decision, and the answer is probably no
-  while each machine is one person.
-  *Estimate:* a design round with the owner, then about a session to build with tests. *Collides with:* the
-  standing rule itself, which this makes executable; `usage`'s consent model; every candidate whose *Lacks* is a
-  measurement; and the privacy check, which must still fail on a figure that identifies anything.
-
 - **`i-5ed7e8-a6b77f` · Split the home's own commands out of the shipped tool, by who runs them.** The owner's
   proposal of 2026-11-24 (`p-7b6ae101bc`): what only the home runs lives in a file of its own that does not
   travel, so a carrier's copy is smaller to carry, to checksum and to keep in step, and the home's half has
@@ -210,35 +180,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   decisions belong to an intake, one turn each; the three defects are about twenty minutes. *Collides with:*
   the next intake, which rewrites the same rows.
 
-- **`i-5ed7e8-a98470` · The decisions check counts what it means.** **Done 2026-11-24**: the count now reads twenty-nine, with the agent's own nine on their own line. Two faults, found by using it on
-  2026-11-24 (`d-5ed7e8-2f51c2`). A row whose status is `superseded by` or `deprecated` still counts as
-  unconfirmed, though its reason is history and no person will ever be asked for it: six of forty-four. A row
-  decided by an agent can never clear, because its reason is an agent's by definition, while the status column
-  already says `· agent`: nine more. So fifteen of the warnings name nothing anyone can act on, and a count
-  that cannot reach zero stops being read — the same failure as a warning on standard error that nobody looks
-  at. The fix: skip superseded and deprecated rows, and report the agent-decided ones as their own line rather
-  than inside the same number. What is left is the rows a person accepted whose reason a person never gave,
-  which is what the warning was for. *Estimate:* about half an hour with tests, including one that a
-  superseded row stops counting and its successor starts. *Collides with:* `release.py check`'s own output,
-  which several closes quote by its totals.
-
-- **`i-5ed7e8-ee9f86` · Count what of the carrier tool a carrier never runs.** `tools/bundle.py` is 276,091
-  bytes, 27% of the release and its single largest file, and nobody has asked which of its commands a carrier
-  invokes. The question is the owner's, put on 2026-11-24: content whose only reader is a session that already
-  has a home open costs a carrier nothing to lose, which is not the same as reading it from the home over a
-  network — a carrier has no route to one and must not need one. So the work is a count, not a change: for each
-  command, which session's file names it, and whether any of them is reachable without a home. Only then is
-  there a decision to put. **Counted the same day** (`meta/reviews/2026-11-24-carrier-tool-commands.md`), and
-  the answer is no: of twenty-five subcommands, none is named only by a file that exists in a home. Every command
-  with a mention in the home's own method also has one in a file a carrier reads by itself, and the single command
-  no method file names at all is run by the home's pre-push hook, which does not ship. So there is no home-only
-  content in the tool by name, and that share of the release is not a saving. What the count does not show:
-  whether a carrier runs everything it names, and whether home-only code hides in shared helpers, which are
-  attributed to no command. A second, independent count the same day confirmed the verdict and
-  corrected the first one's line figures, which measure dispatch blocks and understate the size of a command
-  several times over; both are recorded in the review. Neither pass asked who actually *runs* a command, as
-  against who names it, and a count by that measure could still find a home-only class. *Left:* nothing to
-  build; the item closes at the next cut. *Collides with:* nothing.
 - **`i-5ed7e8-23e94e` · Re-examine the export cap once the changelog can be archived again.** The cap was
   raised to 1,250,000 bytes on 2026-11-24 (`d-5ed7e8-929f2a`) after the alternative — archiving the oldest
   changelog sections into the home — was rejected on a tool defect, `i-5ed7e8-5e0415`, and not on its merits.
@@ -247,58 +188,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   ledger, so the shape is proven in the bundle. *Estimate:* nothing to build; a re-reading at the release after
   the defect is fixed. *Collides with:* `i-5ed7e8-5e0415`, which it waits on, and any carrier reading
   `--since` across the archived boundary.
-
-- **`i-5ed7e8-57358a` · Remove the product-noun check and its list.** **Done 2026-11-24**, except the changelog line, which belongs to the next cut's section. Decided by the owner on 2026-11-24
-  (`d-5ed7e8-aa5d67`, superseding `d-5ed7e8-e0a56e` and `d-5ed7e8-4f76c8`), who asked whether the ban was
-  wanted at all. Delete `meta/product-nouns.txt`, the `product_nouns` and `_product_cues` helpers, the cue
-  problem they raise, and the tests that cover them; say so in the changelog, since a carrier's audit may
-  expect a build to fail on such a cue. What replaces it is nothing: generality is step 2 of admission, which a
-  person applies, and a product name that would identify a carrier is the privacy check's. *Estimate:* about
-  twenty minutes with the tests. *Collides with:* `_note_problems`' signature, which several callers pass
-  `nouns` into, and the changelog line that announced the check. It also closes `i-5ed7e8-6155a1`, which asked for the
-  same check to stop false-positiving on punctuated and short nouns: the item was removed from *Later* when the
-  check went, and its text is in the history at the 0.0.33 cut, kept here so nobody proposes it again.
-
-- **`i-5ed7e8-26a753` · The worktree's environment rule gains the exception its own note supports.** Decided by
-  the owner on 2026-11-24 (`d-5ed7e8-381ef9`, superseding `d-5ed7e8-05fcd3`). Today the rule forbids a fresh
-  environment inside a worktree outright and has every such result reported unproven; the note admitted at
-  0.0.33 holds, on hermeticity literature, that an environment built for the copy is the better answer wherever
-  it can be afforded. The rule becomes: build it where that is cheap and reproducible, and the result is proven;
-  otherwise use the main working copy's and say the result is unproven. The two places that carry the rule — the home's
-  sync method and §*4. Verify*, which is what a carrier reads — are rewritten together, and the note gains the
-  cross-reference. *Estimate:* a paragraph in each, about half an
-  hour, plus a line in the note. *Collides with:* every carrier update that reports a gate's result, since the
-  word *proven* now means different work in different repositories and the report must say which.
-
-- **`i-5ed7e8-25ecc8` · `usage` drops a `.gitignore` beside its state folder.** **Done 2026-11-24**, with a test that a file symlinked out of the tool's folder leaves no `.gitignore` behind it. Decided by the owner on
-  2026-11-24 (`d-5ed7e8-011bc5`, superseding `d-5ed7e8-eb2c2f`): the first write creates a `.gitignore` holding
-  `*` in the tool's state folder, so a home folder that is itself a working tree cannot commit the usage data.
-  The write there stays allowed and the warning stays, since it is still worth saying; what changes is that
-  ignoring it no longer leaks. *Estimate:* about half an hour with a test that the file is created once, is not
-  rewritten over a hand edit, and that the data is ignored by a repository rooted at the home folder.
-  *Collides with:* nothing in the release; the tool's own tests of the refusal path.
-
-- **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** **Done 2026-11-24, and not where this item said:** a carrier holds neither the tracking tables nor the note sources, so the check lives in the home's own `check`, not in the tool every carrier runs; and it reads only rows that claim a note was admitted, a naive pass having left seventy-eight slugs unresolved that are rightly not files. Today `ids` checks the
-  format of record ids and catches a decision cited and defined nowhere, but a **note slug** written into a
-  tracking table is read by nobody: it is prose to the tool. On 2026-11-24 two slugs were written into the
-  history table as admitted at the release being cut, from memory, and neither existed; they were plausible in
-  form and in subject, and were found by a later search rather than by any check. The table is what the next
-  release reads to know what was admitted, so an invented slug there is carried forward as fact. Every slug in
-  those tables is mechanically resolvable: it names a file under the notes folder, in one of the three states,
-  or a row of the queue. The check is therefore cheap and exact, and it is the `lacks` of the proposal this
-  session wrote (`p-75679cf56f`). *Estimate:* about an hour with tests, and a first run that will probably find
-  older slugs the tables already carry. *Collides with:* the tables' own retired and refused rows, whose slugs
-  name files that no longer exist under any state, so the check needs the retired folder and the refused history
-  in its resolution set before it can be made to fail a commit.
-- **`i-5ed7e8-5e0415` · `changelog --since` answers for a version it no longer holds, silently.** **Done 2026-11-24.** Asked for a
-  version older than the oldest section the file still carries, it returns what it has and exits zero, saying
-  nothing about the gap. A carrier two or three versions behind would therefore receive an answer that looks
-  complete and is not, and the agent reading it has no way to tell. Found on 2026-11-24 while weighing whether to
-  archive the oldest changelog sections to stay under the export cap; the archiving was rejected for this reason
-  and the cap was raised instead (`d-5ed7e8-929f2a`), so the defect is now the only thing standing between the
-  bundle and that option. *Estimate:* about half an hour with tests: name the oldest version held, and exit
-  non-zero when the requested one is older than it. *Collides with:* any carrier update session that reads
-  `--since` to decide what changed, and the archiving option this defect currently blocks.
 
 - **`i-5ed7e8-dfae87` · 0.1.0, the first stable release, aimed at this month.** The owner's objective: a stable
   release in October 2026. 0.0.32 stays a patch (`d-5ed7e8-3110f3`) and is the first of the two releases in a row
@@ -317,14 +206,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   comes before any text. *Estimate:* a design round and about half a session to write. *Collides with:*
   `prompt-context.md` §*Long runs and delegates*, which 0.0.32 has just changed for delegates
   (`d-5ed7e8-6069fe`), and the delegate-brief bullet.
-- **`i-5ed7e8-045188` · A delegation's estimate is written down before the launch.** **Eight pairs counted on 2026-11-24**, the first set this repository holds: every estimate was too high, the bounded read-only ones by ten to fifteen times, the editing one by about six, the reviews by five to fifteen. The direction is consistent, which is what makes it correctable; the pairs are in that day's session-log entry and in the local usage store. Counted, not remembered: the
-  symptom appears twice, once in an earlier hand-off ("a large plan's estimate") and once on 2026-10-15, when
-  three research agents were announced at 120–200k tokens and 15–25 minutes each and cost 19k, 55k and 69k in
-  about a minute — **2.5× to 4× out**, and the announcement itself exists nowhere written, so the pair that would
-  have calibrated the next one does not exist. The fix is the cheap half of `i-5ed7e8-55e022`: the estimate goes
-  in the message that launches the batch *and* in the plan's ledger, and the actual is written beside it when the
-  agent returns. *Estimate:* a line in the method and a column in the ledger, under an hour. *Collides with:* the
-  cost ledger and board candidates already queued, and `i-5ed7e8-023814`.
 - **`i-5ed7e8-655151` · Moving a candidate row to the history is done by hand at every release.** Second
   occurrence, counted: 0.0.31 and 0.0.32 both moved rows between `meta/tracking/candidates.md` and `history.md`
   by hand, and 0.0.32 shipped nine answers whose rows a reviewer had to find — the release had left them queued.
@@ -362,20 +243,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Estimate:* a design round, then the enforcement change and its check. *Collides with:* the git hooks, the gate,
   `bundle.py ids`, `decisions`, `docs-drift`, the append-only log and the checksum manifest.
 
-- **`i-5ed7e8-2a2e86` · A partial gather waits for the remaining carriers before intake.** Four
-  carriers were harvested and closed on 2026-10-15 and offer **44 proposals** between them (17, 17,
-  6 and 4); the owner holds at least one more carrier whose harvest comes separately, so the intake
-  is deliberately **not** run: the pending state is the proposals themselves, committed in each
-  carrier and reported by `gather` as waiting, and `gather` is read-only and repeatable over the
-  full set. Verified at the time: every one passes the gathering step's privacy check, none held
-  back. Worth knowing before the intake: three of the method proposals restate instruction lines
-  this roadmap already records under *Blocked outside* for another machine (ids with a name table,
-  the interaction designed as a flow, a delegation priced on the cheapest model) — they arrive with
-  reasoning and evidence rather than as news, and the release decides whether that is enough to
-  make them notes. *Next session's first step:* re-run `gather` over every carrier the owner names,
-  including the one still to be harvested, and only then give the one table its verdicts.
-  *Estimate:* the gather is minutes; the verdicts are the work. *Collides with:* nothing, while the
-  intake is not run; a release cut before it would simply not carry them.
 - **`i-5ed7e8-f0680a` · Parallelisation only where it lowers cost, measured.** The owner's
   short-term objective, stated 2026-10-15: improve how tasks run in parallel, **bounded to cost
   optimisation** rather than to speed. So the pilot's question is not how many agents can run at
@@ -394,7 +261,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Collides with:* the planning documents a carrier keeps, and the pre-review the long skills open
   with.
 
-- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** **Done 2026-11-25 in 0.0.35,** every recorded shape with a test that the leak beside it still fails; the five allowances already written stay. **Two more on 2026-11-24, so eight over three sessions:** a decision id beside the ordinary English word for a working copy, reworded, and one beside a figure in a record. Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
@@ -403,10 +269,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   five rules), found only by a later review. *Estimate:* a paragraph in `prompt-sync.md` and a proposal; or a script
   that lists each removed sentence's rule words (numbers, commands, ids) and greps the rest for them, about two
   hours. *Collides with:* the next reduction pass.
-- **`i-5ed7e8-780330` · In an isolated worktree, version-control calls go in plain separate commands.** The host
-  refuses a compound command, a `-C` or `cd`, a variable where an option may stand, or any text naming git in a form it
-  cannot verify; a script written to a file runs. Say it once in the method's worktree rule. *Estimate:* a few lines.
-  *Collides with:* `prompt-sync.md`, the `close` skill.
 - **`i-5ed7e8-6cf312` · `bundle.py new entry` refuses a missing log in one line, and the home names its session
   log.** **Half done on 2026-11-24:** this repository now names its session log, and the file exists with its first entry. The other half stands and is worse than recorded — asked to write into a log that does not exist, the command does not refuse in one line, it raises an unhandled error and prints a traceback. Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
   close skill's step 3 does not know. *Estimate:* an hour with a test. *Collides with:* `new entry`, the close skill.
@@ -505,8 +367,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   it where nothing used it. *When:* at the next release that takes in harvests from carriers on 0.0.27. *Not
   triggered in 0.0.30* (2026-10-08): no carrier's harvest was taken in; it waits for 0.0.31's.
   *Collision:* the coding session's budget, if any is withdrawn from the session loop.
-- **`i-5ed7e8-cc0b86` · Queue the experiments the five other new 0.0.27 notes name.** Only two of the
-  seven admitted notes had their experiment queued in `meta/tracking/experiments.md`. *Collision:* none.
 - **`i-5ed7e8-3a8f87` · Redesign phase 2: bases for verify, commit and state-review, and an audit
   library v1.** The three procedures every carrier rewrote by hand become bases; the structural checks
   carriers keep re-implementing (document paths, decision enforcers that resolve, a research index,
@@ -606,18 +466,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Waits on:* the user's review. *Collides with:* nothing but those fields.
 - **`i-5ed7e8-543516` · Publish the release page for each tag**, with its CHANGELOG section, so a reader
   who does not clone sees what changed. *Waits on:* a machine with the forge's CLI, or the web.
-- **`i-5ed7e8-d3ee51` · Close the residual gaps the adversarial review of 0.0.22 left open.** **Closed 2026-11-25** (`d-5ed7e8-c11cbb`): `note-state` made to check before it moves, in 0.0.36; the seven other residuals moved to `i-5ed7e8-688897`. Two rounds
-  fixed every blocking finding; still open, each reproduced: a release's own `incoming/*.md` is not
-  flagged by `verify --release` (it is never copied, so low); the list of refused configuration and
-  instruction files can never be complete; the YAML subset agrees with PyYAML only as far as
-  `check_yaml.py` in CI proves it; a carrier converted from the old layout may keep its own documents
-  pointing at files that moved (its own gate catches them). The *card* false positive was fixed in 0.0.23.
-  Left open by the adversarial review of 0.0.23, each reproduced and none reached by a current file: the
-  banner goes in as a heading in a `.md` whose first line is a thematic break with no closing `---`, and
-  shifts a Python encoding line after a shebang; `note-state` moves the file before the principle check
-  refuses, so a refused move is left half done; the steps 3 and 4 of the session loop still cite full notes
-  as background; the working invocation's `Reads:` does not reach the *Done* checklist it asks to be run
-  before every report (older than 0.0.23; adding it costs the coding session more than its budget allows). *Collides with:* `bundle.py`, `release.py`, their tests.
 - **`i-5ed7e8-688897` · Residuals of the 0.0.22 and 0.0.23 adversarial reviews, none of which can lose a carrier's record.**
   From `i-5ed7e8-d3ee51` (`d-5ed7e8-c11cbb`), each reproduced there: a release's own `incoming/*.md` unflagged by
   `verify --release`; a refused-files list that can never be complete; the YAML subset proven against PyYAML only by
@@ -813,6 +661,160 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **2026-11-25: fifteen *Next* items found done, obsolete or closed by the triage** (`meta/reviews/2026-11-25-next-triage.md`, phase 1 task 1), moved here whole:
+  - **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.** **Done 2026-11-25 in 0.0.35:** the close skill and `prompt-sync.md` spell the push as a step of its own.
+    Second occurrence on 2026-11-24: a push chained after a check was refused by the host's permission
+    classifier, and the same push alone went through. The root instruction file already carries the rule —
+    never put an edit in the same command as something a permission rule may refuse — which means the rule is
+    text, and text is the ladder's weakest rung. What would hold instead: the close and the release procedures
+    spell the push as its own step, so no agent composes it; and where a repository has a command that runs the
+    gate and commits (`i-5ed7e8-bd65a0`), that command never takes a push. *Estimate:* a line in each
+    procedure, about twenty minutes. *Collides with:* `i-5ed7e8-bd65a0`, whose shape this constrains.
+
+  - **`i-5ed7e8-9ef5d1` · A voluntary, anonymised path for usage evidence to enter a record.** The owner's ask of
+    2026-11-24. The standing rule is that usage data stays on its machine and only a generalised figure the owner
+    approves enters a record. That rule has no procedure behind it, so in practice nothing ever enters: on the day
+    it was raised, four weeks of local usage data were read, produced a picture of how the work actually goes, and
+    **not one figure of it reached any record**, while *a measurement nobody has run* is the blocking reason on
+    eight of the fifty-four oldest candidates. The rule is not wrong; what is missing is the step that lets it be
+    obeyed and still used.
+    **The shape, to be designed with the owner one decision at a time, not written straight out:** the tool already
+    holds the local store, a consent level, a retention and a `brief`. What it lacks is a step that takes a
+    question — *how often does this happen, over what* — and returns an answer already generalised to a ratio or an
+    order of magnitude, with the raw figure shown only to the owner, who then approves or refuses it entering a
+    named record. Three things that decide whether it works: the generalisation must happen in the tool, not in an
+    agent's prose, or the rule relies on the thing it is guarding against; the approval must name the record the
+    figure enters, since a figure approved once is not approved for everywhere; and a refused figure must leave a
+    trace saying a measurement exists and was withheld, so the candidate's *Lacks* stops claiming nobody has run
+    one. Whether a second machine's figures may be combined is its own decision, and the answer is probably no
+    while each machine is one person.
+    *Estimate:* a design round with the owner, then about a session to build with tests. *Collides with:* the
+    standing rule itself, which this makes executable; `usage`'s consent model; every candidate whose *Lacks* is a
+    measurement; and the privacy check, which must still fail on a figure that identifies anything.
+
+  - **`i-5ed7e8-a98470` · The decisions check counts what it means.** **Done 2026-11-24**: the count now reads twenty-nine, with the agent's own nine on their own line. Two faults, found by using it on
+    2026-11-24 (`d-5ed7e8-2f51c2`). A row whose status is `superseded by` or `deprecated` still counts as
+    unconfirmed, though its reason is history and no person will ever be asked for it: six of forty-four. A row
+    decided by an agent can never clear, because its reason is an agent's by definition, while the status column
+    already says `· agent`: nine more. So fifteen of the warnings name nothing anyone can act on, and a count
+    that cannot reach zero stops being read — the same failure as a warning on standard error that nobody looks
+    at. The fix: skip superseded and deprecated rows, and report the agent-decided ones as their own line rather
+    than inside the same number. What is left is the rows a person accepted whose reason a person never gave,
+    which is what the warning was for. *Estimate:* about half an hour with tests, including one that a
+    superseded row stops counting and its successor starts. *Collides with:* `release.py check`'s own output,
+    which several closes quote by its totals.
+
+  - **`i-5ed7e8-ee9f86` · Count what of the carrier tool a carrier never runs.** `tools/bundle.py` is 276,091
+    bytes, 27% of the release and its single largest file, and nobody has asked which of its commands a carrier
+    invokes. The question is the owner's, put on 2026-11-24: content whose only reader is a session that already
+    has a home open costs a carrier nothing to lose, which is not the same as reading it from the home over a
+    network — a carrier has no route to one and must not need one. So the work is a count, not a change: for each
+    command, which session's file names it, and whether any of them is reachable without a home. Only then is
+    there a decision to put. **Counted the same day** (`meta/reviews/2026-11-24-carrier-tool-commands.md`), and
+    the answer is no: of twenty-five subcommands, none is named only by a file that exists in a home. Every command
+    with a mention in the home's own method also has one in a file a carrier reads by itself, and the single command
+    no method file names at all is run by the home's pre-push hook, which does not ship. So there is no home-only
+    content in the tool by name, and that share of the release is not a saving. What the count does not show:
+    whether a carrier runs everything it names, and whether home-only code hides in shared helpers, which are
+    attributed to no command. A second, independent count the same day confirmed the verdict and
+    corrected the first one's line figures, which measure dispatch blocks and understate the size of a command
+    several times over; both are recorded in the review. Neither pass asked who actually *runs* a command, as
+    against who names it, and a count by that measure could still find a home-only class. *Left:* nothing to
+    build; the item closes at the next cut. *Collides with:* nothing.
+  - **`i-5ed7e8-57358a` · Remove the product-noun check and its list.** **Done 2026-11-24**, except the changelog line, which belongs to the next cut's section. Decided by the owner on 2026-11-24
+    (`d-5ed7e8-aa5d67`, superseding `d-5ed7e8-e0a56e` and `d-5ed7e8-4f76c8`), who asked whether the ban was
+    wanted at all. Delete `meta/product-nouns.txt`, the `product_nouns` and `_product_cues` helpers, the cue
+    problem they raise, and the tests that cover them; say so in the changelog, since a carrier's audit may
+    expect a build to fail on such a cue. What replaces it is nothing: generality is step 2 of admission, which a
+    person applies, and a product name that would identify a carrier is the privacy check's. *Estimate:* about
+    twenty minutes with the tests. *Collides with:* `_note_problems`' signature, which several callers pass
+    `nouns` into, and the changelog line that announced the check. It also closes `i-5ed7e8-6155a1`, which asked for the
+    same check to stop false-positiving on punctuated and short nouns: the item was removed from *Later* when the
+    check went, and its text is in the history at the 0.0.33 cut, kept here so nobody proposes it again.
+
+  - **`i-5ed7e8-26a753` · The worktree's environment rule gains the exception its own note supports.** Decided by
+    the owner on 2026-11-24 (`d-5ed7e8-381ef9`, superseding `d-5ed7e8-05fcd3`). Today the rule forbids a fresh
+    environment inside a worktree outright and has every such result reported unproven; the note admitted at
+    0.0.33 holds, on hermeticity literature, that an environment built for the copy is the better answer wherever
+    it can be afforded. The rule becomes: build it where that is cheap and reproducible, and the result is proven;
+    otherwise use the main working copy's and say the result is unproven. The two places that carry the rule — the home's
+    sync method and §*4. Verify*, which is what a carrier reads — are rewritten together, and the note gains the
+    cross-reference. *Estimate:* a paragraph in each, about half an
+    hour, plus a line in the note. *Collides with:* every carrier update that reports a gate's result, since the
+    word *proven* now means different work in different repositories and the report must say which.
+
+  - **`i-5ed7e8-25ecc8` · `usage` drops a `.gitignore` beside its state folder.** **Done 2026-11-24**, with a test that a file symlinked out of the tool's folder leaves no `.gitignore` behind it. Decided by the owner on
+    2026-11-24 (`d-5ed7e8-011bc5`, superseding `d-5ed7e8-eb2c2f`): the first write creates a `.gitignore` holding
+    `*` in the tool's state folder, so a home folder that is itself a working tree cannot commit the usage data.
+    The write there stays allowed and the warning stays, since it is still worth saying; what changes is that
+    ignoring it no longer leaks. *Estimate:* about half an hour with a test that the file is created once, is not
+    rewritten over a hand edit, and that the data is ignored by a repository rooted at the home folder.
+    *Collides with:* nothing in the release; the tool's own tests of the refusal path.
+
+  - **`i-5ed7e8-8b542b` · `bundle.py ids` resolves a note slug cited in a tracking table.** **Done 2026-11-24, and not where this item said:** a carrier holds neither the tracking tables nor the note sources, so the check lives in the home's own `check`, not in the tool every carrier runs; and it reads only rows that claim a note was admitted, a naive pass having left seventy-eight slugs unresolved that are rightly not files. Today `ids` checks the
+    format of record ids and catches a decision cited and defined nowhere, but a **note slug** written into a
+    tracking table is read by nobody: it is prose to the tool. On 2026-11-24 two slugs were written into the
+    history table as admitted at the release being cut, from memory, and neither existed; they were plausible in
+    form and in subject, and were found by a later search rather than by any check. The table is what the next
+    release reads to know what was admitted, so an invented slug there is carried forward as fact. Every slug in
+    those tables is mechanically resolvable: it names a file under the notes folder, in one of the three states,
+    or a row of the queue. The check is therefore cheap and exact, and it is the `lacks` of the proposal this
+    session wrote (`p-75679cf56f`). *Estimate:* about an hour with tests, and a first run that will probably find
+    older slugs the tables already carry. *Collides with:* the tables' own retired and refused rows, whose slugs
+    name files that no longer exist under any state, so the check needs the retired folder and the refused history
+    in its resolution set before it can be made to fail a commit.
+  - **`i-5ed7e8-5e0415` · `changelog --since` answers for a version it no longer holds, silently.** **Done 2026-11-24.** Asked for a
+    version older than the oldest section the file still carries, it returns what it has and exits zero, saying
+    nothing about the gap. A carrier two or three versions behind would therefore receive an answer that looks
+    complete and is not, and the agent reading it has no way to tell. Found on 2026-11-24 while weighing whether to
+    archive the oldest changelog sections to stay under the export cap; the archiving was rejected for this reason
+    and the cap was raised instead (`d-5ed7e8-929f2a`), so the defect is now the only thing standing between the
+    bundle and that option. *Estimate:* about half an hour with tests: name the oldest version held, and exit
+    non-zero when the requested one is older than it. *Collides with:* any carrier update session that reads
+    `--since` to decide what changed, and the archiving option this defect currently blocks.
+
+  - **`i-5ed7e8-045188` · A delegation's estimate is written down before the launch.** **Eight pairs counted on 2026-11-24**, the first set this repository holds: every estimate was too high, the bounded read-only ones by ten to fifteen times, the editing one by about six, the reviews by five to fifteen. The direction is consistent, which is what makes it correctable; the pairs are in that day's session-log entry and in the local usage store. Counted, not remembered: the
+    symptom appears twice, once in an earlier hand-off ("a large plan's estimate") and once on 2026-10-15, when
+    three research agents were announced at 120–200k tokens and 15–25 minutes each and cost 19k, 55k and 69k in
+    about a minute — **2.5× to 4× out**, and the announcement itself exists nowhere written, so the pair that would
+    have calibrated the next one does not exist. The fix is the cheap half of `i-5ed7e8-55e022`: the estimate goes
+    in the message that launches the batch *and* in the plan's ledger, and the actual is written beside it when the
+    agent returns. *Estimate:* a line in the method and a column in the ledger, under an hour. *Collides with:* the
+    cost ledger and board candidates already queued, and `i-5ed7e8-023814`.
+  - **`i-5ed7e8-2a2e86` · A partial gather waits for the remaining carriers before intake.** Four
+    carriers were harvested and closed on 2026-10-15 and offer **44 proposals** between them (17, 17,
+    6 and 4); the owner holds at least one more carrier whose harvest comes separately, so the intake
+    is deliberately **not** run: the pending state is the proposals themselves, committed in each
+    carrier and reported by `gather` as waiting, and `gather` is read-only and repeatable over the
+    full set. Verified at the time: every one passes the gathering step's privacy check, none held
+    back. Worth knowing before the intake: three of the method proposals restate instruction lines
+    this roadmap already records under *Blocked outside* for another machine (ids with a name table,
+    the interaction designed as a flow, a delegation priced on the cheapest model) — they arrive with
+    reasoning and evidence rather than as news, and the release decides whether that is enough to
+    make them notes. *Next session's first step:* re-run `gather` over every carrier the owner names,
+    including the one still to be harvested, and only then give the one table its verdicts.
+    *Estimate:* the gather is minutes; the verdicts are the work. *Collides with:* nothing, while the
+    intake is not run; a release cut before it would simply not carry them.
+  - **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** **Done 2026-11-25 in 0.0.35,** every recorded shape with a test that the leak beside it still fails; the five allowances already written stay. **Two more on 2026-11-24, so eight over three sessions:** a decision id beside the ordinary English word for a working copy, reworded, and one beside a figure in a record. Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
+  - **`i-5ed7e8-780330` · In an isolated worktree, version-control calls go in plain separate commands.** The host
+    refuses a compound command, a `-C` or `cd`, a variable where an option may stand, or any text naming git in a form it
+    cannot verify; a script written to a file runs. Say it once in the method's worktree rule. *Estimate:* a few lines.
+    *Collides with:* `prompt-sync.md`, the `close` skill.
+  - **`i-5ed7e8-cc0b86` · Queue the experiments the five other new 0.0.27 notes name.** Only two of the
+    seven admitted notes had their experiment queued in `meta/tracking/experiments.md`. *Collision:* none.
+  - **`i-5ed7e8-d3ee51` · Close the residual gaps the adversarial review of 0.0.22 left open.** **Closed 2026-11-25** (`d-5ed7e8-c11cbb`): `note-state` made to check before it moves, in 0.0.36; the seven other residuals moved to `i-5ed7e8-688897`. Two rounds
+    fixed every blocking finding; still open, each reproduced: a release's own `incoming/*.md` is not
+    flagged by `verify --release` (it is never copied, so low); the list of refused configuration and
+    instruction files can never be complete; the YAML subset agrees with PyYAML only as far as
+    `check_yaml.py` in CI proves it; a carrier converted from the old layout may keep its own documents
+    pointing at files that moved (its own gate catches them). The *card* false positive was fixed in 0.0.23.
+    Left open by the adversarial review of 0.0.23, each reproduced and none reached by a current file: the
+    banner goes in as a heading in a `.md` whose first line is a thematic break with no closing `---`, and
+    shifts a Python encoding line after a shebang; `note-state` moves the file before the principle check
+    refuses, so a refused move is left half done; the steps 3 and 4 of the session loop still cite full notes
+    as background; the working invocation's `Reads:` does not reach the *Done* checklist it asks to be run
+    before every report (older than 0.0.23; adding it costs the coding session more than its budget allows). *Collides with:* `bundle.py`, `release.py`, their tests.
 
 - **`i-5ed7e8-c0341d`, 2026-11-25: the usage state folder honours an `XDG_STATE_HOME` the user set on macOS too**,
   so the three tests that steer it pass on this machine; a new test pins both platforms.
