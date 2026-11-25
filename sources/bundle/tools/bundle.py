@@ -3963,6 +3963,83 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
     return "\n".join(parts)
 
 
+# --- a spec, shape B ------------------------------------------------------------------------------------------
+# An optional format (`d-5ed7e8-cb0531`, template in `method/templates/spec.md`): the spec holds what and its check,
+# the decisions log why. The check is what makes two files safe: every requirement links a decision that exists,
+# every link resolves, and an open marker blocks the plan.
+
+SPEC_SECTIONS = ("Summary", "For a newcomer", "Goal and users", "Scope and non-goals", "Requirements", "Interfaces",
+                 "Quality attributes", "Constraints", "Open questions", "Definition of done")
+SPEC_REQ = re.compile(r"^### (REQ-\d+)\b(.*)$")
+SPEC_REQ_ID = re.compile(r"\bREQ-\d+\b")
+SPEC_OPEN = re.compile(r"\[NEEDS CLARIFICATION:[^\]]*\]")
+SPEC_VAGUE = re.compile(r"\b(fast|quick|slow|scalable|secure|intuitive|robust|simple|easy|efficient|user-friendly)\b", re.I)
+SPEC_DECISION_ROW = re.compile(r"^\|\s*`?([dis]-[0-9a-f]{6}-[0-9a-f]{6})`?\s*\|")
+
+
+def _spec_text(text: str) -> list[tuple[int, str]]:
+    """(line number, text) of the prose lines, HTML comments and fenced blocks blanked."""
+    text = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
+    lines = text.split("\n")
+    return [(n, line if prose else "") for n, (line, prose) in enumerate(zip(lines, _prose(lines)), 1)]
+
+
+def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = None) -> tuple[list[str], list[str], int]:
+    """(problems, warnings, requirements read) for a spec in shape B."""
+    lines = _spec_text(spec.read_text(encoding="utf-8"))
+    decisions = decisions or spec.parent / "decisions.md"
+    known = ({m.group(1) for line in decisions.read_text(encoding="utf-8").splitlines() if (m := SPEC_DECISION_ROW.match(line))}
+             if decisions.is_file() else set())
+    problems, warnings = [], []
+    if not decisions.is_file():
+        problems.append(f"{decisions}: no decisions log beside the spec (`--decisions`)")
+    headings = [line[3:].strip() for _, line in lines if line.startswith("## ")]
+    problems += [f"no `## {s}` section" + (" (the template has each)" if not i else "")
+                 for i, s in enumerate(s for s in SPEC_SECTIONS if s not in headings)]
+    section, reqs, current = "", {}, None
+    for n, line in lines:
+        if line.startswith("## "):
+            section, current = line[3:].strip(), None
+            continue
+        if m := SPEC_OPEN.search(line):
+            problems.append(f"{spec.name}:{n}: {m.group(0)} is open, and an open marker blocks the plan")
+        for target in LINK.findall(INLINE_CODE.sub("", line)):
+            path = target.split("#")[0]
+            if path and not re.match(r"^[a-z][a-z0-9+.-]*:", path) and not (spec.parent / path).exists():
+                problems.append(f"{spec.name}:{n}: the link to {path} resolves to nothing")
+        if section == "Requirements" and (m := SPEC_REQ.match(line)):
+            if m.group(1) in reqs:
+                problems.append(f"{spec.name}:{n}: {m.group(1)} twice; an id once given is frozen")
+            current = reqs.setdefault(m.group(1), {"line": n, "withdrawn": "withdrawn" in m.group(2).lower(),
+                                                    "shall": False, "decided": [], "scenario": False})
+        elif current is not None:
+            current["shall"] |= bool(re.search(r"\bshall\b", line, re.I))
+            if line.lstrip().startswith("Decided in:"):
+                current["decided"] += RECORD_ID.findall(line)
+            current["scenario"] |= bool(re.match(r"^\s*[-*] Scenario:.*\bWHEN\b.*\bTHEN\b", line))
+        if section == "Quality attributes" and (m := SPEC_VAGUE.search(line)) and not re.search(r"\d", line):
+            warnings.append(f"{spec.name}:{n}: {m.group(0)!r} with no number cannot be checked")
+    for rid, r in reqs.items():
+        if r["withdrawn"]:
+            continue
+        where = f"{spec.name}:{r['line']}: {rid}"
+        if not r["shall"]:
+            problems.append(f"{where}: no shall; write it in EARS form")
+        if not r["decided"]:
+            problems.append(f"{where}: no decision (`Decided in: d-...`)")
+        problems += [f"{where}: {d} is in no row of {decisions.name}" for d in r["decided"] if known and d not in known]
+        if not r["scenario"]:
+            problems.append(f"{where}: no scenario (`- Scenario: WHEN ... THEN ...`)")
+    if not reqs:
+        problems.append("no requirement (`### REQ-1 · <title>` under `## Requirements`)")
+    if plan is not None:
+        cited = set(SPEC_REQ_ID.findall(plan.read_text(encoding="utf-8")))
+        live = {rid for rid, r in reqs.items() if not r["withdrawn"]}
+        problems += [f"{rid}: no task of {plan.name} cites it" for rid in sorted(live - cited)]
+        problems += [f"{plan.name} cites {rid}, which the spec does not hold" for rid in sorted(cited - set(reqs))]
+    return problems, warnings, len(reqs)
+
+
 # --- the machine register ----------------------------------------------------------------------------
 # Work moves between machines, and what waits on one (a worktree, a branch never pushed, a gate to re-run) was
 # remembered by nobody. The register lists each machine by a random id kept outside every repository, its
@@ -3972,7 +4049,8 @@ MACHINE_REGISTER = "meta/tracking/machines.md"
 MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
 MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
 MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} (?:\d+\.\d+\.\d+|unreleased)$")
-MACHINE_PATH = re.compile(r"(?:^|[\s(`\"'\[])(?:~/|\$HOME/|\.\.?/|/(?:Users|home|root|etc|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:[\\/])")
+MACHINE_PATH = re.compile(r"(?:^|[\s(`\"'\[:=])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|\.\.?/|"
+                          r"/(?:Users|home|root|etc|srv|Library|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:[\\/])")
 
 
 def _config_dir() -> Path:
@@ -4000,7 +4078,11 @@ def mint_machine_id() -> str:
     minted = "m-" + secrets.token_hex(3)
     folder = _config_dir()
     folder.mkdir(parents=True, exist_ok=True)
-    with (folder / "machine.toml").open("x", encoding="utf-8") as out:
+    try:
+        out = (folder / "machine.toml").open("x", encoding="utf-8")
+    except FileExistsError as error:
+        raise RefusedError("another run minted this machine's id meanwhile; `machine` shows it") from error
+    with out:
         out.write(
         "# This machine's random id for the machine register. Never committed; never beside a name.\n"
         f'machine = "{minted}"\n')
@@ -4010,7 +4092,10 @@ def mint_machine_id() -> str:
 def machine_carriers() -> str:
     """This machine's carriers as `r-xxxxxx X.Y.Z`, sorted, from the local manifest; names and paths dropped."""
     path = _config_dir() / "carriers.toml"
-    records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
+    try:
+        records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
+    except tomllib.TOMLDecodeError as error:
+        raise RefusedError(f"{path}: not readable TOML ({error})") from error
     return ", ".join(sorted(f"{r['carrier']} {r.get('version') or 'unreleased'}" for r in records if r.get("carrier")))
 
 
@@ -4092,12 +4177,13 @@ def machine_step(repo: Path) -> "CloseStep":
         return CloseStep("machines", True, tuple(problems))
     try:
         own = machine_id()
+        carriers = machine_carriers()
     except RefusedError as error:
         return CloseStep("machines", True, (str(error),))
     row = next((cells for _, cells in _machine_rows(path.read_text(encoding="utf-8")) if cells[:1] == [own]), None) if own else None
     if not own:
         return CloseStep("machines", False, ("this machine has no id: `machine --mint`, then `machine --write`",))
-    if row is None or row[1] != machine_carriers():
+    if row is None or row[1] != carriers:
         return CloseStep("machines", False, ("this machine's row is missing or behind its manifest: run `bundle.py machine "
                                              "--write --waits \"<what waits here>\"`",))
     return CloseStep("machines", False, (f"this machine's row is current ({own}); waits: {row[2]}",))
@@ -5196,7 +5282,7 @@ def usage_use(repo, pref_id, today):
 
 def usage_forget(repo, category):
     paths = [_usage_file(repo, c) for c in ([_usage_category(category)] if category else USAGE_CATEGORIES)]
-    gone = [p for p in paths + ([] if category else [usage_consent_path()]) if p.is_file()]
+    gone = [p for p in paths + ([] if category else [usage_consent_path(), usage_state_dir(repo) / "measures.jsonl"]) if p.is_file()]
     for path in gone:
         path.unlink()
     return [f"deleted {p}" for p in gone] or ["nothing to delete"]
@@ -5283,10 +5369,10 @@ def usage_report(repo, today):
 
 def _sig1(value):
     """One significant figure: what a record may carry of a ratio."""
-    if not value:
+    rounded = float(f"{value:.1g}")
+    if not rounded:
         return "0"
-    digits = -int(math.floor(math.log10(abs(value))))
-    rounded = round(value, digits)
+    digits = -int(math.floor(math.log10(abs(rounded))))
     return f"{rounded:.{max(digits, 0)}f}"
 
 
@@ -5295,6 +5381,8 @@ def _order(n):
 
 
 def _measure_costs(records):
+    if len(records) < MEASURE_MIN:
+        return "too few"
     time = [r["act_s"] / 60 / r["est_min"] for r in records if r.get("est_min")]
     tokens = [r["act_ktok"] / r["est_ktok"] for r in records if r.get("est_ktok")]
     if not time and not tokens:
@@ -5311,6 +5399,8 @@ def _measure_costs(records):
 def _measure_frictions(records):
     if not records:
         return None
+    if len(records) < MEASURE_MIN:
+        return "too few"
     means = {k: sum(r.get(k, 0) for r in records) / len(records) for k in _usage_counts()}
     return (", ".join(f"{k} about {_sig1(v)} per session" for k, v in means.items()) + f", over {_order(len(records))} sessions",
             ", ".join(f"{k} {v:.2f}" for k, v in means.items()) + f", n={len(records)}")
@@ -5320,9 +5410,12 @@ def _measure_ablation(records):
     arms = {a: [r for r in records if r["arm"] == a] for a in ("on", "off")}
     if not all(arms.values()):
         return None
+    if min(len(a) for a in arms.values()) < MEASURE_MIN:
+        return "too few"
     mean = {a: sum(r["repeats"] for r in rs) / len(rs) for a, rs in arms.items()}
     ratio = mean["on"] / mean["off"] if mean["off"] else None
-    general = (f"repeats with preferences on ×{_sig1(ratio)} of off" if ratio is not None else "no repeats with preferences off")
+    general = (f"repeats with preferences on ×{_sig1(ratio)} of off" if ratio is not None else
+               "no repeats with preferences off" + ("; some with them on" if mean["on"] else ""))
     return (general + f", over {_order(len(arms['on']))} sessions on and {_order(len(arms['off']))} off",
             f"mean repeats on {mean['on']:.2f} (n={len(arms['on'])}), off {mean['off']:.2f} (n={len(arms['off'])})")
 
@@ -5333,9 +5426,11 @@ USAGE_QUESTIONS = {
     "ablation-effect": ("ablation", "whether stored preferences change how often an instruction is repeated", _measure_ablation),
 }
 MEASURE_ID = re.compile(r"^u-[0-9a-f]{6}$")
+MEASURE_MIN = 10  # below it, one significant figure of a median is still the raw figure, or nearly
 
 
-def _measures(repo):
+def _measures(repo, today):
+    """(file, rows within the retention), the ones past it deleted as the file is read."""
     path = usage_state_dir(repo) / "measures.jsonl"
     rows = []
     for line in path.read_text(encoding="utf-8").splitlines() if path.is_file() else []:
@@ -5343,16 +5438,20 @@ def _measures(repo):
             row = json.loads(line)
         except ValueError:
             continue
-        if isinstance(row, dict) and MEASURE_ID.match(str(row.get("id", ""))):
+        if isinstance(row, dict) and MEASURE_ID.match(str(row.get("id", ""))) and isinstance(row.get("at"), str):
             rows.append(row)
-    return path, rows
+    cutoff = str(today - datetime.timedelta(days=usage_days(usage_consent())))
+    kept = [r for r in rows if r["at"] >= cutoff]
+    if len(kept) != len(rows):
+        _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in kept))
+    return path, kept
 
 
 def usage_measure(repo, rest, today):
     """`measure` lists the questions; `measure Q` answers one; `measure ID into|withhold RECORD` settles it."""
     if not rest:
         return [f"  {name}: {what} (from {category})" for name, (category, what, _) in USAGE_QUESTIONS.items()]
-    path, rows = _measures(repo)
+    path, rows = _measures(repo, today)
     if MEASURE_ID.match(rest[0]):
         if len(rest) != 3 or rest[1] not in ("into", "withhold"):
             raise RefusedError("usage measure ID into RECORD, or ID withhold RECORD")
@@ -5360,8 +5459,8 @@ def usage_measure(repo, rest, today):
         row = next((r for r in rows if r["id"] == ident), None)
         if row is None:
             raise RefusedError(f"{ident}: no measurement with that id on this machine")
-        if row["state"] != "pending":
-            raise RefusedError(f"{ident} is already {row['state']} for {row['record']}; an approval is for that record only, "
+        if row.get("state") != "pending":
+            raise RefusedError(f"{ident} is already {row.get('state')} for {row.get('record')}; an approval is for that record only, "
                                "so measure again for another")
         row.update(state="entered" if verb == "into" else "withheld", record=record, settled=str(today))
         _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
@@ -5377,8 +5476,12 @@ def usage_measure(repo, rest, today):
     found = answer(usage_records(repo, category, today))
     if found is None:
         return [f"nothing to measure: no {category} records within the retention"]
+    if found == "too few":
+        return [f"nothing to measure: too few {category} records (fewer than {MEASURE_MIN}) to generalise without "
+                "showing the raw figure"]
     generalised, raw = found
-    ident = "u-" + hashlib.sha256(f"{rest[0]} {today} {generalised} {secrets.token_hex(4)}".encode()).hexdigest()[:6]
+    taken = {r["id"] for r in rows}
+    ident = next(i for i in iter(lambda: "u-" + secrets.token_hex(3), None) if i not in taken)
     rows.append({"id": ident, "question": rest[0], "at": str(today), "generalised": generalised, "state": "pending", "record": ""})
     _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
     return [f"question: {what}", f"generalised: {generalised}",
@@ -5543,6 +5646,11 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
+    p = sub.add_parser("spec", help="a spec in shape B (method/templates/spec.md): sections, requirement ids, decisions that "
+                       "exist, scenarios, links; an open marker blocks the plan (exit 1)")
+    p.add_argument("file")
+    p.add_argument("--decisions", help="the decisions log (default: decisions.md beside the spec)")
+    p.add_argument("--plan", help="a plan whose tasks must cite every requirement, and only those")
     p = sub.add_parser("machine", help="the machine register: this machine's random id (--mint once), its row (--write), "
                        "the register's check (--check); names and paths never written")
     p.add_argument("--mint", action="store_true", help="mint this machine's id, outside every repository")
@@ -5948,6 +6056,15 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
               + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
                  "or a recurrence" if repeats else ""))
         return 0
+    if args.command == "spec":
+        problems, warnings, n = spec_check(Path(args.file), Path(args.decisions) if args.decisions else None,
+                                           Path(args.plan) if args.plan else None)
+        for line in problems:
+            print("  x " + line)
+        for line in warnings:
+            print("  ! " + line)
+        print(f"spec: {n} requirements, {len(problems)} problems, {len(warnings)} warnings")
+        return 1 if problems else 0
     if args.command == "machine":
         path = Path(args.repo) / args.file
         if args.mint:

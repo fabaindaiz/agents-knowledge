@@ -17,7 +17,7 @@ say what each one does when started.
 | Step | Start with | Takes | Hands on | Closes when |
 |---|---|---|---|---|
 | 1. Idea | a brainstorming skill, if installed | a request or a problem | a first design, or the reason to stop | the human chooses to write it down |
-| 2. Spec, for a change worth one | a spec skill or the repository's format | the design | goal, acceptance criteria each true or false, open decisions | each criterion names how it is checked |
+| 2. Spec, for a change worth one | the template `method/templates/spec.md`, checked by `bundle.py spec`, or the repository's format | the design | goal, acceptance criteria each true or false, open decisions | each criterion names how it is checked |
 | 3. Decisions | `/decision-review` | the open decisions | each answered and recorded, the agent's own marked unconfirmed | the human confirmed the final list and no `proposed` row the plan needs is left |
 | 4. User flow, when a person goes through one: before 3, or during it, its handling choices going back to 3 | `/user-walk` | the flow | the ideal path and every setback, the kept ones as failing tests | each kept case has its test |
 | 5. Plan | a planning skill, or the repository's plan format | the decisions | tasks with their tests; what it needs from unmerged work, a missing row stopping the task; three to five risks for the review, each with its test; a priced spike first where an unknown moves tasks; for several tasks, criteria mapped both ways; for a large plan, estimates in wall minutes, tokens and rounds | each criterion maps to a task and each task to a criterion |

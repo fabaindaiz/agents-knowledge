@@ -3156,8 +3156,15 @@ class MachineRegister(Base):
         self.assertEqual(self.m("--write")[0], 0)
         self.assertEqual(self.m("--check")[0], 0, self.register.read_text())
 
+    def test_a_broken_manifest_fails_the_close_step_instead_of_crashing_it(self) -> None:
+        self.m("--mint")
+        self.m("--write")
+        (self.root / "config/agent-guides/carriers.toml").write_text("carrier = [\n")
+        self.assertTrue({s.name: s for s in B.close_report(self.repo)}["machines"].failed)
+
     def test_the_path_rule_catches_quoted_bracketed_home_and_drive_paths(self) -> None:
-        for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "C:/x", "/root/x", "./x"):
+        for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "${HOME}/x", "%USERPROFILE%/x", "C:/x",
+                      "/root/x", "./x", "path=/srv/x", "\\\\host\\share"):
             self.assertTrue(B.MACHINE_PATH.search(waits), waits)
         for waits in ("and/or", "I/O", "two gates"):
             self.assertFalse(B.MACHINE_PATH.search(waits), waits)
@@ -3168,7 +3175,7 @@ class UsageMeasure(Usage):
 
     def costs(self) -> None:
         self.u("set", "level", "counts")
-        for est_min, act_s, est_ktok, act_ktok in ((40, 300, 100, 90), (60, 480, 200, 260), (30, 240, 80, 70)):
+        for est_min, act_s, est_ktok, act_ktok in ((40, 300, 100, 90), (60, 480, 200, 260), (30, 240, 80, 70)) * 4:
             self.u("add", "agent_costs", "kind=review", "model=m", f"est_min={est_min}", f"act_s={act_s}",
                    f"est_ktok={est_ktok}", f"act_ktok={act_ktok}", "act_tools=5")
 
@@ -3190,7 +3197,7 @@ class UsageMeasure(Usage):
         generalised = next(l for l in out if l.startswith("generalised:"))
         self.assertIn("×0.1", generalised)          # time, median 0.13 to one significant figure
         self.assertIn("×0.9", generalised)          # tokens, median 0.875
-        self.assertIn("fewer than ten", generalised)
+        self.assertIn("tens", generalised)
         self.assertNotIn("0.13", generalised)
         self.assertTrue(any(l.startswith("raw, for you only") and "0.13" in l for l in out), out)
         ident = re.search(r"u-[0-9a-f]{6}", "\n".join(out)).group(0)
@@ -3217,7 +3224,145 @@ class UsageMeasure(Usage):
         with self.assertRaises(B.RefusedError):
             self.measure(ident, "into", "a-plan-carries-a-cost-ledger")
 
+    def test_too_few_records_measure_nothing_a_forget_takes_the_measures_and_retention_prunes_them(self) -> None:
+        self.u("set", "level", "counts")
+        self.u("add", "agent_costs", "kind=review", "model=m", "est_min=10", "act_s=60", "act_ktok=9", "act_tools=1")
+        self.assertIn("too few", "\n".join(self.measure("agent-cost-ratio")))
+        self.costs()
+        self.measure("agent-cost-ratio")
+        self.assertEqual(len(B._measures(self.repo, self.TODAY)[1]), 1)
+        self.assertEqual(B._measures(self.repo, self.after(200))[1], [])
+        self.measure("agent-cost-ratio")
+        self.u("forget")
+        self.assertFalse(self.state("measures.jsonl").exists())
+
+    def test_one_significant_figure_even_where_rounding_crosses_a_power_of_ten(self) -> None:
+        for value, shown in ((0.96, "1"), (0.0096, "0.01"), (9.6, "10"), (0.13, "0.1"), (23, "20"), (0, "0")):
+            self.assertEqual(B._sig1(value), shown, value)
+
     def test_an_unknown_question_or_id_is_refused(self) -> None:
         for rest in (("no-such-question",), ("u-000000", "into", "x"), ("u-000000", "sideways", "x")):
             with self.assertRaises(B.RefusedError):
                 self.measure(*rest)
+
+
+class SpecCheck(Base):
+    """`bundle.py spec`: shape B's check, an open marker blocking the plan."""
+
+    GOOD = """# Spec: a thing
+
+## Summary
+
+Short.
+
+## For a newcomer
+
+Words.
+
+## Goal and users
+
+Who.
+
+## Scope and non-goals
+
+Not this.
+
+## Requirements
+
+### REQ-1 · first
+
+When a file is saved, the tool shall write its checksum.
+
+Decided in: `d-aaaaaa-111111`
+
+- Scenario: WHEN a file is saved THEN its checksum is in the list
+
+### REQ-2 · second
+
+The tool shall refuse an empty file. See [the notes](notes.md).
+
+Decided in: `d-aaaaaa-222222`
+
+- Scenario: WHEN the file is empty THEN it is refused
+
+## Interfaces
+
+None.
+
+## Quality attributes
+
+A save takes under 50 ms on the reference fixture.
+
+## Constraints
+
+Standard library only.
+
+## Open questions
+
+<!-- each marked [NEEDS CLARIFICATION: ...] -->
+None.
+
+## Definition of done
+
+`make check`; REQ-1 and REQ-2 have their tests.
+"""
+    LOG = ("| id | status | decision | why | enforced in |\n|---|---|---|---|---|\n"
+           "| d-aaaaaa-111111 | accepted 2026-01-01 · h1 | a | b | c |\n| d-aaaaaa-222222 | accepted 2026-01-01 · h1 | a | b | c |\n")
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.dir = self.root / "docs"
+        self.dir.mkdir()
+        (self.dir / "decisions.md").write_text(self.LOG)
+        (self.dir / "notes.md").write_text("x\n")
+        self.spec = self.dir / "spec.md"
+
+    def check(self, text: str, *extra: str) -> tuple[int, str]:
+        self.spec.write_text(text)
+        return run("spec", str(self.spec), *extra)
+
+    def test_a_complete_spec_passes_and_the_shipped_template_has_every_section(self) -> None:
+        code, out = self.check(self.GOOD)
+        self.assertEqual(code, 0, out)
+        self.assertIn("2 requirements", out)
+        template = (ROOT / "sources/bundle/method/templates/spec.md").read_text()
+        for section in B.SPEC_SECTIONS:
+            self.assertIn(f"## {section}\n", template)
+
+    def test_an_open_marker_blocks_the_plan_but_one_inside_a_comment_does_not(self) -> None:
+        code, out = self.check(self.GOOD.replace("None.\n\n## Definition", "[NEEDS CLARIFICATION: which format?]\n\n## Definition"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("blocks the plan", out)
+
+    def test_each_fault_is_named(self) -> None:
+        for broken, why in [
+            (self.GOOD.replace("## Constraints\n\nStandard library only.\n\n", ""), "Constraints"),
+            (self.GOOD.replace("### REQ-2", "### REQ-1"), "REQ-1 twice"),
+            (self.GOOD.replace("Decided in: `d-aaaaaa-222222`", "Decided in: `d-aaaaaa-999999`"), "d-aaaaaa-999999"),
+            (self.GOOD.replace("Decided in: `d-aaaaaa-222222`\n", ""), "REQ-2: no decision"),
+            (self.GOOD.replace("- Scenario: WHEN the file is empty THEN it is refused\n", ""), "REQ-2: no scenario"),
+            (self.GOOD.replace("The tool shall refuse", "The tool refuses"), "REQ-2: no shall"),
+            (self.GOOD.replace("(notes.md)", "(missing.md)"), "missing.md"),
+        ]:
+            code, out = self.check(broken)
+            self.assertEqual(code, 1, why)
+            self.assertIn(why, out, why)
+
+    def test_a_vague_quality_is_a_warning_and_a_plan_must_cite_every_requirement(self) -> None:
+        code, out = self.check(self.GOOD.replace("A save takes under 50 ms on the reference fixture.", "Saving is fast."))
+        self.assertEqual(code, 0, out)
+        self.assertIn("fast", out)
+        plan = self.dir / "plan.md"
+        plan.write_text("Task 1 covers REQ-1. Task 2 covers REQ-3.\n")
+        code, out = self.check(self.GOOD, "--plan", str(plan))
+        self.assertEqual(code, 1, out)
+        self.assertIn("REQ-2", out)
+        self.assertIn("REQ-3", out)
+
+    def test_a_withdrawn_requirement_needs_no_scenario_and_no_plan_task(self) -> None:
+        text = self.GOOD.replace("### REQ-2 · second", "### REQ-2 · second · Withdrawn").replace(
+            "- Scenario: WHEN the file is empty THEN it is refused\n", "")
+        plan = self.dir / "plan.md"
+        plan.write_text("Task 1 covers REQ-1.\n")
+        code, out = self.check(text, "--plan", str(plan))
+        self.assertEqual(code, 0, out)

@@ -28,11 +28,19 @@ version it holds with `bundle.py changelog --since <its version>`.
   the date) in `meta/tracking/machines.md`, never a name or a path; `machine --check` fails on a name, a path, a bad
   id or a carrier id beside a description, and `bundle.py close` runs it and says when this machine's row is behind. A
   pipe in its text is escaped, a row that would fail is never written, and a relative `XDG_CONFIG_HOME` is ignored.
+- **A spec format, optional** (`d-5ed7e8-cb0531`): `method/templates/spec.md` holds a summary, a section for a
+  newcomer, goal, scope, requirements with frozen `REQ-n` ids in EARS form each naming the decision that set it and
+  a WHEN/THEN scenario, interfaces, quality attributes with numbers, constraints, open questions and the definition
+  of done; the decisions log keeps the why. `bundle.py spec FILE [--plan PLAN]` fails on a missing section, an id
+  given twice, a requirement with no *shall*, decision or scenario, a decision in no row, a broken link, an open
+  `[NEEDS CLARIFICATION: …]` (which blocks the plan), and with `--plan` a requirement no task cites; a vague quality
+  with no number is a warning.
 - **A usage figure enters a record only through `usage measure`** (`d-5ed7e8-7b6df4`): it answers a named question
   (`agent-cost-ratio`, `frictions-per-session`, `ablation-effect`) from this machine's records alone, already
   generalised to one significant figure with counts as orders of magnitude, shows you the raw figure marked never to
   be pasted, and waits on `usage measure ID into RECORD` (the line to enter, for that one record) or `ID withhold
-  RECORD` (a trace with no figure). A second record needs a new measurement.
+  RECORD` (a trace with no figure). A second record needs a new measurement; fewer than ten records measure
+  nothing, and the measurements follow the retention and `usage forget`.
 - **The close** (`skills/close`): execution rulings become decision rows or are reversed; copy an agent wrote that a
   person sees stays proposed until the owner has seen it; merged worktrees and done workspaces offered for removal.
 
