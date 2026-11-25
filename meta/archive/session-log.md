@@ -9,6 +9,30 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-25 · s-5ed7e8-c1ada9 — The harvest of this machine, the cut of 0.0.34 and its splice
+
+**What.** The transcripts only this machine holds were harvested in sixteen carriers, one owner counted as one source, on branches based on the other machine's unmerged harvest branches. The home took in 90 proposals and a delegated agent added the 71 occurrences among them to their rows and notes, narrowing one note's boundary. Six tool fixes landed test-first (credential redaction and shell escapes in `turns`, suffixed legacy decision ids, labelled harvest gaps with a frontier rule, a later harvest named by `gather`, no quote for `overlaps`), the close skill gained the owner's two-kind pause, and the changelog announces the product-noun check's removal first. 0.0.34 was cut and tagged; three delegated agents spliced it, with 0.0.33, into fifteen carriers; sixteen align. The template was refreshed and tagged. A research document on spec formats was written on its own branch and published as a private page.
+
+**Areas.** `sources/bundle/tools/bundle.py`, `meta/tools/release.py`, `meta/tests/`, `sources/bundle/method/`, `sources/bundle/CHANGELOG.md`, `sources/bundle/README.md`, eleven active notes, `meta/tracking/`, `meta/roadmap.md`, `meta/archive/`, `meta/reviews/` (on its own branch), `.agents/` (generated), two home proposals.
+
+**Why.** The owner's brief: push what only this machine held, harvest it, cut 0.0.34 only on their word, and splice 0.0.33 and 0.0.34 together into the carriers reachable here.
+
+**Architecture.** ✅ Complies. Every carrier was written only in a worktree of its own repository, never in a checkout with someone's work.
+
+**Cards relied on, and the checks that ran.** `release.py check` passed before each commit and the cut; `bundle.py verify` reports 0.0.34; `align` reports sixteen aligned; the tool suite passes but for three usage tests that fail on a clean `HEAD` on macOS (`i-5ed7e8-c0341d`).
+
+**Review.** none in fresh context; the phase-2 agents read each carrier's own definitions beside the release and fixed five conflicts in execution or broken references, listed in `i-5ed7e8-cfd663`.
+
+**What went wrong on the way.** An unquoted list variable in zsh passed sixteen paths as one argument, twice; the second time the write tool reported fifteen carriers missing, and the zsh-native fix was refused by the host's guard (home proposal `p-069d110c27`). One carrier was missed by the first harvest pass and found only by listing every carrier's frontier; `turns` then printed a shell escape's output, a remote included, as a human turn, fixed the same hour. A merge agent's report and a test run read as green while three tests failed on this platform before any change.
+
+**What was left undone.** One carrier's update is uncommitted on a red gate it did not cause (`i-5ed7e8-88cd88`); nothing is pushed or merged (`i-5ed7e8-151456`); the `lineage` field (`i-5ed7e8-25fd85`); the design of `i-5ed7e8-9ef5d1` and the spec-program idea wait on the owner.
+
+**Not verified.** Gates reported unproven in five carriers, where a worktree could not build its own environment; one carrier's typecheck and lint were not reproduced at all.
+
+**Measured.** Three phase-2 delegations were announced at 300 to 500 thousand tokens each and used about 180 thousand each: too high by two to three times, the same direction as `i-5ed7e8-045188`'s pairs. The merge delegation used about 190 thousand.
+
+**Learned.** *General:* a check made to read more finds debt that was always there (a decision row skipped in silence now read with an empty status); a harvest needs every carrier's frontier listed before it is called complete. *Local:* the zsh construct, routed to the home proposal; the two pauses, into the close skill. Captured: 3 learnings, 2 frictions (the zsh list, the missed carrier). Nothing needs you beyond the items named.
+
 ## 2026-11-24 · s-5ed7e8-2afb2c — The close that followed the 0.0.33 cut
 
 **What.** 0.0.33 was cut, tagged and pushed; then eight further commits landed on `main` after the tag. The

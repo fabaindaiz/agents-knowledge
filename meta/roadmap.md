@@ -20,22 +20,23 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-24, sixth close. 0.0.33 is cut, tagged `v0.0.33` and pushed, and was spliced into no carrier** by the owner's decision: every carrier but this home still holds 0.0.32 or older, listed under *Blocked outside*. **After the cut, in the same session, the work did not stop**, so this home now holds tool and method changes that no release carries. They ship at 0.0.34.
+**State on 2026-11-25, seventh close. 0.0.34 is cut and tagged `v0.0.34` here, and spliced, with 0.0.33, into fifteen carriers on this machine; nothing is pushed.** The home's `docs/spec-driven-research` holds a research note on spec formats. Neither branch, the tag, nor any carrier branch has been pushed or merged: that waits on the owner's word.
 
-**What 0.0.33 was.** The largest harvest so far: 213 proposals from 23 carriers, 122 queued, 44 folded, one note admitted, principle 21 added (the four stages of the work), the enforcement ladder grounded. Ten carriers were cloned here and harvested; the manifest lists 24. The export cap rose to 1,250,000 bytes.
+**What 0.0.34 is.** A harvest patch: 90 proposals taken in from this machine's carriers (15 queued, 3 experiment runs, 72 occurrences added to 41 queued rows, 11 notes and 3 answered rows), one note boundary narrowed (a pre-commit hook gates the staged snapshot), and six tool fixes the harvest asked for — `turns` redacts credential shapes and shows a shell escape as a command without its output; `decisions` reads letter-suffixed legacy ids; `harvested_gaps` names the source not read and `verify` refuses an unlabelled span reaching the frontier; `gather` names a later harvest left on a branch; an `overlaps` proposal needs no quote. The close skill tells two pauses apart, by the owner's ruling. The product-noun check is gone, announced first in the changelog.
 
-**What landed after it.** The owner walked the five reasons that still bind and decided all five. Six of the items they queued were built the same day: `usage` leaves a `.gitignore` where it writes (and never outside its own folder), `changelog --since` names the gap instead of answering silently, `bundle.py decisions` counts only what waits on a person, a tracking-slug check lives in the home's own `check`, the product-noun check and its list are gone, and the worktree rule now builds a hermetic environment where that is cheap. Two more were answered by counting rather than building. Four reviews ran in fresh context and found a `.gitignore` that could have silenced an unrelated repository, a pattern that would have failed builds on `not admitted as a note`, and records that said the opposite of the code. All fixed.
+**Where the carriers are.** Fifteen carriers and this home are registered at 0.0.34 and `align` reports all sixteen aligned, each on its `chore/harvest-0.0.34` branch. One more carrier is spliced and verified but **not committed**: its gate is red on a concurrency test that fails most runs on its own commit, before the splice (`i-5ed7e8-88cd88`). One repository in the manifest holds an old release with no `carrier.toml` and is not a carrier (`d-5ed7e8-e89204`). The template was refreshed on a branch of its own worktree and tagged `v0.0.34`, unpushed.
 
 **Next, in order.**
-1. **The other machine: its harvest, then 0.0.34.** It pulls first — `git pull --tags` — and what is here is already most of that release's content. Before anything, it pushes the work that exists only there: seven branches of one repository and one worktree's commit, fifteen commits this harvest could not read.
-2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here, the one whose integration branch advanced re-adopting the bundle on that branch (`d-5ed7e8-c5d303`).
-3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which principle 21 is the skeleton.
+1. **The owner's word on pushing and merging**: the home (`release/0.0.34` to `main`, the tag), the template, and each carrier's harvest branch under its own rules (`i-5ed7e8-151456`).
+2. **The owner's review of what the phase-2 agents changed in carriers' own files** (`i-5ed7e8-cfd663`): a pause rule rewritten in one carrier's local skill override and root file, a decision row's empty status filled from its commit in another, a repository settings file given the empty attribution in a third.
+3. **The other machine**: its carriers, including the one whose integration branch re-adopts the bundle (`d-5ed7e8-c5d303`), get 0.0.33 and 0.0.34 there.
+4. **The three themes and the first minor** (`i-5ed7e8-dfae87`).
 
-**Waiting here, tomorrow:** the twenty-nine agent-written reasons, once `i-5ed7e8-a98470`'s count is trusted; the six candidates a review says could be admitted; three defects the queue itself carries; one orphan slug the new check warns about on every run.
+**Waiting here:** the macOS state folder the usage tests do not expect (`i-5ed7e8-c0341d`); the `lineage` field the splice never writes (`i-5ed7e8-25fd85`); the twenty-nine agent-written reasons, six admissible candidates and three queue defects (`i-5ed7e8-fe15a8`, the other machine).
 
-**Waiting on the owner:** the design of `i-5ed7e8-9ef5d1`, a voluntary path for usage evidence to enter a record, one decision at a time.
+**Waiting on the owner:** the design of `i-5ed7e8-9ef5d1` (`d-5ed7e8-355404`), one decision at a time; and whether the spec-program idea is tried in a real project or a template, before any design.
 
-**To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
+**To continue on another machine:** nothing of this close is on the remote yet; once pushed, `git pull --tags`.
 
 ## Standing rules and facts
 
@@ -62,6 +63,28 @@ never committed; the names of private carriers are in the local private-terms li
 ## Next
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
+
+- **`i-5ed7e8-151456` · Push and merge what 0.0.34 left on branches, at the owner's word.** The home's
+  `release/0.0.34` (the cut, the tag `v0.0.34`, this close), the template's branch and tag, and in each of fifteen
+  carriers a `chore/harvest-0.0.34` branch holding the harvest and the update, made from a worktree under a scratch
+  folder that does not survive a reboot (the branches live in each carrier's repository). Each lands under that
+  carrier's own rules, fast-forward where it can. *Estimate:* minutes per carrier, the owner's word first.
+- **`i-5ed7e8-cfd663` · What the phase-2 agents changed in carriers' own files, for the owner to read.** A pause rule
+  rewritten in one carrier's local override of the close skill and its root file (to the two kinds); an empty
+  decision status filled from the commit that wrote the row, in the carrier where the fixed `decisions` first read
+  it; a repository settings file given the empty attribution setting; a carrier's audit exempting the docs map the
+  close skill names; a root file's note count corrected. Left to each owner, unfixed: a carrier's own pause skill
+  that now sits beside the close skill's with no precedence; a carrier that jumped from 0.0.25 with no skills
+  section and no researcher; a test importing a package its requirements do not declare, so a fresh environment
+  fails; a gate whose ratchet baseline is ignored, so a worktree cannot run it; a gate that checks trailers but
+  not the author; a sibling path an audit reads that a worktree cannot resolve. *Estimate:* one read per carrier.
+- **`i-5ed7e8-c0341d` · The usage tests assume a Linux state folder.** On macOS `usage_state_dir` uses the
+  application-support folder and ignores `XDG_STATE_HOME`, which three tests set to steer it, so they fail on
+  this machine on a clean `HEAD` too. Either the tests patch the platform, or the folder honours the variable
+  everywhere. *Estimate:* half an hour, test-first.
+- **`i-5ed7e8-25fd85` · `lineage` in `carrier.toml` is never written by the splice.** Four carriers spliced to
+  0.0.34 list neither 0.0.33 nor 0.0.34 there, and one has no such field. Either the splice appends the version or
+  the field is retired. *Estimate:* minutes, after a decision.
 
 - **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.**
   Second occurrence on 2026-11-24: a push chained after a check was refused by the host's permission
@@ -669,6 +692,13 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
 ## Blocked outside
 
+- **`i-5ed7e8-88cd88` · One carrier's 0.0.34 update is spliced and verified but not committed.** Its gate is red
+  on a concurrency test that fails about three runs in four on its own last commit, in a clean export with no
+  splice, so the update did not cause it; the commit rule forbids committing on red. The splice, the prune, the
+  refreshed skills and the changelog entry are uncommitted in its harvest worktree. What unblocks it: the test
+  fixed first, or the owner's word for a red commit marked as such. Carriers registered below 0.0.34 and not on
+  this machine are reached from the machine that holds them.
+
 - **`i-5ed7e8-9a72da` · The method has never been validated against a carrier of another owner.** Every carrier of
   this bundle belongs to one owner, so agreement between carriers on a method rule measures the reach of that
   owner's global instruction file, not the rule's generality (`d-5ed7e8-5663c8`). Seven queued method rules rest on
@@ -717,6 +747,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **0.0.34, 2026-11-25: cut and tagged `v0.0.34`, spliced with 0.0.33 into fifteen carriers and the template on
+  their own branches, nothing pushed.** Its scope: the harvest of this machine's carriers (90 proposals, 72
+  occurrences added, 15 queued), one note boundary narrowed, six tool fixes with tests seen to fail first, the
+  two-kind pause, the product-noun check removed. Sixteen carriers aligned. Session `s-5ed7e8-c1ada9`.
 
 - **0.0.32, 2026-10-15: cut, tagged `v0.0.32`, taken by this home and by one canary carrier** (unpushed). Its
   scope: five tool fixes with their tests (the researcher's hook failing closed, the proposal title, the

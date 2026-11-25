@@ -4,6 +4,25 @@ The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 w
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
+**State on 2026-11-24, sixth close. 0.0.33 is cut, tagged `v0.0.33` and pushed, and was spliced into no carrier** by the owner's decision: every carrier but this home still holds 0.0.32 or older, listed under *Blocked outside*. **After the cut, in the same session, the work did not stop**, so this home now holds tool and method changes that no release carries. They ship at 0.0.34.
+
+**What 0.0.33 was.** The largest harvest so far: 213 proposals from 23 carriers, 122 queued, 44 folded, one note admitted, principle 21 added (the four stages of the work), the enforcement ladder grounded. Ten carriers were cloned here and harvested; the manifest lists 24. The export cap rose to 1,250,000 bytes.
+
+**What landed after it.** The owner walked the five reasons that still bind and decided all five. Six of the items they queued were built the same day: `usage` leaves a `.gitignore` where it writes (and never outside its own folder), `changelog --since` names the gap instead of answering silently, `bundle.py decisions` counts only what waits on a person, a tracking-slug check lives in the home's own `check`, the product-noun check and its list are gone, and the worktree rule now builds a hermetic environment where that is cheap. Two more were answered by counting rather than building. Four reviews ran in fresh context and found a `.gitignore` that could have silenced an unrelated repository, a pattern that would have failed builds on `not admitted as a note`, and records that said the opposite of the code. All fixed.
+
+**Next, in order.**
+1. **The other machine: its harvest, then 0.0.34.** It pulls first — `git pull --tags` — and what is here is already most of that release's content. Before anything, it pushes the work that exists only there: seven branches of one repository and one worktree's commit, fifteen commits this harvest could not read.
+2. **Splice 0.0.33 and 0.0.34 together** into the 23 carriers reachable here, the one whose integration branch advanced re-adopting the bundle on that branch (`d-5ed7e8-c5d303`).
+3. **The three themes and the first minor** (`i-5ed7e8-dfae87`), to which principle 21 is the skeleton.
+
+**Waiting here, tomorrow:** the twenty-nine agent-written reasons, once `i-5ed7e8-a98470`'s count is trusted; the six candidates a review says could be admitted; three defects the queue itself carries; one orphan slug the new check warns about on every run.
+
+**Waiting on the owner:** the design of `i-5ed7e8-9ef5d1`, a voluntary path for usage evidence to enter a record, one decision at a time.
+
+**To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
 **State on 2026-10-15, fourth close: 0.0.32 is cut, tagged `v0.0.32`, taken by this home and by one canary
 carrier, and pushed.** The home's `main` and the tag are on the remote, and that push carried two commits of
 another session that had committed here while this one worked (`1c6a04e`, `d6f2064`). In the canary the update's
