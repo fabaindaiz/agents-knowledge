@@ -1031,15 +1031,12 @@ A change that reshapes something every module reads lists, before it starts,
 every live branch and file it will collide with and the order the merges must
 take; where the shape itself changes, the plan carries a step in which both
 shapes are valid, so one task does not turn the whole branch red. **A plan is
-estimated in what is later measured**: agent wall minutes, tokens and review
-rounds per task, with the actual written beside each as the task lands, and the
-plan shows the ratio measured on the plans before it ("the last eight: time ×0.1
-to ×0.2, tokens ×0.8 to ×1.8"). An estimate in human work hours is given only
-when the human asks, with its conversion: one carrier's plans priced that way
-landed twenty to forty times faster, and nobody recorded the ratio, so nothing
-calibrated; estimating in *sessions* stops meaning anything once agents run in
-parallel. **Check:** the plan names the branches it collides with, or says there
-are none, and every landed task has its actual beside its estimate.
+estimated in what is later measured** (agent wall minutes, tokens, review rounds
+per task), the actual written beside each as it lands, with the ratio earlier
+plans measured; human hours only when asked, with their conversion — plans
+priced in them landed twenty to forty times faster, and nothing calibrated.
+**Check:** the plan names the branches it collides with, or says there are none,
+and every landed task has its actual beside its estimate.
 
 **2. Settle the questions — an approval is not a confirmation.**
 Decisions the agent reasoned on its own stay marked unconfirmed until the human
@@ -1077,8 +1074,8 @@ Defects whose evidence lies outside the piece under review are the hardest to
 find, so the final review of the whole branch is not skipped however many tasks
 were approved one by one. A reviewer who did not write the code is independent
 of the author's assumptions and poorer in context: say which context it is
-given. A cap on re-review rounds assumes the target is fixed — when the human
-revises the rule between rounds the cap restarts, because the rounds are the
+given. The cap on re-review rounds (five) assumes the target is fixed — when the human
+revises the rule between rounds the count restarts at one, because the rounds are the
 target moving and not the reviewer failing to converge. Rounds end by severity,
 not by count: one carrier's rounds three to five still found medium defects in
 three lanes of four (`prompt-bootstrap.md`, the review step). **Check:** the branch
@@ -1613,7 +1610,7 @@ What it is, in two lines.
 **What it collides with.** The rule, by its id, and why the collision is real.
 **What is already in its favour.** The mechanisms that exist.
 **What must be decided first.** Questions, not tasks.
-**Estimate**, for a large item: the release it is cut into, and its cost in time and tokens, with what it rests on.
+**Estimate**, for a large item: the release it is cut into, and its cost in agent wall minutes, tokens and review rounds, with what it rests on and the actual beside it once known.
 
 ## Closed by measurement
 Ideas retired by a number, with the number, so they stay retired.

@@ -631,13 +631,12 @@ about a hundred thousand tokens where counted; thin evidence: principle 19). Not
 commit.
 
 - **Fix the findings and nothing else**, then send only what changed for a
-  second review. **Re-review by severity, not by count**: another round runs
-  while the last one found anything of medium severity or worse (a defect a
-  user or a later task would meet); it stops when a round finds only low ones,
-  which are listed; at five rounds it stops and asks the user. A fix of medium
-  severity or worse gets its own scoped pass, since a fix to a finding can be
-  wrong itself. The re-reviews belong to a review asked for or accepted; none
-  runs without one.
+  second review. **Re-review by severity**, which the reviewer assigns and the
+  author never lowers: *high*, data lost, security or a gate broken; *medium*, a
+  wrong result, lost rule or false claim someone would meet; *low*, wording or a
+  cosmetic edge. Rounds run while one finds medium or worse, stop when only low
+  remain (listed), and at five ask the user; a medium fix gets its own pass,
+  counted as a round. Re-reviews follow only a review asked for or accepted.
 - A finding you reject is reported with the evidence that rejects it.
 - Where no subagent can run (another assistant, a restricted session), do the
   same here, in order: the card, the evidence, the check; and say in the report
@@ -951,7 +950,7 @@ The short one. Run it before you report, every time.
 - [ ] Where the change touched state, a contract, data, security or
       verification, the cards the index links were applied before the design
       decision and their checks ran before claiming done; a review asked for
-      ran on the diff, re-reviewed while a round found medium or worse; and none asked for, a change
+      ran on the diff, re-reviewed by severity (at most five rounds); and none asked for, a change
       that deletes or rewrites stored data, moves money or touches
       authentication offered one in its report.
 - [ ] The closing review ran: what this change invalidated was re-run, the
