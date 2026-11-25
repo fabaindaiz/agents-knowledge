@@ -1,9 +1,9 @@
 ---
 bundle: "agent-guides"
 home: "r-5ed7e8"
-parent: "v0.0.32"
-version: "0.0.33"
-released: "2026-11-24"
+parent: "v0.0.33"
+version: "0.0.34"
+released: "2026-11-25"
 ---
 
 # Agent guides

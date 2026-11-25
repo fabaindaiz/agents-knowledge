@@ -6,7 +6,7 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
-## [0.0.34] - 2026-11-24
+## [0.0.34] - 2026-11-25
 
 **What a carrier runs at this update: nothing new, and one check now stops.** The build no longer reads a note's
 `cues` against a list of public product names, and the list is gone from the home. If your own audit or a hook
