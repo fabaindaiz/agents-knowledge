@@ -64,6 +64,29 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-516d7a` · The 0.0.36 plan: the eight decisions of the 0.0.35 walk, task by task** (`d-5ed7e8-5dc49a`). Each task
+  lands on its own with its review, by severity (`d-5ed7e8-6db1f7`), and carries its estimate in what is measured:
+  agent wall minutes, tokens, review rounds, with the actual written beside it (`d-5ed7e8-9dc00d`). Calibration so
+  far: this home's delegations ran at about a tenth to a fifth of their time estimate and near their token one.
+
+  | # | Task | Decision | Est. wall | Est. tokens | Rounds | Actual |
+  |---|---|---|---|---|---|---|
+  | 1 | The development flow's map in `guide.md`: each step's input, output and closing check | `d-5ed7e8-cbb288` | 20–40 min | 80k | 1–2 | |
+  | 2 | A carrier's practices into the skills: the plan's dependency table and stop rule, review focus, priced spike; the plan's fresh read; the classified red; a merge-commit hook; at close, rulings promoted, merged worktrees offered for removal, roles, proposed copy | `d-5ed7e8-21f670` | 60–90 min | 250k | 2–3 | |
+  | 3 | Re-review by severity, hard stop at five, a fix's own pass (`prompt-bootstrap.md`, §21.4) | `d-5ed7e8-6db1f7` | 10–20 min | 50k | 1 | |
+  | 4 | Estimates in measured units with the calibration shown (§21.1, the bootstrap, the ledger column) | `d-5ed7e8-9dc00d` | 15–30 min | 60k | 1 | |
+  | 5 | The spec format (shape B): a template and `bundle.py spec` with tests; then the pilot on a carrier's real feature, which the owner names | `d-5ed7e8-cb0531` | 60–90 min + pilot | 250k | 2 | |
+  | 6 | The documentation skill and `bundle.py docs fingerprint` and `docs lint`, standard library only | `d-5ed7e8-3a85e8` | 90–120 min | 300k | 2–3 | |
+  | 7 | `bundle.py usage measure`, per machine, the approval naming its record, a refusal leaving its trace; first trial on three blocked candidates | `d-5ed7e8-7b6df4` | 60–90 min | 250k | 2 | |
+  | 8 | `meta/tracking/machines.md` and `bundle.py machine`, and the close's step for what lives only on this machine | `d-5ed7e8-5751b6` | 45–75 min | 200k | 2 | |
+
+  Then 0.0.36 is checked against the first minor's criteria (`i-5ed7e8-3e6760`). *Collides with:* tasks 1 and 2
+  write the same skills, so they run in that order, not at once; 5 and 6 share the template folder.
+- **`i-5ed7e8-a3a0a1` · Private channels for what does not travel between machines: research, then a pilot.** The owner's
+  note at `d-5ed7e8-5751b6`: the manifest, the private-terms list and the agent's local memory never travel
+  through a public repository; which private channels could carry them (a private configuration repository, an
+  encrypted file, the owner's own sync) is to be researched and explored, then tried as a pilot. Nothing private
+  is written anywhere before the owner chooses. *Estimate:* a research round, about 20 min wall and 100k tokens.
 - **`i-5ed7e8-151456` · Push and merge what 0.0.34 left on branches.** **Done on 2026-11-25 at the owner's word,
   but for four:** the home's `main` and the tag, the template's `main` and tag, and nine carriers' `main`
   fast-forwarded and pushed; four carriers' harvest branches pushed as branches and not merged, because each sits
@@ -79,7 +102,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   section and no researcher; a test importing a package its requirements do not declare, so a fresh environment
   fails; a gate whose ratchet baseline is ignored, so a worktree cannot run it; a gate that checks trailers but
   not the author; a sibling path an audit reads that a worktree cannot resolve. *Estimate:* one read per carrier.
-- **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.**
+- **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.** **Done 2026-11-25 in 0.0.35:** the close skill and `prompt-sync.md` spell the push as a step of its own.
   Second occurrence on 2026-11-24: a push chained after a check was refused by the host's permission
   classifier, and the same push alone went through. The root instruction file already carries the rule —
   never put an edit in the same command as something a permission rule may refuse — which means the rule is
@@ -333,7 +356,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   *Collides with:* the planning documents a carrier keeps, and the pre-review the long skills open
   with.
 
-- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** **Two more on 2026-11-24, so eight over three sessions:** a decision id beside the ordinary English word for a working copy, reworded, and one beside a figure in a record. Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
+- **`i-5ed7e8-b8c4b2` · The privacy check's false positives on the home's own prose.** **Done 2026-11-25 in 0.0.35,** every recorded shape with a test that the leak beside it still fails; the five allowances already written stay. **Two more on 2026-11-24, so eight over three sessions:** a decision id beside the ordinary English word for a working copy, reworded, and one beside a figure in a record. Four in one session, each worked around by rewording: a domain noun used as a unit of length beside a record id failed twice; a later release number read as a dependency pin failed once; a commit hash of digits only, and a regular expression's repeat count, warned as exact counts. **Two more on 2026-10-15, in this release's own records** (`d-5ed7e8-5663c8` beside the English word *debt*; the host's public minimum version after *requires*), and by the owner's instruction they are allowed in place with `privacy-allow` and their reason rather than reworded again — **this item is the debt, and the owner has asked that the rules themselves be fixed in a later release**, not that each occurrence be dressed around. Two were also reworded the same day (a bundle version after *cuts*, a word read as a domain noun), so the count now stands at six failures over two sessions. *Estimate:* about two hours with tests: skip a domain noun used as a unit after a number, a version after `release`, `requires` or `cuts`, and a hex hash. **A second gap found the same day:** in a table row the documented placement (the marker on that line) cannot be written at the end of the line, because the column check then counts an extra column, and the marker is not read if any backtick follows it — so it has to go inside the last cell. Both belong in the fix. *Collides with:* the rules' tests, which must still fail on a real leak, and `bundle.py decisions`' column count. <!-- privacy-allow: this item's own id beside the English word debt, the very false positive it records; allowed by the owner on 2026-10-15 -->
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
