@@ -764,3 +764,4 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-e11b709c71` | 0.0.34 | another occurrence of `two-rules-of-one-repository-can-collide`, to merge |
 | `p-069d110c27` | 0.0.35 | another occurrence of `no-foreign-shell-constructs`, to merge |
 | `p-dc5b3531b3` | 0.0.35 | another occurrence of `prompt-harvest`, to merge |
+| `p-920709a5b4` | 0.0.36 | queued as `researcher-returns-its-report-in-the-reply` |

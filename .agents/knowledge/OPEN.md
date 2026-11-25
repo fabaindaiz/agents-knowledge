@@ -357,6 +357,7 @@ By slug and kind; the claim and what each lacks stay in the home's queue.
 | `a-granted-parallelism-is-kept-filled` | M |
 | `a-property-that-needs-a-filter-to-pass-is-a-finding` | K |
 | `a-pairwise-rule-is-not-an-order-until-acyclic` | K |
+| `researcher-returns-its-report-in-the-reply` | M |
 
 ## Answered: admitted, folded, refused or discarded, not to offer again
 

@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (279)
+## Candidates in the queue (280)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -296,6 +296,7 @@ None.
 - `a-granted-parallelism-is-kept-filled` — M, since 0.0.34 · lacks thin: one owner, one carrier, no measured effect; in tension with one-device-plan-at-a-time-on-a-small-host
 - `a-property-that-needs-a-filter-to-pass-is-a-finding` — K, since 0.0.34 · lacks thin: one occurrence; literature cited narrows it to what rate-based discard checks miss
 - `a-pairwise-rule-is-not-an-order-until-acyclic` — K, since 0.0.34 · lacks thin: one occurrence; the sort library's behaviour on a violated contract is unverified
+- `researcher-returns-its-report-in-the-reply` — M, since 0.0.36 · lacks a second occurrence, or a check that warns when a researcher brief names an output file
 
 ## Offered again, to merge (0)
 
