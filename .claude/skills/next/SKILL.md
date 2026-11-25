@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 785a43b34e1f9a7b
 name: next
 description: Use when the user asks what to do now or next, where the session stands, or which of the method's processes fits, in any language, or types /next. Not when the user has already named the task.
 allowed-tools: Bash, Read, Grep, Glob

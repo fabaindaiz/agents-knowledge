@@ -4709,6 +4709,37 @@ def _installed(text: str) -> bool:
     return text.startswith("---\n# " + SKILL_BANNER)
 
 
+# The banner of an installed skill ends with the hash of what was written, so a later install tells a file it
+# wrote from one edited by hand under that banner. The old base the file was made from is gone after an update,
+# so it cannot be rendered again to compare; the hash needs nothing but the file. A banner without one (written
+# before 0.0.37) cannot be told apart and is refreshed as before.
+SKILL_HASH = re.compile(r"; sha256 ([0-9a-f]{16})$", re.M)
+
+
+def _skill_digest(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _sealed(text: str) -> str:
+    """A rendered skill with its hash at the end of the banner line."""
+    first, banner, rest = text.split("\n", 2)
+    return f"{first}\n{banner}; sha256 {_skill_digest(text)}\n{rest}"
+
+
+def _unsealed(text: str) -> tuple[str, str | None]:
+    """(the text without the hash in its banner, the hash or None)."""
+    lines = text.split("\n", 2)
+    if len(lines) < 3 or not (m := SKILL_HASH.search(lines[1])):
+        return text, None
+    return f"{lines[0]}\n{lines[1][: m.start()]}\n{lines[2]}", m.group(1)
+
+
+def _hand_edited(text: str) -> bool:
+    """An installed skill whose content is not what its banner's hash says was written."""
+    body, digest = _unsealed(text)
+    return digest is not None and digest != _skill_digest(body)
+
+
 def declined_skills(tree: Path) -> set[str]:
     """The skills a bundle's `carrier.toml` `declined` refuses: `{"*"}` for all, else the names.
 
@@ -4736,7 +4767,8 @@ def install_skills(repo: Path, tree: Path, names: list[str] | None = None, *, fo
                    into: str = SKILLS_INTO) -> list[str]:
     """Writes each named base skill (all of them by default) merged with its `LOCAL.md`; returns the paths.
 
-    A `SKILL.md` the repository wrote itself is refused unless `force`: its rules belong in `LOCAL.md` first.
+    A `SKILL.md` the repository wrote itself, or one installed and then edited by hand (its banner's hash no
+    longer matches), is refused unless `force`: its rules belong in `LOCAL.md` first.
     A skill its `carrier.toml` declines is skipped, and one already installed is left where it is.
     """
     declined = declined_skills(tree)
@@ -4749,11 +4781,15 @@ def install_skills(repo: Path, tree: Path, names: list[str] | None = None, *, fo
         if _is_declined(name, declined):
             continue
         target = repo / into / name / "SKILL.md"
-        if target.is_file() and not _installed(target.read_text(encoding="utf-8")) and not force:
+        current = target.read_text(encoding="utf-8") if target.is_file() else None
+        if current is not None and not _installed(current) and not force:
             raise RefusedError(f"{target}: a skill this repository wrote; move what it says into LOCAL.md beside it, "
                                "then install with --force")
+        if current is not None and _hand_edited(current) and not force:
+            raise RefusedError(f"{target}: installed, then edited by hand (its banner's hash no longer matches); "
+                               "move the edit into LOCAL.md beside it, or install with --force to drop it")
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(_render_skill(repo, name, bases[name], into), encoding="utf-8")
+        target.write_text(_sealed(_render_skill(repo, name, bases[name], into)), encoding="utf-8")
         written.append(target.relative_to(repo).as_posix())
     return written
 
@@ -4777,7 +4813,7 @@ def installed_skill_problems(repo: Path, tree: Path, into: str = SKILLS_INTO) ->
         rel, name = path.relative_to(repo).as_posix(), path.parent.name
         if name not in bases:
             problems.append(f"{rel}: installed from a base the bundle no longer ships; remove it, or keep it as the repository's own")
-        elif text != _render_skill(repo, name, bases[name], into):
+        elif _unsealed(text)[0] != _render_skill(repo, name, bases[name], into) or _hand_edited(text):
             problems.append(f"{rel}: not what its base and LOCAL.md produce (edited, or behind them); "
                             "run `bundle.py install-skills`, and move any hand edit into LOCAL.md")
     return problems
@@ -5208,8 +5244,21 @@ def _memory_rule(description: str, body: str) -> set[str]:
 
 
 def memory_dir(repo: Path, home: Path | None = None) -> Path:
-    """The assistant's local memory for a repository: its path with every other character a dash."""
-    return (home or Path.home()) / ".claude/projects" / re.sub(r"[^A-Za-z0-9]", "-", repo.as_posix()) / "memory"
+    """The assistant's local memory for a repository: its path with every other character a dash.
+
+    From a linked git worktree it is the main repository's path, where the assistant keeps that repository's
+    memory: the worktree's own folder is empty. Outside git, or in the main checkout, the path given."""
+    return (home or Path.home()) / ".claude/projects" / re.sub(r"[^A-Za-z0-9]", "-", _main_checkout(repo).as_posix()) / "memory"
+
+
+def _main_checkout(repo: Path) -> Path:
+    """The main repository a linked worktree belongs to (`git rev-parse --git-common-dir`); else `repo`."""
+    result = subprocess.run(["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir"],
+                            capture_output=True, text=True, check=False)
+    dirs = result.stdout.split("\n")
+    if result.returncode != 0 or len(dirs) < 2 or dirs[0] == dirs[1] or Path(dirs[1]).name != ".git":
+        return repo
+    return Path(dirs[1]).parent
 
 
 def memory_report(memory: Path, repo: Path) -> list[Memory]:
@@ -6421,15 +6470,19 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
     if args.command == "new":
         repo = Path(args.repo)
         log = Path(args.log) if args.log else carrier_log(repo)
+        if args.write and not log.is_file():
+            raise RefusedError(f"{log}: no session log there to write into; create it, or name the log this repository "
+                               f"keeps in `.agents/{CARRIER_FILE}`'s `log` (or pass --log)")
         title = " ".join(args.parts)
         template, added, lacking = entry_format(log, Path(args.bundle))
+        minted = record_id("s", title, repo_carrier_id(repo))
         entry = new_entry(title, repo_carrier_id(repo), args.date or datetime.date.today().isoformat(), template,
                           level=entry_level(log.read_text(encoding="utf-8")) if log.is_file() else 2)
         if not args.write:
             print(entry, end="")
         else:
             log.write_text(insert_entry(log.read_text(encoding="utf-8"), entry), encoding="utf-8")
-            print(f"wrote the entry skeleton into {log}: replace each comment, or delete a field the format lets you omit")
+            print(f"wrote the entry skeleton {minted} into {log}: replace each comment, or delete a field the format lets you omit")
         if added:
             print(f"  . the method's entry format has fields this log's format lacks, appended and marked: {' '.join(f'**{label}**' for label in added)}; "
                   "add them to the log's format, or say there why it omits them")

@@ -168,7 +168,7 @@ class Install(Base):
         installed.write_text(installed.read_text() + "\nedited\n")
         self.assertEqual(len(B.installed_skill_problems(repo, agents)), 1)
 
-        B.install_skills(repo, agents)
+        B.install_skills(repo, agents, force=True)  # a hand edit under the banner is refused without it
         (repo / ".claude/skills/close/LOCAL.md").write_text("## 9. Later\n\nAdded after the install.\n")
         self.assertEqual(len(B.installed_skill_problems(repo, agents)), 1)
 

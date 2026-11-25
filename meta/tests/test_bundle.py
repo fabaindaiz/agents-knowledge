@@ -86,6 +86,15 @@ class Verify(Base):
         self.assertIn("carrier.toml: another repository's own file", problems)
         self.assertIn("proposals/p-", problems)
 
+    def test_a_release_carrying_its_own_incoming_material_fails(self) -> None:
+        agents = make_bundle(self.root)
+        (agents / "carrier.toml").unlink()
+        (agents / "incoming/offered.md").write_text("# Offered\n\nA carrier's material.\n")
+
+        problems = "\n".join(B.verify_problems(agents, release=True))
+
+        self.assertIn("incoming/offered.md: another repository's own file", problems)
+
     def test_the_real_bundle_exported_verifies_as_a_release(self) -> None:
         """A release as it travels: the home's own bundle, exported, with no proposals and no carrier file."""
         real = Path(__file__).resolve().parents[2] / ".agents"
@@ -3761,3 +3770,91 @@ class DocsLint(Base):
         self.assertIn("language", out)
         self.assertIn("bare URL", out)
         self.assertIn("etc.", out)
+
+
+class InstalledSkillEdits(Base):
+    """`install-skills` refreshes a skill it wrote, and refuses one edited by hand under its banner."""
+
+    def _installed(self) -> tuple[Path, Path, Path]:
+        from meta.tests.test_skills import a_carrier
+        repo, agents = a_carrier(self.root)
+        B.install_skills(repo, agents)
+        return repo, agents, repo / ".claude/skills/close/SKILL.md"
+
+    def test_a_hand_edit_under_the_banner_is_refused_and_kept(self) -> None:
+        repo, agents, installed = self._installed()
+        edited = installed.read_text().replace("Push only when asked.", "Push only when asked, and say so.")
+        installed.write_text(edited)
+
+        with self.assertRaises(B.RefusedError) as caught:
+            B.install_skills(repo, agents)
+
+        self.assertIn(".claude/skills/close/SKILL.md", str(caught.exception))
+        self.assertIn("LOCAL.md", str(caught.exception))
+        self.assertIn("--force", str(caught.exception))
+        self.assertEqual(installed.read_text(), edited)
+        B.install_skills(repo, agents, force=True)
+        self.assertNotIn("and say so", installed.read_text())
+
+    def test_an_unedited_install_is_refreshed_when_its_base_moves(self) -> None:
+        repo, agents, installed = self._installed()
+        base = agents / "method/skills/close/SKILL.md"
+        base.write_text(base.read_text().replace("Push only when asked.", "Push only when the owner asks."))
+        release().write_checksums(agents)
+
+        B.install_skills(repo, agents)
+
+        self.assertIn("Push only when the owner asks.", installed.read_text())
+        self.assertEqual(B.installed_skill_problems(repo, agents), [])
+
+
+class NewEntryLog(Base):
+    """`new entry --write` refuses a log that is not there in one line, and says which id it minted."""
+
+    def test_a_missing_log_is_refused_in_one_line_naming_it_and_the_field(self) -> None:
+        from meta.tests.test_skills import a_carrier
+        repo, _ = a_carrier(self.root)
+        log = repo / "docs/no-such-log.md"
+
+        code, out = run("new", "entry", "T", "--log", str(log), "--repo", str(repo), "--bundle", str(ROOT / ".agents"), "--write")
+
+        self.assertEqual(code, 2, out)
+        self.assertEqual(len(out.strip().splitlines()), 1, out)
+        self.assertIn(str(log), out)
+        self.assertIn("carrier.toml", out)
+        self.assertIn("`log`", out)
+        self.assertFalse(log.exists())
+
+    def test_the_written_entry_s_id_is_printed(self) -> None:
+        from meta.tests.test_skills import LOG, a_carrier
+        repo, agents = a_carrier(self.root)
+        log = repo / "log.md"
+        log.write_text(LOG)
+
+        code, out = run("new", "entry", "A", "session", "--log", str(log), "--repo", str(repo), "--bundle", str(agents), "--write")
+
+        self.assertEqual(code, 0, out)
+        minted = re.search(r"s-[0-9a-f]{6}-[0-9a-f]{6}", log.read_text().split("— A session")[0].rsplit("\n", 1)[-1])
+        self.assertIsNotNone(minted)
+        self.assertIn(minted.group(0), out)
+
+
+class MemoryFromWorktree(Base):
+    """`memory-diff` from a linked worktree reads the main repository's memory, as the assistant keeps it."""
+
+    def test_a_linked_worktree_reads_the_main_repository_s_memory_folder(self) -> None:
+        main = init_repo(self.root / "main")
+        commit(main, "first")
+        linked = self.root / "linked"
+        git(main, "worktree", "add", "-q", str(linked))
+        home = self.root / "home"
+
+        self.assertEqual(B.memory_dir(linked.resolve(), home), B.memory_dir(main.resolve(), home))
+        self.assertIn(re.sub(r"[^A-Za-z0-9]", "-", main.resolve().as_posix()), str(B.memory_dir(linked.resolve(), home)))
+
+    def test_the_main_repository_and_a_folder_outside_git_keep_their_own_path(self) -> None:
+        main = init_repo(self.root / "main")
+        home = self.root / "home"
+
+        self.assertEqual(B.memory_dir(main.resolve(), home).parent.name, re.sub(r"[^A-Za-z0-9]", "-", main.resolve().as_posix()))
+        self.assertEqual(B.memory_dir(Path("/no/such/repo"), home), home / ".claude/projects/-no-such-repo/memory")

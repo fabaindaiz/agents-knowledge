@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 9dd4caa18b0bebae
 name: edit-docs
 description: Improves, proofreads or formats documentation by editing levels (audit, structure, style, copy, mechanics), checking the meaning kept with `bundle.py docs`. Not for writing new docs or code.
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write

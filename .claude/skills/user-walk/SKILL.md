@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 f20e022c326db28b
 name: user-walk
 description: "Two jobs on how people use an app: answers the human's observations from using it (something not working, jumping, hidden or slow), each reproduced and fixed test-first; and walks a flow, the ideal path then every delay, interruption, failure and misuse, the kept ones as failing tests. Use it whenever a request is about what a person does or meets in the app: something seen while using it, a usability or interaction change (controls, keys, menus, animations), a flow to design around the user, or what someone meets when a step is slow or cut off. Not for an error message or trace alone (debug it), testing with real people, or reviewing decisions."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write

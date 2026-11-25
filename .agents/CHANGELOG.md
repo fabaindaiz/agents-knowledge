@@ -22,6 +22,17 @@ version it holds with `bundle.py changelog --since <its version>`.
   re-checks the release's index and cards, which `verify` covers (`d-5ed7e8-1d9ff1`); the update and harvest read
   less (`i-5ed7e8-0ae753`).
 
+### Fixed
+
+- `bundle.py install-skills` no longer overwrites a `SKILL.md` edited by hand under its banner: the banner now ends
+  with a hash of what was written, and an install refuses a file that no longer matches it, naming the file and the
+  fix (move the edit into `LOCAL.md`, or `--force`). An unedited install is still refreshed. A banner written before
+  this release has no hash and is refreshed as before.
+- `bundle.py new entry --write` into a log that does not exist refuses in one line, naming the log and the carrier
+  file's `log` field, instead of a traceback; a written entry's report names the id it minted.
+- `bundle.py memory-diff` run from a linked git worktree reads the main repository's memory folder, not the
+  worktree's own empty one.
+
 ## [0.0.36] - 2026-11-25
 
 **What a carrier runs at this update: `install-skills`, for the new `edit-docs` skill.** The method gains the

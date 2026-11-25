@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 c8d39951c742e4c0
 name: close
 description: Closes a working session so the next one, on another machine with no memory of this one, can continue. Use when asked to close or wrap up the session, end a phase, document what is pending and learned, or leave everything ready for another agent or machine, usually with commits and a push at the end. Runs every step - each part of the request accounted for, documents true again, the changelog entry, counted frictions, local memory moved into the repository, the hand-off, then gate, commits, remote. Not for pausing with no commits, a bare commit or push, closing a device or debug session, an app or a dialog, or finishing selected items. Before a push that ends a plan with no close yet, ask once whether to close first.
 allowed-tools: Bash, Read, Edit, Write, Grep

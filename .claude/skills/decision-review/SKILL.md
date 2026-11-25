@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 85968c662ef24673
 name: decision-review
 description: "Walks the human through the decisions of an existing spec, design or plan before anything is built: lists every decision, decides the minor ones, asks the human's one per turn with a recommendation, examples and prices, and records the answers. Use it first, before reading the material, when asked to review a spec or design, go through its decisions, proposals or open questions again, reconsider one and its implications, say what is left to decide, or decide before planning. Not for a new idea with nothing written (brainstorm first), executing a plan, or a run's opening questions (the pre-flight)."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
