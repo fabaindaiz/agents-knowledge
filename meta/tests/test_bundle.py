@@ -1648,6 +1648,11 @@ class Decisions(Base):
         self.assertEqual(B.table_cells("| a | `x | y` | b \\| c |"), ["a", "`x | y`", "b | c"])
         self.assertEqual(B.table_cells("| a | an unclosed ` tick | b |"), ["a", "an unclosed ` tick", "b"])
 
+    def test_split_row_reads_an_escaped_pipe_as_part_of_its_cell(self) -> None:
+        # 0.0.35: a planted fault that turned the unescaped pipe into another character failed no test.
+        self.assertEqual(B.split_row("| a \\| b | c |"), ["a | b", "c"])
+        self.assertEqual(B.split_row("| ends in a pipe \\|"), ["ends in a pipe |"])
+
     def test_ids_of_the_first_scheme_are_rows_too(self) -> None:
         path = self.log("| D-001 | superseded by D-002 2026-09-01 · h1 | One | why | — |\n"
                         "| D-002 | accepted 2026-09-02 · h1 | Two | supersedes D-001 | — |\n"
