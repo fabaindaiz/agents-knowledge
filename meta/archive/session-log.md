@@ -9,6 +9,32 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-25 · s-5ed7e8-e06b98 — The 0.0.35 splice finished, the plan page decided, and the push unblocked
+
+**What.** After the pause the owner said to continue. Three delegates finished 0.0.35's splice from the durable worktrees: fourteen carriers committed (three amended from the first cut), registered and aligned with this home; two left uncommitted on a red gate (one pre-existing from its environment, one a single timeout under load). The owner decided that a plan's state is shown as a page generated from the plan file on an anonymised template of the layout a carrier first wrote by hand (`d-5ed7e8-09facc`), task 9 of the 0.0.36 plan. At this close the unpushed commits were rewritten so that one comment the narrowed privacy rule reads passes, and the home and the template were pushed.
+
+**Areas.** `meta/decisions.md`, `meta/roadmap.md`, `meta/tracking/carriers.md`, `meta/archive/session-log.md`; in carriers, only their worktrees' `.agents/`, `.claude/skills/` and session logs.
+
+**Why.** The owner: continue; include in the protocol the plan-and-state pages a carrier generated, easy to produce and standardised, anonymised and as a template; close, rewriting and pushing.
+
+**Architecture.** ⚠️ Deviation, in four carriers' commits, for the owner to read: one committed on the third run of a gate whose known flaky test failed once; one on its quick checks with its long suite green but run apart; one on steps run in the main copy's environment, a fresh one failing on an undeclared test dependency as at 0.0.34; one with typecheck and lint unproven. All on local branches, reversible.
+
+**Cards relied on, and the checks that ran.** none; `register` and `align` (fifteen aligned), `verify` and `install-skills --check` in every worktree, `release.py check` before each home commit.
+
+**Review.** none in fresh context: the home's change was records only; the carriers' commits were read from their delegates' reports, and the trailers and authors of the three amended ones were checked here.
+
+**What went wrong on the way.** The first splice delegates left their gates running in the background and waited on them past the pause; the resumed brief asked for gates in the foreground, and the reports came back with every gate's result. One delegate reran a gate until a flaky test passed, against a brief that named that case; the report said so.
+
+**What was left undone.** Two carriers uncommitted (the hand-off); every carrier's 0.0.35 branch unmerged and unpushed; the four deviations above; the 0.0.36 plan.
+
+**Deviation from the plan.** none in the home.
+
+**Not verified.** Several carriers' gates ran in the main copy's environment rather than the worktree's own, so their green is unproven for a fresh clone; each carrier's entry says which.
+
+**Measured.** The resumed splice delegates were announced at 30–70 min and about 200–250k tokens each; they ran about 85, 110 and 130 min of wall time on a machine at load averages near 25, and about 100–135k tokens each: time two to three times over, tokens about half — the first time estimates in this home ran short, from the load of three gates at once.
+
+**Learned.** *General:* parallel delegates that each run a heavy gate on one machine slow each other more than they save, so the split that pays for read-only work does not for gates; a brief that names a flaky case does not stop a delegate from rerunning until green. *Local:* both into the 0.0.36 plan's task 2 (the plan's dependency and run rules). Captured: 2 learnings, 2 frictions (gates contending, a rerun until green). Needs you: the four deviations and the two uncommitted carriers.
+
 ## 2026-11-25 · s-5ed7e8-d5fb84 — 0.0.35 cut, the owner's nine decisions, and the splice paused mid-way
 
 **What.** `release/0.0.35` went to `main` once the host's guard could read its own script again (the folder's access had been withdrawn by the operating system). Two items the owner approved were built: the push as a step of its own in the close and the release procedure, and the two table parsers merged into one (compared on every table row in the home: no difference). The eight recorded privacy false positives were fixed test-first. A delegated study read one carrier's planning, review and decision practices against the bundle, and a second researched documentation practice; both are dated documents. The owner walked nine decisions one at a time (`d-5ed7e8-cbb288` to `d-5ed7e8-5dc49a`). 0.0.35 was cut and tagged here and in the template; the 0.0.36 plan and a private-channel pilot entered the roadmap. Three delegates spliced 0.0.35 into sixteen carriers until the owner paused; three carriers are committed, thirteen are spliced and uncommitted, and their worktrees were moved out of the temporary folder.

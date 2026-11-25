@@ -41,10 +41,8 @@ dependency as at 0.0.34; one with typecheck and lint unproven. Nothing is pushed
 **Next, in order.**
 1. **The two uncommitted carriers**, above, then their `register`. Two carriers' harvest branches, and all the
    0.0.35 branches, are local or unmerged, waiting on the owner.
-2. **Nothing is pushed**, by the owner's word at the close: `privacy --commits` (and so the pre-push hook) fails on one
-   unpushed commit whose code comment the narrowed rule now reads as an id beside a domain noun. Before a push: keep
-   a backup branch, rewrite the unpushed commits with that comment fixed, tag `v0.0.35` again on the equivalent
-   commit, re-run the gate and `privacy --commits`; then push the home and the template (`01ce79b`).
+2. **Pushed at the second close**, at the owner's word: the home's `main` and `v0.0.35`, and the template's, after
+   the unpushed commits were rewritten so one comment the narrowed privacy rule reads passes (backup branch kept locally).
 3. **The 0.0.36 plan** (`i-5ed7e8-516d7a`), task by task, then the first minor's criteria.
 4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
 
@@ -53,7 +51,7 @@ private-channel research (`i-5ed7e8-a3a0a1`). A zsh guard is priced (`i-5ed7e8-4
 
 **Delegation pairs this session** are in the session log's entry (*Measured*).
 
-**To continue on another machine:** `git pull --tags`; the carriers' worktrees live only on this machine.
+**To continue on another machine:** `git pull --tags`; the carriers' worktrees and 0.0.35 branches live only on this machine.
 
 ## Standing rules and facts
 
