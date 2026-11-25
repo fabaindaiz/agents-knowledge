@@ -1262,9 +1262,14 @@ def slug_of(cell: str) -> str:
     return re.split(r"\s+[—-]\s+|\s", text, maxsplit=1)[0].strip(".,:;").lower()
 
 
+def candidate_key(p: B.Proposal) -> str:
+    """What the intake groups a proposal by: its target, and `target/topic` when it names a topic (d-5ed7e8-9f14d5)."""
+    return f"{p.target}/{p.topic}" if p.topic else p.target
+
+
 def candidate_cell(p: B.Proposal) -> str:
     """The queue's first cell for a proposal: `slug — claim`, or `extends slug — …` for an extension."""
-    return (f"{p.action} " if p.action in ("extends", "overlaps") else "") + f"{p.target} — " + " ".join(p.claim.split())
+    return (f"{p.action} " if p.action in ("extends", "overlaps") else "") + f"{candidate_key(p)} — " + " ".join(p.claim.split())
 
 
 def _note_text(root: Path, rev: str | None, slug: str) -> str | None:
@@ -1367,7 +1372,8 @@ def _intake(out: Path, version: str, root: Path, report: dict, wrote: list[bool]
                 new_runs.append(_row([p.seen, p.target, p.where, " ".join(p.claim.split()), " ".join(p.evidence.split()), p.verdict]))
                 verdict = f"run logged against `{p.target}`"
             else:
-                slug, kind = p.target, B.PROPOSAL_KINDS[p.kind]
+                # Keyed on the topic too: proposals extending one method file are as many candidates as topics.
+                slug, kind = candidate_key(p), B.PROPOSAL_KINDS[p.kind]
                 cells = [candidate_cell(p), kind, p.lacks, " ".join(p.evidence.split()), p.seen]
                 if p.lacks.lower().startswith("refused"):
                     # A learning the harvest refused: recorded where the next harvest looks, never queued.

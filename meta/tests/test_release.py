@@ -679,6 +679,32 @@ class Carry(Base):
         self.assertIn("## Offered again, to merge", queue)
         self.assertIn("extends old-idea — Seen again here.", queue.split("## Offered again")[1])
 
+    def test_intake_groups_by_target_and_topic_and_a_pack_carries_the_topic(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
+        self.splice(repo)
+        agents = repo / ".agents"
+        a_proposal(agents, "A second repository.", target="old-idea", action="extends", claim="Seen again here.", lacks="nothing")
+        a_proposal(agents, "Seen once.", target="old-idea", topic="first-gate", action="extends", claim="A first topic.")
+        commit(repo, "harvest")
+        other = make_carrier(self.root, "two")
+        B.mint_carrier_id(other, upstream="r-aaaaaa")
+        self.splice(other)
+        a_proposal(other / ".agents", "Seen once.", target="old-idea", topic="second-gate", action="extends", claim="A second topic.")
+        pack = self.root / "pack.tar"
+        B.pack_proposals(other / ".agents", pack)
+
+        self.R.gather([repo], self.root / "out", self.home, packs=[pack])
+        result = self.R.intake(self.root / "out", "0.0.1", self.home)
+
+        queue = (self.home / "meta/tracking/candidates.md").read_text()
+        self.assertEqual(result["queued"], ["old-idea/first-gate", "old-idea/second-gate"])
+        self.assertEqual(len(result["received"]), 3)
+        self.assertIn("extends old-idea — Seen again here.", queue.split("## Offered again")[1])
+        self.assertIn("extends old-idea/first-gate — A first topic.", queue.split("## Offered again")[0])
+        self.assertIn("extends old-idea/second-gate — A second topic.", queue.split("## Offered again")[0])
+        self.assertEqual(self.R.slug_of("extends old-idea/first-gate — A first topic."), "old-idea/first-gate")
+
     def test_gather_names_and_intake_refuses_a_proposal_that_fails_privacy_or_warns_unanswered(self) -> None:
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo, upstream="r-aaaaaa")

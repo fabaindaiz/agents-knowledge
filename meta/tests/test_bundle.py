@@ -573,6 +573,23 @@ class Privacy(Base):
 
                 self.assertEqual(self.rules(B.privacy_check(agents)), rule)
 
+    def test_an_id_and_its_description_on_adjacent_lines_warn_and_never_fail(self) -> None:
+        rid, noun = "r-" + "4c1d2e", "pay" + "ments service"
+        cases = {"wrapped": (f"The findings of {rid} came from\nthe {noun}, generalised.", ["id-beside-domain-nearby"], []),
+                 "a table row each": (f"| {rid} | one |\n| the {noun} | two |", ["id-beside-domain-nearby"], []),
+                 "another paragraph": (f"The findings of {rid} came from here.\n\nThe {noun} is another matter.", [], []),
+                 "one line": (f"{rid} is the {noun}.\nAnd nothing more.", [], ["id-beside-domain"]),
+                 "allowed": (f"The findings of {rid} came from\nthe {noun}. " + "privacy-" + "allow: the owner asked", [], [])}
+        for case, (text, warned, failed) in cases.items():
+            with self.subTest(case=case):
+                agents = make_bundle(self.root / case.replace(" ", "-"))
+                plant(agents / "method/prompt-context.md", text)
+
+                report = B.privacy_check(agents)
+
+                self.assertEqual(self.rules(report, "WARN"), warned, report.findings)
+                self.assertEqual(self.rules(report), failed, report.findings)
+
     def test_a_proposal_is_read_too(self) -> None:
         agents = make_bundle(self.root)
         a_proposal(agents, self.PLANTED["email"])
@@ -2918,6 +2935,49 @@ class ProposalTitle(Base):
         parsed, problems = B.parse_proposal(older, path.name)
         self.assertEqual(problems, [])
         self.assertEqual(parsed.claim, "A claim with no project noun.")
+
+
+class ProposalTopic(Base):
+    """An optional `topic:` beside the target, so the intake groups by both (d-5ed7e8-9f14d5)."""
+
+    def test_a_proposal_without_a_topic_keeps_its_id_its_text_and_its_reading(self) -> None:
+        agents = make_bundle(self.root)
+        # The ids these fixtures had before the field existed: a proposal already written must keep its name.
+        written = [a_proposal(agents), a_proposal(agents, kind="method", target="prompt-bootstrap", action="extends"),
+                   a_proposal(agents, kind="experiment", target="a-run", claim="Ran it.", verdict="confirms",
+                              where="a repository with a gate", action="", lacks="")]
+        self.assertEqual([p.name for p in written], ["p-13508e94d6.md", "p-e82d11483b.md", "p-6425fc2ed8.md"])
+        received = sorted((ROOT / ".agents/proposals").glob("p-*.md"))
+        for path in [*written, *received]:
+            with self.subTest(proposal=path.name):
+                text = path.read_text(encoding="utf-8")
+                parsed, problems = B.parse_proposal(text, path.name)
+                self.assertEqual(problems, [])
+                self.assertEqual(parsed.topic, "")
+                self.assertNotIn("\ntopic:", text)
+                self.assertEqual((B.proposal_id(parsed), B.render_proposal(parsed)), (path.stem, text))
+
+    def test_a_topic_is_written_read_back_sealed_in_the_id_and_held_to_a_slug(self) -> None:
+        agents = make_bundle(self.root)
+        plain = a_proposal(agents, kind="method", target="prompt-bootstrap", action="extends")
+        path = a_proposal(agents, kind="method", target="prompt-bootstrap", action="extends", topic="first-run-gate")
+
+        text = path.read_text(encoding="utf-8")
+        parsed, problems = B.parse_proposal(text, path.name)
+        self.assertEqual(problems, [])
+        self.assertEqual(parsed.topic, "first-run-gate")
+        self.assertIn("\ntarget: prompt-bootstrap\ntopic: first-run-gate\n", text)
+        self.assertNotEqual(path.name, plain.name)
+        self.assertEqual(B.render_proposal(parsed), text)
+        _, problems = B.parse_proposal(text.replace("topic: first-run-gate", "topic: another-gate"), path.name)
+        self.assertIn("edited after it was written", " ".join(problems))
+        with self.assertRaisesRegex(B.RefusedError, "`topic` is not a slug"):
+            a_proposal(agents, topic="Not A Slug")
+        code, out = run("propose", "--kind", "method", "--target", "prompt-bootstrap", "--topic", "a-second-gate",
+                        "--action", "extends", "--claim", "A claim.", "--evidence", "Seen once.", "--tree", str(agents))
+        self.assertEqual(code, 0, out)
+        self.assertIn("topic: a-second-gate", next(p for p in (agents / "proposals").glob("p-*.md")
+                                                    if "a-second-gate" in p.read_text()).read_text())
 
 
 class CitedButUndefined(Base):

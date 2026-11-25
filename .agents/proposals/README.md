@@ -21,6 +21,7 @@ header that marks it as a proposal and says where it comes from, as a patch name
 | `base`, `digest` | the release this repository held when it wrote it, and twelve hex of that release's `SHA256SUMS`: what the proposal was written against | the tool |
 | `kind` | `knowledge` (true about building the software), `method` (how the work is done) or `experiment` (a run against a note) | the harvest |
 | `target` | the slug it concerns: a new slug for a new learning, the note or candidate it extends, or the note an experiment tested | the harvest |
+| `topic` | optional (`propose --topic SLUG`): a slug for which part of the target it concerns, so several proposals to one method file are taken in as one candidate per topic (`target/topic`) instead of one per file. Written only when set; a proposal without it keeps the id and text it had before the field existed | the harvest |
 | `seen` | the date it was seen or run | the harvest (default: today) |
 | `action`, `lacks` | knowledge and method: `new`, `extends` or `overlaps`; and what admission still needs, `nothing`, or `refused: <reason>` | the harvest |
 | `verdict`, `where` | experiment: `confirms`, `moves the boundary` or `falsifies`; and the repository by its mechanism, never by name | the harvest |

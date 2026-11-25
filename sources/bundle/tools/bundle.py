@@ -43,8 +43,9 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py machine [--mint | --write --waits W | --check]   this machine's random id and
                                                                 its row in the machine register
     python3 .agents/tools/bundle.py export [--replace] DEST   the shipped files and SHA256SUMS: a release as it travels
-    python3 .agents/tools/bundle.py propose --kind K --target SLUG (--from FILE | --claim C --evidence E) [...]
-                                                                one proposal to the bundle, in proposals/
+    python3 .agents/tools/bundle.py propose --kind K --target SLUG [--topic SLUG] (--from FILE | --claim C --evidence E) [...]
+                                                                one proposal to the bundle, in proposals/; --topic:
+                                                                which part of the target, grouped by the home
     python3 .agents/tools/bundle.py proposals [--prune | --pack FILE | --from-outbox]
                                                                 list them and what the home received; remove
                                                                 the received; pack them; convert the old outbox
@@ -565,6 +566,14 @@ def _ids_beside_domains(text: str) -> list[str]:
     ids = [m.group(0) for m in CARRIER_OR_RECORD_ID.finditer(text) if (m.group(1) or m.group(2)) not in EXAMPLE_ID_HEX]
     nouns = [m.group(0) for m in DOMAIN_NOUN.finditer(text) if not _idiom(text, m)]
     return [f"{ids[0]} beside {nouns[0]!r}"] if ids and nouns else []
+
+
+def _ids_beside_domains_across(previous: str, text: str) -> list[str]:
+    """An id on one line and a description of it on the next, in one paragraph (i-5ed7e8-408166): what the
+    one-line rule cannot see once a sentence or a table wraps. Only what neither line shows alone."""
+    if not previous.strip() or not text.strip() or _ids_beside_domains(previous) or _ids_beside_domains(text):
+        return []
+    return _ids_beside_domains(previous + "\n" + text)
 
 
 def _code_names(text: str) -> list[str]:
@@ -1089,7 +1098,9 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
         exempt = {i for i, term in enumerate(terms, 1) if term.casefold() in own}
         # A shipped file of this bundle is part of `own_text`, so it would excuse its own quotes: it keeps the warning.
         text_of_bundle = "" if path.resolve().is_relative_to(OWN_BUNDLE.resolve()) and not is_carrier_owned(rel) else own_text
+        previous = ""
         for line in _privacy_lines(path, rel, shown):
+            previous, before = line.text, previous
             if target.lines is not None and line.number not in target.lines:
                 continue
             where = f"{line.shown}:{line.number}"
@@ -1100,6 +1111,9 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
                     continue
                 found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)
                           if not (name == "quote" and quotes_bundle(hit, text_of_bundle))]
+            # Two lines read together can only warn: the window is wider than a sentence, so a person decides.
+            found += [Finding("WARN", "id-beside-domain-nearby", where, f"{hit} (the line before and this one)")
+                      for hit in _ids_beside_domains_across(before, line.text)]
             # The term itself is not printed: this output is pasted into sessions and changelogs, and
             # the one thing it must not carry is the word it caught.
             hits = term_hits(line.text, terms)
@@ -2198,8 +2212,10 @@ PROPOSAL_NAME = re.compile(r"^p-[0-9a-f]{10}$")
 PROPOSAL_KINDS = {"knowledge": "K", "method": "M", "experiment": ""}
 PROPOSAL_ACTIONS = ("new", "extends", "overlaps")
 EXPERIMENT_VERDICTS = ("confirms", "moves the boundary", "falsifies")
-PROPOSAL_KEYS = ("proposal", "bundle", "carrier", "base", "digest", "kind", "action", "target", "lacks", "verdict",
-                 "where", "seen")
+PROPOSAL_KEYS = ("proposal", "bundle", "carrier", "base", "digest", "kind", "action", "target", "topic", "lacks",
+                 "verdict", "where", "seen")
+# A slug: what `target` and the optional `topic` must be.
+PROPOSAL_SLUG = re.compile(r"[a-z0-9][\w.-]*")
 RECEIVED_HEADER = "| Proposal | Received at | Verdict |"
 # The outbox of 0.0.22 and 0.0.23: two tables, one row per learning. Read only to convert it into proposals.
 OUTBOX = ("tracking/candidates.md", "tracking/experiments.md")
@@ -2265,6 +2281,7 @@ class Proposal:
     base: str = ""
     digest: str = ""
     id: str = ""
+    topic: str = ""  # optional (0.0.37, d-5ed7e8-9f14d5): which part of the target, so the intake groups by both
 
     @property
     def evidence_heading(self) -> str:
@@ -2279,8 +2296,9 @@ def proposal_id(p: Proposal) -> str:
     `verify` names it. Two proposals differ in id whenever they differ in anything they say, and the id
     says nothing of the carrier to anyone who lacks the text. `base` and `digest` are left out: they say
     what it was written against, and a conversion made later must give a row the id a gather gave it.
+    `topic` is sealed only when it is set, so a proposal written before the field keeps its id.
     """
-    parts = [p.carrier, p.kind, p.action, p.target, p.seen, p.lacks, p.verdict, p.where, p.claim, p.evidence]
+    parts = [p.carrier, p.kind, p.action, p.target, *([p.topic] if p.topic else []), p.seen, p.lacks, p.verdict, p.where, p.claim, p.evidence]
     content = "\n".join(" ".join(part.split()) for part in parts)
     return "p-" + hashlib.sha256(content.encode()).hexdigest()[:10]
 
@@ -2294,6 +2312,8 @@ def release_digest(tree: Path) -> str:
 def render_proposal(p: Proposal) -> str:
     fields = {"proposal": p.id, "bundle": "agent-guides", "carrier": p.carrier, "base": p.base, "digest": p.digest,
               "kind": p.kind, "target": p.target, "seen": p.seen}
+    if p.topic:
+        fields["topic"] = p.topic
     if p.kind == "experiment":
         fields.update({"verdict": p.verdict, "where": p.where})
     else:
@@ -2334,7 +2354,8 @@ def parse_proposal(text: str, where: str) -> tuple[Proposal | None, list[str]]:
     p = Proposal(kind=kind, target=values["target"] or "", claim=claim.strip(), evidence=rest.strip(),
                  seen=values["seen"] or "", action=values["action"] or "", lacks=values["lacks"] or "",
                  verdict=values["verdict"] or "", where=values["where"] or "", carrier=values["carrier"] or "",
-                 base=values["base"] or "", digest=values["digest"] or "", id=values["proposal"] or "")
+                 base=values["base"] or "", digest=values["digest"] or "", id=values["proposal"] or "",
+                 topic=values["topic"] or "")
     if not PROPOSAL_NAME.match(p.id):
         problems.append(f"{where}: `proposal` is not `p-` and ten hex")
     if values["bundle"] != "agent-guides":
@@ -2343,8 +2364,10 @@ def parse_proposal(text: str, where: str) -> tuple[Proposal | None, list[str]]:
         problems.append(f"{where}: `carrier` is not `r-` and six hex")
     if kind not in PROPOSAL_KINDS:
         problems.append(f"{where}: `kind` is not one of {', '.join(PROPOSAL_KINDS)}")
-    if not re.fullmatch(r"[a-z0-9][\w.-]*", p.target):
+    if not PROPOSAL_SLUG.fullmatch(p.target):
         problems.append(f"{where}: `target` is not a slug (the note, candidate or method file it concerns)")
+    if p.topic and not PROPOSAL_SLUG.fullmatch(p.topic):
+        problems.append(f"{where}: `topic` is not a slug (which part of the target it concerns)")
     if not (re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.seen) or p.seen == UNKNOWN_DATE):
         problems.append(f"{where}: `seen` is not a date, YYYY-MM-DD")
     if not p.claim:
@@ -6069,6 +6092,8 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("propose", help="write one proposal to the bundle into proposals/, under this carrier's id")
     p.add_argument("--kind", required=True, choices=list(PROPOSAL_KINDS))
     p.add_argument("--target", required=True, help="the slug of the note, candidate or method file it concerns (a new slug for a new learning)")
+    p.add_argument("--topic", default="", help="optional: a slug for which part of the target it concerns, so the home "
+                   "groups proposals to one method file by topic")
     p.add_argument("--claim", help="the claim in one paragraph, with no project noun; for an experiment, what was run")
     p.add_argument("--evidence", help="the occurrence and the literature, generalised; for an experiment, the result")
     p.add_argument("--from", dest="body", metavar="FILE", help="the claim and the evidence from a file, as a proposal's body: the claim, "
@@ -6395,7 +6420,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             raise RefusedError("give the claim and the evidence: --claim and --evidence, or --from FILE")
         proposal = Proposal(kind=args.kind, target=args.target, claim=claim.strip(), evidence=evidence.strip(), seen=args.seen,
                             action=args.action if args.kind != "experiment" else "", lacks=args.lacks if args.kind != "experiment" else "",
-                            verdict=args.verdict, where=args.where)
+                            verdict=args.verdict, where=args.where, topic=args.topic)
         print(f"proposed {write_proposal(Path(args.tree), proposal)}; run `bundle.py privacy` before committing it")
         return 0
     if args.command == "proposals":
@@ -6418,7 +6443,7 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         heard = received(tree)
         for proposal in found:
             status = f"received: {heard[proposal.id]}" if proposal.id in heard else "waiting for the home"
-            print(f"  {proposal.id}  {proposal.kind:10} {proposal.target:40} {status}")
+            print(f"  {proposal.id}  {proposal.kind:10} {proposal.target + ('/' + proposal.topic if proposal.topic else ''):40} {status}")
         for problem in problems:
             print("  x " + problem)
         print(f"{len(found)} proposals, {sum(p.id in heard for p in found)} already received (`--prune` removes them)")
