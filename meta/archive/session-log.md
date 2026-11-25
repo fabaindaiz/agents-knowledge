@@ -9,6 +9,32 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-25 · s-5ed7e8-eb4ffa — The 0.0.36 plan executed and reviewed by severity, and the first usage measurement
+
+**What.** The 0.0.36 plan (`i-5ed7e8-516d7a`) ran task by task on `release/0.0.36`: the development flow as one map, a plan's contents and fresh read, review by severity, estimates in measured units, the spec format and `bundle.py spec`, the `edit-docs` skill with `bundle.py docs fingerprint` and `docs lint`, `usage measure`, the machine register, and the plan page. Each task had isolated review rounds by severity; a whole-branch review followed, and its findings were fixed and re-reviewed. The first `usage measure` ran, and the owner approved its generalised figure into three candidates. Not cut, at the owner's choice; the branch is pushed, unmerged.
+
+**Areas.** `sources/bundle/` (method texts, skills, templates, `tools/bundle.py`, `CHANGELOG.md`), `meta/tools/release.py`, `meta/tests/`, `.githooks/pre-merge-commit`, `AGENTS.md`, `MANIFEST.md`, `meta/decisions.md`, `meta/roadmap.md`, `meta/tracking/machines.md`, `meta/tracking/candidates.md`, the generated `.agents/` and `.claude/skills/`.
+
+**Why.** The owner: begin the plan, continue after a usage-limit cut, one more review round past the cap of five, the whole-branch review, run the first measurement now, then close, pushing only the branch.
+
+**Architecture.** ✅ Complies: originals edited and the release built; the coding-session budget kept (10077 of 10100).
+
+**Cards relied on, and the checks that ran.** none consulted; the full suite (494 tests) and `release.py check` before every commit, `docs lint` on ten real documents, `privacy --tracked` by the branch reviewer (0 FAIL).
+
+**Review.** Isolated, by severity. Task 6 and the task 9 fixes: round 1, 9 medium and 9 low; rounds 2 to 5, one medium each, all in the fingerprint's step-order key; round 6, on the owner's word past the cap, none. Whole branch: 3 medium (the plan template could not hold §21.1; the skills README lacked the new skill and steps; the estimate's and fresh read's scope disagreed with the decisions), 5 low; its re-review: 1 medium (the close skill's wording), 1 low deferred. Deferred lows are in the plan's table.
+
+**What went wrong on the way.** Three fixes went in with their test in the same command, so their red was never seen (`i-5ed7e8-468621`). The step-order key took four rounds: each fix of one list form broke another (whole steps, then lines, then loose lists, then lazy numbering). A reviewer left a scratch worktree behind and timed out on the suite; it was removed here. The skill-descriptions cap is nearly spent (2760 of 2776).
+
+**What was left undone.** The cut and the first minor's criteria; the spec pilot, deferred by the owner; the deferred lows (setext headings, forget's report, a lone `[carrier]` table, `#fragment` anchors in `spec_check`, the roadmap template's "large item"); everything 0.0.35 left in carriers.
+
+**Deviation from the plan.** A sixth review round on task 6, past the rule's cap, at the owner's word.
+
+**Not verified.** The plan page's HTML in a browser; `usage measure` beyond its tests and one real run.
+
+**Measured.** The plan: 9 tasks, 420–645 min estimated and about 140 min of main-thread wall time to land them, about ×0.25, the fix rounds and the reviews (1–5 min each) not counted. Review delegations, 16 recorded: time about ×0.2 of estimate, tokens about ×1. The estimate missed by more than twice on time, as every earlier plan here did: the estimate was in minutes a person would take, not an agent.
+
+**Learned.** *General:* a heuristic that reads document structure (list order) needs its cases enumerated as tests before the first fix, since each one-case fix broke the next case; a rule that a test is seen red does not hold when the test and the fix travel in one command. *Local:* the first into this entry and the plan's table; the second into `i-5ed7e8-468621`; the owner's preference for industry standards moved from local memory into `MANIFEST.md`. Captured: 2 learnings, 2 frictions (a red not seen, a review cap reached). Needs you: the cut, the spec pilot, and three `unconfirmed:` rulings.
+
 ## 2026-11-25 · s-5ed7e8-e06b98 — The 0.0.35 splice finished, the plan page decided, and the push unblocked
 
 **What.** After the pause the owner said to continue. Three delegates finished 0.0.35's splice from the durable worktrees: fourteen carriers committed (three amended from the first cut), registered and aligned with this home; two left uncommitted on a red gate (one pre-existing from its environment, one a single timeout under load). The owner decided that a plan's state is shown as a page generated from the plan file on an anonymised template of the layout a carrier first wrote by hand (`d-5ed7e8-09facc`), task 9 of the 0.0.36 plan. At this close the unpushed commits were rewritten so that one comment the narrowed privacy rule reads passes, and the home and the template were pushed.

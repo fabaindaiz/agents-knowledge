@@ -20,38 +20,30 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-25, a pause asked by the owner in the middle of 0.0.35's splice.** 0.0.35 is cut and tagged
-`v0.0.35` here (`fced8e3`) and in the template (`01ce79b`, on its own branch). It was **cut twice**: an isolated review
-at the close found the first cut's privacy exceptions too wide, and since its tag had reached no remote, the owner
-chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
-`d-5ed7e8-5dc49a`), two research documents and the 0.0.36 plan (`i-5ed7e8-516d7a`).
-
-**What 0.0.35 is:** its changelog section.
-
-**The splice, resumed and done for fourteen.** After the pause the owner said to continue: fourteen carriers are
-committed on `chore/agent-guides-0.0.35` (three of them amended from the first cut), registered, and `align`
-reports them and this home aligned. Worktrees and backups are in `~/.local/state/agent-guides/`. **Two are spliced,
-verified and uncommitted**: one whose tests fail on its base commit too, from its environment's image version (its
-entry says "see the commit" and must say that); one whose 74-minute gate failed a single test by timeout under load,
-passing alone in seconds — re-run it on a quiet machine. **For the owner to read:** one carrier was committed on the
-third run of a gate whose known flaky test failed once (`i-5ed7e8-88cd88`); one on its quick checks, its long suite
-green but run apart; one on steps run in the main copy's environment, a fresh one failing on an undeclared test
-dependency as at 0.0.34; one with typecheck and lint unproven. Nothing is pushed in any carrier.
+**State on 2026-11-25, the close after the 0.0.36 plan ran.** `main` and `v0.0.35` are pushed (`aa5875e`, tag at
+`fced8e3`). **0.0.36 is built and reviewed but not cut**: branch `release/0.0.36`, pushed at this close at the owner's word,
+not merged. All nine tasks of the plan (`i-5ed7e8-516d7a`) landed, each reviewed by severity in a fresh context; the
+whole-branch review's findings are fixed and re-reviewed (rounds and actuals in the plan's table). Its draft is the
+`## [Unreleased]` section of `sources/bundle/CHANGELOG.md`. `release.py check` passes; 494 tests pass.
 
 **Next, in order.**
-1. **The two uncommitted carriers**, above, then their `register`. Two carriers' harvest branches, and all the
-   0.0.35 branches, are local or unmerged, waiting on the owner.
-2. **Pushed at the second close**, at the owner's word: the home's `main` and `v0.0.35`, and the template's, after
-   the unpushed commits were rewritten so one comment the narrowed privacy rule reads passes (backup branch kept locally).
-3. **The 0.0.36 plan** (`i-5ed7e8-516d7a`), task by task, then the first minor's criteria.
+1. **The first minor's criteria** (`i-5ed7e8-3e6760`): check 0.0.36 against them, then the cut when the owner says
+   the version is closed (changelog dated, `release.py release 0.0.36`, tag), then its splice, on the owner's word.
+2. **The two uncommitted carriers** of 0.0.35 (one red on its base commit from its environment; one a single timeout
+   under load, to re-run on a quiet machine), then their `register`; every carrier's 0.0.35 branch is unmerged and
+   unpushed, and four carrier commits wait for the owner to read (the archived state lists them).
+3. **A red never seen** (`i-5ed7e8-468621`), three incidents this session.
 4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
 
-**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`); the
-private-channel research (`i-5ed7e8-a3a0a1`). A zsh guard is priced (`i-5ed7e8-4cf7df`), third incident.
+**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`), deferred by the
+owner; the cut; the private-channel research (`i-5ed7e8-a3a0a1`); the zsh guard (`i-5ed7e8-4cf7df`). Three rulings
+of this session wait as `unconfirmed:` rows (`d-5ed7e8-5f8ead`, `-9ebd54`, `-6f4927`).
 
-**Delegation pairs this session** are in the session log's entry (*Measured*).
+**Budgets are nearly spent:** the coding session reads 10077 of 10100 tokens and the skill descriptions 2760 of 2776
+characters, so the next text in either must shrink something first.
 
-**To continue on another machine:** `git pull --tags`; the carriers' worktrees and 0.0.35 branches live only on this machine.
+**To continue on another machine:** `git pull --tags`, then `git switch release/0.0.36`. The carriers' worktrees,
+0.0.35 branches and backups live only on this machine (`meta/tracking/machines.md`).
 
 ## Standing rules and facts
 
@@ -100,6 +92,13 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 
   Then 0.0.36 is checked against the first minor's criteria (`i-5ed7e8-3e6760`). *Collides with:* tasks 1 and 2
   write the same skills, so they run in that order, not at once; 5, 6 and 9 share the template folder; 9 follows 4.
+- **`i-5ed7e8-468621` · A fix's test written beside it, so its red is never seen: three incidents in one session.**
+  In the 0.0.36 plan's review rounds, three fixes went in with their test in the same command, so the test was never
+  seen failing, against §18's "say which red each test showed"; the roadmap's plan table names each. The sentence
+  was loaded and did not hold. What would: the controller sends the test and its run as one command and the fix as
+  the next, never both at once, and a fix commit whose test was not seen red says so in its message. Next step: a
+  `bundle.py` check that a `fix` commit touching code also touches a test is cheap but proves nothing about the order.
+  *Estimate:* the habit, nothing; a check, 20–30 min wall, 60k tokens, one review round. *Collides with:* nothing.
 - **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the
   session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
   ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own

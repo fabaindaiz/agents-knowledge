@@ -2,6 +2,45 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+## Archived 2026-11-25, at the close of the 0.0.36 plan's execution
+
+### Where we were
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**State on 2026-11-25, a pause asked by the owner in the middle of 0.0.35's splice.** 0.0.35 is cut and tagged
+`v0.0.35` here (`fced8e3`) and in the template (`01ce79b`, on its own branch). It was **cut twice**: an isolated review
+at the close found the first cut's privacy exceptions too wide, and since its tag had reached no remote, the owner
+chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
+`d-5ed7e8-5dc49a`), two research documents and the 0.0.36 plan (`i-5ed7e8-516d7a`).
+
+**What 0.0.35 is:** its changelog section.
+
+**The splice, resumed and done for fourteen.** After the pause the owner said to continue: fourteen carriers are
+committed on `chore/agent-guides-0.0.35` (three of them amended from the first cut), registered, and `align`
+reports them and this home aligned. Worktrees and backups are in `~/.local/state/agent-guides/`. **Two are spliced,
+verified and uncommitted**: one whose tests fail on its base commit too, from its environment's image version (its
+entry says "see the commit" and must say that); one whose 74-minute gate failed a single test by timeout under load,
+passing alone in seconds — re-run it on a quiet machine. **For the owner to read:** one carrier was committed on the
+third run of a gate whose known flaky test failed once (`i-5ed7e8-88cd88`); one on its quick checks, its long suite
+green but run apart; one on steps run in the main copy's environment, a fresh one failing on an undeclared test
+dependency as at 0.0.34; one with typecheck and lint unproven. Nothing is pushed in any carrier.
+
+**Next, in order.**
+1. **The two uncommitted carriers**, above, then their `register`. Two carriers' harvest branches, and all the
+   0.0.35 branches, are local or unmerged, waiting on the owner.
+2. **Pushed at the second close**, at the owner's word: the home's `main` and `v0.0.35`, and the template's, after
+   the unpushed commits were rewritten so one comment the narrowed privacy rule reads passes (backup branch kept locally).
+3. **The 0.0.36 plan** (`i-5ed7e8-516d7a`), task by task, then the first minor's criteria.
+4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
+
+**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`); the
+private-channel research (`i-5ed7e8-a3a0a1`). A zsh guard is priced (`i-5ed7e8-4cf7df`), third incident.
+
+**Delegation pairs this session** are in the session log's entry (*Measured*).
+
+**To continue on another machine:** `git pull --tags`; the carriers' worktrees and 0.0.35 branches live only on this machine.
+
 ## Archived 2026-11-25, at the pause after the 0.0.35 cut
 
 ### Where we were

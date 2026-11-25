@@ -45,6 +45,9 @@ enter. Changing it takes a decision row by the owner in `meta/decisions.md`. It 
   person or system. A check and hooks enforce this.
 - **The carrier wins.** A repository's own rules override the bundle's.
 - **The release is generated** from `sources/` and never edited by hand.
+- **Industry standards before our own.** A format, a version scheme, a changelog, a checksum or a commit message
+  uses an existing standard (SemVer, Keep a Changelog, `SHA256SUMS`, TOML, YAML, Conventional Commits); a format of
+  our own is invented only where none fits, kept minimal, and says why.
 - **Plain tools.** The code uses the standard library only, and nothing third-party enters without the owner's
   yes. The content is in English.
 - **The owner's quota is a cost.** Long runs go in the background, one at a time, with their cost estimated before
