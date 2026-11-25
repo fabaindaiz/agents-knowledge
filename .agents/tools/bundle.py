@@ -3737,17 +3737,35 @@ def _docs_parts(text: str) -> tuple[list[str], list[str], list[str]]:
     return [INLINE_CODE.sub(" ", line) for line in prose], fences, spans
 
 
+def _docs_front_matter(lines: list[str]) -> int:
+    """How many leading lines are YAML front matter (0 when none)."""
+    if lines and lines[0].strip() == "---":
+        end = next((i for i, line in enumerate(lines[1:], 1) if line.strip() in ("---", "...")), None)
+        return end + 1 if end else 0
+    return 0
+
+
 def docs_fingerprint(text: str) -> dict[str, Counter]:
     prose, fences, spans = _docs_parts(text)
-    words = "\n".join(re.sub(r"<!--.*?-->", " ", line) for line in prose)
+    lines = [re.sub(r"<!--.*?-->", " ", line) for line in prose]
+    words = re.sub(r"\b(\w+)n't\b", r"\1 not", re.sub(r"\bcannot\b", "can not", "\n".join(lines), flags=re.I), flags=re.I)
+    flat = re.sub(r"\s+", " ", words)
+    placed = [f"{word} in sentence {i}" for i, s in enumerate(re.split(r"(?<=[.!?])\s+|\n\s*\n", words), 1)
+              for word in DOCS_CAPS.findall(s)]
+    steps = tuple(re.sub(r"^\s*\d+[.)]\s+", "", line).strip() for line in lines if re.match(r"^\s*\d+[.)]\s+", line))
+    links = [m.group(3) for line in prose for m in DOCS_LINK.finditer(line)]
+    links += [m.group(1) for line in prose for m in re.finditer(r"^\s*\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)", line)]
+    links += [m.group(1) for line in prose for m in re.finditer(r"<([a-z][a-z0-9+.-]*://[^>\s]+)>", line)]
     return {
         "normative words in capitals": Counter(DOCS_CAPS.findall(words)),
+        "which sentence holds each normative word in capitals": Counter(placed),
+        "the order of numbered steps": Counter([" → ".join(steps)] if steps else []),
         "normative words in lower case": Counter(DOCS_LOWER.findall(words)),
         "negations and quantifiers": Counter(m.lower() for m in DOCS_LOGIC.findall(words)),
-        "numbers": Counter(DOCS_NUMBER.findall(DOCS_LINK.sub(lambda m: m.group(2), words))),
+        "numbers": Counter(DOCS_NUMBER.findall(DOCS_LINK.sub(lambda m: m.group(2), flat))),
         "code blocks": Counter(hashlib.sha256(f.encode()).hexdigest()[:10] + " " + (f.strip().split("\n")[0][:40]) for f in fences),
         "inline code": Counter(spans),
-        "links": Counter(m.group(3) for line in prose for m in DOCS_LINK.finditer(line)),
+        "links": Counter(links),
         "headings": Counter((m.group(1) + " " + (m.group(2) or "")) for line in prose if (m := DOCS_HEADING.match(line))),
         "record ids": Counter(RECORD_ID.findall(text)),
     }
@@ -3772,15 +3790,19 @@ def docs_compare(old: str, new: str) -> tuple[list[str], list[str]]:
 
 def _docs_slug(heading: str) -> str:
     """The anchor a forge gives a heading: lower case, punctuation dropped, spaces to hyphens."""
-    text = re.sub(r"[`*_~]", "", INLINE_CODE.sub(lambda m: m.group(0).strip("`"), heading)).strip().lower()
+    text = re.sub(r"[`*~]", "", INLINE_CODE.sub(lambda m: m.group(0).strip("`"), heading)).strip().lower()
     return re.sub(r"\s", "-", re.sub(r"[^\w\s-]", "", text))
 
 
 def _docs_anchors(path: Path) -> set[str]:
-    prose, _, _ = _docs_parts(path.read_text(encoding="utf-8")) if path.is_file() else ([], [], [])
+    lines = path.read_text(encoding="utf-8").split("\n") if path.is_file() else []
+    start = _docs_front_matter(lines)
     seen: Counter = Counter()
     anchors = set()
-    for line in prose:
+    for line, is_prose in zip(lines[start:], _prose(lines[start:])):
+        if not is_prose:
+            continue
+        line = re.sub(r"<!--.*?-->", "", line)
         if (m := DOCS_HEADING.match(line)) and m.group(2):
             slug = _docs_slug(m.group(2))
             anchors.add(slug if not seen[slug] else f"{slug}-{seen[slug]}")
@@ -3792,19 +3814,22 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
     """(problems, warnings) of the mechanical rules over one Markdown file."""
     text = path.read_text(encoding="utf-8")
     lines = text.split("\n")
-    mask = _prose(lines)
+    start = _docs_front_matter(lines)
+    mask = [False] * start + _prose(lines[start:])
     problems, warnings, level, h1, texts = [], [], 0, 0, {}
     for n, (line, is_prose) in enumerate(zip(lines, mask), 1):
         where = f"{path.name}:{n}"
-        if FENCE.match(line) and not is_prose and (n == 1 or mask[n - 2]):
+        if n <= start:
+            continue
+        if FENCE.match(line) and not is_prose and (n == start + 1 or mask[n - 2]):
             if not line.strip().lstrip("`~").strip():
                 warnings.append(f"{where}: a fenced block with no language")
-        if line != line.rstrip():
-            problems.append(f"{where}: trailing whitespace")
         if not is_prose:
             continue
+        if line != line.rstrip() and not re.search(r"\S  $", line):
+            warnings.append(f"{where}: trailing whitespace")
         bare = re.sub(r"<!--.*?-->", "", INLINE_CODE.sub(" ", line))
-        if m := DOCS_HEADING.match(bare):
+        if m := DOCS_HEADING.match(re.sub(r"<!--.*?-->", "", line)):
             depth, title = len(m.group(1)), (m.group(2) or "").strip()
             if not title:
                 problems.append(f"{where}: an empty heading")
@@ -3829,7 +3854,7 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
                 if label.lower() in DOCS_VAGUE_LINK or re.match(r"^https?://", label):
                     problems.append(f"{where}: the link text {label!r} says nothing of where it goes")
                 if texts.setdefault(label.lower(), target) != target:
-                    problems.append(f"{where}: the same text {label!r} links to two targets")
+                    warnings.append(f"{where}: the same text {label!r} links to two targets; a reader cannot tell them apart")
             file, _, anchor = target.partition("#")
             if re.match(r"^[a-z][a-z0-9+.-]*:", file):
                 continue
@@ -3838,7 +3863,7 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
                 problems.append(f"{where}: the link to {file} resolves to nothing")
             elif anchor and dest.suffix == ".md" and anchor not in _docs_anchors(dest):
                 problems.append(f"{where}: #{anchor} is no heading of {dest.name}")
-        for m in re.finditer(r"(?<![(<\[])\bhttps?://[^\s)>\]]+", DOCS_LINK.sub(" ", bare)):
+        for m in re.finditer(r"(?<![(<\[\"'=])\bhttps?://[^\s)>\]\"']+", DOCS_LINK.sub(" ", bare)):
             warnings.append(f"{where}: a bare URL ({m.group(0)}); give it link text")
         if re.search(r"\b(?:etc\.|and so on)", bare):
             warnings.append(f"{where}: a list that ends in 'etc.' or 'and so on' says less than it seems")
@@ -3852,6 +3877,7 @@ PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones"
 PLAN_PLACEHOLDER = re.compile(r"YYYY-MM-DD|<[a-z][^<>\n]* [^<>\n]*>")
 PLAN_STATES = {"done": "done", "approved": "done", "merged": "done", "landed": "done", "passed": "done",
                "running": "run", "active": "run", "in review": "run", "in progress": "run", "reviewing": "run",
+               "review": "run", "now": "run", "in your": "done",
                "blocked": "bad", "failed": "bad", "broken": "bad", "red": "bad"}
 
 
@@ -3862,9 +3888,15 @@ def _plan_state(text: str) -> str:
 
 
 def _plan_inline(text: str) -> str:
-    parts = re.split(r"(`[^`]+`)", text)
-    return "".join(f"<code>{html.escape(part[1:-1], quote=False)}</code>" if i % 2 else
-                   re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", html.escape(part, quote=False)) for i, part in enumerate(parts))
+    """Escaped text with `code` and **bold**; bold may span code, never reaches inside it."""
+    codes: list[str] = []
+
+    def hold(m: re.Match) -> str:
+        codes.append(f"<code>{html.escape(m.group(1), quote=False)}</code>")
+        return f"\x00{len(codes) - 1}\x00"
+    out = html.escape(re.sub(r"`([^`]+)`", hold, text.replace("\x00", "")), quote=False)
+    out = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", out)
+    return re.sub(r"\x00(\d+)\x00", lambda m: codes[int(m.group(1))], out)
 
 
 def _plan_num(cell: str) -> float | None:
@@ -3921,7 +3953,7 @@ def _plan_table(lines: list[str], tasks: bool = False) -> tuple[str, list[str]]:
         d_est = sum(_plan_num(r[est]) or 0 for r in done)
         pairs = [(_plan_num(r[est]), _plan_num(r[act])) for r in done if act is not None and len(r) > act]
         pairs = [(e, a) for e, a in pairs if e and a is not None]
-        d_act = sum(a for _, a in pairs)
+        d_act = sum(_plan_num(r[act]) or 0 for r in done if act is not None and len(r) > act)
         ratio = f" (×{_sig1(d_act / sum(e for e, _ in pairs))})" if pairs and d_act else ""
         tasks_word = lambda n: f"{n} task" + ("" if n == 1 else "s")
         notes.append(f"done: {tasks_word(len(done))}, {_plan_fmt(d_est)} {unit} estimated, {_plan_fmt(d_act)} {unit} actual{ratio}".replace("  ", " "))
@@ -4109,7 +4141,7 @@ MACHINE_REGISTER = "meta/tracking/machines.md"
 MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
 MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
 MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} (?:\d+\.\d+\.\d+|unreleased)$")
-MACHINE_PATH = re.compile(r"(?<![\w.~:/-])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|/(?![\w-]+/(?:\s|$))[\w.-]+/|\.\./|\./[\w.-]+/|[A-Za-z]:[\\/])")
+MACHINE_PATH = re.compile(r"(?<![\w.~/-])(?:~/|\$\{?HOME\}?/|%\w+%|\\\\\w|file://|/[\w.-]+/|\.\./|\./[\w.-]+/|[A-Za-z]:[\\/])")
 
 
 def _config_dir() -> Path:
@@ -4187,7 +4219,7 @@ def _machine_text_problems(text: str, name: str) -> list[str]:
             problems.append(f"{where}: carriers must be `r-xxxxxx X.Y.Z` only, not {bad[0]!r}")
         if re.search(r"\br-[0-9a-f]{6}\b", waits):
             problems.append(f"{where}: a carrier id in *Waits here*, beside a description of it; say it without the id")
-        if MACHINE_PATH.search(re.sub(r"\b[a-z][a-z0-9+.-]*://\S*", " ", waits)):
+        if MACHINE_PATH.search(re.sub(r"\b(?!file:)[a-z][a-z0-9+.-]*://\S*", " ", waits)):
             problems.append(f"{where}: a path in *Waits here*; paths never travel")
         try:
             datetime.date.fromisoformat(updated)

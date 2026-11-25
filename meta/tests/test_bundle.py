@@ -3164,10 +3164,11 @@ class MachineRegister(Base):
 
     def test_the_path_rule_catches_quoted_bracketed_home_and_drive_paths(self) -> None:
         for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "${HOME}/x", "%USERPROFILE%/x", "C:/x",
-                      "/root/x", "a,~/repo", "/workspace/x", "path=/srv/x", "../sib", "../other-repo/x", "\\\\host\\share"):
+                      "/root/x", "a,~/repo", "/workspace/x", "path=/srv/x", "../sib", "../other-repo/x", "in /tmp/ dir",
+                      "dir:/Users/someone/y", "file:///Users/someone/b", "\\\\host\\share"):
             self.assertTrue(B.MACHINE_PATH.search(waits), waits)
         for waits in ("and/or", "I/O", "two gates", "re-run ./gradlew check", "ratio: 3/4", "see https://h/a/b",
-                      "the /review/ skill"):
+                      "the review skill"):
             self.assertFalse(B.MACHINE_PATH.search(waits), waits)
 
 
@@ -3533,6 +3534,9 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         _, _, html = self.page(text)
         self.assertIn("(×0.3)", html)
         self.assertIn("20 min actual", html)
+        _, _, html = self.page(self.PLAN.replace("| 1 | first | done | M0 | 30 | 10 |", "| 1 | first | done | M0 | | 10 |"))
+        self.assertIn("30 min actual", html)
+        self.assertIn("<b>run <code>x</code> now</b>", B._plan_inline("**run `x` now**"))
 
     def test_slots_fill_in_one_pass_bold_stays_outside_code_and_an_unknown_section_is_refused(self) -> None:
         _, _, html = self.page(self.PLAN.replace("# Plan: a sample", "# Plan: {{lead}} `x`").replace(
@@ -3588,6 +3592,22 @@ Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-11111
             self.assertEqual(code, 1, why)
             self.assertIn(why, out, why)
 
+    def test_contractions_order_and_every_link_form_are_read(self) -> None:
+        base = "# T\n\nYou can stop it. Don't run it twice.\n\n1. Build.\n2. Test.\n\nThe tool MUST log. It may wait.\n\n[ref]: https://a.example\n<https://b.example>\n"
+        cases = [(("can stop", "cannot stop"), 1, "not"), (("Don't", "Do not"), 0, ""), (("1. Build.\n2. Test.", "1. Test.\n2. Build."), 1, "order"),
+                 (("The tool MUST log. It may wait.", "The tool may log. It MUST wait."), 1, "MUST"),
+                 (("https://a.example", "https://c.example"), 1, "c.example"), (("https://b.example", "https://d.example"), 1, "d.example"),
+                 (("5 x", "5 x"), 0, "")]
+        for (a, b), code_wanted, why in cases:
+            (self.root / "old.md").write_text(base)
+            (self.root / "new.md").write_text(base.replace(a, b))
+            code, out = run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))
+            self.assertEqual(code, code_wanted, (a, out))
+            self.assertIn(why, out)
+        (self.root / "old.md").write_text("# T\n\nWait 5 seconds.\n")
+        (self.root / "new.md").write_text("# T\n\nWait 5\nseconds.\n")
+        self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 0)
+
     def test_a_large_shrink_is_a_warning(self) -> None:
         code, out = self.compare(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
         (self.root / "old.md").write_text(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
@@ -3624,10 +3644,18 @@ class DocsLint(Base):
                           ("# A\n\n## Part.\n", "punctuation"), ("# A\n\n![](x.png)\n", "alt text"),
                           ("# A\n\nSee [click here](other.md).\n", "click here"), ("# A\n\n[x](missing.md)\n", "missing.md"),
                           ("# A\n\n[x](other.md#nowhere)\n", "#nowhere"), ("# A\n\n[x](#nowhere)\n", "#nowhere"),
-                          ("# A\n\n[same](other.md) and [same](doc.md)\n", "same text"), ("# A\n\ntrailing  \n", "trailing")]:
+                          ("# A\n\nno newline", "newline")]:
             code, out = self.lint(text)
             self.assertEqual(code, 1, why)
             self.assertIn(why, out, why)
+
+    def test_code_in_headings_tables_front_matter_and_fences_are_not_false_alarms(self) -> None:
+        text = ("---\nname: x # not a heading\ndescription: a, b, etc.\n---\n\n# A\n\n## The `docs` tool\n\n## `docs`\n\n## my_var\n\n"
+                "See [it](#the-docs-tool), [v](#my_var) and [w](#docs).\n\n| a | b |\n|---|---|\n| [README](other.md) | [README](doc.md) |\n\n"
+                "```text\nkept  \n```\n\nA hard break  \nnext.\n")
+        code, out = self.lint(text)
+        self.assertEqual(code, 0, out)
+        self.assertIn("same text", out)
 
     def test_warnings_do_not_fail_and_fenced_text_is_not_read(self) -> None:
         code, out = self.lint("# A\n\n```\n# not a heading\n[x](missing.md)\n```\n\nSee https://example.org and so on, etc.\n")
