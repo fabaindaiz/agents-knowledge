@@ -97,9 +97,10 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   | 6 | The documentation skill and `bundle.py docs fingerprint` and `docs lint`, standard library only | `d-5ed7e8-3a85e8` | 90–120 min | 300k | 2–3 | |
   | 7 | `bundle.py usage measure`, per machine, the approval naming its record, a refusal leaving its trace; first trial on three blocked candidates | `d-5ed7e8-7b6df4` | 60–90 min | 250k | 2 | |
   | 8 | `meta/tracking/machines.md` and `bundle.py machine`, and the close's step for what lives only on this machine | `d-5ed7e8-5751b6` | 45–75 min | 200k | 2 | |
+  | 9 | The plan page: `plan.md`'s fixed sections, `bundle.py plan page` on an anonymised template of the layout a carrier wrote by hand, republished at pause, close and on request; it reads task 4's estimate and actual columns | `d-5ed7e8-09facc` | 60–90 min | 250k | 2 | |
 
   Then 0.0.36 is checked against the first minor's criteria (`i-5ed7e8-3e6760`). *Collides with:* tasks 1 and 2
-  write the same skills, so they run in that order, not at once; 5 and 6 share the template folder.
+  write the same skills, so they run in that order, not at once; 5, 6 and 9 share the template folder; 9 follows 4.
 - **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the
   session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
   ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own
