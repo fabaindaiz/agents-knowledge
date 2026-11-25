@@ -28,20 +28,19 @@ chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the ni
 
 **What 0.0.35 is:** its changelog section.
 
-**The splice, stopped mid-way.** Three delegates were splicing it into sixteen carriers when the owner paused; they
-were stopped and their gates killed. Every worktree, and the backups, were moved out of the temporary folder to this
-machine's durable state folder (`~/.local/state/agent-guides/wt35/` and `backup35/`), branch
-`chore/agent-guides-0.0.35` in each. All sixteen hold the second cut and verify. **Three were committed** on the first cut with their gate green, and now
-carry the second cut uncommitted on top: re-run their gate and amend. **Thirteen are spliced and
-uncommitted**: their changelog entry may or may not be written and their gate did not finish — re-run each one's
-gate there and commit, or remove the worktree and splice again; the splice is deterministic from the tag. One of
-the thirteen jumps from 0.0.32 and its gate is red before any splice (`i-5ed7e8-88cd88`): leave it uncommitted. An
-extra clean worktree holds one carrier's base, made to run its gate there; remove it. The local manifest's backup
-is `backup35/carriers.toml.bak`: restore it if `register` writes worktree paths into the manifest.
+**The splice, resumed and done for fourteen.** After the pause the owner said to continue: fourteen carriers are
+committed on `chore/agent-guides-0.0.35` (three of them amended from the first cut), registered, and `align`
+reports them and this home aligned. Worktrees and backups are in `~/.local/state/agent-guides/`. **Two are spliced,
+verified and uncommitted**: one whose tests fail on its base commit too, from its environment's image version (its
+entry says "see the commit" and must say that); one whose 74-minute gate failed a single test by timeout under load,
+passing alone in seconds — re-run it on a quiet machine. **For the owner to read:** one carrier was committed on the
+third run of a gate whose known flaky test failed once (`i-5ed7e8-88cd88`); one on its quick checks, its long suite
+green but run apart; one on steps run in the main copy's environment, a fresh one failing on an undeclared test
+dependency as at 0.0.34; one with typecheck and lint unproven. Nothing is pushed in any carrier.
 
 **Next, in order.**
-1. **Finish the splice**: per worktree, the steps of `prompt-sync.md` Phase 2 from step 4, then `register` and
-   `align` (Phase 3). Two carriers' 0.0.34 harvest branches are still only local, waiting on the owner's push.
+1. **The two uncommitted carriers**, above, then their `register`. Two carriers' harvest branches, and all the
+   0.0.35 branches, are local or unmerged, waiting on the owner.
 2. **Nothing is pushed**, by the owner's word at the close: `privacy --commits` (and so the pre-push hook) fails on one
    unpushed commit whose code comment the narrowed rule now reads as an id beside a domain noun. Before a push: keep
    a backup branch, rewrite the unpushed commits with that comment fixed, tag `v0.0.35` again on the equivalent
