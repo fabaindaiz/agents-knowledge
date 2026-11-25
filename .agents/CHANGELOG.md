@@ -59,6 +59,9 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ### Changed
 
+- **A test's red is seen before its fix** (§18, `d-5ed7e8-a5356b`): the test runs in one command and its fix in the
+  next.
+
 - **A review's rounds end by severity, not by count** (`d-5ed7e8-6db1f7`): another round runs while the last found
   anything of medium severity or worse, stops when only low findings remain (listed), and stops at five to ask you;
   a fix of medium severity or worse gets its own pass. It replaces *at most two re-reviews*, which one carrier's
@@ -86,6 +89,10 @@ version it holds with `bundle.py changelog --since <its version>`.
     filesystem blind to case.
   - A carrier file's frontier reads as TOML, whatever its quotes.
   - `release.py note-state` undoes the move and the rewritten links when the build refuses it.
+- **The 0.0.36 tools, at the owner's pre-cut walk**: `docs fingerprint` reports a changed step order as a warning,
+  never a failure (`d-5ed7e8-a63064`); `plan page` refuses a bare *none* in *Needs, risks and the fresh read*
+  (`d-5ed7e8-d0d593`); `docs lint` reads setext headings; `spec` checks a link's `#anchor`; `machine` refuses a lone
+  `[carrier]` table in the manifest; `usage forget CATEGORY` says how many measures it dropped.
 
 ## [0.0.35] - 2026-11-25
 

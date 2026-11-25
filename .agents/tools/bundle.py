@@ -3781,7 +3781,7 @@ def docs_fingerprint(text: str) -> dict[str, Counter]:
     return {
         "normative words in capitals": Counter(DOCS_CAPS.findall(words)),
         "which sentence holds each normative word in capitals": Counter(placed),
-        "the order of numbered steps": Counter(" → ".join(chain) for chain in chains),
+        DOCS_ORDER: Counter(" → ".join(chain) for chain in chains),
         "normative words in lower case": Counter(DOCS_LOWER.findall(words)),
         "negations and quantifiers": Counter(m.lower() for m in DOCS_LOGIC.findall(words)),
         "numbers": Counter(DOCS_NUMBER.findall(DOCS_LINK.sub(lambda m: m.group(2), flat))),
@@ -3793,17 +3793,19 @@ def docs_fingerprint(text: str) -> dict[str, Counter]:
     }
 
 
+DOCS_ORDER = "the order of numbered steps"
+
+
 def docs_compare(old: str, new: str) -> tuple[list[str], list[str]]:
     """(differences that carry meaning, warnings)."""
     before, after = docs_fingerprint(old), docs_fingerprint(new)
-    problems = []
+    problems, warnings = [], []
     for key in before:
         lost, gained = before[key] - after[key], after[key] - before[key]
         if lost or gained:
             show = lambda c: ", ".join(f"{k!r}" + (f" ×{n}" if n > 1 else "") for k, n in sorted(c.items()))
-            problems.append(f"{key}: " + "; ".join(part for part in (f"lost {show(lost)}" if lost else "",
+            (warnings if key == DOCS_ORDER else problems).append(f"{key}{' may have changed, read the diff' if key == DOCS_ORDER else ''}: " + "; ".join(part for part in (f"lost {show(lost)}" if lost else "",
                                                                       f"gained {show(gained)}" if gained else "") if part))
-    warnings = []
     if old.strip() and len(new.strip()) < 0.8 * len(old.strip()):
         warnings.append(f"the new text is {100 - round(100 * len(new.strip()) / len(old.strip()))}% shorter: read the diff "
                         "for a dropped constraint, caveat or example")
@@ -3816,12 +3818,26 @@ def _docs_slug(heading: str) -> str:
     return re.sub(r"\s", "-", re.sub(r"[^\w\s-]", "", text))
 
 
+def _docs_setext(lines: list[str], mask: list[bool]) -> list[str]:
+    """The lines with each setext heading (a paragraph line underlined by === or ---) written as `#`/`##`, the
+    underline blanked, so every rule reads one heading form; line numbers are kept."""
+    out = list(lines)
+    for i in range(len(out) - 1):
+        under = re.fullmatch(r" {0,3}(=+|-+)\s*", out[i + 1])
+        if (under and mask[i] and mask[i + 1] and out[i].strip() and (i == 0 or not out[i - 1].strip())
+                and not re.match(r"\s*(?:#|[-*+>|]|\d+[.)]\s)", out[i])):
+            out[i] = ("# " if under.group(1)[0] == "=" else "## ") + out[i].strip()
+            out[i + 1] = ""
+    return out
+
+
 def _docs_anchors(path: Path) -> set[str]:
     lines = path.read_text(encoding="utf-8").split("\n") if path.is_file() else []
     start = _docs_front_matter(lines)
     seen: Counter = Counter()
     anchors = set()
-    for line, is_prose in zip(lines[start:], _prose(lines[start:])):
+    mask = _prose(lines[start:])
+    for line, is_prose in zip(_docs_setext(lines[start:], mask), mask):
         if not is_prose:
             continue
         line = re.sub(r"<!--.*?-->", "", line)
@@ -3838,6 +3854,7 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
     lines = text.split("\n")
     start = _docs_front_matter(lines)
     mask = [False] * start + _prose(lines[start:])
+    lines = _docs_setext(lines, mask)
     problems, warnings, level, h1, texts = [], [], 0, 0, {}
     for n, (line, is_prose) in enumerate(zip(lines, mask), 1):
         where = f"{path.name}:{n}"
@@ -4062,6 +4079,10 @@ def plan_page(plan: Path, template: Path | None = None, lang: str = "en") -> tup
     order = [PLAN_SECTIONS.index(n) for n in names if n]
     if order != sorted(order):
         problems.append("the sections are out of the template's order: " + ", ".join(PLAN_SECTIONS))
+    for heading, body in sections:
+        if heading == "Needs, risks and the fresh read":
+            problems += [f"`## {heading}`: {line.strip()!r} is a bare none; say why there is none"
+                         for line in body if re.fullmatch(r"\s*[-*]\s*(?:\*\*[^*]+\*\*\s*)?none\.?\s*", line, re.I)]
     problems += [f"line {n}: {m.group(0)!r} is a template placeholder still to fill (wrap real angle brackets in backticks)"
                  for n, line in enumerate(lines, 1) for m in [PLAN_PLACEHOLDER.search(INLINE_CODE.sub("", line))] if m]
     if problems:
@@ -4122,6 +4143,10 @@ def spec_check(spec: Path, decisions: Path | None = None, plan: Path | None = No
                 problems.append(f"{spec.name}:{n}: the link to {path} is absolute; a link is relative to the spec")
             elif path and not re.match(r"^[a-z][a-z0-9+.-]*:", path) and not (spec.parent / path).exists():
                 problems.append(f"{spec.name}:{n}: the link to {path} resolves to nothing")
+            elif "#" in target and not re.match(r"^[a-z][a-z0-9+.-]*:", path):
+                dest, anchor = (spec.parent / path) if path else spec, target.split("#", 1)[1]
+                if dest.suffix == ".md" and anchor and anchor not in _docs_anchors(dest):
+                    problems.append(f"{spec.name}:{n}: #{anchor} is no heading of {dest.name}")
         if section == "Requirements" and (m := SPEC_REQ.match(line)):
             if m.group(1) in reqs:
                 problems.append(f"{spec.name}:{n}: {m.group(1)} twice; an id once given is frozen")
@@ -4210,6 +4235,8 @@ def machine_carriers() -> str:
         records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
     except tomllib.TOMLDecodeError as error:
         raise RefusedError(f"{path}: not readable TOML ({error})") from error
+    if not isinstance(records, list):
+        raise RefusedError(f"{path}: `[carrier]` is one table; each carrier is a `[[carrier]]` record, as `release.py register` writes")
     return ", ".join(sorted(f"{r['carrier']} {r.get('version') or 'unreleased'}" for r in records
                             if isinstance(r, dict) and r.get("carrier")))
 
@@ -5362,10 +5389,16 @@ def usage_forget(repo, category):
         kept = [r for r in rows if USAGE_QUESTIONS.get(r.get("question"), ("",))[0] != category]
         if len(kept) != len(rows):
             _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in kept))
+            dropped = len(rows) - len(kept)
+            said = [f"dropped {dropped} measure{'s' if dropped > 1 else ''} of {category} from {path}"]
+        else:
+            said = []
+    else:
+        said = []
     gone = [p for p in paths + ([] if category else [usage_consent_path(), usage_state_dir(repo) / "measures.jsonl"]) if p.is_file()]
     for path in gone:
         path.unlink()
-    return [f"deleted {p}" for p in gone] or ["nothing to delete"]
+    return said + [f"deleted {p}" for p in gone] or ["nothing to delete"]
 
 
 def usage_show(repo, today):

@@ -3101,6 +3101,13 @@ class MachineRegister(Base):
             self.assertNotIn(leak, text)
         self.assertEqual(self.m("--check")[0], 0)
 
+    def test_a_lone_carrier_table_in_the_manifest_is_refused_not_read_as_none(self) -> None:
+        (self.root / "config/agent-guides/carriers.toml").write_text('[carrier]\ncarrier = "r-aaaaaa"\nversion = "0.0.35"\n')
+        self.m("--mint")
+        code, out = self.m("--write", "--waits", "nothing")
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("[[carrier]]", out)
+
     def test_a_second_write_replaces_its_own_row_keeps_others_and_keeps_waits_unless_given(self) -> None:
         self.m("--mint")
         self.m("--write", "--waits", "first")
@@ -3256,6 +3263,12 @@ class UsageMeasure(Usage):
         self.u("forget")
         self.assertFalse(self.state("measures.jsonl").exists())
 
+    def test_forget_of_a_category_says_how_many_measures_it_dropped(self) -> None:
+        self.u("set", "level", "counts")
+        self.costs()
+        self.measure("agent-cost-ratio")
+        self.assertIn("dropped 1 measure of agent_costs", "\n".join(self.u("forget", "agent_costs")))
+
     def test_the_minimum_counts_the_estimated_records_and_settled_rows_outlive_the_retention(self) -> None:
         self.u("set", "level", "counts")
         for _ in range(12):
@@ -3366,6 +3379,13 @@ None.
     def check(self, text: str, *extra: str) -> tuple[int, str]:
         self.spec.write_text(text)
         return run("spec", str(self.spec), *extra)
+
+    def test_a_link_to_a_heading_the_target_lacks_is_refused(self) -> None:
+        (self.dir / "notes.md").write_text("# Notes\n\n## The part\n")
+        self.assertEqual(self.check(self.GOOD.replace("(notes.md)", "(notes.md#the-part)"))[0], 0)
+        code, out = self.check(self.GOOD.replace("(notes.md)", "(notes.md#missing)"))
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("#missing", out)
 
     def test_a_complete_spec_passes_and_the_shipped_template_has_every_section(self) -> None:
         code, out = self.check(self.GOOD)
@@ -3483,7 +3503,7 @@ Note: then milestone M1.
 
 ## Needs, risks and the fresh read
 
-- **Needs:** none.
+- **Needs:** none: nothing unmerged is used.
 - **Risks:** a lane collides with another (its test: the merge gate).
 - **Fresh read:** done, two findings answered.
 
@@ -3571,6 +3591,15 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         self.assertNotEqual(code, 0)
         self.assertIn("Needs, risks and the fresh read", out)
 
+    def test_a_bare_none_in_needs_and_risks_is_refused_and_one_with_its_reason_passes(self) -> None:
+        for bare in ("none.", "none", "None."):
+            code, out, _ = self.page(self.PLAN.replace("none: nothing unmerged is used.", bare))
+            self.assertNotEqual(code, 0, bare)
+            self.assertIn("none", out)
+            self.assertIn("why", out)
+        for reasoned in ("none, since nothing unmerged is used.", "None: the plan reads only main."):
+            self.assertEqual(self.page(self.PLAN.replace("none: nothing unmerged is used.", reasoned))[0], 0, reasoned)
+
     def test_a_placeholder_is_reported_on_its_own_line_below_a_comment(self) -> None:
         template = Path(".agents/method/templates/plan.md")
         line = next(n for n, text in enumerate(template.read_text().split("\n"), 1) if "YYYY-MM-DD" in text)
@@ -3634,7 +3663,7 @@ Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-11111
 
     def test_contractions_order_and_every_link_form_are_read(self) -> None:
         base = "# T\n\nYou can stop it. Don't run it twice.\n\n1. Build.\n2. Test.\n\nThe tool MUST log. It may wait.\n\n[ref]: https://a.example\n<https://b.example>\n"
-        cases = [(("can stop", "cannot stop"), 1, "not"), (("Don't", "Do not"), 0, ""), (("1. Build.\n2. Test.", "1. Test.\n2. Build."), 1, "order"),
+        cases = [(("can stop", "cannot stop"), 1, "not"), (("Don't", "Do not"), 0, ""), (("1. Build.\n2. Test.", "1. Test.\n2. Build."), 0, "order"),
                  (("The tool MUST log. It may wait.", "The tool may log. It MUST wait."), 1, "MUST"),
                  (("https://a.example", "https://c.example"), 1, "c.example"), (("https://b.example", "https://d.example"), 1, "d.example"),
                  (("5 x", "5 x"), 0, "")]
@@ -3649,22 +3678,23 @@ Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-11111
         self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 0)
 
     def test_a_copy_edit_inside_a_step_is_no_reorder_and_lists_stay_apart(self) -> None:
-        base = "# T\n\n1. Build the whole tree first.\n2. Test every module.\n\nThen:\n\n1. Ship it.\n"
-        for new, code_wanted in ((base.replace("whole tree first", "whole tree in one go"), 0),
-                                 (base.replace("1. Ship it.", "1. Ship it.\n2. Tag it."), 1),
-                                 (base.replace("1. Build the whole tree first.\n2. Test every module.",
-                                               "1. Test every module.\n2. Build the whole tree first."), 1)):
-            (self.root / "old.md").write_text(base)
+        base = "# T\n\n1. Build the whole tree first.\n2. Test every module.\n\nThen:\n\n1. Ship it.\n2. Tag it.\n"
+        def order(old: str, new: str) -> bool:  # a changed order warns and never fails (`d-5ed7e8-a63064`)
+            (self.root / "old.md").write_text(old)
             (self.root / "new.md").write_text(new)
-            self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], code_wanted, new)
+            code, out = run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))
+            self.assertEqual(code, 0, out)
+            return "order of numbered steps" in out
+        for new, warned in ((base.replace("whole tree first", "whole tree in one go"), False),
+                            (base.replace("1. Ship it.\n2. Tag it.", "1. Tag it.\n2. Ship it."), True),
+                            (base.replace("1. Build the whole tree first.\n2. Test every module.",
+                                          "1. Test every module.\n2. Build the whole tree first."), True)):
+            self.assertEqual(order(base, new), warned, new)
+        swap = lambda s: s.replace("Alpha beta gamma", "@").replace("Eta theta iota", "Alpha beta gamma").replace("@", "Eta theta iota")
         loose = "# T\n\n1. Alpha beta gamma.\n\n2. Delta eps zeta.\n\n3. Eta theta iota.\n"
-        (self.root / "old.md").write_text(loose)
-        (self.root / "new.md").write_text(loose.replace("Alpha beta gamma", "@").replace("Eta theta iota", "Alpha beta gamma").replace("@", "Eta theta iota"))
-        self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 1)
+        self.assertTrue(order(loose, swap(loose)))
         lazy = "# T\n\n1. Alpha beta gamma.\n1. Delta eps zeta.\n1. Eta theta iota.\n"
-        (self.root / "old.md").write_text(lazy)
-        (self.root / "new.md").write_text(lazy.replace("Alpha beta gamma", "@").replace("Eta theta iota", "Alpha beta gamma").replace("@", "Eta theta iota"))
-        self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 1)
+        self.assertTrue(order(lazy, swap(lazy)))
 
     def test_a_large_shrink_is_a_warning(self) -> None:
         code, out = self.compare(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
@@ -3706,6 +3736,12 @@ class DocsLint(Base):
             code, out = self.lint(text)
             self.assertEqual(code, 1, why)
             self.assertIn(why, out, why)
+
+    def test_setext_headings_are_headings(self) -> None:
+        code, out = self.lint("Title\n=====\n\nSome words.\n\nPart\n----\n\nSee [it](#part).\n")
+        self.assertEqual(code, 0, out)
+        code, out = self.lint("Title\n=====\n\n#### Deep\n")
+        self.assertNotEqual(code, 0, out)
 
     def test_code_in_headings_tables_front_matter_and_fences_are_not_false_alarms(self) -> None:
         text = ("---\nname: x # not a heading\ndescription: a, b, etc.\n---\n\n# A\n\n## The `docs` tool\n\n## `docs`\n\n## my_var\n\n"

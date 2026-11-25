@@ -609,7 +609,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `verify --release`; a refused-files list that can never be complete; the YAML subset proven against PyYAML only by
   `check_yaml.py`; a converted carrier's own links to moved files (its gate catches them); the banner in a `.md` opening
   with an unclosed thematic break and after a shebang's encoding line; the session loop's steps 3 and 4 citing full
-  notes; the working invocation's `Reads:` not reaching the *Done* checklist (over the coding budget). *Estimate:* the
+  notes; the working invocation's `Reads:` not reaching the *Done* checklist (over the coding budget). From the 0.0.36 adversarial review: `install-skills` overwrites a hand-edited `SKILL.md` that keeps its banner, which `verify` flags only before the install. *Estimate:* the
   first and the banner, 20–30 min wall, 80k tokens, one round; the text ones wait on the budget. *Collides with:* nothing.
 - **`i-5ed7e8-0ae753` · Trim the update and bootstrap sessions.** The update's `Reads:` names
   `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700

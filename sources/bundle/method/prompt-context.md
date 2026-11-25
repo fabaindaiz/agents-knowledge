@@ -877,7 +877,8 @@ the strict expected-failure mark, not a sentence in the commit message.
 assertion; only a compile or import failure, which is weak, since the test never
 ran; none possible here (a device or a service absent), so the run is owed; passed
 on arrival, which makes it a *guard*, named so; or a mutation of the code standing
-in. A task whose tests are all weak is marked so, whatever its review says.
+in. A task whose tests are all weak is marked so, whatever its review says. The
+test runs in one command and its fix in the next, so the red is seen first.
 
 **Prevents:** a suite that certifies the implementation's bugs, and the specific
 agent failure of writing a green test around code it just wrote.
@@ -1632,7 +1633,7 @@ What it is, in two lines.
 **What it collides with.** The rule, by its id, and why the collision is real.
 **What is already in its favour.** The mechanisms that exist.
 **What must be decided first.** Questions, not tasks.
-**Estimate**, for a large item: the release it is cut into, and its cost in agent wall minutes, tokens and review rounds, with what it rests on and the actual beside it once known.
+**Estimate**: the release it is cut into, and its cost in agent wall minutes, tokens and review rounds, with what it rests on and the actual beside it once known.
 
 ## Closed by measurement
 Ideas retired by a number, with the number, so they stay retired.

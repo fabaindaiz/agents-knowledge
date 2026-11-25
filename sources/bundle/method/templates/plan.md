@@ -2,7 +2,7 @@
 
 <!-- The template of a plan whose state is shown as a page (`d-5ed7e8-09facc`). Keep these sections and their order;
 `python3 .agents/tools/bundle.py plan page <this file>` renders them, never by hand. Republish the page at a pause, at
-a close, and when the owner asks. A section with nothing to say keeps its heading and says "none". -->
+a close, and when the owner asks. A section with nothing to say keeps its heading and says "none"; in *Needs, risks and the fresh read*, "none" says why. -->
 
 State on YYYY-MM-DD: <one or two lines: what the owner has in hand now, and where each lane stands>.
 
@@ -45,7 +45,7 @@ Note: <what that gives the owner, and what comes after it>.
 
 - **Needs from unmerged work:** <what, where it lives, which tasks wait on it; a need with no row stops the task>.
 - **Risks the review probes:** <three to five, each with the test that pins it>.
-- **Spike:** <the unknown, its price and the note that maps each answer to the tasks it moves, or "none">.
+- **Spike:** <the unknown, its price and the note that maps each answer to the tasks it moves, or "none" and why>.
 - **Fresh read:** <who read the plan against the code, when, and how each finding was answered>.
 
 ## Tasks: <group>
