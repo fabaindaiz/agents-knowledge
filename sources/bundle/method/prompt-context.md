@@ -1047,12 +1047,12 @@ tasks wait on it, and a need with no row stops the task to report; **the risks a
 review must probe**, three to five, each with the test that pins it, which become
 the review's brief; and where the answer to an unknown would move tasks, it
 **opens with a priced spike** on a branch never merged, whose committed note maps
-each answer to the tasks it moves. **A large plan gets a fresh read before its
-first task**: an agent that did not write it reads it against the code, for
+each answer to the tasks it moves. **A plan gets a fresh read before its first
+task**: an agent that did not write it reads it against the code, for
 order, gaps, collisions and estimates, and each finding is fixed or answered.
 **Check:** the plan names the branches it collides with, or says there are none,
-every landed task has its actual beside its estimate, and a large plan's fresh
-read is recorded.
+every landed task has its actual beside its estimate, and the plan's fresh read
+is recorded.
 
 **2. Settle the questions — an approval is not a confirmation.**
 Decisions the agent reasoned on its own stay marked unconfirmed until the human
@@ -1078,8 +1078,11 @@ cut from and not the one being worked on, and checks run inside it walk paths
 that only exist there. A gate runs against the index or a clean copy, never
 against the dirty tree, and a merge is chained to the gate exactly as a commit
 is — by a hook, since the sentence alone recurred four times in one carrier: git
-runs `pre-merge-commit` before a merge that commits, so the gate there holds it,
-and `merge --no-commit`, the gate, then the commit is the form by hand. Work that was never run in its real environment is marked unverified in the
+runs `pre-merge-commit` before a merge that commits, so a stub that runs the
+pre-commit hook (`exec "$(dirname "$0")/pre-commit"`) holds it. It does not hold a
+merge finished by hand after a conflict (that commit runs `pre-commit`), a
+fast-forward (no commit, no hook), or `--no-verify` (no hook at all); by hand,
+`merge --no-commit`, the gate, then the commit. Work that was never run in its real environment is marked unverified in the
 first line of the report and goes into a batch with a named owner, because it
 fails almost entirely on its first real run and always for the same handful of
 reasons. Two written rules of one repository can contradict each other and the
@@ -2232,7 +2235,7 @@ open, a keep-awake held), or attend it.
   delegates cut while waiting and three background suites dead before finishing,
   then none across the two following sessions.
 - **Gates are serialised**, one per machine behind a lock (`flock`, `lockf`), or
-  each delegate stops at *staged, message saved* and the coordinator runs them one
+  each delegate stops at *staged, message saved* and the controller runs them one
   at a time: the gates, not the agents, compete for the machine.
 - **Every delegate brief carries four lines**, beside the standing rules it repeats: its scratch directory and its
   done-state; how to run the gate, and the lock; that its report is its final
@@ -2246,7 +2249,7 @@ open, a keep-awake held), or attend it.
   passed on a rerun is a flaky test, a finding with both runs, not a pass; the
   commit waits on the owner's word or a fix. Measured: a brief that named the case
   did not stop one delegate from rerunning until green.
-- **Two roles, named in the plan, when work runs in lanes**: the *coordinator*
+- **Two roles, named in the plan, when work runs in lanes**: the *controller*
   assigns tasks, dispatches the reviews, integrates onto the integration branch
   and keeps the build the human tests; a *lane* owns a branch, a worktree and a
   set of files, reports its base commit and its range, and never merges another

@@ -3041,3 +3041,85 @@ class CountWordBoundaries(Base):
         self.assertEqual([h.where for h in hits], ["three"])
         hits, _ = B.count_report("GATE", [log])
         self.assertEqual([h.where for h in hits], ["one"])
+
+
+class MachineRegister(Base):
+    """`bundle.py machine`: each machine by a random id, its carriers by id and version, what waits there."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.repo = self.root / "repo"
+        (self.repo / "meta/tracking").mkdir(parents=True)
+        self.register = self.repo / "meta/tracking/machines.md"
+        config = self.root / "config/agent-guides"
+        config.mkdir(parents=True)
+        (config / "carriers.toml").write_text(
+            'carriers = ["/somewhere/a", "/somewhere/b"]\n\n'
+            '[[carrier]]\ncarrier = "r-aaaaaa"\nname = "secret-name"\npath = "/somewhere/a"\nversion = "0.0.35"\n\n'
+            '[[carrier]]\ncarrier = "r-bbbbbb"\nname = "other-name"\npath = "/somewhere/b"\nversion = "0.0.34"\n')
+
+    def m(self, *argv: str) -> tuple[int, str]:
+        return run("machine", *argv, "--repo", str(self.repo))
+
+    def test_without_an_id_it_says_how_to_mint_one_and_mint_refuses_a_second(self) -> None:
+        code, out = self.m()
+        self.assertEqual(code, 1, out)
+        self.assertIn("--mint", out)
+        code, out = self.m("--mint")
+        self.assertEqual(code, 0, out)
+        minted = re.search(r"m-[0-9a-f]{6}", out).group(0)
+        self.assertIn(minted, (self.root / "config/agent-guides/machine.toml").read_text())
+        self.assertEqual(self.m("--mint")[0], 2)
+        self.assertIn(minted, self.m()[1])
+
+    def test_write_lists_the_carriers_by_id_and_version_and_never_a_name_or_path(self) -> None:
+        self.m("--mint")
+        code, out = self.m("--write", "--waits", "two gates to re-run")
+        self.assertEqual(code, 0, out)
+        text = self.register.read_text()
+        self.assertIn("r-aaaaaa 0.0.35, r-bbbbbb 0.0.34", text)
+        self.assertIn("two gates to re-run", text)
+        for leak in ("secret-name", "other-name", "/somewhere"):
+            self.assertNotIn(leak, text)
+        self.assertEqual(self.m("--check")[0], 0)
+
+    def test_a_second_write_replaces_its_own_row_keeps_others_and_keeps_waits_unless_given(self) -> None:
+        self.m("--mint")
+        self.m("--write", "--waits", "first")
+        other = "| m-cccccc | r-aaaaaa 0.0.33 | a device run | 2026-11-01 |\n"
+        self.register.write_text(self.register.read_text() + other)
+        self.m("--write")
+        text = self.register.read_text()
+        self.assertEqual(text.count("first"), 1)
+        self.assertIn(other, text)
+        self.assertEqual(len([l for l in text.splitlines() if l.startswith("| m-")]), 2)
+        self.m("--write", "--waits", "nothing")
+        self.assertNotIn("first", self.register.read_text())
+
+    def test_check_fails_on_a_name_a_path_a_bad_id_or_a_carrier_id_beside_a_description(self) -> None:
+        self.m("--mint")
+        self.m("--write", "--waits", "nothing")
+        good = self.register.read_text()
+        for row, why in [("| laptop | r-aaaaaa 0.0.35 | x | 2026-11-01 |", "machine id"),
+                         ("| m-dddddd | my-repo 0.0.35 | x | 2026-11-01 |", "carriers"),
+                         ("| m-dddddd | r-aaaaaa 0.0.35 | gate of r-bbbbbb red | 2026-11-01 |", "carrier id"),
+                         ("| m-dddddd | r-aaaaaa 0.0.35 | see /Users/someone/x | 2026-11-01 |", "path"),
+                         ("| m-dddddd | r-aaaaaa 0.0.35 | x | soon |", "date")]:
+            self.register.write_text(good + row + "\n")
+            code, out = self.m("--check")
+            self.assertEqual(code, 1, row)
+            self.assertIn(why, out, row)
+
+    def test_close_reads_the_register_and_says_when_this_machines_row_is_behind(self) -> None:
+        self.m("--mint")
+        self.m("--write", "--waits", "nothing")
+        step = {s.name: s for s in B.close_report(self.repo)}["machines"]
+        self.assertFalse(step.failed, step.lines)
+        self.assertIn("current", " ".join(step.lines))
+        manifest = self.root / "config/agent-guides/carriers.toml"
+        manifest.write_text(manifest.read_text().replace('"0.0.34"', '"0.0.35"'))
+        step = {s.name: s for s in B.close_report(self.repo)}["machines"]
+        self.assertFalse(step.failed)
+        self.assertIn("machine --write", " ".join(step.lines))
+        self.register.write_text(self.register.read_text() + "| bad | x | y | z |\n")
+        self.assertTrue({s.name: s for s in B.close_report(self.repo)}["machines"].failed)

@@ -55,10 +55,11 @@ free text of question answers (it overrides the options). List each part as **do
   `python3 .agents/tools/bundle.py decisions <the decisions log>` (`docs/decisions.md` unless the root file's map
   names another): each `proposed` row is a decision for
   the human, and each `unconfirmed:` reason a fact question; ask them in the hand-off, never decide them.
-- **Rulings taken during execution** (a plan's ledger) become decision rows or are reversed, before the plan
-  closes; a ruling left only in a ledger is a decision nobody will find.
-- **Copy a person sees that an agent wrote** (screen text, messages, a page) stays marked proposed in its record
-  until the owner has seen it; the hand-off lists what is still proposed.
+- **Rulings taken during execution** (a plan's ledger) become decision rows before the plan closes, the agent as
+  decider and `unconfirmed:` until the human confirms; one the human wants reversed is listed in the hand-off, not
+  reversed at the close. A ruling left only in a ledger is a decision nobody will find.
+- **Copy a person sees that an agent wrote** (screen text, messages, a page) stays marked *unseen* in its spec or
+  plan until the owner has seen it; the hand-off lists what is still unseen.
 - A proposal written this session that `bundle.py privacy` warns on is a question too: "is this
   private?", defaulting to generalise it. Only the human's yes writes `privacy-allow: <reason>`. A proposal
   cannot be edited, since its id seals its content: answering means deleting it while it is unreceived and
@@ -114,7 +115,10 @@ erase with `usage forget`, change with `usage set`. Declining changes nothing el
 
 `python3 .agents/tools/bundle.py memory-diff` lists the assistant's local memories for this
 repository, and which of them the repository holds nowhere. Compare those, and any scratch file, with
-the repository. Anything another machine would need goes into the document that owns it.
+the repository. Anything another machine would need goes into the document that owns it; what must stay here (a
+worktree, a branch not pushed, a gate to re-run) is listed as waiting on this machine in the register, where the
+repository keeps one: `bundle.py machine --write --waits "<what waits, naming no carrier and no path>"` (once per
+machine before it, `machine --mint`). `bundle.py close` says when this machine's row is behind.
 
 **A rule that lives only in one machine's memory or user-level file** (the assistant's global
 instructions) is silently reverted on every other machine, and loses to the host's defaults even on
@@ -134,9 +138,6 @@ The roadmap: where we are, the states of the items touched, pending items, and *
 setup another machine needs (what is not in the repository, such as local configuration, devices,
 sibling repositories) and the first concrete step.
 
-**Worktrees and workspaces the plan made**: list those whose branch is merged, and each plan workspace that is
-done; offer to remove each, in one question, and remove only what the human says, the worktree before its branch.
-
 ## 8. Ledgers travel
 
 A plan's execution ledger holds the rulings and the task results the changelog summarises: a status table
@@ -154,6 +155,10 @@ worktree. Then, before its folder goes, each kind of content moves to the record
 | a lasting decision | the decisions log |
 
 The rulings are read from wherever the plan kept them; never assume the plan persists.
+
+**Worktrees and workspaces the plan made**, once their ledgers have moved as above: list those whose branch is
+merged, and each plan workspace that is done; offer to remove each, in one question, and remove only what the human
+says, the worktree before its branch.
 
 ## 9. Gate, commits, and only then the remote
 

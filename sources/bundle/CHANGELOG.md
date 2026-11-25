@@ -19,9 +19,14 @@ version it holds with `bundle.py changelog --since <its version>`.
   (`prompt-context.md` §21.1).
 - **Which red each test showed** (§18): a failing assertion, a compile failure only (weak), none possible here
   (owed), passed on arrival (a guard), or a mutation; a task with only weak reds is marked so.
-- **A merge held by a hook** (§21.3): `pre-merge-commit` runs the gate, since the sentence alone recurred.
+- **A merge held by a hook** (§21.3): a `pre-merge-commit` stub that runs the pre-commit hook, since the sentence
+  alone recurred; what it does not hold (a merge finished by hand, a fast-forward, `--no-verify`) is named.
 - **Delegates** (*Long runs and delegates*): a red run reported, never retried away, a flaky test a finding; the
-  coordinator and lane roles, and heavy gates serialised rather than split across lanes.
+  controller and lane roles, and heavy gates serialised rather than split across lanes.
+- **The machine register** (`d-5ed7e8-5751b6`): `bundle.py machine --mint` gives a machine a random id kept outside
+  every repository; `machine --write --waits "…"` writes its row (its carriers by id and version, what waits there,
+  the date) in `meta/tracking/machines.md`, never a name or a path; `machine --check` fails on a name, a path, a bad
+  id or a carrier id beside a description, and `bundle.py close` runs it and says when this machine's row is behind.
 - **The close** (`skills/close`): execution rulings become decision rows or are reversed; copy an agent wrote that a
   person sees stays proposed until the owner has seen it; merged worktrees and done workspaces offered for removal.
 

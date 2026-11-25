@@ -98,7 +98,8 @@ The tools report what they found; they decide nothing. Read what `gather` and `l
   when `python3` is older.
 - **Paths never travel.** Each machine lists its carriers in `~/.config/agent-guides/carriers.toml`
   (`carriers = ["/path/to/repo", ...]`). The bundle names carriers only by random id, in
-  `meta/tracking/carriers.md`; which id is which repository, its name, path and version, is kept only in
+  `meta/tracking/carriers.md`, and each machine only by its random id, in `meta/tracking/machines.md` (with what waits
+  there); which id is which repository, its name, path and version, is kept only in
   that manifest, as `[[carrier]]` records written by `release.py register` and `release.py carriers`
   (which reads every listed carrier and writes nothing in any of them). The tool refuses to write the
   manifest inside a repository. Add each private carrier's name to the private-terms list, so a leak of
@@ -176,6 +177,8 @@ Commands that write, each replacing a hand edit that used to go wrong:
 ```bash
 python3 .agents/tools/bundle.py id d|i|s "<text>"      # a record id: kind, this carrier's id, content hash
 python3 .agents/tools/bundle.py carrier-id --mint      # once per carrier: a random id, in its carrier.toml
+python3 .agents/tools/bundle.py machine --mint         # once per machine: a random id, outside every repository
+python3 .agents/tools/bundle.py machine --write --waits "<what waits here>"   # this machine's row in meta/tracking/machines.md
 python3 meta/tools/release.py note-state SLUG active|review|retired   # move a full note, rewrite links, build
 ```
 

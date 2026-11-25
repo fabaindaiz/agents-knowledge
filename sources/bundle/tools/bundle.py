@@ -3962,6 +3962,126 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
     return "\n".join(parts)
 
 
+# --- the machine register ----------------------------------------------------------------------------
+# Work moves between machines, and what waits on one (a worktree, a branch never pushed, a gate to re-run) was
+# remembered by nobody. The register lists each machine by a random id kept outside every repository, its
+# carriers by id and version, and what waits there, in words that name no carrier (`d-5ed7e8-5751b6`).
+
+MACHINE_REGISTER = "meta/tracking/machines.md"
+MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
+MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
+MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} \d+\.\d+\.\d+$")
+MACHINE_PATH = re.compile(r"(?:^|[\s(`])(?:~/|/(?:Users|home|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:\\)")
+
+
+def _config_dir() -> Path:
+    """This machine's agent-guides configuration folder, read at each call (tests point it elsewhere)."""
+    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "agent-guides"
+
+
+def machine_id() -> str | None:
+    path = _config_dir() / "machine.toml"
+    if not path.is_file():
+        return None
+    value = tomllib.loads(path.read_text(encoding="utf-8")).get("machine", "")
+    return value if MACHINE_ID.match(value) else None
+
+
+def mint_machine_id() -> str:
+    if machine_id():
+        raise RefusedError(f"this machine already has an id, {machine_id()}; an id once minted is frozen")
+    minted = "m-" + secrets.token_hex(3)
+    folder = _config_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "machine.toml").write_text(
+        "# This machine's random id for the machine register. Never committed; never beside a name.\n"
+        f'machine = "{minted}"\n', encoding="utf-8")
+    return minted
+
+
+def machine_carriers() -> str:
+    """This machine's carriers as `r-xxxxxx X.Y.Z`, sorted, from the local manifest; names and paths dropped."""
+    path = _config_dir() / "carriers.toml"
+    records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
+    return ", ".join(sorted(f"{r['carrier']} {r.get('version', '?')}" for r in records if r.get("carrier")))
+
+
+def _machine_rows(text: str) -> list[tuple[int, list[str]]]:
+    return [(n, split_row(line)) for n, line in enumerate(text.splitlines(), 1)
+            if line.startswith("|") and line.strip() != MACHINE_HEADER and not set(line) <= set("|-: ")]
+
+
+def machine_problems(path: Path) -> list[str]:
+    """Each row: a machine id, carriers by id and version only, waits that name no carrier and no path, a date."""
+    problems, seen = [], set()
+    for n, cells in _machine_rows(path.read_text(encoding="utf-8")):
+        where = f"{path.name}:{n}"
+        if len(cells) != 4:
+            problems.append(f"{where}: {len(cells)} cells, not 4 ({MACHINE_HEADER})")
+            continue
+        machine, carriers, waits, updated = cells
+        if not MACHINE_ID.match(machine):
+            problems.append(f"{where}: {machine!r} is no machine id (m- and six hex digits, from `machine --mint`)")
+        elif machine in seen:
+            problems.append(f"{where}: machine id {machine} listed twice")
+        seen.add(machine)
+        bad = [c for c in (carriers.split(", ") if carriers else []) if not MACHINE_CARRIER.match(c)]
+        if bad:
+            problems.append(f"{where}: carriers must be `r-xxxxxx X.Y.Z` only, not {bad[0]!r}")
+        if re.search(r"\br-[0-9a-f]{6}\b", waits):
+            problems.append(f"{where}: a carrier id in *Waits here*, beside a description of it; say it without the id")
+        if MACHINE_PATH.search(waits):
+            problems.append(f"{where}: a path in *Waits here*; paths never travel")
+        try:
+            datetime.date.fromisoformat(updated)
+        except ValueError:
+            problems.append(f"{where}: {updated!r} is no date (YYYY-MM-DD)")
+    return problems
+
+
+def machine_write(path: Path, waits: str | None, today: str | None = None) -> str:
+    """Writes or replaces this machine's row; `waits` None keeps the row's last words."""
+    own = machine_id()
+    if not own:
+        raise RefusedError("this machine has no id: run `bundle.py machine --mint` once")
+    text = path.read_text(encoding="utf-8") if path.is_file() else (
+        "# Machines\n\nWritten by `bundle.py machine --write`, one row per machine, by random id only: which carriers "
+        "it holds and at which version, and what waits there. Which id is which machine lives only on that machine.\n\n"
+        f"{MACHINE_HEADER}\n|---|---|---|---|\n")
+    lines = text.splitlines()
+    old = next((i for i, line in enumerate(lines) if line.startswith("|") and split_row(line)[:1] == [own]), None)
+    if waits is None:
+        waits = split_row(lines[old])[2] if old is not None else "nothing"
+    row = f"| {own} | {machine_carriers()} | {waits.strip() or 'nothing'} | {today or datetime.date.today().isoformat()} |"
+    if old is not None:
+        lines[old] = row
+    else:
+        lines.append(row)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    problems = machine_problems(path)
+    if problems:
+        raise RefusedError("the register is written but fails its check: " + "; ".join(problems))
+    return row
+
+
+def machine_step(repo: Path) -> "CloseStep":
+    path = repo / MACHINE_REGISTER
+    if not path.is_file():
+        return CloseStep("machines", False, (f"no {MACHINE_REGISTER}",))
+    problems = machine_problems(path)
+    if problems:
+        return CloseStep("machines", True, tuple(problems))
+    own = machine_id()
+    row = next((cells for _, cells in _machine_rows(path.read_text(encoding="utf-8")) if cells[:1] == [own]), None) if own else None
+    if not own:
+        return CloseStep("machines", False, ("this machine has no id: `machine --mint`, then `machine --write`",))
+    if row is None or row[1] != machine_carriers():
+        return CloseStep("machines", False, ("this machine's row is missing or behind its manifest: run `bundle.py machine "
+                                             "--write --waits \"<what waits here>\"`",))
+    return CloseStep("machines", False, (f"this machine's row is current ({own}); waits: {row[2]}",))
+
+
 # --- the close's deterministic part ----------------------------------------------------------------
 # A close is mostly judgement (the entry's words, what went wrong, the hand-off); the checks around it are not,
 # and were run by hand one by one. `bundle.py close` runs them in order and fails on any (`method/skills/close`).
@@ -4000,6 +4120,7 @@ def close_report(repo: Path, base: str | None = None) -> list[CloseStep]:
     lone = [m for m in memory_report(memory, repo.resolve()) if m.searched and not m.found_in and not m.partly] \
         if memory.is_dir() else []
     steps.append(CloseStep("memory", False, tuple(f"only on this machine: {m.name}" for m in lone) or ("nothing only on this machine",)))
+    steps.append(machine_step(repo))
     return steps
 
 
@@ -5274,7 +5395,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--top", type=int, default=3)
     p.add_argument("--cards", action="store_true", help="also print each card's Not when and Check")
     p.add_argument("--bundle", default=str(OWN_BUNDLE))
-    p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory (exit 1 on any)")
+    p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory, machines (exit 1 on any)")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--base", help="the session's first commit's parent: trailers and docs-drift read BASE..HEAD")
     p = sub.add_parser("docs-drift", help="documents left stale by a change, from the carrier's docs-map.toml (exit 1 on a blocking rule)")
@@ -5289,6 +5410,14 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("count", help="entries mentioning a symptom, not incidents; a line repeated word for word is flagged, never subtracted")
     p.add_argument("symptom")
     p.add_argument("files", nargs="*", metavar="FILE", help="default: the carrier file's `log`, else this repository's .claude/logs/agent-changelog.md")
+    p = sub.add_parser("machine", help="the machine register: this machine's random id (--mint once), its row (--write), "
+                       "the register's check (--check); names and paths never written")
+    p.add_argument("--mint", action="store_true", help="mint this machine's id, outside every repository")
+    p.add_argument("--write", action="store_true", help="write or replace this machine's row from the local manifest")
+    p.add_argument("--waits", help="with --write: what waits on this machine, naming no carrier and no path")
+    p.add_argument("--check", action="store_true", help="check every row of the register (exit 1 on any problem)")
+    p.add_argument("--file", default=MACHINE_REGISTER, help=f"the register, relative to --repo (default {MACHINE_REGISTER})")
+    p.add_argument("--repo", default=".")
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
@@ -5685,6 +5814,26 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
               "the unit is entries that mention it, not incidents: read each hit, and count incidents"
               + (f". {len(repeats)} of them repeat an earlier line word for word (marked =): read them, each is a copy "
                  "or a recurrence" if repeats else ""))
+        return 0
+    if args.command == "machine":
+        path = Path(args.repo) / args.file
+        if args.mint:
+            print(f"minted {mint_machine_id()}, in {_config_dir() / 'machine.toml'}; never commit it")
+            return 0
+        if args.write:
+            print("wrote " + machine_write(path, args.waits))
+            return 0
+        if args.check:
+            problems = machine_problems(path) if path.is_file() else [f"{path}: no register"]
+            for problem in problems:
+                print("  x " + problem)
+            print(f"machine register: {len(problems)} problems")
+            return 1 if problems else 0
+        own = machine_id()
+        if not own:
+            print("this machine has no id: run `bundle.py machine --mint` once")
+            return 1
+        print(f"this machine is {own}; carriers: {machine_carriers() or 'none in the manifest'}")
         return 0
     if args.command == "memory-diff":
         repo = Path(args.repo).resolve()
