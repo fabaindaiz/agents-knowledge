@@ -762,3 +762,5 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-b865300e6b` | 0.0.34 | another occurrence of `index-unread-where-rules-absorbed-it`, to merge |
 | `p-c6083df1c2` | 0.0.34 | another occurrence of `explain-a-term-before-asking-about-it`, to merge |
 | `p-e11b709c71` | 0.0.34 | another occurrence of `two-rules-of-one-repository-can-collide`, to merge |
+| `p-069d110c27` | 0.0.35 | another occurrence of `no-foreign-shell-constructs`, to merge |
+| `p-dc5b3531b3` | 0.0.35 | another occurrence of `prompt-harvest`, to merge |

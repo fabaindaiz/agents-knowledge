@@ -153,7 +153,12 @@ repositories, a rule about a particular shell construct was broken five times
 with the rule in context — twice with real damage, a script that executed
 nothing while reporting success and a discard that threw away uncommitted work —
 and rewriting the rule did not prevent the next one. No source we found names
-how many repeats justify building the mechanism.
+how many repeats justify building the mechanism. The construct need not come from
+a paste: the agent's own habit is the foreign one when the host's shell differs.
+Under zsh an unquoted variable holding a list is one argument, so a command over
+many repositories reads a single path that names nothing and reports them
+missing, without an error; a list passed to a program as its argument vector
+removes the construct (rung 4) where a rule about quoting would only ask for care.
 
 **Four narrowings, all from those sources.** A rung-1 or rung-2 rule is *less
 reliable*, not useless: NIOSH keeps administrative controls as a legitimate

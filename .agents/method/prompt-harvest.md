@@ -128,6 +128,38 @@ What it means here: every open repository is harvested, because a learning seen 
 the second occurrence admission asks for; a carrier that is not open is named in the report as not
 harvested, never reached into.
 
+**Before the first carrier is read, list every carrier's frontier** — `harvested_through`, its
+`harvested_gaps`, and any branch holding a later harvest (`release.py gather` names one) — and call the harvest
+complete only when each has been read to today or named as not reachable. A carrier missed in the first pass is
+found by that list, not by memory (0.0.34: one was found only this way).
+
+## The working notes: fixed sections, set before reading
+
+A harvest over several repositories spends its time between reading and proposing, in the working notes, and
+that is where the plan is designed. Set these sections before any reading starts, and give every reader — you,
+or each delegated agent — the same ones in one brief written once and pasted, so the reports arrive comparable
+and the human approves one table instead of reconciling a format per reader.
+
+**Per repository, five sections:**
+
+- **a. What changed since the frontier**, from the records: the log, the decisions, the roadmap, the commits.
+- **b. What the human said**, from the transcripts (`bundle.py turns`), corrections, mid-turn messages and
+  the free text of answers marked.
+- **c. Frictions, counted** by searching the log (`bundle.py count`), never from memory.
+- **d. Candidate learnings**, each with its target slug and whether it is `new`, `extends` or `overlaps`.
+- **e. What belongs to this repository only**, for its own roadmap (step 7).
+
+**Consolidated, four piles with a recommendation each, and one apart:**
+
+- **A. Tool and method defects with a mechanism** — recommend: propose.
+- **B. Extensions of a note or candidate** with a new number, boundary or occurrence — recommend: propose.
+- **C. New learnings seen once**, marked thin — recommend: propose, or hold.
+- **D. Recommended drops** — textbook, or a restatement of the human's own instruction file only.
+- **For the human now** — what is urgent and is not the bundle's, such as a credential seen in a transcript:
+  named by kind only, never copied into the notes, a proposal or a report.
+
+The table step 3 shows is these piles, numbered, so the human can answer by row numbers.
+
 ## Phase 0 — close the session that is open, in each repository
 
 **A harvest reads what was written down, so it is worth nothing until what happened is written

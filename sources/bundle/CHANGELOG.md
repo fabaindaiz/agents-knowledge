@@ -6,6 +6,19 @@ Every release of the agent-guides bundle, newest first. The format follows
 release may change the format a carrier depends on (SemVer §4); a carrier reads what changed since the
 version it holds with `bundle.py changelog --since <its version>`.
 
+## [Unreleased]
+
+### Changed
+
+- **A harvest's working notes have fixed sections**, set before the first read and pasted to every reader in one
+  brief: five per repository (what changed, what the human said, frictions counted, candidates with their
+  target, what stays local), four consolidated piles with a recommendation each, and one apart for what the
+  human must see now. And before the first carrier is read, every carrier's frontier is listed, so a missed one
+  is found by the list (`prompt-harvest.md`).
+- **The enforcement ladder names the shell construct that is the agent's own habit**: under zsh an unquoted
+  list variable is one argument, and a list passed as a program's argument vector removes the construct
+  (`prompt-context.md`).
+
 ## [0.0.34] - 2026-11-25
 
 **What a carrier runs at this update: nothing new, and one check now stops.** The build no longer reads a note's

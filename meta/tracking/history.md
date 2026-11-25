@@ -6,6 +6,13 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Offered again, merged or applied at 0.0.35
+
+| Proposal | Where it went |
+|---|---|
+| `p-dc5b3531b3` (extends `prompt-harvest`) | applied: the working notes' fixed sections — five per repository, four piles and one for the human now, one brief pasted to every reader — and the frontier list before the first read, in `prompt-harvest.md`, by the owner's approval of the idea in the session that proposed it |
+| `p-069d110c27` (extends `no-foreign-shell-constructs`) | applied: the enforcement ladder in `prompt-context.md` names the case where the agent's own habit is the foreign construct, an unquoted list under zsh, and the argument vector that removes it |
+
 ## Offered again, merged or applied at 0.0.34
 
 Rows `release.py intake` set aside as occurrences of a slug already queued, answered or admitted. Those merged into a note are in its *Evidence*; those added to a queued row are in that row of `candidates.md`, each marked **0.0.34**; those for a row of this history are added to that row.
