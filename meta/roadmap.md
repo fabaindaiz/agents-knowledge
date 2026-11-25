@@ -88,8 +88,8 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   |---|---|---|---|---|---|---|
   | 1 | The development flow's map in `guide.md`: each step's input, output and closing check | `d-5ed7e8-cbb288` | 20–40 min | 80k | 1–2 | |
   | 2 | A carrier's practices into the skills: the plan's dependency table and stop rule, review focus, priced spike; the plan's fresh read; the classified red; a merge-commit hook; at close, rulings promoted, merged worktrees offered for removal, roles, proposed copy | `d-5ed7e8-21f670` | 60–90 min | 250k | 2–3 | |
-  | 3 | Re-review by severity, hard stop at five, a fix's own pass (`prompt-bootstrap.md`, §21.4) | `d-5ed7e8-6db1f7` | 10–20 min | 50k | 1 | |
-  | 4 | Estimates in measured units with the calibration shown (§21.1, the bootstrap, the ledger column) | `d-5ed7e8-9dc00d` | 15–30 min | 60k | 1 | |
+  | 3 | Re-review by severity, hard stop at five, a fix's own pass (`prompt-bootstrap.md`, §21.4) | `d-5ed7e8-6db1f7` | 10–20 min | 50k | 1 | ~6 min, main thread (tokens not metered), 0 rounds: `e2c1f89` |
+  | 4 | Estimates in measured units with the calibration shown (§21.1, the bootstrap, the ledger column) | `d-5ed7e8-9dc00d` | 15–30 min | 60k | 1 | ~8 min, main thread, review pending |
   | 5 | The spec format (shape B): a template and `bundle.py spec` with tests; then the pilot on a carrier's real feature, which the owner names | `d-5ed7e8-cb0531` | 60–90 min + pilot | 250k | 2 | |
   | 6 | The documentation skill and `bundle.py docs fingerprint` and `docs lint`, standard library only | `d-5ed7e8-3a85e8` | 90–120 min | 300k | 2–3 | |
   | 7 | `bundle.py usage measure`, per machine, the approval naming its record, a refusal leaving its trace; first trial on three blocked candidates | `d-5ed7e8-7b6df4` | 60–90 min | 250k | 2 | |

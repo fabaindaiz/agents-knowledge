@@ -16,6 +16,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   a fix of medium severity or worse gets its own pass. It replaces *at most two re-reviews*, which one carrier's
   measured rounds showed would have shipped medium defects in three lanes of four (`prompt-bootstrap.md`,
   `prompt-context.md` §21.4).
+- **A plan is estimated in what is later measured** (`d-5ed7e8-9dc00d`): per task, agent wall minutes, tokens and
+  review rounds, the actual written beside each as it lands, and the ratio the earlier plans measured shown with the
+  estimate; human work hours only when you ask, with their conversion. A background agent's price is corrected by
+  the last recorded pairs, and heavy gates run at once on one machine are priced for the contention or run in turn
+  (`prompt-context.md` §21.1 and the delegation paragraph, `prompt-bootstrap.md`, the close's *Measured*).
 
 ## [0.0.35] - 2026-11-25
 

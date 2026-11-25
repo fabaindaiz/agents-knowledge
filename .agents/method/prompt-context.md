@@ -982,9 +982,11 @@ tool writes it (`usage add`). It never leaves the machine, except a generalised
 figure the user approves at a harvest as Evidence under this rule; a preference
 never leaves, even summarised. The close asks for consent (`usage needs-consent`).
 
-**A long background agent states its price first:** an estimate of time and tokens,
-and its model. When it returns, compare the actual, and with consent record both
-(`usage add agent_costs`).
+**A long background agent states its price first:** an estimate of wall time and
+tokens, and its model, corrected by the ratio the last recorded pairs showed. When
+it returns, write the actual beside it where the estimate was written, and with
+consent record both (`usage add agent_costs`). Several heavy gates run at once on
+one machine slow each other: price that contention, or run them in turn.
 
 **Privacy wins over record-keeping.** Where this rule meets "never lose
 information", this rule wins. Sensitive detail is generalised while the lesson
@@ -1029,12 +1031,16 @@ points at for the evidence.
 A change that reshapes something every module reads lists, before it starts,
 every live branch and file it will collide with and the order the merges must
 take; where the shape itself changes, the plan carries a step in which both
-shapes are valid, so one task does not turn the whole branch red. The plan's
-estimates are in hours with a measured cost per task, and the estimate is kept
-beside what was actually spent — an estimate nobody compares afterwards never
-calibrates, and estimating in *sessions* stops meaning anything once agents run
-in parallel. **Check:** the plan names the branches it collides with, or says
-there are none.
+shapes are valid, so one task does not turn the whole branch red. **A plan is
+estimated in what is later measured**: agent wall minutes, tokens and review
+rounds per task, with the actual written beside each as the task lands, and the
+plan shows the ratio measured on the plans before it ("the last eight: time ×0.1
+to ×0.2, tokens ×0.8 to ×1.8"). An estimate in human work hours is given only
+when the human asks, with its conversion: one carrier's plans priced that way
+landed twenty to forty times faster, and nobody recorded the ratio, so nothing
+calibrated; estimating in *sessions* stops meaning anything once agents run in
+parallel. **Check:** the plan names the branches it collides with, or says there
+are none, and every landed task has its actual beside its estimate.
 
 **2. Settle the questions — an approval is not a confirmation.**
 Decisions the agent reasoned on its own stay marked unconfirmed until the human
