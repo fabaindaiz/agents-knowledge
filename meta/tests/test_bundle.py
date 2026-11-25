@@ -3123,3 +3123,101 @@ class MachineRegister(Base):
         self.assertIn("machine --write", " ".join(step.lines))
         self.register.write_text(self.register.read_text() + "| bad | x | y | z |\n")
         self.assertTrue({s.name: s for s in B.close_report(self.repo)}["machines"].failed)
+
+
+    def test_a_pipe_in_waits_is_escaped_a_newline_refused_and_a_failing_row_never_written(self) -> None:
+        self.m("--mint")
+        self.assertEqual(self.m("--write", "--waits", "a gate | then a push")[0], 0)
+        self.assertEqual(self.m("--check")[0], 0)
+        before = self.register.read_text()
+        self.assertEqual(self.m("--write", "--waits", "see /Users/someone/x")[0], 2)
+        self.assertEqual(self.m("--write", "--waits", "one\ntwo")[0], 2)
+        self.assertEqual(self.register.read_text(), before)
+
+    def test_a_carrier_with_no_version_is_listed_unreleased(self) -> None:
+        manifest = self.root / "config/agent-guides/carriers.toml"
+        manifest.write_text(manifest.read_text().replace('version = "0.0.34"\n', ""))
+        self.m("--mint")
+        self.assertEqual(self.m("--write")[0], 0)
+        self.assertIn("r-bbbbbb unreleased", self.register.read_text())
+        self.assertEqual(self.m("--check")[0], 0)
+
+    def test_a_relative_config_home_is_ignored_and_a_broken_id_file_refused(self) -> None:
+        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": "relative"}):
+            self.assertEqual(B._config_dir(), Path.home() / ".config/agent-guides")
+        (self.root / "config/agent-guides/machine.toml").write_text("machine = [\n")
+        self.assertEqual(self.m("--mint")[0], 2)
+        self.assertEqual(self.m()[0], 2)
+
+    def test_a_short_own_row_and_a_tight_header_are_handled(self) -> None:
+        self.m("--mint")
+        own = B.machine_id()
+        self.register.write_text("|Machine|Carriers|Waits here|Updated|\n|---|---|---|---|\n" + f"| {own} | x |\n")
+        self.assertEqual(self.m("--write")[0], 0)
+        self.assertEqual(self.m("--check")[0], 0, self.register.read_text())
+
+    def test_the_path_rule_catches_quoted_bracketed_home_and_drive_paths(self) -> None:
+        for waits in ('"/Users/someone/x"', "[/home/someone/x]", "$HOME/x", "C:/x", "/root/x", "./x"):
+            self.assertTrue(B.MACHINE_PATH.search(waits), waits)
+        for waits in ("and/or", "I/O", "two gates"):
+            self.assertFalse(B.MACHINE_PATH.search(waits), waits)
+
+
+class UsageMeasure(Usage):
+    """`usage measure`: a named question, answered generalised; the raw figure for the owner only; one record."""
+
+    def costs(self) -> None:
+        self.u("set", "level", "counts")
+        for est_min, act_s, est_ktok, act_ktok in ((40, 300, 100, 90), (60, 480, 200, 260), (30, 240, 80, 70)):
+            self.u("add", "agent_costs", "kind=review", "model=m", f"est_min={est_min}", f"act_s={act_s}",
+                   f"est_ktok={est_ktok}", f"act_ktok={act_ktok}", "act_tools=5")
+
+    def measure(self, *rest: str) -> list[str]:
+        return self.u("measure", *rest)
+
+    def test_alone_it_lists_the_questions_it_answers(self) -> None:
+        shown = "\n".join(self.measure())
+        for name in B.USAGE_QUESTIONS:
+            self.assertIn(name, shown)
+
+    def test_without_consent_or_data_it_measures_nothing_and_stores_nothing(self) -> None:
+        self.assertIn("nothing to measure", "\n".join(self.measure("agent-cost-ratio")))
+        self.assertFalse(self.state("measures.jsonl").exists())
+
+    def test_the_answer_is_generalised_the_raw_figure_marked_for_the_owner_and_a_pending_id_kept(self) -> None:
+        self.costs()
+        out = self.measure("agent-cost-ratio")
+        generalised = next(l for l in out if l.startswith("generalised:"))
+        self.assertIn("×0.1", generalised)          # time, median 0.13 to one significant figure
+        self.assertIn("×0.9", generalised)          # tokens, median 0.875
+        self.assertIn("fewer than ten", generalised)
+        self.assertNotIn("0.13", generalised)
+        self.assertTrue(any(l.startswith("raw, for you only") and "0.13" in l for l in out), out)
+        ident = re.search(r"u-[0-9a-f]{6}", "\n".join(out)).group(0)
+        self.assertIn(ident, self.state("measures.jsonl").read_text())
+        self.assertNotIn("0.13", self.state("measures.jsonl").read_text())
+
+    def test_an_approval_names_one_record_and_is_for_that_record_only(self) -> None:
+        self.costs()
+        ident = re.search(r"u-[0-9a-f]{6}", "\n".join(self.measure("agent-cost-ratio"))).group(0)
+        line = "\n".join(self.measure(ident, "into", "a-plan-carries-a-cost-ledger"))
+        self.assertIn("one machine", line)
+        self.assertIn("a-plan-carries-a-cost-ledger", line)
+        self.assertIn("×0.1", line)
+        with self.assertRaises(B.RefusedError):
+            self.measure(ident, "into", "another-record")
+        self.assertIn('"entered"', self.state("measures.jsonl").read_text())
+
+    def test_a_refusal_leaves_a_trace_with_no_figure(self) -> None:
+        self.costs()
+        ident = re.search(r"u-[0-9a-f]{6}", "\n".join(self.measure("agent-cost-ratio"))).group(0)
+        trace = "\n".join(self.measure(ident, "withhold", "a-plan-carries-a-cost-ledger"))
+        self.assertIn("withheld", trace)
+        self.assertNotRegex(trace, r"×\d")
+        with self.assertRaises(B.RefusedError):
+            self.measure(ident, "into", "a-plan-carries-a-cost-ledger")
+
+    def test_an_unknown_question_or_id_is_refused(self) -> None:
+        for rest in (("no-such-question",), ("u-000000", "into", "x"), ("u-000000", "sideways", "x")):
+            with self.assertRaises(B.RefusedError):
+                self.measure(*rest)

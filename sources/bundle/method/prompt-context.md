@@ -983,8 +983,8 @@ each file opens with the sentinel line the privacy check fails on anywhere else.
 **Usage data is local, per user and consented.** It lives outside every repository
 (`bundle.py usage show` says where) and nothing is stored without the user's
 consent: the default is nothing, and a missing consent means never asked. Only the
-tool writes it (`usage add`). It never leaves the machine, except a generalised
-figure the user approves at a harvest as Evidence under this rule; a preference
+tool writes it (`usage add`). It never leaves the machine, except a figure
+`usage measure` generalised and the user approved into one named record; a preference
 never leaves, even summarised. The close asks for consent (`usage needs-consent`).
 
 **A long background agent states its price first:** an estimate of wall time and

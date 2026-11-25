@@ -102,7 +102,8 @@ HERE = Path(__file__).resolve().parent
 OWN_BUNDLE = HERE.parent
 OWN_REPO = OWN_BUNDLE.parent
 
-MANIFEST = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "agent-guides/carriers.toml"
+MANIFEST = (Path(os.environ["XDG_CONFIG_HOME"]) if Path(os.environ.get("XDG_CONFIG_HOME") or ".").is_absolute()
+            else Path.home() / ".config") / "agent-guides/carriers.toml"
 
 WORKSPACE_ENV = "AGENT_WORKSPACE"
 
@@ -3710,21 +3711,27 @@ def lookup_query(text: str = "", files: list[Path] | None = None, diff: str | No
 MACHINE_REGISTER = "meta/tracking/machines.md"
 MACHINE_HEADER = "| Machine | Carriers | Waits here | Updated |"
 MACHINE_ID = re.compile(r"^m-[0-9a-f]{6}$")
-MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} \d+\.\d+\.\d+$")
-MACHINE_PATH = re.compile(r"(?:^|[\s(`])(?:~/|/(?:Users|home|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:\\)")
+MACHINE_CARRIER = re.compile(r"^r-[0-9a-f]{6} (?:\d+\.\d+\.\d+|unreleased)$")
+MACHINE_PATH = re.compile(r"(?:^|[\s(`\"'\[])(?:~/|\$HOME/|\.\.?/|/(?:Users|home|root|etc|private|var|tmp|opt|mnt|Volumes)/|[A-Za-z]:[\\/])")
 
 
 def _config_dir() -> Path:
     """This machine's agent-guides configuration folder, read at each call (tests point it elsewhere)."""
-    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "agent-guides"
+    given = os.environ.get("XDG_CONFIG_HOME", "")
+    return (Path(given) if given and Path(given).is_absolute() else Path.home() / ".config") / "agent-guides"
 
 
 def machine_id() -> str | None:
     path = _config_dir() / "machine.toml"
     if not path.is_file():
         return None
-    value = tomllib.loads(path.read_text(encoding="utf-8")).get("machine", "")
-    return value if MACHINE_ID.match(value) else None
+    try:
+        value = tomllib.loads(path.read_text(encoding="utf-8")).get("machine", "")
+    except tomllib.TOMLDecodeError as error:
+        raise RefusedError(f"{path}: not readable TOML ({error}); fix or remove it by hand") from error
+    if not (isinstance(value, str) and MACHINE_ID.match(value)):
+        raise RefusedError(f"{path}: holds no machine id; fix or remove it by hand, never overwritten")
+    return value
 
 
 def mint_machine_id() -> str:
@@ -3733,9 +3740,10 @@ def mint_machine_id() -> str:
     minted = "m-" + secrets.token_hex(3)
     folder = _config_dir()
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "machine.toml").write_text(
+    with (folder / "machine.toml").open("x", encoding="utf-8") as out:
+        out.write(
         "# This machine's random id for the machine register. Never committed; never beside a name.\n"
-        f'machine = "{minted}"\n', encoding="utf-8")
+        f'machine = "{minted}"\n')
     return minted
 
 
@@ -3743,19 +3751,23 @@ def machine_carriers() -> str:
     """This machine's carriers as `r-xxxxxx X.Y.Z`, sorted, from the local manifest; names and paths dropped."""
     path = _config_dir() / "carriers.toml"
     records = tomllib.loads(path.read_text(encoding="utf-8")).get("carrier", []) if path.is_file() else []
-    return ", ".join(sorted(f"{r['carrier']} {r.get('version', '?')}" for r in records if r.get("carrier")))
+    return ", ".join(sorted(f"{r['carrier']} {r.get('version') or 'unreleased'}" for r in records if r.get("carrier")))
 
 
 def _machine_rows(text: str) -> list[tuple[int, list[str]]]:
     return [(n, split_row(line)) for n, line in enumerate(text.splitlines(), 1)
-            if line.startswith("|") and line.strip() != MACHINE_HEADER and not set(line) <= set("|-: ")]
+            if line.startswith("|") and split_row(line)[:1] != ["Machine"] and not set(line) <= set("|-: ")]
 
 
 def machine_problems(path: Path) -> list[str]:
     """Each row: a machine id, carriers by id and version only, waits that name no carrier and no path, a date."""
+    return _machine_text_problems(path.read_text(encoding="utf-8"), path.name)
+
+
+def _machine_text_problems(text: str, name: str) -> list[str]:
     problems, seen = [], set()
-    for n, cells in _machine_rows(path.read_text(encoding="utf-8")):
-        where = f"{path.name}:{n}"
+    for n, cells in _machine_rows(text):
+        where = f"{name}:{n}"
         if len(cells) != 4:
             problems.append(f"{where}: {len(cells)} cells, not 4 ({MACHINE_HEADER})")
             continue
@@ -3791,17 +3803,23 @@ def machine_write(path: Path, waits: str | None, today: str | None = None) -> st
     lines = text.splitlines()
     old = next((i for i, line in enumerate(lines) if line.startswith("|") and split_row(line)[:1] == [own]), None)
     if waits is None:
-        waits = split_row(lines[old])[2] if old is not None else "nothing"
+        cells = split_row(lines[old]) if old is not None else []
+        waits = cells[2].replace("|", "\\|") if len(cells) > 2 else "nothing"
+    elif "\n" in waits or "\r" in waits:
+        raise RefusedError("--waits: one line")
+    else:
+        waits = waits.replace("|", "\\|")
     row = f"| {own} | {machine_carriers()} | {waits.strip() or 'nothing'} | {today or datetime.date.today().isoformat()} |"
     if old is not None:
         lines[old] = row
     else:
         lines.append(row)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    problems = machine_problems(path)
+    new = "\n".join(lines) + "\n"
+    problems = _machine_text_problems(new, path.name)
     if problems:
-        raise RefusedError("the register is written but fails its check: " + "; ".join(problems))
+        raise RefusedError("not written, the row would fail the register's check: " + "; ".join(problems))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(new, encoding="utf-8")
     return row
 
 
@@ -3812,7 +3830,10 @@ def machine_step(repo: Path) -> "CloseStep":
     problems = machine_problems(path)
     if problems:
         return CloseStep("machines", True, tuple(problems))
-    own = machine_id()
+    try:
+        own = machine_id()
+    except RefusedError as error:
+        return CloseStep("machines", True, (str(error),))
     row = next((cells for _, cells in _machine_rows(path.read_text(encoding="utf-8")) if cells[:1] == [own]), None) if own else None
     if not own:
         return CloseStep("machines", False, ("this machine has no id: `machine --mint`, then `machine --write`",))
@@ -4610,7 +4631,7 @@ USAGE_CATEGORIES = {
     "ablation": "preferences on or off per session, to test whether they help",
 }
 USAGE_LEVELS = {"none": (), "counts": ("agent_costs", "frictions"), "full": tuple(USAGE_CATEGORIES)}
-USAGE_ACTIONS = ("show", "set", "add", "use", "forget", "brief", "summary", "report", "needs-consent")
+USAGE_ACTIONS = ("show", "set", "add", "use", "forget", "brief", "summary", "report", "measure", "needs-consent")
 USAGE_RETENTION, USAGE_SOON, USAGE_BRIEF_BYTES, USAGE_MIN_SESSIONS, USAGE_TEXT_MAX = 90, 7, 2048, 20, 300
 USAGE_TOKEN_RISE = 1 + 10 / 100
 USAGE_RULES = {"tok": r"[\w.:+-]{1,60}", "num": r"\d+(?:\.\d+)?", "int": r"\d+", "text": rf"[^\n]{{3,{USAGE_TEXT_MAX}}}",
@@ -4953,6 +4974,112 @@ def usage_report(repo, today):
             "preferences never used since stored (candidates to stop storing): " + (", ".join(unused) or "none")]
 
 
+
+def _sig1(value):
+    """One significant figure: what a record may carry of a ratio."""
+    if not value:
+        return "0"
+    digits = -int(math.floor(math.log10(abs(value))))
+    rounded = round(value, digits)
+    return f"{rounded:.{max(digits, 0)}f}"
+
+
+def _order(n):
+    return "fewer than ten" if n < 10 else "tens" if n < 100 else "hundreds" if n < 1000 else "thousands"
+
+
+def _measure_costs(records):
+    time = [r["act_s"] / 60 / r["est_min"] for r in records if r.get("est_min")]
+    tokens = [r["act_ktok"] / r["est_ktok"] for r in records if r.get("est_ktok")]
+    if not time and not tokens:
+        return None
+    def general(values, what):
+        return f"{what} ×{_sig1(statistics.median(values))} (×{_sig1(min(values))} to ×{_sig1(max(values))})" if values else f"{what} not estimated"
+    def raw(values, what):
+        return f"{what} median {statistics.median(values):.2f}, range {min(values):.2f} to {max(values):.2f}, n={len(values)}" if values else f"{what} none"
+    n = max(len(time), len(tokens))
+    return (f"actual over estimate, {general(time, 'time')}, {general(tokens, 'tokens')}, over {_order(n)} delegations",
+            f"{raw(time, 'time')}; {raw(tokens, 'tokens')}")
+
+
+def _measure_frictions(records):
+    if not records:
+        return None
+    means = {k: sum(r.get(k, 0) for r in records) / len(records) for k in _usage_counts()}
+    return (", ".join(f"{k} about {_sig1(v)} per session" for k, v in means.items()) + f", over {_order(len(records))} sessions",
+            ", ".join(f"{k} {v:.2f}" for k, v in means.items()) + f", n={len(records)}")
+
+
+def _measure_ablation(records):
+    arms = {a: [r for r in records if r["arm"] == a] for a in ("on", "off")}
+    if not all(arms.values()):
+        return None
+    mean = {a: sum(r["repeats"] for r in rs) / len(rs) for a, rs in arms.items()}
+    ratio = mean["on"] / mean["off"] if mean["off"] else None
+    general = (f"repeats with preferences on ×{_sig1(ratio)} of off" if ratio is not None else "no repeats with preferences off")
+    return (general + f", over {_order(len(arms['on']))} sessions on and {_order(len(arms['off']))} off",
+            f"mean repeats on {mean['on']:.2f} (n={len(arms['on'])}), off {mean['off']:.2f} (n={len(arms['off'])})")
+
+
+USAGE_QUESTIONS = {
+    "agent-cost-ratio": ("agent_costs", "how far delegated work's actual time and tokens run from their estimate", _measure_costs),
+    "frictions-per-session": ("frictions", "how often each friction happens in a session", _measure_frictions),
+    "ablation-effect": ("ablation", "whether stored preferences change how often an instruction is repeated", _measure_ablation),
+}
+MEASURE_ID = re.compile(r"^u-[0-9a-f]{6}$")
+
+
+def _measures(repo):
+    path = usage_state_dir(repo) / "measures.jsonl"
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines() if path.is_file() else []:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(row, dict) and MEASURE_ID.match(str(row.get("id", ""))):
+            rows.append(row)
+    return path, rows
+
+
+def usage_measure(repo, rest, today):
+    """`measure` lists the questions; `measure Q` answers one; `measure ID into|withhold RECORD` settles it."""
+    if not rest:
+        return [f"  {name}: {what} (from {category})" for name, (category, what, _) in USAGE_QUESTIONS.items()]
+    path, rows = _measures(repo)
+    if MEASURE_ID.match(rest[0]):
+        if len(rest) != 3 or rest[1] not in ("into", "withhold"):
+            raise RefusedError("usage measure ID into RECORD, or ID withhold RECORD")
+        ident, verb, record = rest
+        row = next((r for r in rows if r["id"] == ident), None)
+        if row is None:
+            raise RefusedError(f"{ident}: no measurement with that id on this machine")
+        if row["state"] != "pending":
+            raise RefusedError(f"{ident} is already {row['state']} for {row['record']}; an approval is for that record only, "
+                               "so measure again for another")
+        row.update(state="entered" if verb == "into" else "withheld", record=record, settled=str(today))
+        _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
+        if verb == "into":
+            return [f"Measured on one machine on {row['at']} (`usage measure {row['question']}`), entered in {record} with the "
+                    f"owner's approval: {row['generalised']}."]
+        return [f"A measurement of `{row['question']}` ran on one machine on {row['at']}; the owner withheld it from {record}."]
+    if rest[0] not in USAGE_QUESTIONS or len(rest) != 1:
+        raise RefusedError(f"usage measure: one of {', '.join(USAGE_QUESTIONS)}, or ID into|withhold RECORD")
+    category, what, answer = USAGE_QUESTIONS[rest[0]]
+    if not usage_effective(usage_consent()).get(category):
+        return [f"nothing to measure: {category} is not recorded on this machine (`usage set`)"]
+    found = answer(usage_records(repo, category, today))
+    if found is None:
+        return [f"nothing to measure: no {category} records within the retention"]
+    generalised, raw = found
+    ident = "u-" + hashlib.sha256(f"{rest[0]} {today} {generalised} {secrets.token_hex(4)}".encode()).hexdigest()[:6]
+    rows.append({"id": ident, "question": rest[0], "at": str(today), "generalised": generalised, "state": "pending", "record": ""})
+    _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
+    return [f"question: {what}", f"generalised: {generalised}",
+            f"raw, for you only, never into a record: {raw}",
+            f"ask the owner, naming the one record: `usage measure {ident} into RECORD`, or `usage measure {ident} withhold RECORD`"]
+
+
 def usage_needs_consent(repo, consent, today):
     """`ask`, or `ok:` and the categories on; also lets expired records go."""
     for category in USAGE_CATEGORIES:
@@ -4971,8 +5098,9 @@ def usage_command(repo, action, rest, as_json=None, memory=None, today=None):
            [usage_add(repo, rest[0], json.loads(as_json) if as_json else dict(i.partition("=")[::2] for i in rest[1:]), today)],
            "use": lambda: [usage_use(repo, rest[0], today)], "forget": lambda: usage_forget(repo, rest[0] if rest else None),
            "show": lambda: usage_show(repo, today), "brief": lambda: usage_brief(repo, today, memory),
-           "summary": lambda: usage_summary(repo, today), "report": lambda: usage_report(repo, today)}
-    if len(rest) > (1 if action == "forget" else 0) and action not in ("set", "add", "use"):
+           "summary": lambda: usage_summary(repo, today), "report": lambda: usage_report(repo, today),
+           "measure": lambda: usage_measure(repo, rest, today)}
+    if len(rest) > (1 if action == "forget" else 0) and action not in ("set", "add", "use", "measure"):
         raise RefusedError(f"usage {action}: unexpected arguments")
     try:
         return ops[action]()
@@ -5037,7 +5165,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p = sub.add_parser("usage", help="consented usage data, local only: " + " | ".join(USAGE_ACTIONS))
     p.add_argument("action", choices=USAGE_ACTIONS)
-    p.add_argument("rest", nargs="*", help="set: level L | CATEGORY on|off | retention DAYS; add: CATEGORY [k=v...] (without fields, lists them); use: ID; forget: [CATEGORY]")
+    p.add_argument("rest", nargs="*", help="set: level L | CATEGORY on|off | retention DAYS; add: CATEGORY [k=v...] (without fields, lists them); use: ID; forget: [CATEGORY]; measure: [QUESTION | ID into|withhold RECORD]")
     p.add_argument("--json", help="add: the fields as one JSON object")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="brief: the assistant's memory folder")
