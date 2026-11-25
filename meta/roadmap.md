@@ -26,8 +26,9 @@ criteria checked (2 and 3 fail, 1 unproven, 5's adversarial review run and its r
 of the carriers (one new proposal, the home's, queued), the home's prune. Criterion 2's gaps are `i-5ed7e8-b9628b`.
 
 **Next, in order.**
-1. **On the owner's word:** merge `release/0.0.36` into `main`, push with the tag, refresh the template, and the
-   splice of 0.0.36 into the carriers.
+1. **Done at the owner's word:** `release/0.0.36` merged into `main` and pushed with `v0.0.36`; the template refreshed
+   to 0.0.36 and pushed with its tag. **The splice waits** (`d-5ed7e8-f6858b`): every *Next* item first, in phases, from
+   a plan walked decision by decision; a triage of *Next* is the plan's first input; then a pilot of one or two carriers.
 2. **The two uncommitted carriers** of 0.0.35 (one red on its base commit from its environment; one a single timeout
    under load, to re-run on a quiet machine), then their `register`; every carrier's 0.0.35 branch is unmerged and
    unpushed, and four carrier commits wait for the owner to read (the archived state lists them).
