@@ -2,6 +2,30 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+## Archived 2026-11-25, at the pause after the 0.0.35 cut
+
+### Where we were
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**State on 2026-11-25, seventh close. 0.0.34 is cut and tagged `v0.0.34` here, and spliced, with 0.0.33, into fifteen carriers on this machine; pushed where an agent may push.** The home's `docs/spec-driven-research` holds a research note on spec formats. The home, its tag and the template are pushed; `release/0.0.35` holds the work after the cut.
+
+**What 0.0.34 is.** A harvest patch: 90 proposals taken in from this machine's carriers (15 queued, 3 experiment runs, 72 occurrences added to 41 queued rows, 11 notes and 3 answered rows), one note boundary narrowed (a pre-commit hook gates the staged snapshot), and six tool fixes the harvest asked for — `turns` redacts credential shapes and shows a shell escape as a command without its output; `decisions` reads letter-suffixed legacy ids; `harvested_gaps` names the source not read and `verify` refuses an unlabelled span reaching the frontier; `gather` names a later harvest left on a branch; an `overlaps` proposal needs no quote. The close skill tells two pauses apart, by the owner's ruling. The product-noun check is gone, announced first in the changelog.
+
+**Where the carriers are.** Fifteen carriers and this home are registered at 0.0.34 and `align` reports all sixteen aligned, each on its `chore/harvest-0.0.34` branch. One more carrier is spliced and verified but **not committed**: its gate is red on a concurrency test that fails most runs on its own commit, before the splice (`i-5ed7e8-88cd88`). One repository in the manifest holds an old release with no `carrier.toml` and is not a carrier (`d-5ed7e8-e89204`). The template was refreshed on a branch of its own worktree and tagged `v0.0.34`, unpushed.
+
+**Next, in order.**
+1. **Three carriers' pushes, by the owner's hand**, and the merge of four pushed branches under their own flows (`i-5ed7e8-151456`).
+2. **The owner's review of what the phase-2 agents changed in carriers' own files** (`i-5ed7e8-cfd663`): a pause rule rewritten in one carrier's local skill override and root file, a decision row's empty status filled from its commit in another, a repository settings file given the empty attribution in a third.
+3. **The other machine**: its carriers, including the one whose integration branch re-adopts the bundle (`d-5ed7e8-c5d303`), get 0.0.33 and 0.0.34 there.
+4. **The three themes and the first minor** (`i-5ed7e8-dfae87`).
+
+**Waiting here:** the twenty-nine agent-written reasons, six admissible candidates and three queue defects (`i-5ed7e8-fe15a8`, the other machine).
+
+**Waiting on the owner:** the design of `i-5ed7e8-9ef5d1` (`d-5ed7e8-355404`), one decision at a time; and whether the spec-program idea is tried in a real project or a template, before any design.
+
+**To continue on another machine:** `git pull --tags`; `release/0.0.35` once pushed.
+
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
 **State on 2026-11-24, sixth close. 0.0.33 is cut, tagged `v0.0.33` and pushed, and was spliced into no carrier** by the owner's decision: every carrier but this home still holds 0.0.32 or older, listed under *Blocked outside*. **After the cut, in the same session, the work did not stop**, so this home now holds tool and method changes that no release carries. They ship at 0.0.34.
