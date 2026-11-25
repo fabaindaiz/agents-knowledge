@@ -3752,14 +3752,30 @@ def docs_fingerprint(text: str) -> dict[str, Counter]:
     flat = re.sub(r"\s+", " ", words)
     placed = [f"{word} in sentence {i}" for i, s in enumerate(re.split(r"(?<=[.!?])\s+|\n\s*\n", words), 1)
               for word in DOCS_CAPS.findall(s)]
-    steps = tuple(re.sub(r"^\s*\d+[.)]\s+", "", line).strip() for line in lines if re.match(r"^\s*\d+[.)]\s+", line))
+    chains, current, gap = [], [], False
+    for line in lines:
+        m = re.match(r"^(\s*)\d+[.)]\s+(.*)", line)
+        if m and not m.group(1):
+            if gap and current:
+                chains.append(current)
+                current = []
+            current.append(" ".join(re.findall(r"\w+", m.group(2).lower())[:3]))
+            gap = False
+        elif not line.strip():
+            gap = True
+        elif not line.startswith((" ", "\t")):
+            if current:
+                chains.append(current)
+            current, gap = [], False
+    if current:
+        chains.append(current)
     links = [m.group(3) for line in prose for m in DOCS_LINK.finditer(line)]
     links += [m.group(1) for line in prose for m in re.finditer(r"^\s*\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)", line)]
     links += [m.group(1) for line in prose for m in re.finditer(r"<([a-z][a-z0-9+.-]*://[^>\s]+)>", line)]
     return {
         "normative words in capitals": Counter(DOCS_CAPS.findall(words)),
         "which sentence holds each normative word in capitals": Counter(placed),
-        "the order of numbered steps": Counter([" → ".join(steps)] if steps else []),
+        "the order of numbered steps": Counter(" → ".join(chain) for chain in chains),
         "normative words in lower case": Counter(DOCS_LOWER.findall(words)),
         "negations and quantifiers": Counter(m.lower() for m in DOCS_LOGIC.findall(words)),
         "numbers": Counter(DOCS_NUMBER.findall(DOCS_LINK.sub(lambda m: m.group(2), flat))),

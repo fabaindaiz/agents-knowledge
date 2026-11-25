@@ -3608,6 +3608,16 @@ Use `bundle.py verify` and see [the notes](notes.md). Decided in `d-aaaaaa-11111
         (self.root / "new.md").write_text("# T\n\nWait 5\nseconds.\n")
         self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], 0)
 
+    def test_a_copy_edit_inside_a_step_is_no_reorder_and_lists_stay_apart(self) -> None:
+        base = "# T\n\n1. Build the whole tree first.\n2. Test every module.\n\nThen:\n\n1. Ship it.\n"
+        for new, code_wanted in ((base.replace("whole tree first", "whole tree in one go"), 0),
+                                 (base.replace("1. Ship it.", "1. Ship it.\n2. Tag it."), 1),
+                                 (base.replace("1. Build the whole tree first.\n2. Test every module.",
+                                               "1. Test every module.\n2. Build the whole tree first."), 1)):
+            (self.root / "old.md").write_text(base)
+            (self.root / "new.md").write_text(new)
+            self.assertEqual(run("docs", "fingerprint", str(self.root / "old.md"), str(self.root / "new.md"))[0], code_wanted, new)
+
     def test_a_large_shrink_is_a_warning(self) -> None:
         code, out = self.compare(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
         (self.root / "old.md").write_text(self.OLD + "\n" + "Padding words that carry nothing. " * 40 + "\n")
