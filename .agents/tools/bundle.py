@@ -355,9 +355,10 @@ DOMAIN_NOUNS = (
     "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
     "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
     "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
-    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "checkout", "merchant", "retail",
+    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "merchant", "retail",
     "restaurant", "booking", "hotel", "flight", "dating", "social network")
 DOMAIN_NOUN = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in DOMAIN_NOUNS) + r")(?:e?s)?\b", re.IGNORECASE)
+DOMAIN_NOUN_IDIOM = re.compile(r"(?:\d[\d.,]*\s*(?:-\s*)?$)|(?:\b(?:technical|tech)\s+$)", re.IGNORECASE)
 
 CODE_NAME_FORMS = (
     re.compile(r"^_*[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*$"),
@@ -378,10 +379,10 @@ BUNDLE_NAMES = frozenset({"forked_at", "retired_because", "superseded_by", "toke
 
 QUOTE = re.compile(r"\"([^\"\n]+)\"|“([^”\n]+)”")
 BLOCKQUOTE = re.compile(r"^\s*>\s+(.*\S)")
-LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
+LARGE_NUMBER = re.compile(r"(?<![\w.,:/#@$€£¥{-])(\d{1,3}(?:[,\u00a0\u202f ]\d{3})+|\d{4,})(?![\w/:@%-]|[.,]\d)")
 N_OF_M = re.compile(r"\b\d+\s+(?:of|out of)\s+(?:the\s+)?\d+\b")
 STANDARD_NUMBER = re.compile(r"\b(?:RFC|ISO|IEC|IEEE|PEP)[\s-]*(?:\d+\s*/\s*)*$")
-PRIVACY_ALLOW = re.compile("privacy-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
+PRIVACY_ALLOW = re.compile("privacy-" + r"allow:[ \t]*([^`\n|]*?)[ \t]*(?:-->|\||$)")
 IDS_ALLOW = re.compile("ids-" + r"allow:[ \t]*([^`\n]*?)[ \t]*(?:-->|$)")
 PLACEHOLDER_REASON = re.compile(r"^<[^>]*>$")
 PLACEHOLDER = re.compile(r"<[A-Za-z][\w .-]*>|\bexample\.(?:com|org|net)\b|\b(?:owner|OWNER)/(?:repo|REPO)\b|\b(?:YOUR|your)[-_]")
@@ -454,16 +455,18 @@ def _offsets(text: str) -> list[str]:
 
 OWN_VERSION = re.compile(r"(?:^|[\s\"])v?0\.0\.\d+\"?$")
 NAMED_STANDARDS = re.compile(r"(?i)(?:semantic versioning|semver|keep a changelog|changelog|versioning)\s+v?\d+\.\d+\.\d+$")
+RELEASE_WORDS = re.compile(r"(?i)^(?:release[sd]?|requires?|cuts?|cutting|minor|major|patch|version|tag)\s+v?\d+\.\d+\.\d+$")
 
 
 def _version_pins(text: str) -> list[str]:
     return [m.group(0) for m in VERSION_PIN.finditer(text)
-            if not OWN_VERSION.search(m.group(0)) and not NAMED_STANDARDS.search(m.group(0))]
+            if not OWN_VERSION.search(m.group(0)) and not NAMED_STANDARDS.search(m.group(0))
+            and not RELEASE_WORDS.match(m.group(0))]
 
 
 def _ids_beside_domains(text: str) -> list[str]:
     ids = [m.group(0) for m in CARRIER_OR_RECORD_ID.finditer(text) if (m.group(1) or m.group(2)) not in EXAMPLE_ID_HEX]
-    nouns = [m.group(0) for m in DOMAIN_NOUN.finditer(text)]
+    nouns = [m.group(0) for m in DOMAIN_NOUN.finditer(text) if not DOMAIN_NOUN_IDIOM.search(text[:m.start()])]
     return [f"{ids[0]} beside {nouns[0]!r}"] if ids and nouns else []
 
 
@@ -485,6 +488,8 @@ def _large_counts(text: str) -> list[str]:
         if len(digits.rstrip("0")) < 2:
             continue
         if STANDARD_NUMBER.search(text[:m.start(1)]):
+            continue
+        if 7 <= len(digits) <= 40 and text[m.start(1) - 1 : m.start(1)] == "`" and text[m.end(1) : m.end(1) + 1] == "`":
             continue
         found.append(m.group(1))
     return found

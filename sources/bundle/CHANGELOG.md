@@ -26,6 +26,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ### Fixed
 
+- **`privacy` stops failing on the shapes that were worded around eight times in three sessions**: a domain noun
+  used as a unit after a number, or in *technical debt*, no longer counts as a domain beside an id, and `checkout`
+  (git's working copy, in a repository) is off the list; a version after *release*, *requires*, *cuts*, *minor* or
+  *tag* is a release, not a dependency pin; a commit hash of digits only in a code span, and a repeat count in
+  braces, are not counts; and an allowance written inside a table cell is read, its reason closed by the cell's
+  pipe, whatever cells follow it. Each rule's test still fails on the leak beside it.
 - **`bundle.py usage` honours an `XDG_STATE_HOME` you set on macOS**, as it already did on Linux; without it the
   folder is unchanged.
 

@@ -644,6 +644,30 @@ class Privacy(Base):
 
         self.assertEqual([f.rule for f in report.findings], ["exact-count"])
 
+    def test_the_false_positives_the_home_recorded_pass_and_the_leaks_beside_them_still_fail(self) -> None:
+        """i-5ed7e8-b8c4b2: eight false positives over three sessions, each worked around by rewording."""
+        an_id = "d-5ed7e8-" + "2ca3ef"
+        # a domain noun used as a unit after a number, the git word for a working copy, technical debt
+        self.assertEqual(B._ids_beside_domains(f"{an_id} took about 40 " + "songs of reading"), [])
+        self.assertEqual(B._ids_beside_domains(f"{an_id} left the main " + "checkout behind"), [])
+        self.assertEqual(B._ids_beside_domains(f"{an_id} pays the technical " + "debt"), [])
+        self.assertNotEqual(B._ids_beside_domains(f"{an_id} is the " + "music app"), [])
+        self.assertNotEqual(B._ids_beside_domains(f"{an_id} sends the " + "debt reminders"), [])
+        # a release number after release, requires or cuts is the bundle's, not a dependency pin
+        for said in ("the release ", "it requires ", "the session cuts ", "the next minor "):
+            self.assertEqual(B._version_pins(said + "0.1" + ".0"), [], said)
+        self.assertNotEqual(B._version_pins("requests " + "2.31" + ".0"), [])
+        # a commit hash of digits only, and a regular expression's repeat count, are not counts
+        self.assertEqual(B._large_counts("commit `" + "4815162" + "`"), [])
+        self.assertEqual(B._large_counts(r"a `\\d{" + "1000" + "}` repeat"), [])
+        self.assertEqual(B._large_counts("it read " + "12,345" + " rows"), ["12,345"])
+
+    def test_an_allowance_inside_a_table_cell_is_read_when_backticks_follow(self) -> None:
+        row = "| `a` | it held " + "privacy" + "-allow: the owner said so | `b` |"
+        self.assertEqual(B.PRIVACY_ALLOW.search(row).group(1), "the owner said so")
+        self.assertEqual(B.PRIVACY_ALLOW.search("x " + "privacy" + "-allow: why -->").group(1), "why")
+        self.assertEqual(B.PRIVACY_ALLOW.search("x " + "privacy" + "-allow: why").group(1), "why")
+
     def test_a_private_term_fails_and_is_not_repeated(self) -> None:
         terms = self.root / "config/agent-guides/private-terms.txt"
         terms.parent.mkdir(parents=True)
