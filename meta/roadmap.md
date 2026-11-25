@@ -26,9 +26,7 @@ at the close found the first cut's privacy exceptions too wide, and since its ta
 chose to cut it again with them narrowed. `release/0.0.35` holds the cut, the nine decisions of the owner's walk (`d-5ed7e8-cbb288` to
 `d-5ed7e8-5dc49a`), two research documents and the 0.0.36 plan (`i-5ed7e8-516d7a`).
 
-**What 0.0.35 is.** A patch: a harvest's notes take fixed sections and list frontiers first; the shell case on the
-ladder; the push is a step of its own; one table parser; `privacy` stops failing on the eight recorded false
-positives; the usage folder honours `XDG_STATE_HOME`.
+**What 0.0.35 is:** its changelog section.
 
 **The splice, stopped mid-way.** Three delegates were splicing it into sixteen carriers when the owner paused; they
 were stopped and their gates killed. Every worktree, and the backups, were moved out of the temporary folder to this
@@ -44,7 +42,10 @@ is `backup35/carriers.toml.bak`: restore it if `register` writes worktree paths 
 **Next, in order.**
 1. **Finish the splice**: per worktree, the steps of `prompt-sync.md` Phase 2 from step 4, then `register` and
    `align` (Phase 3). Two carriers' 0.0.34 harvest branches are still only local, waiting on the owner's push.
-2. Pushed at this close: the home's `main` and its tag, and the template's, at the owner's word.
+2. **Nothing is pushed**, by the owner's word at the close: `privacy --commits` (and so the pre-push hook) fails on one
+   unpushed commit whose code comment the narrowed rule now reads as an id beside a domain noun. Before a push: keep
+   a backup branch, rewrite the unpushed commits with that comment fixed, tag `v0.0.35` again on the equivalent
+   commit, re-run the gate and `privacy --commits`; then push the home and the template (`01ce79b`).
 3. **The 0.0.36 plan** (`i-5ed7e8-516d7a`), task by task, then the first minor's criteria.
 4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
 

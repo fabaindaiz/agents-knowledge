@@ -25,7 +25,7 @@ those states and in `meta/tracking/history.md`.
 
 **What went wrong on the way.** The researcher agent was briefed to write a file it cannot write, and returned a short report from memory (home proposal `p-920709a5b4`). The previous session's worktrees had been kept in the session's temporary folder and were gone, with one carrier's uncommitted splice; this session's were moved out at the pause. An unquoted list variable in zsh was passed as one argument again, the third incident, in the same session the ladder gained a line about it. A decision row was refused by the privacy check for a minor version after *at*, reworded. Two of the new tests asserted a behaviour the old parser never had and were corrected against it. The first fix of the false positives was wider than each case it answered, and the suite could not see it: every exception's test asserted only the false positive passing, never the leak beside it failing; the review found it.
 
-**What was left undone.** Thirteen carriers spliced and uncommitted, their register and align not run (the hand-off); two carriers' 0.0.34 harvest branches only local; the 0.0.36 plan (`i-5ed7e8-516d7a`); the spec pilot's carrier, the owner's to name.
+**What was left undone.** Nothing pushed: one unpushed commit fails `privacy --commits` under the narrowed rule, and the owner chose not to rewrite it today (the hand-off says how). Thirteen carriers spliced and uncommitted, their register and align not run (the hand-off); two carriers' 0.0.34 harvest branches only local; the 0.0.36 plan (`i-5ed7e8-516d7a`); the spec pilot's carrier, the owner's to name.
 
 **Deviation from the plan.** none.
 
