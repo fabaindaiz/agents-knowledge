@@ -2544,6 +2544,14 @@ class Usage(Base):
         self.assertEqual(B.usage_state_dir(self.repo).name, "_none")
         self.assertEqual(B.usage_state_dir(repo).parent.name, "agent-guides")
 
+    def test_the_state_folder_honours_an_explicit_xdg_state_home_on_every_platform(self) -> None:
+        # 0.0.35: on macOS the variable was ignored, so three tests that steer the folder with it failed there.
+        for platform in ("darwin", "linux"):
+            with mock.patch.object(B.sys, "platform", platform):
+                self.assertEqual(B.usage_state_dir(self.repo).parent, self.root / "state/agent-guides")
+        with mock.patch.dict(os.environ, {"XDG_STATE_HOME": ""}), mock.patch.object(B.sys, "platform", "darwin"):
+            self.assertEqual(B.usage_state_dir(self.repo).parent, self.root / "home/Library/Application Support/agent-guides")
+
     def test_writes_inside_a_git_working_tree_are_refused(self) -> None:
         self.u("set", "level", "counts")
         inside = init_repo(self.root / "tree")

@@ -4814,11 +4814,16 @@ def usage_consent_path():
 
 
 def usage_state_dir(repo):
-    """Where a carrier's usage data lives: the user's state folder, never a repository."""
+    """Where a carrier's usage data lives: the user's state folder, never a repository. An `XDG_STATE_HOME` the
+    user set is honoured on every platform but Windows, which has its own variable (0.0.35: macOS ignored it)."""
     name = str(((read_carrier(repo / ".agents") if (repo / ".agents").is_dir() else None) or {}).get(CARRIER_FIELD, ""))
     home = Path.home()
-    base = {"darwin": home / "Library/Application Support", "win32": Path(os.environ.get("LOCALAPPDATA") or home / "AppData/Local")}.get(
-        sys.platform, Path(os.environ.get("XDG_STATE_HOME") or home / ".local/state"))
+    if sys.platform == "win32":
+        base = Path(os.environ.get("LOCALAPPDATA") or home / "AppData/Local")
+    elif os.environ.get("XDG_STATE_HOME"):
+        base = Path(os.environ["XDG_STATE_HOME"])
+    else:
+        base = home / ("Library/Application Support" if sys.platform == "darwin" else ".local/state")
     return base / "agent-guides" / (name if CARRIER_ID.match(name) else "_none")
 
 

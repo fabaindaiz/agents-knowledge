@@ -20,6 +20,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   list variable is one argument, and a list passed as a program's argument vector removes the construct
   (`prompt-context.md`).
 
+### Fixed
+
+- **`bundle.py usage` honours an `XDG_STATE_HOME` you set on macOS**, as it already did on Linux; without it the
+  folder is unchanged.
+
 ## [0.0.34] - 2026-11-25
 
 **What a carrier runs at this update: nothing new, and one check now stops.** The build no longer reads a note's
