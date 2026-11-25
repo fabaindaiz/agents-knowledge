@@ -1033,9 +1033,10 @@ every live branch and file it will collide with and the order the merges must
 take; where the shape itself changes, the plan carries a step in which both
 shapes are valid, so one task does not turn the whole branch red. **A plan is
 estimated in what is later measured** (agent wall minutes, tokens, review rounds
-per task), the actual written beside each as it lands, with the ratio earlier
-plans measured; human hours only when asked, with their conversion — plans
-priced in them landed twenty to forty times faster, and nothing calibrated.
+per task), the actual written beside each as it lands, and the plan shows the
+ratio earlier plans measured; human hours only when asked, with their
+conversion — plans priced in them landed twenty to forty times faster, and
+nothing calibrated; *sessions* are no unit once agents run in parallel.
 **Check:** the plan names the branches it collides with, or says there are none,
 and every landed task has its actual beside its estimate.
 
@@ -1075,11 +1076,12 @@ Defects whose evidence lies outside the piece under review are the hardest to
 find, so the final review of the whole branch is not skipped however many tasks
 were approved one by one. A reviewer who did not write the code is independent
 of the author's assumptions and poorer in context: say which context it is
-given. The cap on re-review rounds (five) assumes the target is fixed — when the human
-revises the rule between rounds the count restarts at one, because the rounds are the
-target moving and not the reviewer failing to converge. Rounds end by severity,
-not by count: one carrier's rounds three to five still found medium defects in
-three lanes of four (`prompt-bootstrap.md`, the review step). **Check:** the branch
+given. The cap on re-review rounds (five) assumes the target is fixed — when
+the human revises the rule between rounds the count restarts at one, because
+the rounds are the target moving and not the reviewer failing to converge.
+Rounds end by severity, not by count: one carrier's rounds three to five still
+found medium defects in three lanes of four (`prompt-bootstrap.md`, the review
+step). **Check:** the branch
 has one review that read it whole, and the report says what it was given.
 
 **Where it is already written:** principle 15 holds how to ask; principle 17 how

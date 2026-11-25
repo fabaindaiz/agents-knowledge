@@ -635,7 +635,7 @@ commit.
   author never lowers: *high*, data lost, security or a gate broken; *medium*, a
   wrong result, lost rule or false claim someone would meet; *low*, wording or a
   cosmetic edge. Rounds run while one finds medium or worse, stop when only low
-  remain (listed), and at five ask the user; a medium fix gets its own pass,
+  remain (listed), and at five ask the user; a medium or high fix gets its own pass,
   counted as a round. Re-reviews follow only a review asked for or accepted.
 - A finding you reject is reported with the evidence that rejects it.
 - Where no subagent can run (another assistant, a restricted session), do the
