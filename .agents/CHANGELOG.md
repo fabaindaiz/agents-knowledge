@@ -70,6 +70,23 @@ version it holds with `bundle.py changelog --since <its version>`.
   the last recorded pairs, and heavy gates run at once on one machine are priced for the contention or run in turn
   (`prompt-context.md` §21.1 and the delegation paragraph, `prompt-bootstrap.md`, the close's *Measured*).
 
+### Fixed
+
+- **The carrying tools, from an adversarial review** (criterion 5 of the first minor, `d-5ed7e8-c11cbb`):
+  - `release.py splice --backup` refuses a backup folder that is the carrier or inside it (one at the carriers'
+    parent folder used to delete the carrier's `.agents/`), and never replaces an earlier backup: a second one goes
+    beside it, `NAME.2/`, named in the report.
+  - A carrier on the layout before 0.0.22 keeps the `carrier.toml` it already has (its `log`, frontier and gaps
+    were overwritten), and the file is written before the shipped ones, so an interruption leaves no own field only
+    in the backup.
+  - A hidden file of the carrier inside `.agents/` is kept.
+  - `release.py intake` holds a marker while it writes: a run over the records an interrupted one half wrote, or
+    two at once, is refused, so no proposal is taken in twice.
+  - `bundle.py export --replace` removes old names before copying, so a file renamed only in case survives on a
+    filesystem blind to case.
+  - A carrier file's frontier reads as TOML, whatever its quotes.
+  - `release.py note-state` undoes the move and the rewritten links when the build refuses it.
+
 ## [0.0.35] - 2026-11-25
 
 **What a carrier runs at this update: nothing to do, and three habits change.** A close pushes in a command of its

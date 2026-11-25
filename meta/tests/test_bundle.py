@@ -124,6 +124,18 @@ class Verify(Base):
         self.assertEqual(len(B.read_carrier(out)["lineage"]), 1)
         self.assertEqual((out / "proposals/p-0123456789.md").read_text(), "mine\n")
 
+    def test_replace_over_a_name_changed_only_in_case_keeps_the_new_file(self) -> None:
+        real, out = self._older_release_folder()
+        shipped = next(rel for rel in B.shipped(real) if rel.startswith("method/") and rel.endswith(".md"))
+        old_name = shipped.rsplit("/", 1)[0] + "/" + shipped.rsplit("/", 1)[1].upper()
+        (out / shipped).unlink()
+        (out / old_name).write_text("# old\n")
+        release().write_checksums(out)
+
+        B.export(real, out, replace=True)
+
+        self.assertEqual(B.checksum_problems(out), [])
+
     def test_replace_keeps_the_legacy_outbox_and_never_removes_an_own_file_an_old_sum_listed(self) -> None:
         real, out = self._older_release_folder()
         (out / "tracking").mkdir()

@@ -382,6 +382,15 @@ class Build(Base):
         self.assertIn("(../notes/review/beta.md)", (self.agents / "knowledge/cards/beta.md").read_text())
         self.assertEqual(B.verify_problems(self.agents), [])
 
+    def test_a_refused_note_state_leaves_nothing_half_done(self) -> None:
+        roadmap = (self.home / "meta/roadmap.md").read_text()
+        with mock.patch.object(self.R, "build", side_effect=self.R.BuildError("a principle refuses it")), \
+                self.assertRaises(self.R.BuildError):
+            self.R.note_state("alpha", "retired", self.home)
+        self.assertTrue((self.home / "sources/notes/active/alpha.md").is_file())
+        self.assertFalse((self.home / "sources/notes/retired/alpha.md").exists())
+        self.assertEqual((self.home / "meta/roadmap.md").read_text(), roadmap)
+
     def test_note_state_rewrites_the_homes_links(self) -> None:
         self.R.note_state("alpha", "retired", self.home)
 
@@ -452,6 +461,34 @@ class Carry(Base):
         self.assertEqual(B.read_carrier(agents)["adopted"], "2026-01-05")
         self.assertTrue((agents / "evaluation-2026-01-05-abcdef.md").exists())
         self.assertEqual(B.verify_problems(agents), [])
+
+    def test_a_backup_on_or_above_the_carrier_is_refused_and_nothing_is_lost(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, today="2026-01-05", upstream="r-aaaaaa")
+        proposal = a_proposal(repo / ".agents")
+        for backup in (repo.parent, repo / ".agents", repo):
+            with self.assertRaisesRegex(self.R.RefusedError, "backup"):
+                self.R.splice(repo, True, backup, root=self.home)
+            self.assertTrue(proposal.is_file(), backup)
+
+    def test_an_existing_backup_is_never_overwritten(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, today="2026-01-05", upstream="r-aaaaaa")
+        kept = self.root / "backup/one/.agents/kept.md"
+        kept.parent.mkdir(parents=True)
+        kept.write_text("the only clean copy\n")
+        self.assertIn(f"back up into {(self.root / 'backup/one.2/.agents').resolve()}", self.splice(repo))
+        self.assertEqual(kept.read_text(), "the only clean copy\n")
+        self.assertTrue((self.root / "backup/one.2/.agents/carrier.toml").is_file())
+
+    def test_a_hidden_file_of_the_carrier_inside_the_bundle_is_kept(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, today="2026-01-05", upstream="r-aaaaaa")
+        (repo / ".agents/.notes").write_text("mine\n")
+        commit(repo, "a hidden note")
+        self.assertNotIn("remove .notes", self.R.splice(repo, False, None, root=self.home))
+        self.splice(repo)
+        self.assertTrue((repo / ".agents/.notes").is_file())
 
     def test_an_untagged_home_is_not_carried(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -582,6 +619,32 @@ class Carry(Base):
         gathered = self.R.gather([repo], self.root / "out", self.home)
 
         self.assertIn("knowledge/notes/active/alpha.md: differs from the tagged release", " ".join(gathered["carriers"]["one"]["forked"]))
+
+    def test_a_frontier_reads_as_toml_whatever_its_quotes(self) -> None:
+        for text in ('harvested_through = "2026-11-24"\n', "harvested_through = '2026-11-24'\n", 'harvested_through="2026-11-24" # c\n'):
+            self.assertEqual(self.R._frontier(text), "2026-11-24", text)
+        self.assertEqual(self.R._frontier("not toml = = \n"), "")
+
+    def test_an_interrupted_intake_is_never_run_again_over_its_half_written_records(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
+        self.splice(repo)
+        a_proposal(repo / ".agents", "Seen once.", target="new-idea")
+        commit(repo, "harvest")
+        self.R.gather([repo], self.root / "out", self.home)
+        real = self.R._insert_rows
+        calls = []
+
+        def interrupted(path, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+            calls.append(path)
+            if path.name == "experiments.md":
+                raise KeyboardInterrupt
+            return real(path, *args, **kwargs)
+        with mock.patch.object(self.R, "_insert_rows", interrupted), self.assertRaises(KeyboardInterrupt):
+            self.R.intake(self.root / "out", "0.0.2", self.home)
+        with self.assertRaisesRegex(self.R.RefusedError, "interrupted"):
+            self.R.intake(self.root / "out", "0.0.2", self.home)
+        self.assertEqual((self.home / "meta/tracking/candidates.md").read_text().count("new-idea —"), 1)
 
     def test_intake_keeps_another_occurrence_and_refuses_what_does_not_read_whole(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -793,6 +856,16 @@ class Carry(Base):
     def test_splice_takes_no_list_of_rows_to_remove(self) -> None:
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
             self.R.main(["splice", "--taken", str(self.root)])
+
+    def test_a_legacy_splice_keeps_the_carrier_file_it_already_has(self) -> None:
+        repo = make_legacy(self.root, "old")
+        own = {"log": "docs/log.md", "harvested_through": "2026-03-01", "harvested_gaps": ["2026-02-01..2026-02-03 unread"]}
+        (repo / ".agents" / B.CARRIER_FILE).write_text(B.dump_carrier(own))
+        commit(repo, "a carrier file")
+        self.splice(repo, allow_dirty=True) if "allow_dirty" in self.R.splice.__code__.co_varnames else self.splice(repo)
+        data = B.read_carrier(repo / ".agents")
+        self.assertEqual((data.get("log"), data.get("harvested_through"), data.get("harvested_gaps")),
+                         (own["log"], own["harvested_through"], own["harvested_gaps"]))
 
     def test_a_carrier_on_the_old_layout_is_converted_and_keeps_its_own_fields(self) -> None:
         repo = make_legacy(self.root, "old")

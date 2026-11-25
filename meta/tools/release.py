@@ -38,6 +38,7 @@ import re
 import subprocess
 import tarfile
 import tokenize
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -1308,6 +1309,26 @@ def intake(out: Path, version: str, root: Path = ROOT) -> dict:
     import json
 
     report = json.loads((out / "gather.json").read_text(encoding="utf-8"))
+    # A marker held for the whole write: an intake cut midway leaves its records half written, and one run over
+    # them would take the same proposals in again; two at once would each miss the other's ids.
+    marker = root / INTAKE_MARKER
+    try:
+        with marker.open("x", encoding="utf-8") as handle:
+            handle.write(f"intake {version} began; if this file is still here, it was interrupted\n")
+    except FileExistsError:
+        raise RefusedError(f"{marker}: an intake was interrupted or is running; when none runs, restore the records "
+                           "it half wrote (`git checkout -- meta/tracking`), remove this file and run it again") from None
+    result = _intake(out, version, root, report)
+    marker.unlink()
+    return result
+
+
+INTAKE_MARKER = "meta/tracking/.intake-running"
+
+
+def _intake(out: Path, version: str, root: Path, report: dict) -> dict:
+    import json
+
     queue_path, runs_path = root / "meta/tracking/candidates.md", root / "meta/tracking/experiments.md"
     queued = {slug_of(r[0]) for r in read_table(queue_path, CANDIDATES_HEADER, prefix=True)}
     history = (root / "meta/tracking/history.md").read_text(encoding="utf-8") if (root / "meta/tracking/history.md").is_file() else ""
@@ -1508,18 +1529,30 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, a
     if rows and not B.CARRIER_ID.match(carrier):
         raise RefusedError(f"{repo}: {len(rows)} outbox rows cannot become proposals without a carrier id; mint one first")
     ships, present = set(B.shipped(source)) | {B.CHECKSUMS}, set(B.all_files(target))
-    keep = {r for r in present if B.is_carrier_owned(r) and not (r.startswith("tracking/") and (legacy or r in B.OUTBOX))}
+    keep = {r for r in present if (B.is_carrier_owned(r) or any(part.startswith(".") for part in Path(r).parts))
+            and not (r.startswith("tracking/") and (legacy or r in B.OUTBOX))}
     actions = [f"write {r}" for r in sorted(ships, key=str.encode)]
     actions += [f"remove {r}" for r in sorted(present - ships - keep, key=str.encode)]
     actions += [f"convert {len(rows)} outbox rows into {B.PROPOSALS}/"] if rows else []
     actions += [f"write {B.CARRIER_FILE} (own fields moved from the old headers)"] if legacy else []
+    destination = None
+    if backup is not None:  # checked before anything is written: a backup never overlaps the carrier, never replaces one
+        destination = (backup / repo.name / ".agents").resolve()
+        carrier_root = repo.resolve()
+        if destination == carrier_root or carrier_root in destination.parents or destination in carrier_root.parents \
+                or destination == target.resolve():
+            raise RefusedError(f"{repo}: the backup {destination} is the carrier or inside it; choose a folder outside every carrier")
+        n = 1
+        while destination.exists():  # an earlier backup may be the only clean copy: a new folder beside it, never over it
+            n += 1
+            destination = (backup / f"{repo.name}.{n}" / ".agents").resolve()
+        actions.append(f"back up into {destination}")
     if not write:
         return actions
-    if backup is not None:
-        destination = backup / repo.name / ".agents"
-        if destination.exists():
-            shutil.rmtree(destination)
+    if destination is not None:
         shutil.copytree(target, destination)
+    if legacy:  # the carrier file first, so an interruption below never leaves its own fields only in the backup
+        B.write_carrier(target, {**own, **(B.read_carrier(target) or {})})
     if rows or any((target / rel).is_file() for rel in B.OUTBOX):
         B.convert_outbox(target, rows, carrier=carrier, base=held or "")
     for rel in present - ships - keep:
@@ -1527,8 +1560,6 @@ def splice(repo: Path, write: bool, backup: Path | None, *, root: Path = ROOT, a
     for rel in ships:
         (target / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source / rel, target / rel)
-    if legacy:
-        B.write_carrier(target, own)
     for folder in sorted({p.parent for p in target.rglob("*")}, key=lambda p: len(p.parts), reverse=True):
         if folder != target and folder.is_dir() and not any(folder.iterdir()):
             folder.rmdir()
@@ -1654,6 +1685,15 @@ def bundle_branches(repo: Path) -> list[tuple[str, str]]:
     return sorted(found, key=lambda pair: pair[0].encode())
 
 
+def _frontier(text: str) -> str:
+    """A carrier file's `harvested_through`, read as TOML (any quotes), or "" when it holds none or is not TOML."""
+    try:
+        value = tomllib.loads(text).get("harvested_through", "")
+    except tomllib.TOMLDecodeError:
+        return ""
+    return value if isinstance(value, str) else ""
+
+
 def later_harvests(repo: Path, received: set[str] = frozenset()) -> list[str]:
     """The branches of `repo` holding a harvest its checkout does not: a later `harvested_through`, or proposal
     files the checkout lacks (0.0.34). A harvest committed on a branch nobody merged left fifteen carriers'
@@ -1663,9 +1703,7 @@ def later_harvests(repo: Path, received: set[str] = frozenset()) -> list[str]:
     if not (repo / ".git").exists():
         return []
 
-    def frontier(text: str) -> str:
-        found = re.search(r'^harvested_through\s*=\s*"([^"]+)"', text, re.M)
-        return found.group(1) if found else ""
+    frontier = _frontier
 
     toml = repo / ".agents" / B.CARRIER_FILE
     mine = frontier(toml.read_text(encoding="utf-8")) if toml.is_file() else ""
@@ -1742,6 +1780,7 @@ def note_state(slug: str, state: str, root: Path = ROOT) -> list[str]:
     if old == new:
         return []
     changes = [f"moved {old} -> {new}"]
+    before: dict[Path, str] = {}  # every file rewritten, as it was, so a refused build undoes the move whole
     for path in home_files(root):
         if path.suffix != ".md":
             continue
@@ -1758,13 +1797,20 @@ def note_state(slug: str, state: str, root: Path = ROOT) -> list[str]:
 
         updated, count = B._each_link(path.read_text(encoding="utf-8"), visit)
         if count:
+            before[path] = path.read_text(encoding="utf-8")
             path.write_text(updated, encoding="utf-8")
             changes.append(f"rewrote {count} link{'s' if count > 1 else ''} in {here}")
     (root / new).parent.mkdir(parents=True, exist_ok=True)
     (root / old).rename(root / new)
     if state == "retired":
         changes.append(f"left for you: `retired_because:` (and `superseded_by:`) in {new}, and a row in meta/tracking/retired.md")
-    changes += build(root)
+    try:
+        changes += build(root)
+    except BaseException:
+        (root / new).rename(root / old)
+        for path, text in before.items():
+            (root / old if path == root / old else path).write_text(text, encoding="utf-8")
+        raise
     return changes
 
 

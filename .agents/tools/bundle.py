@@ -3255,9 +3255,6 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
     elif dest.exists() and any(dest.iterdir()):
         raise RefusedError(f"{dest}: not empty; export into a new folder (or --replace over an older release)")
     rels = [*shipped(tree), CHECKSUMS]
-    for rel in rels:
-        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(tree / rel, dest / rel)
     for rel in sorted(old - set(rels)):
         if _replace_own(rel):
             continue
@@ -3266,6 +3263,9 @@ def export(tree: Path, dest: Path, replace: bool = False) -> list[str]:
         while parent != dest and parent.is_dir() and not any(parent.iterdir()):
             parent.rmdir()
             parent = parent.parent
+    for rel in rels:
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(tree / rel, dest / rel)
     if replace:
         record_lineage(dest)
     return rels
