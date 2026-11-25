@@ -523,8 +523,7 @@ the session.
 fact that is true or false, verified by a task; a task serving none is its own
 work item.
 
-**A large plan carries its estimate** (over a session, or about 1e5 tokens): the
-release it lands in, and per task its agent wall minutes, tokens and review
+**A plan carries its estimate**: the release it lands in, and per task its agent wall minutes, tokens and review
 rounds, in a table whose *actual* column is filled as each task lands, with the
 ratio the earlier plans measured; human work hours only when the user asks, with
 their conversion. The close compares the totals with the outcome.

@@ -41,7 +41,7 @@ You do not have to remember this for it to hold:
   every compaction, and blocks `git commit` and `git push` while the check fails over the bundle and every
   tracked file. Its permission rules refuse a hand edit of `.agents/SHA256SUMS` and ask before one of a
   generated file or a guard (`d-5ed7e8-2ca3ef`).
-- Git hooks block any commit while it fails (`.githooks/pre-commit`) and any push whose commits leak a
+- Git hooks block any commit while it fails (`.githooks/pre-commit`, and a merge commit through `.githooks/pre-merge-commit`) and any push whose commits leak a
   private term or credit an assistant (`.githooks/pre-push`: `privacy --commits` and `trailers`). Enable them once
   per clone: `git config core.hooksPath .githooks`.
 - CI runs the same check.
@@ -160,6 +160,11 @@ python3 .agents/tools/bundle.py trailers               # no commit message credi
 python3 .agents/tools/bundle.py docs-drift --range origin/main..HEAD   # documents a change left stale (docs-map.toml)
 python3 .agents/tools/bundle.py surfaces --only cursor copilot   # Cursor's and Copilot's copies of .claude/ (experimental)
 python3 .agents/tools/bundle.py close --base origin/main   # a close's deterministic checks in one command
+python3 .agents/tools/bundle.py docs lint FILE...       # Markdown headings, links, anchors and mechanics
+python3 .agents/tools/bundle.py docs fingerprint OLD NEW   # what carries meaning, kept by an edit (or --rev REV FILE)
+python3 .agents/tools/bundle.py spec FILE --decisions meta/decisions.md [--plan PLAN]   # a spec's requirements decided, with scenarios
+python3 .agents/tools/bundle.py plan page FILE --out HTML   # a plan's state as a page, from method/templates/plan.md
+python3 .agents/tools/bundle.py machine --check        # this machine's row in meta/tracking/machines.md
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates, a cited decision defined nowhere; `ids-allow: <reason>` on a line, inside the last cell of a table row
 python3 .agents/tools/bundle.py decisions meta/decisions.md   # the home's decisions log: status, supersession, a person over an agent
 pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads the same through PyYAML

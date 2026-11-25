@@ -40,6 +40,7 @@ named), then install with `--force`.
 | `close` | closing a session, a phase, or a hand-off to another machine; offered in one question before a push or deploy that ends a plan |
 | `next` | the user asks what to do now or next, or which process fits: what was read, three actions with cost and why now, one question; the processes and how to start each are in `../guide.md` |
 | `decision-review` | before planning: every decision of a spec or design listed, then the human's walked one per turn, each shown by example (`prompt-context.md` §15) |
+| `edit-docs` | improving, proofreading or formatting existing documentation, level by level, the meaning kept checked by `bundle.py docs` |
 | `user-walk` | before building a user-facing flow: the ideal path, then every delay, interruption, setback, failure and misuse, as failing tests; and a batch of observations from real use |
 
 ## Skills from elsewhere, and the moment each fits
@@ -54,7 +55,9 @@ written in a language the tool cannot track):
 | a new idea, nothing written yet | a brainstorming skill, to reach a first design |
 | a design or spec exists, decisions open | `decision-review`, before any plan |
 | the design has a user-facing flow | `user-walk`; its handling choices go back to `decision-review` |
-| the decisions are recorded | a planning skill, or the repository's plan format |
+| the design is worth a spec | the template `../templates/spec.md`, checked by `bundle.py spec` |
+| the decisions are recorded | a planning skill, or the template `../templates/plan.md` |
+| the plan is written, before its first task | a fresh-context read of the plan against the code, each finding fixed or answered (`prompt-context.md` §21.1) |
 | the plan runs | a plan-executing or subagent-driven skill; rulings taken there go in its ledger, never asked; an implementer's change to a check (a filter on its output, a skipped red run, an added exemption) is a finding the controller reviews |
 | each piece of code | a test-first skill, or principle 18 |
 | the plan's last task is done | a fresh-context review of the whole branch, offered in one question with its cost (`prompt-bootstrap.md` step 4), then `close`; merging or pushing only when the human asks |

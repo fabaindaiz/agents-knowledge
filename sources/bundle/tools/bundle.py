@@ -32,8 +32,16 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py changelog --since X.Y.Z     what changed after the version this carrier holds
     python3 .agents/tools/bundle.py home [TREE]                 the home this release came from, its parent tag, this
                                                                 carrier's lineage, proposals and incoming waiting
-    python3 .agents/tools/bundle.py usage show|set|add|use|forget|brief|summary|report|needs-consent
-                                                                consented usage data, local only; `show` says where
+    python3 .agents/tools/bundle.py usage show|set|add|use|forget|brief|summary|report|needs-consent|measure
+                                                                consented usage data, local only; `show` says where;
+                                                                `measure` a generalised figure the owner enters, or not
+    python3 .agents/tools/bundle.py spec FILE [--decisions LOG] [--plan PLAN]   a spec's requirements: each decided,
+                                                                with a scenario, nothing open; --plan: each one cited
+    python3 .agents/tools/bundle.py docs fingerprint OLD NEW | --rev REV FILE   what carries meaning, kept by an edit
+    python3 .agents/tools/bundle.py docs lint FILE...           headings, links, anchors and mechanics of Markdown
+    python3 .agents/tools/bundle.py plan page FILE [--out HTML] [--lang L]   a plan's state rendered as a page
+    python3 .agents/tools/bundle.py machine [--mint | --write --waits W | --check]   this machine's random id and
+                                                                its row in the machine register
     python3 .agents/tools/bundle.py export [--replace] DEST   the shipped files and SHA256SUMS: a release as it travels
     python3 .agents/tools/bundle.py propose --kind K --target SLUG (--from FILE | --claim C --evidence E) [...]
                                                                 one proposal to the bundle, in proposals/
@@ -474,7 +482,7 @@ PLACEHOLDER = re.compile(r"<[A-Za-z][\w .-]*>|\bexample\.(?:com|org|net)\b|\b(?:
 
 def default_terms_path() -> Path:
     """The local private terms file: one term per line, case-insensitive, never committed anywhere."""
-    return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-guides/private-terms.txt"
+    return _config_dir() / "private-terms.txt"
 
 
 def read_terms(path: Path) -> list[str]:
@@ -4152,7 +4160,8 @@ def docs_lint(path: Path) -> tuple[list[str], list[str]]:
 # (`d-5ed7e8-09facc`): `method/templates/plan.md` fixes the sections, `method/templates/plan-page.html` the layout,
 # both anonymised from a page one carrier's agent first wrote by hand. Standard library only.
 
-PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones", "Running now", "The owner's", "Tasks")
+PLAN_SECTIONS = ("The question now", "Where we are", "Device runs", "Milestones", "Running now", "The owner's",
+                 "Needs, risks and the fresh read", "Tasks")
 PLAN_PLACEHOLDER = re.compile(r"YYYY-MM-DD|<[a-z][^<>\n]* [^<>\n]*>")
 PLAN_STATES = {"done": "done", "approved": "done", "merged": "done", "landed": "done", "passed": "done",
                "running": "run", "active": "run", "in review": "run", "in progress": "run", "reviewing": "run",
@@ -4212,7 +4221,7 @@ def _plan_table(lines: list[str], tasks: bool = False) -> tuple[str, list[str]]:
         return "", []
     head, body = rows[0], rows[1:]
     col = {name.split(" (")[0].rstrip(".").lower(): i for i, name in enumerate(head)}
-    numeric = {i for i, name in enumerate(head) if name.lower().startswith(("est", "actual", "hours", "min"))}
+    numeric = {i for i, name in enumerate(head) if name.lower().startswith(("est", "actual", "hours", "min", "rounds"))}
     cells = []
     for row in body:
         tds = []
@@ -4298,7 +4307,7 @@ def _plan_section(name: str, heading: str, lines: list[str]) -> str:
 
 def plan_page(plan: Path, template: Path | None = None, lang: str = "en") -> tuple[str | None, list[str]]:
     """(the page, problems): the page is None while any problem stands."""
-    text = re.sub(r"<!--.*?-->", "", plan.read_text(encoding="utf-8"), flags=re.S)
+    text = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), plan.read_text(encoding="utf-8"), flags=re.S)
     lines = text.split("\n")
     title = next((line[2:].strip() for line in lines if line.startswith("# ")), "")
     first = next((i for i, line in enumerate(lines) if line.startswith("## ")), len(lines))

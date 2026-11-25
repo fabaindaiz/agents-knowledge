@@ -3043,6 +3043,12 @@ class CountWordBoundaries(Base):
         self.assertEqual([h.where for h in hits], ["one"])
 
 
+class ConfigPaths(Base):
+    def test_a_relative_config_home_is_ignored_by_every_config_path(self) -> None:
+        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": "relative/dir"}):
+            self.assertEqual(B.default_terms_path(), Path.home() / ".config/agent-guides/private-terms.txt")
+
+
 class MachineRegister(Base):
     """`bundle.py machine`: each machine by a random id, its carriers by id and version, what waits there."""
 
@@ -3463,14 +3469,20 @@ Note: then milestone M1.
 
 - [now] **Try M0**: ten minutes.
 
+## Needs, risks and the fresh read
+
+- **Needs:** none.
+- **Risks:** a lane collides with another (its test: the merge gate).
+- **Fresh read:** done, two findings answered.
+
 ## Tasks: core
 
-| # | Task | State | Milestone | Est. (min) | Actual (min) |
-|---|---|---|---|---|---|
-| 1 | first | done | M0 | 30 | 10 |
-| 2 | second | done | M0 | 60 | 20 |
-| 3 | third | running | M1 | 40 | |
-| 4 | fourth | waiting | M1 | 20 | |
+| # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
+|---|---|---|---|---|---|---|---|---|
+| 1 | first | done | M0 | 30 | 10 | 50 | 60 | 1 |
+| 2 | second | done | M0 | 60 | 20 | 80 | 70 | 2 |
+| 3 | third | running | M1 | 40 | | 60 | | |
+| 4 | fourth | waiting | M1 | 20 | | 30 | | |
 
 Calibration: earlier plans ran at ×0.3 of their time estimate.
 """
@@ -3537,6 +3549,22 @@ Calibration: earlier plans ran at ×0.3 of their time estimate.
         _, _, html = self.page(self.PLAN.replace("| 1 | first | done | M0 | 30 | 10 |", "| 1 | first | done | M0 | | 10 |"))
         self.assertIn("30 min actual", html)
         self.assertIn("<b>run <code>x</code> now</b>", B._plan_inline("**run `x` now**"))
+
+    def test_needs_risks_and_fresh_read_render_and_are_required(self) -> None:
+        _, _, html = self.page(self.PLAN)
+        self.assertIn("Needs, risks and the fresh read", html)
+        self.assertIn("two findings answered", html)
+        self.assertIn('<td class="n">2</td>', html)
+        code, out, _ = self.page(re.sub(r"## Needs, risks and the fresh read\n.*?(?=## Tasks)", "", self.PLAN, flags=re.S))
+        self.assertNotEqual(code, 0)
+        self.assertIn("Needs, risks and the fresh read", out)
+
+    def test_a_placeholder_is_reported_on_its_own_line_below_a_comment(self) -> None:
+        template = Path(".agents/method/templates/plan.md")
+        line = next(n for n, text in enumerate(template.read_text().split("\n"), 1) if "YYYY-MM-DD" in text)
+        code, out = run("plan", "page", str(template), "--out", str(self.root / "p.html"))
+        self.assertNotEqual(code, 0)
+        self.assertIn(f"line {line}: 'YYYY-MM-DD'", out)
 
     def test_slots_fill_in_one_pass_bold_stays_outside_code_and_an_unknown_section_is_refused(self) -> None:
         _, _, html = self.page(self.PLAN.replace("# Plan: a sample", "# Plan: {{lead}} `x`").replace(

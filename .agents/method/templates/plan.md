@@ -42,10 +42,17 @@ Note: <what that gives the owner, and what comes after it>.
 
 - [<when: now | when you like | before X | to decide>] **<the thing>**: <what it takes from the owner>.
 
+## Needs, risks and the fresh read
+
+- **Needs from unmerged work:** <what, where it lives, which tasks wait on it; a need with no row stops the task>.
+- **Risks the review probes:** <three to five, each with the test that pins it>.
+- **Spike:** <the unknown, its price and the note that maps each answer to the tasks it moves, or "none">.
+- **Fresh read:** <who read the plan against the code, when, and how each finding was answered>.
+
 ## Tasks: <group>
 
-| # | Task | State | Milestone | Est. (min) | Actual (min) |
-|---|---|---|---|---|---|
-| 1 | <task> | <done | running | waiting | blocked> | <id> | <estimate> | <actual, once landed> |
+| # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
+|---|---|---|---|---|---|---|---|---|
+| 1 | <task> | <done | running | waiting | blocked> | <id> | <minutes> | <once landed> | <tokens> | <once landed> | <review rounds> |
 
 Calibration: <the ratio the earlier plans measured, actual over estimate, or "uncalibrated">.
