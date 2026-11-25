@@ -1074,7 +1074,9 @@ were approved one by one. A reviewer who did not write the code is independent
 of the author's assumptions and poorer in context: say which context it is
 given. A cap on re-review rounds assumes the target is fixed — when the human
 revises the rule between rounds the cap restarts, because the rounds are the
-target moving and not the reviewer failing to converge. **Check:** the branch
+target moving and not the reviewer failing to converge. Rounds end by severity,
+not by count: one carrier's rounds three to five still found medium defects in
+three lanes of four (`prompt-bootstrap.md`, the review step). **Check:** the branch
 has one review that read it whole, and the report says what it was given.
 
 **Where it is already written:** principle 15 holds how to ask; principle 17 how
