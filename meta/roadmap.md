@@ -20,15 +20,14 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-25, the close after the 0.0.36 plan ran.** `main` and `v0.0.35` are pushed (`aa5875e`, tag at
-`fced8e3`). **0.0.36 is built and reviewed but not cut**: branch `release/0.0.36`, pushed at this close at the owner's word,
-not merged. All nine tasks of the plan (`i-5ed7e8-516d7a`) landed, each reviewed by severity in a fresh context; the
-whole-branch review's findings are fixed and re-reviewed (rounds and actuals in the plan's table). Its draft is the
-`## [Unreleased]` section of `sources/bundle/CHANGELOG.md`. `release.py check` passes; 494 tests pass.
+**State on 2026-11-25: 0.0.36 is cut and tagged `v0.0.36` here (`8df7e54`), on `release/0.0.36`, not merged, not
+pushed, not spliced.** Before the cut: the owner's decision walk (`d-5ed7e8-fba943` to `-e09f5f`), the first minor's
+criteria checked (2 and 3 fail, 1 unproven, 5's adversarial review run and its record-losing findings fixed), a gather
+of the carriers (one new proposal, the home's, queued), the home's prune. Criterion 2's gaps are `i-5ed7e8-b9628b`.
 
 **Next, in order.**
-1. **The first minor's criteria** (`i-5ed7e8-3e6760`): check 0.0.36 against them, then the cut when the owner says
-   the version is closed (changelog dated, `release.py release 0.0.36`, tag), then its splice, on the owner's word.
+1. **On the owner's word:** merge `release/0.0.36` into `main`, push with the tag, refresh the template, and the
+   splice of 0.0.36 into the carriers.
 2. **The two uncommitted carriers** of 0.0.35 (one red on its base commit from its environment; one a single timeout
    under load, to re-run on a quiet machine), then their `register`; every carrier's 0.0.35 branch is unmerged and
    unpushed, and four carrier commits wait for the owner to read (the archived state lists them).
