@@ -8,6 +8,13 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+## [0.0.35] - 2026-11-25
+
+**What a carrier runs at this update: nothing to do, and three habits change.** A close pushes in a command of its
+own; a harvest's notes take fixed sections and list every frontier first; and `privacy` stops failing on the shapes
+that were worded around eight times. If you kept a `privacy-allow` only for one of those shapes, it may now go; an
+allowance inside a table cell is read where it stands.
+
 ### Changed
 
 - **A harvest's working notes have fixed sections**, set before the first read and pasted to every reader in one
