@@ -2,6 +2,35 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+## Archived 2026-11-26, at the end of the unattended night of the Next plan's phase 2
+
+### Where we were
+
+**State on 2026-11-25: 0.0.36 is cut and tagged `v0.0.36` here (`8df7e54`), on `release/0.0.36`, not merged, not
+pushed, not spliced.** Before the cut: the owner's decision walk (`d-5ed7e8-fba943` to `-e09f5f`), the first minor's
+criteria checked (2 and 3 fail, 1 unproven, 5's adversarial review run and its record-losing findings fixed), a gather
+of the carriers (one new proposal, the home's, queued), the home's prune. Criterion 2's gaps are `i-5ed7e8-b9628b`.
+
+**Next, in order.**
+1. **Done at the owner's word:** `release/0.0.36` merged into `main` and pushed with `v0.0.36`; the template refreshed
+   to 0.0.36 and pushed with its tag. **The splice waits** (`d-5ed7e8-f6858b`): every *Next* item first, in phases, from
+   a plan walked decision by decision; a triage of *Next* is the plan's first input; then a pilot of one or two carriers.
+2. **The two uncommitted carriers** of 0.0.35 (one red on its base commit from its environment; one a single timeout
+   under load, to re-run on a quiet machine), then their `register`; every carrier's 0.0.35 branch is unmerged and
+   unpushed, and four carrier commits wait for the owner to read (the archived state lists them).
+3. **A red never seen** (`i-5ed7e8-468621`), three incidents this session.
+4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
+
+**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`), deferred by the
+owner; the cut; the private-channel research (`i-5ed7e8-a3a0a1`); the zsh guard (`i-5ed7e8-4cf7df`). Three rulings
+of this session wait as `unconfirmed:` rows (`d-5ed7e8-5f8ead`, `-9ebd54`, `-6f4927`).
+
+**Budgets are nearly spent:** the coding session and the skill descriptions were each within about one percent of
+their caps, so the next text in either must shrink something first.
+
+**To continue on another machine:** `git pull --tags`, then `git switch release/0.0.36`. The carriers' worktrees,
+0.0.35 branches and backups live only on this machine (`meta/tracking/machines.md`).
+
 ## Archived 2026-11-25, at the close of the 0.0.36 plan's execution
 
 ### Where we were

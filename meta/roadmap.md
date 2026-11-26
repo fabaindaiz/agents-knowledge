@@ -20,30 +20,34 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-25: 0.0.36 is cut and tagged `v0.0.36` here (`8df7e54`), on `release/0.0.36`, not merged, not
-pushed, not spliced.** Before the cut: the owner's decision walk (`d-5ed7e8-fba943` to `-e09f5f`), the first minor's
-criteria checked (2 and 3 fail, 1 unproven, 5's adversarial review run and its record-losing findings fixed), a gather
-of the carriers (one new proposal, the home's, queued), the home's prune. Criterion 2's gaps are `i-5ed7e8-b9628b`.
+**State on 2026-11-26: phases 1 and 2 of the *Next* plan are done on `plan/next-phases`, committed, not pushed, not
+cut.** Phase 1 (`meta/plans/2026-11-25-next-phase-1.md`): the harvest and the update followable unattended, criterion 2
+re-run on fresh copies with four small doubts left and fixed, the carrying tools, a proposal's `topic:`. Phase 2
+(`meta/plans/2026-11-26-next-phase-2.md`), run unattended overnight at the owner's word: `bundle.py red-check` (a
+fix's tests re-run on its parent), `shell-check` (zsh), the privacy ratchet, `release.py commit` and `dequeue`, four
+queued extensions admitted, the queue's and the evals' defects. Four review rounds; the last left one finding open, an
+intermittent `red-check` verdict on one commit (`i-5ed7e8-33c9b5`).
 
-**Next, in order.**
-1. **Done at the owner's word:** `release/0.0.36` merged into `main` and pushed with `v0.0.36`; the template refreshed
-   to 0.0.36 and pushed with its tag. **The splice waits** (`d-5ed7e8-f6858b`): every *Next* item first, in phases, from
-   a plan walked decision by decision; a triage of *Next* is the plan's first input; then a pilot of one or two carriers.
-2. **The two uncommitted carriers** of 0.0.35 (one red on its base commit from its environment; one a single timeout
-   under load, to re-run on a quiet machine), then their `register`; every carrier's 0.0.35 branch is unmerged and
-   unpushed, and four carrier commits wait for the owner to read (the archived state lists them).
-3. **A red never seen** (`i-5ed7e8-468621`), three incidents this session.
-4. The owner's review of the phase-2 agents' edits in carriers' own files (`i-5ed7e8-cfd663`), and the other machine.
+**Waiting on the owner, in the morning:**
+1. **Approve the two guard wirings** in `meta/plans/2026-11-26-phase-2-guards/`: the zsh check in
+   `.claude/hooks/privacy_guard.py` and `build --check` (on an export of the index) in `.githooks/pre-commit`. Both are
+   guards the permission rules ask before editing, so the night prepared them and applied neither; once approved,
+   `git apply` each, then commit.
+2. **The cut of 0.0.37** with phases 1 and 2, and whether to push the branch.
+3. **The private-terms list** is the owner's alone (`d-5ed7e8-4c5c53`); eight carriers of this machine have no term
+   there, named to the owner in the session.
 
-**Waiting on the owner:** which carrier's real feature pilots the spec format (`d-5ed7e8-cb0531`), deferred by the
-owner; the cut; the private-channel research (`i-5ed7e8-a3a0a1`); the zsh guard (`i-5ed7e8-4cf7df`). Three rulings
-of this session wait as `unconfirmed:` rows (`d-5ed7e8-5f8ead`, `-9ebd54`, `-6f4927`).
+**Next, in order:** the open flake (`i-5ed7e8-33c9b5`); phase 3's decision walk (method decisions, bounded by the
+coding budget); phases 4 and 5; then the pilot splice of one or two carriers (`d-5ed7e8-f6858b`). Still the owner's:
+the spec pilot's feature (`d-5ed7e8-cb0531`), the carriers' 0.0.35 branches, the two uncommitted carriers, the four
+flagged carrier commits.
 
 **Budgets are nearly spent:** the coding session reads 10077 of 10100 tokens and the skill descriptions 2760 of 2776
-characters, so the next text in either must shrink something first.
+characters; nothing in phases 1 and 2 added to either.
 
-**To continue on another machine:** `git pull --tags`, then `git switch release/0.0.36`. The carriers' worktrees,
-0.0.35 branches and backups live only on this machine (`meta/tracking/machines.md`).
+**To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases` (pushed only when the owner
+says). The full suite now takes about ten minutes; run it in the background. The carriers' worktrees, 0.0.35 branches
+and backups live only on this machine (`meta/tracking/machines.md`).
 
 ## Standing rules and facts
 
@@ -71,6 +75,18 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-33c9b5` · `red-check` judged one sound fix commit as failing on itself, twice, then passed on rerun.** Seen on
+  2026-11-26 over commit `1cf8db0` (its `CommitCommand` tests), once in a lane and once in this session's gate, with no
+  git variable in the environment; eight later runs passed, with the index staged and not. The leak round 4 found
+  (`GIT_DIR` and its kin inherited from a hook) was a cause of the same message and is fixed; this one is not that. A
+  flaky gate blocks a commit at random, so it is a finding, never retried away. Next: run the commit's ten tests in a
+  loop under `red-check`'s export with their output kept, until one fails. Also from round 4, low: a test helper
+  imported through `sys.path` (`import lib` for `evals/lib.py`) is not recognised as test support, so its parent run
+  reads as red. *Estimate:* 20–40 min, 80k tokens. *Collides with:* nothing.
+  **And a decision for the owner:** the privacy baseline's fingerprint includes the path (`d-5ed7e8-af36e9`), so a
+  known line moved to another file, as every close moves the hand-off into `meta/archive/roadmap-states.md`, reads as
+  new and fails the check until reworded. Recommendation: keep the path (a leak copied to a new file must not hide)
+  and reword figures when archiving, as was done on 2026-11-26; the alternative drops the path from the fingerprint.
 - **`i-5ed7e8-516d7a` · The 0.0.36 plan: the eight decisions of the 0.0.35 walk, task by task** (`d-5ed7e8-5dc49a`). Each task
   lands on its own with its review, by severity (`d-5ed7e8-6db1f7`), and carries its estimate in what is measured:
   agent wall minutes, tokens, review rounds, with the actual written beside it (`d-5ed7e8-9dc00d`). Calibration so
