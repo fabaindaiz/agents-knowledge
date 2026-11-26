@@ -29,8 +29,8 @@ none: no device or production system is touched in this phase.
 
 ## Milestones
 
-- **P0** · the flake fixed and 0.0.37 cut · waiting
-- **P1** · the plan of the cut and the topic map approved by the owner · waiting — after P0
+- **P0** · the flake fixed and 0.0.37 cut · done
+- **P1** · the plan of the cut and the topic map approved by the owner · done (`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`)
 - **P2** · the two design rounds walked · waiting — the owner, in session
 - **P3** · the build landed and reviewed, only lows left · waiting — after P1 and P2, guards approved one by one
 - **P4** · the hooks measured on a real compaction · waiting — the next long session
@@ -40,20 +40,21 @@ none: no device or production system is touched in this phase.
 ### Before the phase
 
 - T1 the intermittent `red-check` verdict (`i-5ed7e8-33c9b5`) · done: racy git in an old commit; passes remembered
-- T2 the cut of 0.0.37 · waiting
+- T2 the cut of 0.0.37 · done: tagged, merged, pushed, the template refreshed
 - → P0
 
 ### Design, with the owner
 
-- T3 the plan of the cut: each block of the coding read, its tokens, what it says, where it would move, what could be lost · waiting
-- T4 the topic map by mechanism, checked against the notes' occurrences across domains · waiting
+- T3 the plan of the cut: each block of the coding read, its tokens, what it says, where it would move, what could be lost · done: walked, the cut a build rule
+- T4 the topic map by mechanism, checked against the notes' occurrences across domains · done: walked, export deferred
 - T5 design round: a plan proposes, prices and measures, and proposes its split (`i-5ed7e8-be0f54`, `i-5ed7e8-023814`) · waiting
 - T6 design round: persistent delegates (`i-5ed7e8-d6ecfe`) · waiting
 - → P1, P2
 
 ### Build
 
-- T7 the cut applied with `docs fingerprint`, the new principle, the loop's one line · waiting
+- T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · waiting
+- T17 `seen_in` on every note and the cross-domain requests the router must reach, the clock case first (`d-5ed7e8-ab488f`, `d-5ed7e8-45fdf9`) · waiting
 - T8 `bundle.py now`, the deducing hook, `PreCompact` and `SessionStart(compact)` in the home · waiting
 - T9 `decision-review` writes each answer as it arrives; the question rules; the question-tool hook · waiting
 - T10 the audit of where binding text sits (skills' heads, no `paths:` rule) · waiting
@@ -90,12 +91,12 @@ none: no device or production system is touched in this phase.
 | # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
 |---|---|---|---|---|---|---|---|---|
 | 1 | The intermittent `red-check` verdict | done | P0 | 30 | 35 | 80 | 90 | 0 |
-| 2 | The cut of 0.0.37 | waiting | P0 | 20 | | 60 | | 0 |
-| 3 | The plan of the cut | waiting | P1 | 60 | | 150 | | 1 |
-| 4 | The topic map by mechanism | waiting | P1 | 45 | | 120 | | 1 |
+| 2 | The cut of 0.0.37 | done | P0 | 20 | 25 | 60 | 70 | 0 |
+| 3 | The plan of the cut | done | P1 | 60 | 20 | 150 | 140 | 1 |
+| 4 | The topic map by mechanism | done | P1 | 45 | 20 | 120 | 150 | 1 |
 | 5 | Design round: planning that measures and splits | waiting | P2 | 40 | | 80 | | 0 |
 | 6 | Design round: persistent delegates | waiting | P2 | 60 | | 150 | | 0 |
-| 7 | The cut, the principle, the loop's line | waiting | P3 | 90 | | 250 | | 2 |
+| 7 | The cut as a build rule, the principle, the loop's line | waiting | P3 | 165 | | 430 | | 2 |
 | 8 | Live state and the compaction hooks | waiting | P3 | 120 | | 250 | | 2 |
 | 9 | Answers as they arrive, the question rules and hook | waiting | P3 | 60 | | 150 | | 2 |
 | 10 | Where binding text sits | waiting | P3 | 30 | | 60 | | 1 |
@@ -104,6 +105,7 @@ none: no device or production system is touched in this phase.
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
 | 15 | The `lanes` skill | waiting | P3 | 45 | | 120 | | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
+| 17 | `seen_in` and the cross-domain requests | waiting | P3 | 105 | | 250 | | 1 |
 | 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
 Calibration: phase 2's review rounds ran at about twice their estimate, each round's fixes to a new check opening

@@ -20,6 +20,12 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
+**Later the same day (mid-session, superseding what follows until the close rewrites this):** the flake is fixed
+(`9e6bc33`), 0.0.37 is cut, merged to `main`, pushed with its tag and the template refreshed; twelve optimisation
+candidates are proposed by the home; the plan of the cut and the topic map are walked and confirmed
+(`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`; the cut is a build rule, `d-5ed7e8-9f47b1`). **Next:** the two
+design rounds T5 and T6 with the owner, then the build (`meta/plans/2026-11-26-the-session.md`).
+
 **State on 2026-11-26: phases 1 and 2 of the *Next* plan are done on `plan/next-phases`, committed, not pushed, not
 cut.** Phase 1 (`meta/plans/2026-11-25-next-phase-1.md`): the harvest and the update followable unattended, criterion 2
 re-run on fresh copies with four small doubts left and fixed, the carrying tools, a proposal's `topic:`. Phase 2
@@ -468,6 +474,11 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   repositories, organisations, products and people.
 
 ## Later
+
+- **`i-5ed7e8-17f776` · Topic-based export, deferred (`d-5ed7e8-66e39b`).** The export stays whole. **Reopens when** the `seen_in`
+  field (`d-5ed7e8-ab488f`) shows a topic whose occurrences sit in one domain with two or more independent sources; then a
+  carrier declines a topic in its `carrier.toml`, never by inference from its domain. *Estimate:* 45 min, 100k
+  tokens. *Collides with:* nothing.
 
 - **`i-5ed7e8-cd4d28` · `privacy --commits` and `--tracked` can excuse a quote with the working tree's own text.**
   A WARN only. *Estimate:* about an hour with a test. *Collides with:* the `quote` rule.
