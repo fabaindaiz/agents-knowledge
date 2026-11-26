@@ -4111,6 +4111,16 @@ CALC_TEST = "import unittest\nfrom tools import calc\n\n\nclass Calc(unittest.Te
 
 
 class RedCheck(Base):
+    def test_a_run_never_inherits_the_git_context_of_the_hook_that_called_it(self) -> None:
+        # Git exports GIT_DIR and its kin to the commands its hooks run; a judged commit's own tests, which make
+        # throwaway repositories, would then resolve them to the real one (round 4 of the phase 2 review).
+        leaked = {"GIT_DIR": str(self.root / "real/.git"), "GIT_WORK_TREE": str(self.root / "real"),
+                  "GIT_INDEX_FILE": str(self.root / "idx"), "GIT_COMMON_DIR": str(self.root / "real/.git"),
+                  "GIT_OBJECT_DIRECTORY": str(self.root / "objects"), "GIT_PREFIX": "sub/"}
+        with mock.patch.dict(os.environ, leaked):
+            ran = bundle._red_run(["{python}", "-c", "import os,sys; print(sorted(k for k in os.environ if k.startswith('GIT_')))"], [], self.root)
+        self.assertEqual([k for k in leaked if k in ran.stdout], [], ran.stderr)
+
     """`bundle.py red-check RANGE`: a fix's new tests fail on its parent and pass on it (d-5ed7e8-8c417c)."""
 
     def repo(self, marked: bool = True, config: str = RED_CONFIG) -> tuple[Path, str]:

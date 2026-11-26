@@ -4529,10 +4529,26 @@ def _export(repo: Path, rev: str, dest: Path, *paths: str) -> None:
         tar.extractall(dest, **({"filter": "data"} if hasattr(tarfile, "data_filter") else {}))
 
 
+GIT_LOCAL_VARS = ("GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT",
+                  "GIT_OBJECT_DIRECTORY", "GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_GRAFT_FILE",
+                  "GIT_INDEX_FILE", "GIT_NO_REPLACE_OBJECTS", "GIT_REPLACE_REF_BASE", "GIT_PREFIX",
+                  "GIT_SHALLOW_FILE", "GIT_COMMON_DIR")
+
+
+def git_local_vars() -> set[str]:
+    try:
+        listed = subprocess.run(["git", "rev-parse", "--local-env-vars"], capture_output=True, text=True,
+                                check=False, env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")})
+    except OSError:
+        return set(GIT_LOCAL_VARS)
+    return set(GIT_LOCAL_VARS) | set(listed.stdout.split())
+
+
 def _red_run(runner: list[str], ids: list[str], where: Path) -> subprocess.CompletedProcess:
     argv = [sys.executable if word == "{python}" else word for word in runner] + ids
-    return subprocess.run(argv, cwd=where, capture_output=True, text=True, timeout=900,
-                          env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+    local = git_local_vars()
+    env = {k: v for k, v in os.environ.items() if k not in local} | {"PYTHONDONTWRITEBYTECODE": "1"}
+    return subprocess.run(argv, cwd=where, capture_output=True, text=True, timeout=900, env=env)
 
 
 def _glob_dir(pattern: str) -> str:

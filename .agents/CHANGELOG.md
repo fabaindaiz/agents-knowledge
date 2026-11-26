@@ -78,6 +78,8 @@ version it holds with `bundle.py changelog --since <its version>`.
   matches no `code` glob, so a new helper, fixture or data file comes along; a parent run that cannot import a module
   the commit adds outside the code and the test folders is not judged, a failure, never a red; and a fix touching code
   whose tests only moved fails unless it carries a `Red: none, <reason>` line.
+- `bundle.py red-check` runs a judged commit's tests without the git context a hook exports (`GIT_DIR` and its
+  kin), which bound their throwaway repositories to the real one, so a sound fix read once as failing on itself.
 
 ## [0.0.36] - 2026-11-25
 

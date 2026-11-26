@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 # `release.py commit` runs the suite with GIT_INDEX_FILE naming its scratch index (as a git hook would): the
 # throwaway repositories the tests make must not read or write that index, nor another repository's.
-for _var in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE"):
+for _var in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_PREFIX",
+             "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_IMPLICIT_WORK_TREE"):
     os.environ.pop(_var, None)
 
 
