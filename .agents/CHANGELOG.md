@@ -27,7 +27,7 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The update's harvest runs in a session of its own** (`d-5ed7e8-87d7b9`), and a carrier's own audit no longer
   re-checks the release's index and cards, which `verify` covers (`d-5ed7e8-1d9ff1`); the update and harvest read
   less (`i-5ed7e8-0ae753`).
-- **The re-run on fresh copies closed the last gaps**: the pre-flight's stop yields to an unattended run; a period of
+- **The re-run on fresh copies closed the last gaps**: the opening questions' stop yields to an unattended run; a period of
   the bundle's own updates alone is nothing to harvest; each harvest's log entry has its own title, so its own id;
   an unattended update never takes step 5's approval; a release exported elsewhere runs its own `export`.
 
@@ -69,7 +69,7 @@ record is fixed below.
 - **A merge held by a hook** (§21.3): the carrier adds a `pre-merge-commit` stub that runs its pre-commit hook (the bundle ships none), since the sentence
   alone recurred; what it does not hold (a merge finished by hand, a fast-forward, `--no-verify`) is named.
 - **Delegates** (*Long runs and delegates*): a red run reported, never retried away, a flaky test a finding; the
-  controller and lane roles, and heavy gates serialised rather than split across lanes.
+  roles of the session that merges and of its lanes, and heavy gates serialised rather than split across lanes.
 - **The machine register** (`d-5ed7e8-5751b6`): `bundle.py machine --mint` gives a machine a random id kept outside
   every repository; `machine --write --waits "…"` writes its row (its carriers by id and version, what waits there,
   the date) in `meta/tracking/machines.md`, never a name or a path; `machine --check` fails on a name, a path, a bad
