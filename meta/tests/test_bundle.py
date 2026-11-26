@@ -4476,3 +4476,66 @@ class StateGuard(Base):
         self.assertTrue(any("state_guard.py\" keep" in c for c in compacts), compacts)
         # The privacy reminder is not displaced by the new one.
         self.assertTrue(any("privacy_guard.py\" remind" in c for c in starts), starts)
+
+
+class QuestionGuard(Base):
+    """`.claude/hooks/question_guard.py`: the question rules, on the tool that asks them."""
+
+    GUARD = ROOT / ".claude/hooks/question_guard.py"
+
+    def ask(self, questions: list) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(self.GUARD), "ask"],
+                              input=json.dumps({"tool_input": {"questions": questions}}),
+                              capture_output=True, text=True, timeout=60)
+
+    @staticmethod
+    def question(options: list, text: str = "Which scope?", header: str = "Scope") -> dict:
+        return {"question": text, "header": header, "options": options}
+
+    PRICED = {"label": "A", "description": "Example: this shape. Price: 20 min."}
+    MORE = {"label": "Review more", "description": "Opens the second level."}
+
+    def test_a_decision_question_without_review_more_is_refused(self) -> None:
+        done = self.ask([self.question([self.PRICED, {"label": "B", "description": "Example: other. Price: 40 min."}])])
+        self.assertEqual(2, done.returncode, done.stdout + done.stderr)
+        self.assertIn("review more", done.stderr.lower())
+
+    def test_the_same_question_passes_once_it_carries_review_more(self) -> None:
+        done = self.ask([self.question([self.PRICED, self.MORE])])
+        self.assertEqual(0, done.returncode, done.stderr)
+
+    def test_more_than_four_questions_in_one_message_are_refused(self) -> None:
+        done = self.ask([self.question([self.PRICED, self.MORE])] * 5)
+        self.assertEqual(2, done.returncode, done.stdout + done.stderr)
+        self.assertIn("the cap is 4", done.stderr)
+
+    def test_a_fact_question_needs_no_review_more(self) -> None:
+        done = self.ask([self.question([self.PRICED], text="Confirm the fact", header="Fact")])
+        self.assertEqual(0, done.returncode, done.stderr)
+
+    def test_an_option_with_no_case_and_no_price_warns_but_does_not_block(self) -> None:
+        done = self.ask([self.question([{"label": "A", "description": "Just do it."}, self.MORE])])
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn("a concrete case", done.stdout)
+        self.assertIn("a price", done.stdout)
+
+    def test_it_fails_open_on_junk_and_on_a_call_that_is_not_a_question(self) -> None:
+        for payload in ("not json at all", json.dumps({"tool_input": {"command": "ls"}}), ""):
+            done = subprocess.run([sys.executable, str(self.GUARD), "ask"], input=payload,
+                                  capture_output=True, text=True, timeout=60)
+            self.assertEqual(0, done.returncode, done.stderr)
+
+    def test_the_fail_open_net_does_not_swallow_the_refusal(self) -> None:
+        # `sys.exit` raises SystemExit, a BaseException: a net around it caught the guard's own refusal
+        # and returned 0, so the guard blocked nothing at all. Found by probe, before it was installed.
+        source = self.GUARD.read_text(encoding="utf-8")
+        self.assertNotIn("sys.exit(main())", source)
+        self.assertIn("except Exception:", source)
+        for guard in (self.GUARD, ROOT / ".claude/hooks/state_guard.py"):
+            self.assertNotIn("except BaseException", guard.read_text(encoding="utf-8"), guard.name)
+
+    def test_the_settings_name_the_guard_on_the_question_tool(self) -> None:
+        hooks = json.loads((ROOT / ".claude/settings.json").read_text(encoding="utf-8"))["hooks"]
+        wired = [(g.get("matcher"), h["command"]) for g in hooks["PreToolUse"] for h in g["hooks"]]
+        self.assertTrue(any(m == "AskUserQuestion" and "question_guard.py" in c for m, c in wired), wired)
+        self.assertTrue(any("privacy_guard.py" in c for _, c in wired), "the privacy gate is not displaced")

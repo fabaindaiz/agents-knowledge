@@ -637,7 +637,7 @@ charged them for the privilege. The line is not subtle:
 | Mode | When | Shape |
 |---|---|---|
 | **Pre-flight** | before reading or writing, once (a bootstrap of a repository with content: after a short look) | one message (§*The pre-flight*); at most five questions, aim for three, each with the default you will take; `defaults` accepts them all; one line on what you are not asking |
-| **Decision review** | the human asks for it, or more of the human's decisions remain after reading than one message holds | the `decision-review` skill: the inventory of every decision goes together, then the human's decisions go **one per turn** (a theme of up to four if asked), until none is left; recorded before any plan |
+| **Decision review** | the human asks for it, or more of the human's decisions remain after reading than one message holds | the `decision-review` skill: the inventory of every decision goes together, then the human's decisions go **one per turn**, or by theme, up to four, where they are independent of one another, until none is left; **each answer is written where it belongs as it arrives**, not at the end |
 | **Fact interview** | facts only the human holds | your reading stated, for them to confirm or correct; no recommendation, since the fact is theirs; one fact per question, since a two-part question gets an answer that fits either part; a reason they did not give is never recorded |
 | **Parked** | while working alone, or mid-work with no channel opened | decide what is yours; write the rest to the roadmap as questions with a recommendation; raise them all at the next report |
 
@@ -655,6 +655,15 @@ human leaves you to work alone: a question that arrives in the middle of the wor
 has usually been answered by the code. It has not when a measurement overturned
 the premise; then ask at once. A question is never buried inside a long report,
 and is asked in the human's language and plain words.
+
+**Independent decisions are grouped by theme, up to four in one message**, and
+each one opens with a single line saying what is decided and what depends on it.
+One decision per turn is the decision walk's shape, not every question's: asked
+one at a time, independent choices cost the human a turn each and hide which of
+them the others wait on. Four is the cap because a question tool holds four and a
+longer instrument gets shorter, more uniform answers late in the run; a batch
+larger than the cap is split, never squeezed. A decision that depends on another
+is not independent and waits for it.
 
 **Every option is shown by example**, since that is how a human decides fast:
 

@@ -100,7 +100,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # `sys.exit` raises SystemExit, which is a BaseException: catching that here swallowed the refusal
+    # and let every malformed question through, so the guard is caught around `main()` alone and its own
+    # exit code is raised afterwards, outside the net.
     try:
-        sys.exit(main())
-    except BaseException:  # noqa: BLE001 -- failing open is the whole contract
-        sys.exit(0)
+        code = main()
+    except Exception:  # noqa: BLE001 -- failing open is the whole contract
+        code = 0
+    sys.exit(code)

@@ -1,5 +1,5 @@
 ---
-# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 85968c662ef24673
+# Installed by bundle.py install-skills from the bundle's base and the LOCAL.md beside it; edit LOCAL.md, never this file; sha256 77615420b492890b
 name: decision-review
 description: "Walks the human through the decisions of an existing spec, design or plan before anything is built: lists every decision, decides the minor ones, asks the human's one per turn with a recommendation, examples and prices, and records the answers. Use it first, before reading the material, when asked to review a spec or design, go through its decisions, proposals or open questions again, reconsider one and its implications, say what is left to decide, or decide before planning. Not for a new idea with nothing written (brainstorm first), executing a plan, or a run's opening questions (the pre-flight)."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
@@ -64,6 +64,12 @@ assistant's question tool when there is one, with previews for visual options.
 
 ## 4. After every answer
 
+- **Write it down before the next question.** The row goes to the decisions log as the answer arrives,
+  with the question it answered beside it, not at the end of the walk. A compaction between two questions
+  keeps the answers and loses which question each one answered, so a walk recorded only at the end comes
+  back as a list of verdicts nobody can attach to anything. The free text of an answer is quoted, not
+  paraphrased: it overrides the options and is the part most often lost. Step 5 then confirms what is
+  already written, rather than reconstructing it from memory.
 - Say what the answer settled, reopened or created further down the inventory.
 - An answer that contradicts an earlier one is named once, with both.
 - After a long run of accepted recommendations, name the riskiest of them for a second look. **Expect that
@@ -89,9 +95,10 @@ scope is too big: propose splitting it. Then:
 
 1. one screen: **decided by you** (the human), **decided for you** (by the agent), **open**;
 2. wait for the human to confirm it;
-3. write each decision to the decisions log — `accepted <date> · <alias>` for the human's, `· agent s-…`
-   for yours, the reason the human gave or `unconfirmed:` — the deferred ones to the roadmap, and the
-   amendments to the spec, **before** any plan is written.
+3. check that every decision is in the decisions log, where step 4 wrote it as it arrived —
+   `accepted <date> · <alias>` for the human's, `· agent s-…` for yours, the reason the human gave or
+   `unconfirmed:` — and that the deferred ones are in the roadmap and the amendments in the spec,
+   **before** any plan is written. A row the walk never wrote is written now and named as late.
 
 ## Hands off to
 

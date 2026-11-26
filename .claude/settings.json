@@ -25,6 +25,17 @@
             "statusMessage": "Privacy check before git commit/push"
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/question_guard.py\" ask",
+            "timeout": 20,
+            "statusMessage": "The question rules, before the question is shown"
+          }
+        ]
       }
     ],
     "PreCompact": [
