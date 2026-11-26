@@ -31,7 +31,7 @@ none: no device or production system is touched in this phase.
 
 - **P0** · the flake fixed and 0.0.37 cut · done
 - **P1** · the plan of the cut and the topic map approved by the owner · done (`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`)
-- **P2** · the two design rounds walked · waiting — the owner, in session
+- **P2** · the two design rounds walked · done
 - **P3** · the build landed and reviewed, only lows left · waiting — after P1 and P2, guards approved one by one
 - **P4** · the hooks measured on a real compaction · waiting — the next long session
 
@@ -48,7 +48,7 @@ none: no device or production system is touched in this phase.
 - T3 the plan of the cut: each block of the coding read, its tokens, what it says, where it would move, what could be lost · done: walked, the cut a build rule
 - T4 the topic map by mechanism, checked against the notes' occurrences across domains · done: walked, export deferred
 - T5 design round: a plan proposes, prices and measures, and proposes its split (`i-5ed7e8-be0f54`, `i-5ed7e8-023814`) · done: walked (`d-5ed7e8-4b1883` to `d-5ed7e8-344610`)
-- T6 design round: persistent delegates (`i-5ed7e8-d6ecfe`) · waiting
+- T6 design round: persistent delegates (`i-5ed7e8-d6ecfe`) · done: walked, fresh by default, resumes measured
 - → P1, P2
 
 ### Build
@@ -96,7 +96,7 @@ none: no device or production system is touched in this phase.
 | 3 | The plan of the cut | done | P1 | 60 | 20 | 150 | 140 | 1 |
 | 4 | The topic map by mechanism | done | P1 | 45 | 20 | 120 | 150 | 1 |
 | 5 | Design round: planning that measures and splits | done | P2 | 40 | 15 | 80 | 60 | 0 |
-| 6 | Design round: persistent delegates | waiting | P2 | 60 | | 150 | | 0 |
+| 6 | Design round: persistent delegates | done | P2 | 60 | 10 | 150 | 50 | 0 |
 | 7 | The cut as a build rule, the principle, the loop's line | waiting | P3 | 165 | | 430 | | 2 |
 | 8 | Live state and the compaction hooks | waiting | P3 | 120 | | 250 | | 2 |
 | 9 | Answers as they arrive, the question rules and hook | waiting | P3 | 60 | | 150 | | 2 |
