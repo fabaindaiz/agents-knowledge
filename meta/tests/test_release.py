@@ -1090,6 +1090,81 @@ class Ledger(Base):
         self.assertIn("meta/tracking/INDEX.md", "\n".join(R.build(home, check=True)))
 
 
+class Cut(Base):
+    """The cut as a build rule: the original keeps the full block, the release ships the short one."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.R = release()
+        self.home = make_home(self.root)
+        self.original = self.home / "sources/bundle/method/prompt-bootstrap.md"
+        self.built = self.home / ".agents/method/prompt-bootstrap.md"
+
+    def block(self, full: str, short: str, name: str = "") -> None:
+        self.original.write_text(self.original.read_text()
+                                 + f"\n<!-- release: short{' ' + name if name else ''} -->\n{full}\n"
+                                   f"<!-- release: as -->\n{short}\n<!-- /release -->\n")
+
+    def ledger(self, *rows: str) -> None:
+        (self.home / self.R.CUT_LEDGER).write_text(
+            "# Ledger of the cut\n\n" + self.R.CUT_LEDGER_HEADER + "\n|---|---|---|---|\n" + "".join(r + "\n" for r in rows))
+
+    def test_the_short_form_ships_and_the_full_one_stays_in_the_home(self) -> None:
+        self.block("**Never** fold another session's work, in five rounds.", "**Never** fold another session's work.")
+        self.ledger("| sources/bundle/method/prompt-bootstrap.md | * | five | dropped: the rounds are in §21.4 |")
+        self.R.build(self.home)
+
+        self.assertIn("in five rounds", self.original.read_text())
+        self.assertNotIn("in five rounds", self.built.read_text())
+        self.assertIn("**Never** fold another session's work.", self.built.read_text())
+        self.assertNotIn("release: short", self.built.read_text())
+        self.assertEqual(self.R.build(self.home, check=True), [])
+
+    def test_an_empty_short_form_is_a_home_only_block(self) -> None:
+        self.block("Only for the home.", "")
+        self.ledger("| sources/bundle/method/prompt-bootstrap.md | * | only | dropped: home only |")
+        self.R.build(self.home)
+
+        self.assertNotIn("Only for the home.", self.built.read_text())
+
+    def test_a_drop_with_no_ledger_row_fails_the_build(self) -> None:
+        self.block("The gate runs on every `intermediate` tree.", "The gate runs.", name="commit-split")
+        with self.assertRaisesRegex(self.R.BuildError, "commit-split.*every"):
+            self.R.build(self.home)
+        self.ledger("| sources/bundle/method/prompt-bootstrap.md | commit-split | every | dropped: in the topic |")
+        with self.assertRaisesRegex(self.R.BuildError, "intermediate"):
+            self.R.build(self.home)
+        self.ledger("| sources/bundle/method/prompt-bootstrap.md | commit-split | every | dropped: in the topic |",
+                    "| sources/bundle/method/prompt-bootstrap.md | commit-split | `intermediate` | kept at the topic |")
+        self.R.build(self.home)
+        self.assertEqual(self.R.build(self.home, check=True), [])
+
+    def test_a_malformed_or_unclosed_marker_is_refused(self) -> None:
+        self.original.write_text(self.original.read_text() + "\n<!-- release: shrt -->\nx\n")
+        with self.assertRaisesRegex(self.R.BuildError, "not a marker the build knows"):
+            self.R.build(self.home)
+        self.original.write_text(self.original.read_text().replace("release: shrt", "release: short"))
+        with self.assertRaisesRegex(self.R.BuildError, "has no"):
+            self.R.build(self.home)
+
+    def test_a_skill_ships_its_release_description_and_the_home_installs_the_full_one(self) -> None:
+        skill = self.home / "sources/bundle/method/skills/close/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_text('---\nname: close\ndescription: "The long description, with every trigger phrase."\n'
+                         'release_description: "The short one."\n---\n\n# Close\n')
+        self.R.build(self.home)
+        shipped = (self.home / ".agents/method/skills/close/SKILL.md").read_text()
+
+        self.assertIn('description: "The short one."', shipped)
+        self.assertNotIn("release_description", shipped)
+        self.assertNotIn("every trigger phrase", shipped)
+        B.install_skills(self.home, self.home / ".agents")
+        installed = (self.home / ".claude/skills/close/SKILL.md").read_text()
+        self.assertIn("every trigger phrase", installed)
+        self.assertNotIn("release_description", installed)
+        self.assertEqual(B.installed_skill_problems(self.home, self.home / ".agents"), [])
+
+
 class Manifest(Base):
     """`MANIFEST.md`'s checked limits: the export does not grow, the descriptions every turn loads, the hand-off."""
 

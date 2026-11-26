@@ -5074,9 +5074,27 @@ def base_skills(tree: Path) -> dict[str, str]:
     return {p.parent.name: p.read_text(encoding="utf-8") for p in sorted((tree / SKILLS).glob("*/SKILL.md"))}
 
 
+ORIGINAL_SKILLS = "sources/bundle/" + SKILLS
+
+
+def _base_of(repo: Path, name: str, base: str) -> str:
+    """The text a skill is installed from: the original where the repository holds one, else the release.
+
+    Only the home holds originals. A skill's original carries the full description, worked on there and
+    kept there, while the release ships the short `release_description` the carriers load every turn; so
+    the home installs its own skills from the original and reads the full one.
+    """
+    original = repo / ORIGINAL_SKILLS / name / "SKILL.md"
+    if not original.is_file():
+        return base
+    text = original.read_text(encoding="utf-8")
+    return "\n".join(l for l in text.split("\n") if not l.startswith("release_description:"))
+
+
 def _render_skill(repo: Path, name: str, base: str, into: str) -> str:
     local = repo / into / name / "LOCAL.md"
-    return merge_skill(base, local.read_text(encoding="utf-8") if local.is_file() else None, SKILL_BANNER)
+    return merge_skill(_base_of(repo, name, base), local.read_text(encoding="utf-8") if local.is_file() else None,
+                       SKILL_BANNER)
 
 
 def _installed(text: str) -> bool:
