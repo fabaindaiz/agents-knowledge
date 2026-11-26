@@ -709,12 +709,12 @@ class Carry(Base):
         self.splice(repo)
         agents = repo / ".agents"
         a_proposal(agents, "A second repository.", target="old-idea", action="extends", claim="Seen again here.", lacks="nothing")
-        a_proposal(agents, "Seen once.", target="old-idea", topic="first-gate", action="extends", claim="A first topic.")
+        a_proposal(agents, "Seen once.", target="a-method-file", topic="first-gate", action="extends", claim="A first topic.")
         commit(repo, "harvest")
         other = make_carrier(self.root, "two")
         B.mint_carrier_id(other, upstream="r-aaaaaa")
         self.splice(other)
-        a_proposal(other / ".agents", "Seen once.", target="old-idea", topic="second-gate", action="extends", claim="A second topic.")
+        a_proposal(other / ".agents", "Seen once.", target="a-method-file", topic="second-gate", action="extends", claim="A second topic.")
         pack = self.root / "pack.tar"
         B.pack_proposals(other / ".agents", pack)
 
@@ -722,12 +722,12 @@ class Carry(Base):
         result = self.R.intake(self.root / "out", "0.0.1", self.home)
 
         queue = (self.home / "meta/tracking/candidates.md").read_text()
-        self.assertEqual(result["queued"], ["old-idea/first-gate", "old-idea/second-gate"])
+        self.assertEqual(result["queued"], ["a-method-file/first-gate", "a-method-file/second-gate"])
         self.assertEqual(len(result["received"]), 3)
         self.assertIn("extends old-idea — Seen again here.", queue.split("## Offered again")[1])
-        self.assertIn("extends old-idea/first-gate — A first topic.", queue.split("## Offered again")[0])
-        self.assertIn("extends old-idea/second-gate — A second topic.", queue.split("## Offered again")[0])
-        self.assertEqual(self.R.slug_of("extends old-idea/first-gate — A first topic."), "old-idea/first-gate")
+        self.assertIn("extends a-method-file/first-gate — A first topic.", queue.split("## Offered again")[0])
+        self.assertIn("extends a-method-file/second-gate — A second topic.", queue.split("## Offered again")[0])
+        self.assertEqual(self.R.slug_of("extends a-method-file/first-gate — A first topic."), "a-method-file/first-gate")
 
     def test_gather_names_and_intake_refuses_a_proposal_that_fails_privacy_or_warns_unanswered(self) -> None:
         repo = make_carrier(self.root, "one")
