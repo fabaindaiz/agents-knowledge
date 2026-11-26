@@ -20,37 +20,43 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**State on 2026-11-26: a pre-release close on one machine; the final close and the first minor continue on
-another.** 0.0.37 (phases 1 and 2 of the *Next* plan, the `red-check` flake fixed) and 0.0.38 (one carrier's harvest of
-twenty-five proposals and the home's twelve received; nothing a session follows changed) are cut, tagged, merged to
-`main` and pushed; the template is at 0.0.38. The carrier whose harvest was taken in got 0.0.38 in its harvest
-worktree, committed there under its own gate, **not pushed**: its owner integrates that branch.
+**State on 2026-11-26: the phase on the session is two thirds built, on `plan/next-phases`, pushed; nothing
+merged to `main` and no release cut since 0.0.38.** Built and merged: T7 and T10 (the cut as a build rule; the
+coding read from about 10.1k to about 6.9k tokens), T8 (the live state and the two compaction hooks), T9 (answers
+written as they arrive, the question rules and their hook), T11 (the compaction probe and its baseline), T12 (four
+candidates queued), plus `usage measure`'s two transcript questions. Thirty-one ordinary software words left the
+privacy check's domain-noun list (`d-5ed7e8-966ff3`).
 
-**The phase on the session** (`meta/plans/2026-11-26-the-session.md`) is designed, every round with the owner: the plan
-of the cut and the topic map (`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`: the cut is a build rule that keeps
-every original whole, `d-5ed7e8-9f47b1`; topic export deferred, `i-5ed7e8-17f776`), T5 (a `plan` skill that measures
-and proposes its split, `lanes check`), T6 (fresh delegates by default), the live state's files (one per session in the
-common git folder), and the build's questions (short skill descriptions derived for the release, `d-5ed7e8-7a4324`;
-guards shown tested before the owner approves each; the text lane delegated; a push per milestone). **Not built:** T7 to
-T18 and T13, about sixteen agent hours, by the plan's table.
+**Not built:** T14 to T18 and T13 of `meta/plans/2026-11-26-the-session.md`, about nine and a half agent hours,
+and the coding budget's drop, which is deliberately the phase's last step.
 
-**The first minor.** The carrier proposed a plan for it, read and priced in
-`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`: stale against 0.0.36 and 0.0.37, a third overlapping the
-phase, its record-format change resetting criterion 4 of `i-5ed7e8-3e6760`; its A/B pilot is the proposed validation,
-not run.
+**The evidence was weighed and found wanting, and that is written down.**
+`meta/reviews/2026-11-26-weak-points-before-presenting.md` holds every point that would not survive a sceptical
+reading: the cost above the bound the project set itself, a pre-registered primary contrast that was null, and a
+design whose smallest reachable p-value is 0.25 where its own plan demands eight tasks. Two reviews of the same day
+measured what could be measured here: the bundle's share of a real session, on twenty-two sessions in ten carriers,
+and what is known about presenting a method, which is less than hoped.
 
-**Settled on 2026-11-26, on the other machine, before the build:** the first minor's scope (the phase whole first,
-the minor after, `d-5ed7e8-12cb12`); both rulings of `i-5ed7e8-44591b` (`d-5ed7e8-79ed41`, `d-5ed7e8-79a26e`); the
-unattended mode's design round runs inside T18 (`d-5ed7e8-385da4`). **Waiting on the owner:** each guard's approval
-during the build; the private-terms list remains the owner's alone.
+**Two plans are ready to execute and nothing of them has been started**, at the owner's instruction:
+`meta/plans/2026-11-27-the-next-session.md` (four lanes — the records, the phase, the evidence, the page — with
+their prices, their disjoint file sets and the owner's decisions) and `meta/plans/2026-11-27-discriminating-tasks.md`,
+which is that plan's lane E.
 
-**First step next session:** the build, at T7 as decided (the text lane delegated in its own worktree, T8, T9 and T11
-in the main thread with each guard shown tested before approval).
+**Found at this close and not yet fixed:** `MANIFEST.md` states two figures that are stale — the hand-off's length,
+and the export at about 1.0 MB where it is about 1.16 MB, **about 95 % of its cap**. Both are task R4 of the next
+session's plan, and both need a decision row by the owner.
+
+**Waiting on the owner:** the two frame decisions (R4, R5); the design rule and then the new primary contrast with
+its budget cap; the trial itself, since credentials and quota are the owner's; and the word that a version is
+closed, before any cut. The phase's own review, T13, has not run: the owner chose at this close to close without
+it, nothing having been merged to `main`.
+
+**First step next session:** lane R of `meta/plans/2026-11-27-the-next-session.md`, an hour that clears two
+warnings firing on every gate run.
 
 **To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases`; enable the hooks
-(`git config core.hooksPath .githooks`), keep this machine's private-terms list, Python 3.11 or newer. The carrier's
-proposals and its plan are not needed there: their reading is in the review above. Nothing waits on this machine but
-that carrier's unpushed harvest commit, which belongs to its own repository.
+(`git config core.hooksPath .githooks`), keep this machine's own private-terms list, Python 3.11 or newer. Nothing
+waits on this machine.
 
 ## Standing rules and facts
 
@@ -82,12 +88,23 @@ never committed; the names of private carriers are in the local private-terms li
   private carrier's code to another provider as oracle and judge, after a protocol registered in `evals/` with a budget
   cap and only on tasks that carrier's owner approves one by one: `d-5ed7e8-79a26e`. Nothing left open here.
 
+- **`i-5ed7e8-49b3cc` · `plan page` emits a whole HTML document where the publishing tool wants a page body.**
+  Counted 2026-11-26: twice in one session the rendered page had to be flattened by hand — its doctype, head and
+  body wrapper removed — before it could be published, and the second time the page was rewritten from the plan
+  instead of rendered at all. The command's own help says to publish the result as an artifact, so the two ends do
+  not meet. **Proposed:** a flag that writes the body alone (styles and markup, no document skeleton), and the help
+  text saying which form each host wants. *Estimate:* 30 min, 60k tokens. *Collides with:* the plan page's tests,
+  which assert the document form.
 - **`i-5ed7e8-592937` · A domain word beside a record id fails the privacy check while records are written.** Counted
   2026-11-26: three incidents in one session (decision and roadmap rows naming a kind of loop, a kind of device and a
   controlling role), each reworded by hand after a commit was refused; no earlier entry mentions it. A writer of
   records does not see the rule until the check fails. **Proposed:** `bundle.py id` (or the decision-row writer) runs
   the `id-beside-domain` rule over the row it mints for, before the row is written, and prints the word to replace.
-  *Estimate:* 30 min, 80k tokens. *Collides with:* nothing.
+  *Estimate:* 30 min, 80k tokens. *Collides with:* nothing. **2026-11-26, still open and narrower:** the owner
+  read the whole domain-noun list and took thirty-one ordinary software words out of it (`d-5ed7e8-966ff3`), so
+  the `id-beside-domain` rule now fires on far fewer rows. It does not close the item: the same close hit the
+  `exact-count` rule twice on its own figures, which is the same shape of surprise from another rule, and the
+  proposed fix — running the rules over a row before it is written — would answer both.
 - **`i-5ed7e8-c7e6b2` · A delegated draft of method text broke the rule on the two forms: the second incident.** The rule
   (compression is a build rule on the original; text is never moved out of an original to shrink the release) was
   corrected by the owner on 2026-09-28 and again on 2026-11-26, when a delegated plan of the cut proposed deleting and

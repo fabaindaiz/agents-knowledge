@@ -174,6 +174,9 @@ python3 .agents/tools/bundle.py docs fingerprint OLD NEW   # what carries meanin
 python3 .agents/tools/bundle.py spec FILE --decisions meta/decisions.md [--plan PLAN]   # a spec's requirements decided, with scenarios
 python3 .agents/tools/bundle.py plan page FILE --out HTML   # a plan's state as a page, from method/templates/plan.md
 python3 .agents/tools/bundle.py machine --check        # this machine's row in meta/tracking/machines.md
+python3 .agents/tools/bundle.py now                     # the live state of each session in this clone; `--write` replaces this one's, `--done` removes it
+python3 .agents/tools/bundle.py compaction-probe        # how much of a compacted window the summary kept, over this machine's transcripts; prints nothing it read
+python3 .agents/tools/bundle.py usage measure bundle-share|consult-rate [--raw]   # the bundle's share of a real session and how often it is consulted, from this machine's transcripts; `--record FILE --approve` enters the generalised sentence there and nowhere else
 python3 .agents/tools/bundle.py ids FILE...            # record ids: format, prefix, duplicates, a cited decision defined nowhere; `ids-allow: <reason>` on a line, inside the last cell of a table row
 python3 .agents/tools/bundle.py decisions meta/decisions.md   # the home's decisions log: status, supersession, a person over an agent
 pip install pyyaml && python3 meta/tools/check_yaml.py # every frontmatter reads the same through PyYAML

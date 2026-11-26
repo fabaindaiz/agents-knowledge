@@ -2,6 +2,44 @@
 
 The roadmap's *Where we are* as it stood before `MANIFEST.md` capped it at 500 words (2026-10-07), moved here whole, newest first. From then on, the home's session log: every close adds the hand-off it replaces at the top, unedited, and a close's friction counts search it. What is still open lives in the roadmap's items.
 
+## Archived 2026-11-26, at the close of the build's second half on the second machine
+
+### Where we were
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**State on 2026-11-26: a pre-release close on one machine; the final close and the first minor continue on
+another.** 0.0.37 (phases 1 and 2 of the *Next* plan, the `red-check` flake fixed) and 0.0.38 (one carrier's harvest of
+twenty-five proposals and the home's twelve received; nothing a session follows changed) are cut, tagged, merged to
+`main` and pushed; the template is at 0.0.38. The carrier whose harvest was taken in got 0.0.38 in its harvest
+worktree, committed there under its own gate, **not pushed**: its owner integrates that branch.
+
+**The phase on the session** (`meta/plans/2026-11-26-the-session.md`) is designed, every round with the owner: the plan
+of the cut and the topic map (`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`: the cut is a build rule that keeps
+every original whole, `d-5ed7e8-9f47b1`; topic export deferred, `i-5ed7e8-17f776`), T5 (a `plan` skill that measures
+and proposes its split, `lanes check`), T6 (fresh delegates by default), the live state's files (one per session in the
+common git folder), and the build's questions (short skill descriptions derived for the release, `d-5ed7e8-7a4324`;
+guards shown tested before the owner approves each; the text lane delegated; a push per milestone). **Not built:** T7 to
+T18 and T13, about sixteen agent hours, by the plan's table.
+
+**The first minor.** The carrier proposed a plan for it, read and priced in
+`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`: stale against 0.0.36 and 0.0.37, a third overlapping the
+phase, its record-format change resetting criterion 4 of `i-5ed7e8-3e6760`; its A/B pilot is the proposed validation,
+not run.
+
+**Settled on 2026-11-26, on the other machine, before the build:** the first minor's scope (the phase whole first,
+the minor after, `d-5ed7e8-12cb12`); both rulings of `i-5ed7e8-44591b` (`d-5ed7e8-79ed41`, `d-5ed7e8-79a26e`); the
+unattended mode's design round runs inside T18 (`d-5ed7e8-385da4`). **Waiting on the owner:** each guard's approval
+during the build; the private-terms list remains the owner's alone.
+
+**First step next session:** the build, at T7 as decided (the text lane delegated in its own worktree, T8, T9 and T11
+in the main thread with each guard shown tested before approval).
+
+**To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases`; enable the hooks
+(`git config core.hooksPath .githooks`), keep this machine's private-terms list, Python 3.11 or newer. The carrier's
+proposals and its plan are not needed there: their reading is in the review above. Nothing waits on this machine but
+that carrier's unpushed harvest commit, which belongs to its own repository.
+
 ## Archived 2026-11-26, at the end of the unattended night of the Next plan's phase 2
 
 ### Where we were

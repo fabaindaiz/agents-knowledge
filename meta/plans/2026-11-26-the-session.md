@@ -53,13 +53,13 @@ none: no device or production system is touched in this phase.
 
 ### Build
 
-- T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the short `release_description` of each skill (`d-5ed7e8-7a4324`), the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · done on `text-lane-t7-t10`, **not merged**: the coding read about 10.1k → about 7.1k tokens, 25 ledger rows, of which the owner approved 10 drops and restored 5. The fifth restitution came from the controller's own re-read, not the delegate's report: a trigger the ledger had classified as a rule, which a skill's body can never fire
+- T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the short `release_description` of each skill (`d-5ed7e8-7a4324`), the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · done on `text-lane-t7-t10`, **merged 2026-11-26**: the coding read about 10.1k → about 7.1k tokens, 25 ledger rows, of which the owner approved 10 drops and restored 5. The fifth restitution came from the controller's own re-read, not the delegate's report: a trigger the ledger had classified as a rule, which a skill's body can never fire
 - T17 `seen_in` on every note and the cross-domain requests the router must reach, the clock case first (`d-5ed7e8-ab488f`, `d-5ed7e8-45fdf9`) · waiting
 - T8 `bundle.py now`, the deducing hook, `PreCompact` and `SessionStart(compact)` in the home · done (`038bd46`, `29ed64f`), 13 tests; both guards shown to the owner and approved at the prompt. A probe found the fail-open net swallowing the guard's own refusal, so it caught `SystemExit` and blocked nothing
 - T9 `decision-review` writes each answer as it arrives; the question rules; the question-tool hook · done (`54a6631`), 8 tests; the guard refuses a question with no *review more* and a batch over four, and warns where an option names no case or price. The session that built it had broken that rule three times the same day
 - T10 the audit of where binding text sits (skills' heads, no `paths:` rule) · done with T7: no `paths:`-scoped rule and no nested instruction file here; the binding sentences sit late in the long skills, the sharpest past 90 % of `close`. Its proposal, a short standing block under each long skill's heading, is **not built**
-- T11 the compaction probe, run on the transcripts already here · waiting
-- T12 the research's findings queued as candidates · waiting
+- T11 the compaction probe, run on the transcripts already here · done (`0a46bbe`): the first draft counted every compaction twice, taking the boundary record as a cut beside the summary, and carried a noise measure that was removed with its reason
+- T12 the research's findings queued as candidates · done (`4bb8632`): four candidates, inserted at the first of the table's two headers
 - T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
 - T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · waiting
 - T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · waiting
@@ -97,12 +97,12 @@ none: no device or production system is touched in this phase.
 | 4 | The topic map by mechanism | done | P1 | 45 | 20 | 120 | 150 | 1 |
 | 5 | Design round: planning that measures and splits | done | P2 | 40 | 15 | 80 | 60 | 0 |
 | 6 | Design round: persistent delegates | done | P2 | 60 | 10 | 150 | 50 | 0 |
-| 7 | The cut as a build rule, the principle, the loop's line | done, unmerged | P3 | 165 | 44 | 430 | 311 | 1 |
+| 7 | The cut as a build rule, the principle, the loop's line | done, merged | P3 | 165 | 44 | 430 | 311 | 1 |
 | 8 | Live state and the compaction hooks | done | P3 | 120 | 37 | 250 | — | 1 |
 | 9 | Answers as they arrive, the question rules and hook | done | P3 | 60 | 32 | 150 | — | 1 |
 | 10 | Where binding text sits | done | P3 | 30 | with 7 | 60 | with 7 | 0 |
-| 11 | The compaction probe | waiting | P3 | 45 | | 120 | | 1 |
-| 12 | The research's candidates queued | waiting | P3 | 15 | | 40 | | 0 |
+| 11 | The compaction probe | done | P3 | 45 | 28 | 120 | — | 1 |
+| 12 | The research's candidates queued | done | P3 | 15 | 9 | 40 | — | 0 |
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
 | 15 | The `lanes` skill and `lanes check` | waiting | P3 | 105 | | 270 | | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |

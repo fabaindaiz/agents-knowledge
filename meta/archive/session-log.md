@@ -9,6 +9,111 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-26 · s-5ed7e8-1362f0 — The second machine: the build's second half, the evidence weighed, and the next session planned
+
+**What.** The phase's build continued from another machine. **T7 and T10** taken from the delegated text lane and
+merged: the cut as a build rule, the coding read from about 10.1k to about 6.9k tokens, twenty-five ledger rows of
+which the owner approved ten drops and restored five — the fifth restitution found by the controller's own re-read,
+a trigger the ledger had classified as a rule, which a skill's body can never fire. **T8**: the live state
+(`bundle.py now`, one file per session in the common git folder) and the two compaction hooks, each shown tested
+before the owner approved it. **T9**: `decision-review` writes each answer as it arrives, the question rules, and
+the question-tool hook that refuses a decision question with no *review more* and a batch over four. **T11**: the
+compaction probe and its baseline, counting what each summary still named. **T12**: the research's four candidates
+queued. **Thirty-one ordinary software words left the privacy check's domain-noun list** at the owner's reading
+(`d-5ed7e8-966ff3`), with the idiom table emptied. The trade-off evaluation moved from the bootstrap into principle
+15. **`usage measure` gained two transcript questions** (`bundle-share`, `consult-rate`), built by a delegate in its
+own worktree and verified here in that worktree before the merge. Three dated records were written: the bundle's
+share of a real session, the weak points before the project is presented, and what is known about presenting a
+method. Two plans were left ready to execute: the discriminating tasks, and the next session whole.
+
+**Areas.** `sources/bundle/tools/bundle.py` and its tests, `sources/bundle/method/` (bootstrap, principle 15,
+`decision-review`), `.claude/hooks/` and `.claude/settings.json`, `.agents/` (built), `meta/` (decisions, reviews,
+plans, tracking, this log), `AGENTS.md`.
+
+**Why.** The owner asked to continue the build from this machine, then to work on the evidence base and correct the
+weak points one at a time before the project can be presented, then to leave a complete plan for the next session
+without executing any of it.
+
+**Architecture.** ✅ Complies. Every design decision is a row in `meta/decisions.md`; nothing in `.agents/` was
+edited by hand; the cut keeps every original whole and accounts for each dropped item in the ledger.
+
+**Cards relied on, and the checks that ran.** `a-check-must-be-seen-to-fail`: both guards were probed before they
+were believed, and the probe is what found the question guard blocking nothing. The gate ran before every commit
+(`release.py commit`: tests and `check` on their own exit statuses); the delegate's branch was verified in **its
+own worktree**, not on its word — 677 tests, `home check: passed`, `0.0.38 verified`, privacy 0 FAIL over 136
+files, `trailers` 0.
+
+**Review.** No fresh-context review of the phase ran: T13 covers the phase as a whole and is P6 of the next
+session's plan. The owner was asked at this close and chose to close without it, since nothing was merged to the
+main branch and no release was cut. The delegates' work was verified by re-running each gate in its own worktree
+and by reproducing its figures independently.
+
+**Rulings taken on the owner's behalf.** T7 does not touch principle 15 (row 2 of the cut plan belongs to T9, in
+the main thread); the text lane's four design calls left standing and reported; the `usage measure` delegate's
+design calls left standing (`d-5ed7e8-99b9bd`); the gate's share relabelled by its statistic rather than replaced
+(`d-5ed7e8-551561`); `feat/usage-measure` merged into the working branch, not the main one; the next session's plan
+written in English in the repository and its artifact in the owner's language.
+
+**What went wrong on the way.** An option named `--command` silently erased the subcommand, because the
+subparsers' own `dest` is `command`: `now --write` parsed cleanly and dispatched to nothing, exiting 2 with no
+output. A smoke test found it, not reasoning. **Both guards caught their own refusal in a fail-open net**: a bare
+`except` around `sys.exit(main())` swallows `SystemExit`, so the question guard blocked nothing and two probes
+returned 0 where they had to return 2; a test now asserts that neither guard wraps its own exit. A decision id was
+written from memory into three comments before it was minted — the second incident of a fact asserted from memory
+(the first, 2026-11-24, two note slugs into a tracking table), and the check that covers it (`ids`, inside `check`)
+would have failed the commit had the sed not come first. `release.py commit` refused twice over a stale generated
+file, each time correctly. The compaction probe counted every compaction twice, taking the boundary record as a cut
+beside the summary, and carried a noise measure that reported two hundred hashes per window; both were removed and
+the reason written into the code. Two of my own figures tripped the privacy check's exact-count rule and were
+generalised. **And the question guard built yesterday refused one of my own questions today**, at this close: a
+decision question with no *review more* among its options — the exact rule I had broken three times the day I wrote
+it. That is the ladder working, and it is the first time a guard of this repository has stopped its author.
+
+**What I got wrong and had to correct to the owner.** I said the bundle's real-session cost was unmeasured; a
+profile of 2026-10-05 had already measured it, and I had repeated a delegate's misreading of its result as
+progress. I said there were three discriminating tasks; there are sixteen distance variants of which three
+discriminated, and two of those three are the same trap, so two independent traps. I argued that removing three
+words from the domain-noun list would stop protecting the owner's repositories; they are general names, and I
+withdrew the argument.
+
+**What was left undone.** T14 to T18 and T13 of the phase, about nine and a half agent hours; `BUDGETS["coding"]`
+still at about 10.1k against a measured read of about 6.9k, deliberately the phase's last step; the adoption page
+not yet rewritten against the presentation research's six recommendations; the twenty-eight decision rows whose
+reason no person has confirmed. All are tasks of `meta/plans/2026-11-27-the-next-session.md`.
+
+**Not verified.** No cost pilot could run: no API key is set on this machine, and the experiments' login is the
+subscription token. Every claim about what the release costs therefore still rests on the last registered
+measurement.
+
+**Measured.** The bundle's share of a real session, on this machine's transcripts, excluding the home: twenty-two
+sessions that did file work, in ten carriers. By operation the bundle is about an eighth of the median session; by
+bytes returned about a tenth; the knowledge base alone about a hundredth by bytes, at most about a seventh; the
+gate about five sixths of the bundle's operations and about a twentieth of the bytes in the median session, about a
+fourteenth pooled. Fifteen of the twenty-two consulted the index or a card at least once. Reproduced twice, by two
+agents, from the same transcripts. **The compaction baseline** was counted over the transcripts already here.
+**The p-value ceiling is arithmetic:** with *k* tasks all moving one way the smallest two-sided p is 2/2^k — 0.25
+at three, 0.031 at six, 0.002 at ten — and the registered analysis plan refuses a contrast under eight tasks, while
+the set has three. **Calibration, six tasks:** the fresh read 3 min estimated against 1.6 actual; the text lane 195
+min and 490k tokens against 43.7 min and 311k; the evidence gather 15 min and 120k against 2.7 min and 127k; T8 120
+against 37; T9 60 against 32; `usage measure` about 75 min and 250k estimated against 22 min and 166k. Wall time
+runs at a quarter to a third of estimate, a delegated lane at a fifth; tokens land near estimate or below.
+
+**Learned.** *General, for the harvest:* an option whose name collides with a subparser's `dest` disables the
+subcommand silently, so a tool with subcommands never takes an option called after its own dispatch field; a
+fail-open net placed around a program's exit swallows the refusal it exists to deliver, so the net goes around the
+work and the exit is raised outside it; a figure printed beside medians is read as a median, so a table says which
+statistic each cell is; and a generalised sentence computed from live data can change its words between two runs of
+the same day, which is a property of rounding at a fraction's edge and not of the data. *Local:* the gate's
+statistic to `d-5ed7e8-551561`; the delegate's design calls to `d-5ed7e8-99b9bd`; the thirty-one words to
+`d-5ed7e8-966ff3`; the real-session figures to their dated review; the weak points to their own register; the
+p-value arithmetic into that register's row A3; the three new commands into `AGENTS.md`'s checks list
+(`docs-unchanged:` for the shipped README, which describes the carrier's contract and not the tool's command list,
+and the export sits at about 95 % of its cap). Captured: 4 learnings, 7 frictions (the dest collision; the
+fail-open net swallowing the exit; an id from memory, second incident, already covered by a check; two refusals
+over a stale generated file; the probe's double count; two exact-count warnings on my own figures; a question asked
+with no *review more*, refused by this repository's own guard). Nothing needs you that the next session's plan does
+not already ask.
+
 ## 2026-11-26 · s-5ed7e8-6f6750 — The phase on the session designed with the owner, 0.0.37 and 0.0.38 cut, one carrier's harvest taken in
 
 **What.** A pre-release close on this machine; the final close and the first minor continue on another. Research on
