@@ -14,7 +14,7 @@ own tool, never by this one.
                                                                 nothing that identifies a private repository,
                                                                 its people or its infrastructure
     python3 .agents/tools/bundle.py privacy --commits RANGE [--repo R]
-    python3 .agents/tools/bundle.py privacy --tracked [--repo R]
+    python3 .agents/tools/bundle.py privacy --tracked [--repo R] [--baseline FILE [--write-baseline]]
                                                                 the same rules over a range's commit messages
                                                                 and added lines: what a push publishes
     python3 .agents/tools/bundle.py trailers [RANGE] [--repo R] no commit message in the range credits an assistant
@@ -111,6 +111,7 @@ import tempfile
 import tomllib
 import unicodedata
 from collections import Counter
+import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -707,6 +708,8 @@ class Finding:
     rule: str
     where: str
     match: str
+    # The warned line itself, kept only to fingerprint it for the ratchet (`privacy_fingerprint`); never printed.
+    text: str = dataclasses.field(default="", compare=False, repr=False)
 
 
 @dataclass
@@ -940,8 +943,83 @@ def held_proposal_warnings(result: "PrivacyResult") -> list:
     return held
 
 
+
+# --- the privacy ratchet (`d-5ed7e8-af36e9`) ---------------------------------------------------------------
+# A warning printed on every run stops being read. A baseline holds one fingerprint per known warning: the
+# file's path relative to its repository, the rule, and a short hash of the warned line, whitespace collapsed
+# and case folded. Never the line's text or the value matched, so the file itself discloses nothing; and no
+# line number, so a line that moves within its file keeps its fingerprint. A run with the baseline prints a
+# new warning in full and counts the known ones. Writing it creates it when absent and afterwards only drops
+# what is no longer found: a new warning is reworded, or allowed on its line by the owner (`privacy-allow`).
+# A FAIL is never fingerprinted, so no baseline can hide one.
+PRIVACY_BASELINE_HEADER = (
+    "# The privacy ratchet's baseline (d-5ed7e8-af36e9): one known warning per line, as path, rule and a short\n"
+    "# hash of the warned line; never its text. Written by `bundle.py privacy --tracked --baseline FILE\n"
+    "# --write-baseline`, which only ever removes lines; never edit or add one by hand.\n")
+
+
+def privacy_fingerprint(rel: str, rule: str, text: str) -> str:
+    """One warning's fingerprint: `path<TAB>rule<TAB>sha256:` and 16 hex of the line's hash, normalised. The
+    prefix keeps a hash that happens to be all digits from reading as an exact count to the check itself."""
+    return f"{rel}\t{rule}\tsha256:{hashlib.sha256(_squash(text).encode('utf-8')).hexdigest()[:16]}"
+
+
+def read_privacy_baseline(path: Path) -> Counter:
+    """The fingerprints a baseline file holds, with how many warnings each stands for; empty when absent."""
+    if not path.is_file():
+        return Counter()
+    return Counter(line for line in path.read_text(encoding="utf-8").split("\n") if line.strip() and not line.startswith("#"))
+
+
+def finding_fingerprint(f: Finding, repo: Path) -> str:
+    """A finding's fingerprint, its path made relative to `repo` when it lies inside it."""
+    shown = f.where.rsplit(":", 1)[0]
+    try:
+        rel = Path(shown).resolve().relative_to(repo.resolve()).as_posix()
+    except ValueError:
+        rel = shown
+    return privacy_fingerprint(rel, f.rule, f.text)
+
+
+@dataclass
+class BaselineSplit:
+    """A run's warnings read against a baseline: the new ones, how many are known, and what is stale."""
+
+    new: list[Finding]
+    known: int
+    stale: Counter
+    found: Counter  # every warning's fingerprint, counted
+
+
+def baseline_split(warnings: list[Finding], repo: Path, baseline: Counter, scope: set[str] | None = None) -> BaselineSplit:
+    """Each warning is known while its fingerprint has a count left in the baseline, and new otherwise.
+
+    `scope`, when given, is the relative paths read: a fingerprint of a file outside it is not called stale,
+    because the run never looked there (the home's check reads `meta/` and `sources/` only)."""
+    left, new, found = Counter(baseline), [], Counter()
+    for f in warnings:
+        mark = finding_fingerprint(f, repo)
+        found[mark] += 1
+        if left[mark] > 0:
+            left[mark] -= 1
+        else:
+            new.append(f)
+    stale = Counter({k: v for k, v in left.items() if v > 0 and (scope is None or k.split("\t", 1)[0] in scope)})
+    return BaselineSplit(new, len(warnings) - len(new), stale, found)
+
+
+def write_privacy_baseline(path: Path, split: BaselineSplit, existed: bool, baseline: Counter) -> int:
+    """Writes the baseline: every warning found when there was none, and afterwards the old one less what is
+    stale, never adding. Returns how many fingerprints it removed (or, on creation, wrote)."""
+    kept = split.found if not existed else baseline - split.stale
+    lines = sorted(kept.elements(), key=str.encode)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(PRIVACY_BASELINE_HEADER + "".join(f"{line}\n" for line in lines), encoding="utf-8")
+    return len(lines) if not existed else sum(split.stale.values())
+
+
 def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, terms_file: Path | None = None,
-                  commits: tuple[Path, str] | None = None) -> PrivacyReport:
+                  commits: tuple[Path, str] | None = None, own: Path | None = None) -> PrivacyReport:
     """Reads every travelling file of a bundle, or the given files, for what could identify somebody.
 
     Args:
@@ -950,6 +1028,8 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
         commits: (repository, range) to read instead: each commit's message, and the lines each commit adds
             (`commit_targets`), which is what a push publishes. The range is what `git rev-list` takes,
             words separated by spaces (`@{u}..HEAD`, `SHA --not --remotes`).
+        own: The bundle whose own words a `quote` may repeat (default: this tool's). The home's check reads its
+            records from the original tool, so it names the release, as the tracked run from `.agents/` does.
         terms_file: The private terms; default `default_terms_path()`. A default that is missing means
             no terms, said in the report; a file named here that is missing is refused, because a typo
             would otherwise check nothing and pass.
@@ -969,7 +1049,7 @@ def privacy_check(tree: Path | None = None, paths: list[Path] | None = None, ter
     normalised = sorted({term.casefold() for term in terms})
     fingerprint = hashlib.sha256("\n".join(normalised).encode("utf-8")).hexdigest()[:8]
     partial = not source.is_file()
-    own_text = bundle_text(OWN_BUNDLE) if OWN_BUNDLE.is_dir() else ""
+    own_text = bundle_text(own or OWN_BUNDLE) if (own or OWN_BUNDLE).is_dir() else ""
     note = (f"partial: no private-terms list on this machine ({shown} does not exist), so no private name was checked"
             if partial else f"private terms: {len(normalised)} read from {shown}, list {fingerprint}")
     if commits:
@@ -1119,10 +1199,10 @@ def _privacy_scan(targets: list[Target], terms: list[str], note: str, partial: b
                 if (rule.evidence_only and not line.evidence) or (rule.literature_exempt and line.literature) \
                         or (rule.placeholder_exempt and line.placeholder_fence):
                     continue
-                found += [Finding(rule.level, name, where, hit) for hit in rule.find(line.text)
+                found += [Finding(rule.level, name, where, hit, line.text) for hit in rule.find(line.text)
                           if not (name == "quote" and quotes_bundle(hit, text_of_bundle))]
             # Two lines read together can only warn: the window is wider than a sentence, so a person decides.
-            found += [Finding("WARN", "id-beside-domain-nearby", where, f"{hit} (the line before and this one)")
+            found += [Finding("WARN", "id-beside-domain-nearby", where, f"{hit} (the line before and this one)", line.text)
                       for hit in _ids_beside_domains_across(before, line.text)]
             # The term itself is not printed: this output is pasted into sessions and changelogs, and
             # the one thing it must not carry is the word it caught.
@@ -6225,6 +6305,10 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--tracked", action="store_true", help="read every file git tracks in --repo but the bundle's "
                    "`.agents/`, which the tree run reads: whatever is published, with no list to keep")
     p.add_argument("--repo", default=str(OWN_REPO), help="with --commits or --tracked: the repository (default: this tool's)")
+    p.add_argument("--baseline", metavar="FILE", help="with --tracked: the ratchet's fingerprints; a warning they hold is "
+                   "counted, a new one is printed and fails (exit 1), and a fingerprint no longer found is reported stale")
+    p.add_argument("--write-baseline", action="store_true", help="with --baseline: create it when absent; afterwards only "
+                   "remove its stale fingerprints, never add one (a new warning is reworded, or allowed on its line)")
     p = sub.add_parser("trailers", help="no commit message in a range credits an assistant (exit 1)")
     p.add_argument("range", nargs="*", metavar="RANGE", help="a git range, as `git log` takes it, options included "
                    "(`--all`, `main..feature`, `HEAD --not --remotes`), in one argument or several "
@@ -6538,6 +6622,32 @@ def shell_hook(stdin: str, shell: str | None = None) -> int:
     return 2
 
 
+def _privacy_with_baseline(result: PrivacyReport, held: list, repo: Path, path: Path, write: bool) -> int:
+    """`privacy --tracked --baseline`: the FAILs already printed, the new warnings in full, the known ones counted."""
+    existed = path.is_file()
+    baseline = read_privacy_baseline(path)
+    split = baseline_split(result.warnings, repo, baseline)
+    if not existed and not write:
+        print(f"  ! WARN baseline {path}: no such file; every warning is new (`--write-baseline` creates it)")
+    if write and not existed:
+        split = BaselineSplit([], len(result.warnings), Counter(), split.found)
+    for f in split.new:
+        print(f"  ! WARN {f.where} {f.rule}: {f.match}")
+    for note in result.notes()[len(result.warnings):]:  # the allowances and the terms line; the warnings are above
+        print(note)
+    stale = sum(split.stale.values())
+    if write:
+        changed = write_privacy_baseline(path, split, existed, baseline)
+        print(f"  . baseline {path}: " + (f"created with {changed} fingerprints" if not existed
+                                          else f"{changed} stale fingerprints removed; nothing added"))
+        stale = 0
+    elif stale:
+        print(f"  ! baseline {path}: {stale} stale fingerprints, no longer found; `--write-baseline` removes them")
+    print(result.summary() + f"; {split.known} known in the baseline, {len(split.new)} new, {stale} stale"
+          + (f"; {len(held)} warnings in proposals, which the home's intake holds back" if held else ""))
+    return 1 if result.failures or held or split.new else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(_trailers_argv(list(sys.argv[1:] if argv is None else argv)))
     try:
@@ -6642,6 +6752,10 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
                   "their reason is an agent's by definition, so none is waiting on a person")
         return 1 if errors else 0
     if args.command == "privacy":
+        if args.write_baseline and not args.baseline:
+            raise RefusedError("privacy: --write-baseline writes the file --baseline names; give both")
+        if args.baseline and not args.tracked:
+            raise RefusedError("privacy: --baseline reads with --tracked, whose paths it fingerprints; give both")
         if args.tracked:
             if args.paths or args.commits:
                 raise RefusedError("privacy: --tracked reads what git tracks; give it alone, not with --paths or --commits")
@@ -6661,6 +6775,8 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
         for f in held:
             print(f"  x FAIL {f.where} {f.rule}: {f.match} — a warning in a proposal: the home's intake holds it "
                   "back until it is generalised, or answered on its line with a reason")
+        if args.baseline:
+            return _privacy_with_baseline(result, held, Path(args.repo), Path(args.baseline), args.write_baseline)
         for note in result.notes():
             print(note)
         print(result.summary() + (f"; {len(held)} warnings in proposals, which the home's intake holds back" if held else ""))

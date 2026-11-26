@@ -17,6 +17,8 @@ than copying from it, so every rule both need exists once.
     python3 meta/tools/release.py align [REPO...]         phase 3: every carrier on one version
     python3 meta/tools/release.py note-state SLUG STATE   move a full note between states, then build
     python3 meta/tools/release.py report [--check]        sizes, budgets and the knowledge funnel
+    python3 meta/tools/release.py commit -m MSG FILE...   the tests and check, each on its own status, then only FILEs committed
+    python3 meta/tools/release.py dequeue SLUG VERDICT --release X.Y.Z --reason TEXT   a queued candidate into the history
 
 The tests are in `meta/tests/` (`python3 -m unittest discover -s meta/tests -t .`).
 """
@@ -858,6 +860,26 @@ def home_session_problems(root: Path = ROOT) -> list[str]:
     return problems
 
 
+# The privacy ratchet's baseline (`d-5ed7e8-af36e9`): written only by `bundle.py privacy --tracked --baseline
+# FILE --write-baseline`, which creates it once and afterwards only removes fingerprints.
+PRIVACY_BASELINE = "meta/tracking/privacy-baseline.txt"
+
+
+def home_privacy(root: Path, home: "B.PrivacyReport") -> tuple[list[str], list[str]]:
+    """The records' privacy read against the baseline: a FAIL, or a warning the baseline does not hold, is a
+    problem; the known ones are counted and a stale fingerprint is a note (`--write-baseline` removes it)."""
+    files = home_files(root)
+    scope = {p.relative_to(root).as_posix() for p in files}
+    split = B.baseline_split(home.warnings, root, B.read_privacy_baseline(root / PRIVACY_BASELINE), scope)
+    problems = [f"privacy: {f.where} {f.rule}: {f.match}" for f in home.failures]
+    problems += [f"privacy: {f.where} {f.rule}: {f.match} — a new warning, not in {PRIVACY_BASELINE}; reword it, "
+                 "or the owner answers it on its line with privacy-allow" for f in split.new]
+    stale = sum(split.stale.values())
+    notes = [f"  . privacy baseline: {split.known} known warnings in meta/ and sources/, {len(split.new)} new, {stale} stale"
+             + (" (`bundle.py privacy --tracked --baseline ... --write-baseline` removes them)" if stale else "")]
+    return problems, notes
+
+
 def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     """The home's CI: the bundle verifies, the build is current, the records link and leak nothing.
 
@@ -867,12 +889,16 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     bundle = root / ".agents"
     privacy = B.privacy_check(bundle)
     problems = B.verify_problems(bundle, privacy) + build(root, check=True)
-    home = B.privacy_check(paths=home_files(root))
-    problems += [f"privacy: {f.where} {f.rule}: {f.match}" for f in home.failures]
+    # The release holds no warning at all (`d-5ed7e8-af36e9`): it travels, and no baseline answers for it.
+    problems += [f"privacy: .agents/{f.where} {f.rule}: {f.match} — a warning in the release, which holds none; "
+                 "reword it in its original" for f in privacy.warnings]
+    home = B.privacy_check(paths=home_files(root), own=bundle)  # quotes of the release read as the tracked run reads them
+    ratchet, ratchet_notes = home_privacy(root, home)
+    problems += ratchet
     problems += B.invisible_characters(root, [p.relative_to(root).as_posix() for p in home_files(root)])
     problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
-    problems += queue_problems(root) + manifest_problems(root)
+    problems += queue_problems(root) + manifest_problems(root) + answered_still_queued(root)
     slug_problems, slug_warnings = tracking_slug_problems(root)
     problems += slug_problems
     log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
@@ -881,7 +907,8 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     red_problems, red_notes = red_check_problems(root)
     problems += red_problems
     over = export_over_cap(root, EXPORT_CAP)
-    return problems, (privacy.notes() + home.notes() + red_notes + [f"  ! decisions: {w}" for w in warnings]
+    return problems, (privacy.notes() + home.notes()[len(home.warnings):] + ratchet_notes + red_notes
+                      + [f"  ! decisions: {w}" for w in warnings]
                       + ([f"  ! WARN {over}"] if over else []) + [f"  ! {w}" for w in slug_warnings]
                       + [f"  ! {w}" for w in B.user_deny_warnings(root)])
 
@@ -1896,6 +1923,168 @@ def funnel(root: Path = ROOT) -> dict:
     }
 
 
+# --- a candidate leaves the queue (`i-5ed7e8-655151`) --------------------------------------------------------
+# Moving a row from `candidates.md` to `history.md` was done by hand at every release, and 0.0.32 shipped nine
+# answers whose rows had stayed queued. One command removes the row and writes the history line, in the
+# history's own form: newest section first, `## Taken out of the queue by the release X.Y.Z`, one row per
+# candidate, its slug in backticks and its verdict in bold with the release.
+DEQUEUE_VERDICTS = ("admitted", "folded", "extended", "merged", "applied", "answered", "fixed", "refused", "dropped")
+DEQUEUE_HEADING = "## Taken out of the queue by the release {version}"
+HISTORY_HEADER = "| Candidate | Where it went |"
+_DEQUEUED = re.compile(r"^\*\*(" + "|".join(DEQUEUE_VERDICTS) + r") at (\d+\.\d+\.\d+)\*\*:")
+
+
+def _queue_table(lines: list[str]) -> tuple[int, int]:
+    """The first and one-past-last line of the queue's main table rows (the *Offered again* table is not it)."""
+    at = next((i for i, line in enumerate(lines) if line.startswith(CANDIDATES_HEADER)), None)
+    if at is None:
+        raise RefusedError(f"meta/tracking/candidates.md: no table with the header {CANDIDATES_HEADER!r}")
+    end = at + 2
+    while end < len(lines) and lines[end].startswith("|"):
+        end += 1
+    return at + 2, end
+
+
+def dequeue(slug: str, verdict: str, version: str, reason: str, root: Path = ROOT) -> list[str]:
+    """Moves one queued candidate to the history with its verdict and reason, then builds (the ledger follows).
+
+    Rows for the same slug under *Offered again, to merge* are left where they are and named: they are
+    evidence the release still places in a row or a note.
+
+    Raises:
+        RefusedError: an unknown verdict, a version that is not X.Y.Z, an empty reason, or a slug that is not
+            exactly one row of the queue's main table. Nothing is written then.
+    """
+    if verdict not in DEQUEUE_VERDICTS:
+        raise RefusedError(f"dequeue: {verdict!r} is not a verdict; one of {', '.join(DEQUEUE_VERDICTS)}")
+    if not B.SEMVER.match(version):
+        raise RefusedError(f"dequeue: --release {version!r} is not a release version (X.Y.Z)")
+    if not reason.strip():
+        raise RefusedError("dequeue: --reason is empty; a row leaves the queue only with its reason")
+    queue_path, history_path = root / "meta/tracking/candidates.md", root / "meta/tracking/history.md"
+    lines = queue_path.read_text(encoding="utf-8").split("\n")
+    start, end = _queue_table(lines)
+    matches = [i for i in range(start, end) if slug_of(split_row(lines[i])[0]) == slug]
+    if len(matches) != 1:
+        raise RefusedError(f"dequeue: {slug!r} is {'not a queued candidate' if not matches else f'queued {len(matches)} times'}"
+                           " in meta/tracking/candidates.md; nothing written")
+    offers = [i + 1 for i in range(end, len(lines)) if lines[i].startswith("| ") and slug_of(split_row(lines[i])[0]) == slug]
+    del lines[matches[0]]
+    row = _row([f"`{slug}`", f"**{verdict} at {version}**: {reason.strip()}"])
+    text = history_path.read_text(encoding="utf-8")
+    heading = DEQUEUE_HEADING.format(version=version)
+    history = text.split("\n")
+    if heading in history:
+        at = history.index(heading)
+        table = next((i for i in range(at + 1, len(history)) if history[i].startswith(HISTORY_HEADER)), None)
+        if table is None or any(history[i].startswith("## ") for i in range(at + 1, table)):
+            raise RefusedError(f"dequeue: meta/tracking/history.md: {heading!r} holds no {HISTORY_HEADER!r} table")
+        last = table + 2
+        while last < len(history) and history[last].startswith("|"):
+            last += 1
+        history.insert(last, row)
+        text = "\n".join(history)
+    else:
+        head, sep, rest = text.partition("\n## ")
+        text = head.rstrip("\n") + f"\n\n{heading}\n\n{HISTORY_HEADER}\n|---|---|\n{row}\n" + ("\n## " + rest if sep else "")
+    queue_path.write_text("\n".join(lines), encoding="utf-8")
+    history_path.write_text(text, encoding="utf-8")
+    said = [f"{slug}: out of the queue, {verdict} at {version}, in meta/tracking/history.md"]
+    if offers:
+        said.append(f"{slug}: still offered again on line{'s' if len(offers) > 1 else ''} {', '.join(map(str, offers))} "
+                    "of candidates.md; place that evidence in its note or this history row, then remove it")
+    changed = build(root)
+    return said + [f"build: {len(changed)} files changed"]
+
+
+def answered_still_queued(root: Path = ROOT) -> list[str]:
+    """A slug `dequeue` wrote into the history that is queued again: a release that ships its answer with the row
+    still waiting (0.0.32 shipped nine). Only the command's own form is read, so older hand-written rows, some of
+    which rightly leave a row queued (narrowed, an occurrence merged into it), are not judged."""
+    queue_path, history_path = root / "meta/tracking/candidates.md", root / "meta/tracking/history.md"
+    if not queue_path.is_file() or not history_path.is_file():
+        return []
+    lines = queue_path.read_text(encoding="utf-8").split("\n")
+    try:
+        start, end = _queue_table(lines)
+    except RefusedError:
+        return []
+    queued = {slug_of(split_row(lines[i])[0]) for i in range(start, end)}
+    problems = []
+    for line in history_path.read_text(encoding="utf-8").split("\n"):
+        cells = split_row(line) if line.startswith("| `") else []
+        if len(cells) >= 2 and (m := _DEQUEUED.match(cells[1])) and cells[0].strip("`") in queued:
+            problems.append(f"meta/tracking/candidates.md: {cells[0]}: still queued, and the history says it was "
+                            f"{m.group(1)} at {m.group(2)}; remove the row (`release.py dequeue` does both)")
+    return problems
+
+
+# --- the one way to commit here (`d-5ed7e8-f61f95`) -----------------------------------------------------
+# The typed chain `tests && check && git add && git commit` broke two ways: a gate piped through a filter, whose
+# status was the filter's (`i-5ed7e8-89ec30`), and an edit chained into the same command as git, which the
+# privacy hook refuses whole. Here each step's own exit status is read, and only the named files are committed.
+COMMIT_GATE: tuple[tuple[str, list[str]], ...] = (
+    ("tests", [sys.executable, "-m", "unittest", "discover", "-s", "meta/tests", "-t", "."]),
+    ("check", [sys.executable, "meta/tools/release.py", "check"]),
+)
+COMMIT_TAIL = 30  # lines of a failing step's output printed
+
+
+def _under_release(root: Path, name: str) -> bool:
+    path = Path(name) if Path(name).is_absolute() else root / name
+    try:
+        return path.resolve().relative_to(root.resolve()).parts[:1] == (".agents",)
+    except ValueError:
+        return False
+
+
+def commit_files(message: str, files: list[str], root: Path = ROOT, gate=COMMIT_GATE,  # noqa: ANN001
+                 stale=lambda root: build(root, check=True)) -> int:
+    """Runs every step of the gate in `root`, each on its own exit status, and commits only `files` when all pass.
+
+    Nothing is staged or committed on any failure: each failing step is named with the tail of its output. On a
+    pass, `git add -- FILES` then `git commit -m MSG -- FILES`, so whatever else is staged or changed stays as it
+    was. A file under `.agents/` is refused before the gate runs unless the build is current (`stale` is empty).
+
+    Returns:
+        0 when committed, 1 when a step failed.
+
+    Raises:
+        RefusedError: no file or no message, or a release file while the build is stale.
+    """
+    if not files:
+        raise RefusedError("commit: name the files to commit; nothing is committed by default")
+    if not message.strip():
+        raise RefusedError("commit: -m MSG is empty; the message follows Conventional Commits")
+    released = [f for f in files if _under_release(root, f)]
+    if released:
+        problems = stale(root)
+        if problems:
+            raise RefusedError(f"commit: {', '.join(released)} under .agents/, and the build is not current "
+                               f"({len(problems)} problems, first: {problems[0]}); run `release.py build` and name its files")
+    failed = []
+    for name, command in gate:
+        run = subprocess.run(command, cwd=root, capture_output=True, text=True)
+        if run.returncode != 0:
+            failed.append((name, run.returncode, (run.stdout + run.stderr).rstrip("\n").split("\n")[-COMMIT_TAIL:]))
+        print(f"  {'x' if run.returncode else '.'} {name}: exit {run.returncode}")
+    if failed:
+        for name, code, tail in failed:
+            print(f"--- {name} failed (exit {code}); its last {len(tail)} lines:")
+            print("\n".join(tail))
+        print(f"commit: refused, {len(failed)} of {len(gate)} steps failed; nothing staged or committed")
+        return 1
+    subprocess.run(["git", "-C", str(root), "add", "--", *files], check=True)
+    done = subprocess.run(["git", "-C", str(root), "commit", "-q", "-m", message, "--", *files], capture_output=True, text=True)
+    if done.returncode != 0:
+        print((done.stdout + done.stderr).rstrip("\n"))
+        print(f"commit: git refused it (exit {done.returncode}); the files are staged")
+        return 1
+    sha = subprocess.run(["git", "-C", str(root), "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    print(f"commit: {sha} with {len(files)} files; nothing else staged or committed")
+    return 0
+
+
 # --- command line ---------------------------------------------------------------------------------
 
 
@@ -1932,6 +2121,14 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("state", choices=NOTE_STATES)
     p = sub.add_parser("report", help="sizes, budgets and the knowledge funnel")
     p.add_argument("--check", action="store_true", help="also fail when a budget is crossed")
+    p = sub.add_parser("commit", help="the tests and check, each on its own exit status; then only the named files committed")
+    p.add_argument("-m", "--message", required=True)
+    p.add_argument("files", nargs="*", metavar="FILE")
+    p = sub.add_parser("dequeue", help="a queued candidate into the history with its verdict and reason, then build")
+    p.add_argument("slug")
+    p.add_argument("verdict", choices=DEQUEUE_VERDICTS)
+    p.add_argument("--release", required=True, metavar="X.Y.Z", help="the release whose decision this is")
+    p.add_argument("--reason", required=True, help="why, in the history's words: where it went")
     return parser
 
 
@@ -2043,6 +2240,14 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
             return 1 if problems else 0
         if args.command == "note-state":
             for line in note_state(args.slug, args.state) or [f"{args.slug} is already {args.state}; nothing changed"]:
+                print(line)
+            return 0
+        if args.command == "commit":
+            if not args.files:
+                raise RefusedError("commit: name the files to commit; nothing is committed by default")
+            return commit_files(args.message, args.files)
+        if args.command == "dequeue":
+            for line in dequeue(args.slug, args.verdict, args.release, args.reason, ROOT):
                 print(line)
             return 0
         if args.command == "report":

@@ -1149,6 +1149,200 @@ class Manifest(Base):
         self.assertFalse([p for p in problems if "the export ships" in p])
 
 
+class PrivacyRatchet(Base):
+    """`check` reads the home's records against the baseline (`d-5ed7e8-af36e9`), and the release holds no warning."""
+
+    WARNED = "It took " + "1," + "017" + " runs to see it."
+
+    def test_a_new_warning_in_the_records_fails_and_a_known_one_is_counted(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        roadmap = home / "meta/roadmap.md"
+        roadmap.write_text(roadmap.read_text() + "\n" + self.WARNED + "\n")
+
+        problems, _ = R.check(home)
+        self.assertTrue([p for p in problems if "meta/roadmap.md" in p and "exact-count" in p and "new" in p], problems)
+
+        fingerprint = B.privacy_fingerprint("meta/roadmap.md", "exact-count", self.WARNED)
+        (home / "meta/tracking/privacy-baseline.txt").write_text("# baseline\n" + fingerprint + "\n")
+        problems, notes = R.check(home)
+        self.assertFalse([p for p in problems if "exact-count" in p], problems)
+        self.assertTrue([n for n in notes if "1 known" in n], notes)
+
+    def test_a_stale_fingerprint_is_reported_not_failed(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        gone = B.privacy_fingerprint("meta/roadmap.md", "exact-count", "a line no longer there")
+        (home / "meta/tracking/privacy-baseline.txt").write_text(gone + "\n")
+
+        problems, notes = R.check(home)
+
+        self.assertFalse([p for p in problems if "baseline" in p], problems)
+        self.assertTrue([n for n in notes if "1 stale" in n], notes)
+
+    def test_any_warning_in_the_release_fails_whatever_the_baseline(self) -> None:
+        R = release()
+        home = make_home(self.root)
+        readme = home / "sources/bundle/knowledge/README.md"
+        readme.write_text(readme.read_text() + "\n" + self.WARNED + "\n")
+        R.build(home)
+        fingerprint = B.privacy_fingerprint("knowledge/README.md", "exact-count", self.WARNED)
+        (home / "meta/tracking/privacy-baseline.txt").write_text(fingerprint + "\n")
+
+        problems, _ = R.check(home)
+
+        self.assertTrue([p for p in problems if "knowledge/README.md" in p and "release" in p
+                         and not p.startswith("privacy: " + str(home))], problems)
+
+
+class CommitCommand(Base):
+    """`release.py commit -m MSG FILE...` (`d-5ed7e8-f61f95`): the gate on its own exit status, then only the
+    named files committed, everything else left as it was."""
+
+    PASS = (("tests", [sys.executable, "-c", "print('ran 3 tests: OK')"]),
+            ("check", [sys.executable, "-c", "print('home check: passed')"]))
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.R = release()
+        self.repo = init_repo(self.root / "repo")
+        for name in ("a.md", "b.md", "c.md"):
+            (self.repo / name).write_text(f"{name} one\n")
+        commit(self.repo, "docs: start")
+
+    def call(self, files: list[str], gate=None, message: str = "docs: a", stale=lambda root: []) -> tuple[int, str]:  # noqa: ANN001
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = self.R.commit_files(message, files, self.repo, gate=gate or self.PASS, stale=stale)
+        return code, out.getvalue()
+
+    def test_only_the_named_files_are_committed_and_the_rest_is_left_as_it_was(self) -> None:
+        for name in ("a.md", "b.md", "c.md"):
+            (self.repo / name).write_text(f"{name} two\n")
+        git(self.repo, "add", "c.md")  # staged by someone else: stays staged, uncommitted
+
+        code, out = self.call(["a.md"])
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(git(self.repo, "show", "--name-only", "--format=%s", "HEAD").split(), ["docs:", "a", "a.md"])
+        status = git(self.repo, "status", "--porcelain").splitlines()
+        self.assertEqual(sorted(status), [" M b.md", "M  c.md"])
+
+    def test_a_failing_step_refuses_the_commit_and_prints_its_tail(self) -> None:
+        (self.repo / "a.md").write_text("a two\n")
+        # The output says OK; only the exit status says otherwise, and the status is what is read.
+        failing = (("tests", [sys.executable, "-c", "import sys; print('\\n'.join(f'line {i}' for i in range(100))); "
+                                                     "print('boom: one test failed'); sys.exit(1)"]),
+                   ("check", [sys.executable, "-c", "print('home check: passed')"]))
+        before = git(self.repo, "rev-parse", "HEAD")
+
+        code, out = self.call(["a.md"], gate=failing)
+
+        self.assertEqual(code, 1, out)
+        self.assertEqual(git(self.repo, "rev-parse", "HEAD"), before)
+        self.assertIn("boom: one test failed", out)
+        self.assertNotIn("line 3\n", out)  # the tail, not the whole output
+        self.assertIn("tests", out)
+        self.assertEqual(git(self.repo, "status", "--porcelain").splitlines(), [" M a.md"])
+
+    def test_every_step_runs_and_each_failure_is_named(self) -> None:
+        (self.repo / "a.md").write_text("a two\n")
+        both = (("tests", [sys.executable, "-c", "import sys; print('red one'); sys.exit(1)"]),
+                ("check", [sys.executable, "-c", "import sys; print('red two'); sys.exit(3)"]))
+
+        code, out = self.call(["a.md"], gate=both)
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("red one", out)
+        self.assertIn("red two", out)
+
+    def test_an_empty_list_is_refused(self) -> None:
+        with self.assertRaises(self.R.RefusedError):
+            self.call([])
+        with self.assertRaises(self.R.RefusedError):
+            self.call(["a.md"], message="  ")
+
+    def test_a_release_file_is_refused_while_the_build_is_stale(self) -> None:
+        (self.repo / ".agents").mkdir()
+        (self.repo / ".agents/x.md").write_text("x\n")
+        ran = []
+        gate = (("tests", [sys.executable, "-c", f"open({str(self.root / 'ran')!r}, 'w').write('1')"]),)
+
+        with self.assertRaises(self.R.RefusedError) as caught:
+            self.call([".agents/x.md"], gate=gate, stale=lambda root: ["x.md: differs from its build"])
+
+        self.assertIn("build", str(caught.exception))
+        self.assertFalse((self.root / "ran").exists(), ran)  # refused before the gate runs
+        code, out = self.call([".agents/x.md"], gate=gate)
+        self.assertEqual(code, 0, out)
+
+    def test_the_command_line_takes_a_message_and_files(self) -> None:
+        with mock.patch.object(self.R, "commit_files", return_value=0) as called:
+            self.assertEqual(self.R.main(["commit", "-m", "docs: b", "b.md", "c.md"]), 0)
+        self.assertEqual(called.call_args.args[:2], ("docs: b", ["b.md", "c.md"]))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(self.R.main(["commit", "-m", "docs: b"]), 2)
+
+
+class Dequeue(Base):
+    """`release.py dequeue SLUG VERDICT --release X.Y.Z --reason TEXT` (`i-5ed7e8-655151`): a queued row moves to
+    the history with its verdict, in the history's own form, and the ledger is rebuilt."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.R = release()
+        self.home = make_home(self.root)
+        self.queue = self.home / "meta/tracking/candidates.md"
+        self.history = self.home / "meta/tracking/history.md"
+        self.queue.write_text(self.queue.read_text()
+                              + "| new-idea — a second idea | M | an occurrence | elsewhere | 2026-01-02 | 0.0.1 |\n")
+
+    def test_the_row_leaves_the_queue_and_the_history_gains_its_line_newest_first(self) -> None:
+        lines = self.R.dequeue("old-idea", "refused", "0.0.2", "one occurrence, and textbook", self.home)
+
+        self.assertNotIn("old-idea", self.queue.read_text())
+        self.assertIn("new-idea", self.queue.read_text())
+        history = self.history.read_text()
+        self.assertIn("## Taken out of the queue by the release 0.0.2\n\n| Candidate | Where it went |\n|---|---|\n"
+                      "| `old-idea` | **refused at 0.0.2**: one occurrence, and textbook |\n", history)
+        self.assertLess(history.index("0.0.2"), history.index("## First"))
+        self.assertIn("old-idea", (self.home / "meta/tracking/INDEX.md").read_text())
+        self.assertTrue(any("old-idea" in line for line in lines), lines)
+
+    def test_a_second_row_of_the_same_release_joins_its_section(self) -> None:
+        self.R.dequeue("old-idea", "refused", "0.0.2", "textbook", self.home)
+        self.R.dequeue("new-idea", "admitted", "0.0.2", "as the note `alpha`", self.home)
+
+        history = self.history.read_text()
+        self.assertEqual(history.count("## Taken out of the queue by the release 0.0.2"), 1)
+        self.assertIn("| `old-idea` | **refused at 0.0.2**: textbook |\n| `new-idea` | **admitted at 0.0.2**: as the note `alpha` |",
+                      history)
+        self.assertNotIn("| new-idea", self.queue.read_text())
+
+    def test_an_unknown_slug_verdict_or_release_is_refused_and_nothing_written(self) -> None:
+        before = (self.queue.read_text(), self.history.read_text())
+        for args in (("no-such-idea", "refused", "0.0.2", "why"), ("old-idea", "liked", "0.0.2", "why"),
+                     ("old-idea", "refused", "next", "why"), ("old-idea", "refused", "0.0.2", "  ")):
+            with self.subTest(args=args), self.assertRaises(self.R.RefusedError):
+                self.R.dequeue(*args, root=self.home)
+        self.assertEqual((self.queue.read_text(), self.history.read_text()), before)
+
+    def test_a_row_answered_by_the_command_and_still_queued_fails_the_check(self) -> None:
+        self.R.dequeue("old-idea", "fixed", "0.0.2", "the tool now refuses it", self.home)
+        self.assertEqual(self.R.answered_still_queued(self.home), [])
+        self.queue.write_text(self.queue.read_text() + "| old-idea — back by hand | K | x | y | 2026-01-01 | 0.0.1 |\n")
+
+        self.assertIn("old-idea", "\n".join(self.R.answered_still_queued(self.home)))
+
+    def test_the_command_line(self) -> None:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), mock.patch.object(self.R, "ROOT", self.home):
+            code = self.R.main(["dequeue", "old-idea", "dropped", "--release", "0.0.2", "--reason", "superseded"])
+        self.assertEqual(code, 0, out.getvalue())
+        self.assertIn("| `old-idea` | **dropped at 0.0.2**: superseded |", self.history.read_text())
+
+
 class Received(Base):
     def test_only_the_last_two_releases_keep_their_verdicts(self) -> None:
         R = release()

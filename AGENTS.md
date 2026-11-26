@@ -156,6 +156,7 @@ python3 meta/tools/release.py build [--check]          # the whole release and S
 python3 meta/tools/release.py report                   # sizes, budgets and the knowledge funnel
 python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible; over a proposal, a warning no allowance answered fails, as the home's intake does
 python3 .agents/tools/bundle.py privacy --commits @{u}..HEAD   # the same, over what a push sends
+python3 .agents/tools/bundle.py privacy --tracked --baseline meta/tracking/privacy-baseline.txt   # every tracked file: new warnings in full, known ones counted (the ratchet; `--write-baseline` only removes)
 python3 .agents/tools/bundle.py trailers               # no commit message credits an assistant
 python3 .agents/tools/bundle.py docs-drift --range origin/main..HEAD   # documents a change left stale (docs-map.toml)
 python3 .agents/tools/bundle.py surfaces --only cursor copilot   # Cursor's and Copilot's copies of .claude/ (experimental)
@@ -179,9 +180,16 @@ The experiments (`evals/`) have their own procedures: [`evals/README.md`](evals/
 Their run directories hold transcripts that carry the logged-in account's identity and are never
 committed.
 
+**The one way to commit here** is `release.py commit -m MSG FILE...`: it runs the tests and `check`, each on
+its own exit status, prints the tail of any failure and then commits only the files named, leaving everything
+else as it was; it refuses a file under `.agents/` while the build is stale. A `git commit` chained on the gate
+(`tests && check && git commit`, nothing piped) stays valid.
+
 Commands that write, each replacing a hand edit that used to go wrong:
 
 ```bash
+python3 meta/tools/release.py commit -m "MSG" FILE...  # the gate on its own exit status, then only FILEs committed
+python3 meta/tools/release.py dequeue SLUG VERDICT --release X.Y.Z --reason "TEXT"   # a queued candidate into the history, then build
 python3 .agents/tools/bundle.py id d|i|s "<text>"      # a record id: kind, this carrier's id, content hash
 python3 .agents/tools/bundle.py carrier-id --mint      # once per carrier: a random id, in its carrier.toml
 python3 .agents/tools/bundle.py machine --mint         # once per machine: a random id, outside every repository

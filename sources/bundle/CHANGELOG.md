@@ -13,6 +13,12 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **A proposal's optional `topic:`** (`d-5ed7e8-9f14d5`): `propose --topic SLUG` names which part of the target a
   proposal concerns, and the home's intake groups by target and topic, so proposals extending one method file become
   one candidate per topic rather than one per file. A proposal without it reads, renders and keeps its id as before. A topic on a note or a candidate already known is another occurrence of it (d-5ed7e8-2505a2).
+- **A privacy ratchet** (`d-5ed7e8-af36e9`): `bundle.py privacy --tracked --baseline FILE` reads a baseline of
+  fingerprints, one per known warning (the file, the rule and a short hash of the warned line, never its text or the
+  value matched, and no line number, so a moved line keeps its fingerprint). A new warning is printed in full and
+  fails; the known ones are counted; a fingerprint no longer found is reported stale. `--write-baseline` creates
+  the file when absent and afterwards only removes stale fingerprints, never adds one: a new warning is reworded,
+  or allowed on its line by the owner. A FAIL is never fingerprinted.
 
 - **`bundle.py red-check RANGE`** (`d-5ed7e8-8c417c`): each `fix` commit in the range that touches code has its new or
   changed test methods (found by syntax tree) run on its parent's tree with the commit's test folder laid over it,

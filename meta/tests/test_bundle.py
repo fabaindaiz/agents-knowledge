@@ -1236,6 +1236,113 @@ class PrivacyTracked(Base):
         self.assertNotIn("FAIL", out)
 
 
+class PrivacyBaseline(Base):
+    """The ratchet (`d-5ed7e8-af36e9`): a baseline of fingerprints, never text, prints only new warnings in full,
+    counts the known ones, and only ever shrinks; a FAIL is never baselined."""
+
+    WARNED = "It took " + "1," + "017" + " runs to see it."
+    OTHER = "Then " + "2," + "570" + " more were read."
+
+    def repo_with(self, *lines: str) -> Path:
+        repo = init_repo(self.root / "repo")
+        (repo / "README.md").write_text("# Read me\n\n" + "\n".join(lines) + "\n")
+        git_commit(repo, "docs: start")
+        return repo
+
+    def baseline(self, repo: Path, *extra: str) -> tuple[int, str]:
+        return run("privacy", "--tracked", "--repo", str(repo), "--baseline", str(self.root / "baseline.txt"), *extra)
+
+    def test_known_warnings_are_counted_and_a_new_one_is_printed_and_fails(self) -> None:
+        repo = self.repo_with(self.WARNED)
+        code, out = self.baseline(repo, "--write-baseline")
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.root / "baseline.txt").is_file(), out)
+
+        code, out = self.baseline(repo)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("! WARN", out.replace("! WARN partial", ""), out)
+        self.assertIn("1 known", out)
+
+        (repo / "README.md").write_text("# Read me\n\n" + self.WARNED + "\n" + self.OTHER + "\n")
+        code, out = self.baseline(repo)
+        self.assertEqual(code, 1, out)
+        printed = [line for line in out.split("\n") if line.startswith("  ! WARN") and "README.md" in line]
+        self.assertEqual(len(printed), 1, out)
+        self.assertIn("2," + "570", printed[0])
+        self.assertIn("1 known", out)
+
+    def test_a_moved_line_keeps_its_fingerprint(self) -> None:
+        repo = self.repo_with(self.WARNED)
+        self.baseline(repo, "--write-baseline")
+        (repo / "README.md").write_text("# Read me\n\nA new first line.\n\nAnother.\n\n  " + self.WARNED + "\n")
+
+        code, out = self.baseline(repo)
+
+        self.assertEqual(code, 0, out)
+        self.assertIn("1 known", out)
+
+    def test_the_baseline_only_shrinks_and_reports_what_is_stale(self) -> None:
+        repo = self.repo_with(self.WARNED, self.OTHER)
+        self.baseline(repo, "--write-baseline")
+        before = (self.root / "baseline.txt").read_text()
+        (repo / "README.md").write_text("# Read me\n\n" + self.OTHER + "\nAnd " + "4," + "096" + " new ones.\n")
+
+        code, out = self.baseline(repo)
+        self.assertEqual(code, 1, out)  # the new one
+        self.assertIn("1 stale", out)
+
+        code, out = self.baseline(repo, "--write-baseline")
+        after = (self.root / "baseline.txt").read_text()
+        self.assertEqual(code, 1, out)  # still new: writing never adds it
+        entries = lambda text: [l for l in text.split("\n") if l and not l.startswith("#")]  # noqa: E731
+        self.assertEqual(len(entries(before)), 2)
+        self.assertEqual(len(entries(after)), 1)
+        self.assertTrue(set(entries(after)) <= set(entries(before)))
+
+    def test_no_text_or_matched_value_is_stored(self) -> None:
+        repo = self.repo_with(self.WARNED)
+        self.baseline(repo, "--write-baseline")
+
+        text = (self.root / "baseline.txt").read_text()
+
+        self.assertNotIn("1," + "017", text)
+        self.assertNotIn("runs to see", text)
+        self.assertIn("README.md\texact-count\t", text)
+        self.assertEqual(run("privacy", "--paths", str(self.root / "baseline.txt"))[0], 0)
+        # A hash that happens to be all digits read as an exact count, found on the home's own baseline.
+        digits = self.root / "digits.txt"
+        digits.write_text("README.md\texact-count\tsha256:" + "57" * 8 + "\n")
+        code, out = run("privacy", "--paths", str(digits))
+        self.assertNotIn("exact-count", out)
+        self.assertIn("\tsha256:", B.privacy_fingerprint("README.md", "exact-count", "any line"))
+
+    def test_a_fail_is_never_baselined(self) -> None:
+        repo = self.repo_with(self.WARNED, Privacy.PLANTED["email"])
+
+        code, out = self.baseline(repo, "--write-baseline")
+
+        self.assertEqual(code, 1, out)
+        self.assertIn("x FAIL", out)
+        text = (self.root / "baseline.txt").read_text()
+        self.assertNotIn("email", text)
+        self.assertEqual(len([l for l in text.split("\n") if l and not l.startswith("#")]), 1)
+        self.assertEqual(self.baseline(repo)[0], 1)
+
+    def test_a_quote_is_read_against_the_bundle_named(self) -> None:
+        tree = make_bundle(self.root / "tree")
+        (tree / "knowledge/README.md").write_text("# Knowledge\n\nA shipped sentence that only the release holds.\n")
+        record = self.root / "record.md"
+        record.write_text('# A record\n\n## Evidence\n\nIt said "a shipped sentence that only the release holds" once.\n')
+
+        quoted = lambda report: [f for f in report.findings if f.rule == "quote"]  # noqa: E731
+        self.assertTrue(quoted(B.privacy_check(paths=[record])))
+        self.assertEqual(quoted(B.privacy_check(paths=[record], own=tree)), [])
+
+    def test_a_baseline_without_tracked_is_refused(self) -> None:
+        self.assertEqual(run("privacy", "--baseline", str(self.root / "b.txt"))[0], 2)
+        self.assertEqual(run("privacy", "--tracked", "--write-baseline")[0], 2)
+
+
 class PrivacyCommits(Base):
     """A leak in a commit message, or in a line a commit adds, is published by the push, whatever the tree holds."""
 
