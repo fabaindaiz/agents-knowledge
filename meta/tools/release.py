@@ -869,21 +869,25 @@ def home_session_problems(root: Path = ROOT) -> list[str]:
 PRIVACY_BASELINE = "meta/tracking/privacy-baseline.txt"
 
 
-def baseline_growth(root: Path) -> list[str]:
+def baseline_growth(root: Path) -> tuple[list[str], list[str]]:
     """The baseline's shrink-only rule, enforced: every fingerprint (with its count) must be in its version at
     the base (`review_base`), so deleting the file and writing it again, or adding a line by hand, cannot admit a
-    warning. Absent at the base, the file is being created, and that is allowed; outside git nothing is read."""
+    warning. Absent at the base, the file is being created, and that is allowed; outside git nothing is read.
+
+    Returns:
+        (problems, notes): a grown fingerprint each, and a note when no base was found to judge from.
+    """
     base, named = review_base(root)
     if base is None:
-        return []
+        return [], [f"  ! privacy baseline growth: {named}: judged nothing"] if named else []
     shown = subprocess.run(["git", "-C", str(root), "show", f"{base}:{PRIVACY_BASELINE}"], capture_output=True, text=True)
     if shown.returncode != 0:
-        return []
+        return [], []
     before = collections.Counter(line for line in shown.stdout.split("\n") if line.strip() and not line.startswith("#"))
     grown = B.read_privacy_baseline(root / PRIVACY_BASELINE) - before
     return [f"{PRIVACY_BASELINE}: {mark.split(chr(9), 1)[0]}: a fingerprint not in its version at the base {named}"
             f"{f' (added {n} times)' if n > 1 else ''}; the baseline only shrinks, so reword the warning or the "
-            "owner answers it on its line with privacy-allow" for mark, n in sorted(grown.items())]
+            "owner answers it on its line with privacy-allow" for mark, n in sorted(grown.items())], []
 
 
 def home_privacy(root: Path, home: "B.PrivacyReport") -> tuple[list[str], list[str]]:
@@ -895,11 +899,12 @@ def home_privacy(root: Path, home: "B.PrivacyReport") -> tuple[list[str], list[s
     problems = [f"privacy: {f.where} {f.rule}: {f.match}" for f in home.failures]
     problems += [f"privacy: {f.where} {f.rule}: {f.match} — a new warning, not in {PRIVACY_BASELINE}; reword it, "
                  "or the owner answers it on its line with privacy-allow" for f in split.new]
-    problems += baseline_growth(root)
+    grown, growth_notes = baseline_growth(root)
+    problems += grown
     stale = sum(split.stale.values())
     notes = [f"  . privacy baseline: {split.known} known warnings in meta/ and sources/, {len(split.new)} new, {stale} stale"
              + (" (`bundle.py privacy --tracked --baseline ... --write-baseline` removes them)" if stale else "")]
-    return problems, notes
+    return problems, notes + growth_notes
 
 
 def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
@@ -938,12 +943,13 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
 def review_base(root: Path = ROOT) -> tuple[str | None, str]:
     """The commit a branch's work is judged from: its merge-base with `main` (else `origin/main`). With `main`
     itself checked out, after a fast-forward, that merge-base is HEAD and would judge nothing, so the base is
-    then the last tag reachable from HEAD (`git describe --tags --abbrev=0`): what main gained since the last
-    release. A new branch with no commit of its own keeps HEAD: its work is what the working tree changes.
+    then the last release tag reachable from HEAD (`git describe --tags --abbrev=0 --match 'v*'`): what main
+    gained since the last release. A detached HEAD at main (how CI checks out) is main. A new branch with no
+    commit of its own keeps HEAD: its work is what the working tree changes.
 
     Returns:
         (sha, name): the base commit and how to name it (a tag, or a short sha); (None, "") outside git or with
-        no main to compare with.
+        no main to compare with; (None, reason) on main with no release tag, where no base judges anything.
     """
     def git_out(*args: str) -> str | None:
         done = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
@@ -951,9 +957,11 @@ def review_base(root: Path = ROOT) -> tuple[str | None, str]:
     base = next((found for ref in ("main", "origin/main") if (found := git_out("merge-base", "HEAD", ref))), None)
     if base is None:
         return None, ""
-    on_main = git_out("symbolic-ref", "-q", "--short", "HEAD") == "main"
-    if on_main and base == git_out("rev-parse", "HEAD") and (tag := git_out("describe", "--tags", "--abbrev=0", "HEAD")):
-        return git_out("rev-parse", f"{tag}^{{commit}}"), tag
+    branch = git_out("symbolic-ref", "-q", "--short", "HEAD")  # None when detached
+    if branch in ("main", None) and base == git_out("rev-parse", "HEAD"):
+        if tag := git_out("describe", "--tags", "--abbrev=0", "--match", "v*", "HEAD"):
+            return git_out("rev-parse", f"{tag}^{{commit}}"), tag
+        return None, "no base found (HEAD is main and no release tag v* is reachable)"
     return base, base[:9]
 
 
@@ -965,7 +973,8 @@ def red_check_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
     """
     base, named = review_base(root)
     if base is None:
-        return [], ["  - red-check: not in git, or no main to compare with: skipped"]
+        return [], [f"  ! red-check: {named}: judged nothing" if named
+                    else "  - red-check: not in git, or no main to compare with: skipped"]
     report = B.red_check(root, f"{base}..HEAD")
     problems = [f"red-check: {e.sha[:9]} {e.subject[:60]}: {e.detail}" for e in report.failed]
     judged = [e for e in report.entries if e.verdict != "skipped"]
@@ -2086,12 +2095,18 @@ COMMIT_GATE: tuple[tuple[str, list[str]], ...] = (
 COMMIT_TAIL = 30  # lines of a failing step's output printed
 
 
-def export_index(root: Path, files: list[str], into: Path) -> None:
-    """What a commit of `files` would hold, written out as a tree into `into`: the index with `files` added,
-    exported by `git checkout-index -a`, on a copy of the index, so the real one is left as it was.
+def export_index(root: Path, files: list[str], into: Path) -> Path:
+    """What a commit of `files` would hold, written out as a tree into `into`: HEAD with `files` added, as
+    `git commit -- FILES` commits it, so a change staged but not named is in neither. It is built in a scratch
+    index (`git read-tree HEAD`, or an empty one before the first commit), so the real one is left as it was;
+    `git add -A -- FILES` there takes a named path that no longer exists out of it, as the commit does.
 
     The export carries a `.git` file naming the repository's git directory, so the gate's read-only git steps
-    (red-check, the baseline's base version, the tags) still see the history.
+    (red-check, the baseline's base version, the tags) still see the history; run with `GIT_INDEX_FILE` naming
+    the scratch index, they also see a newly named file as tracked.
+
+    Returns:
+        The scratch index, next to `into`; the caller removes it with the export.
 
     Raises:
         RefusedError: not a git repository, or git refused to stage a named file or to export the index.
@@ -2101,16 +2116,17 @@ def export_index(root: Path, files: list[str], into: Path) -> None:
         if done.returncode != 0:
             raise RefusedError(f"commit: git {args[0]} refused (exit {done.returncode}): {(done.stdout + done.stderr).strip()}")
         return done.stdout
-    git_dir, index = run("rev-parse", "--absolute-git-dir", "--git-path", "index").split("\n")[:2]
-    index_path = Path(index) if Path(index).is_absolute() else root / index
-    scratch = into.parent / "index"
-    if index_path.is_file():
-        shutil.copyfile(index_path, scratch)
+    git_dir = run("rev-parse", "--absolute-git-dir").strip()
+    scratch = (into.parent / "index").resolve()
     env = {**os.environ, "GIT_INDEX_FILE": str(scratch)}
-    run("add", "--", *files, env=env)
+    has_head = subprocess.run(["git", "-C", str(root), "rev-parse", "-q", "--verify", "HEAD^{commit}"],
+                              capture_output=True, text=True).returncode == 0
+    run("read-tree", *(["HEAD"] if has_head else ["--empty"]), env=env)
+    run("add", "-A", "--", *files, env=env)
     into.mkdir(parents=True, exist_ok=True)
     run("checkout-index", "-a", f"--prefix={into}/", env=env)
     (into / ".git").write_text(f"gitdir: {git_dir}\n", encoding="utf-8")
+    return scratch
 
 
 def commit_files(message: str, files: list[str], root: Path = ROOT, gate=COMMIT_GATE,  # noqa: ANN001
@@ -2118,9 +2134,10 @@ def commit_files(message: str, files: list[str], root: Path = ROOT, gate=COMMIT_
     """Runs every step of the gate on what would be committed, each on its own exit status, and commits only
     `files` when all pass.
 
-    The gate reads an export of the index with `files` added (`export_index`), never the working tree: a source
-    named without its built release is refused, and unrelated unfinished work neither passes nor fails the
-    commit. The export's release must be current (`stale` empty) before the gate runs in it. Nothing is staged
+    The gate reads an export of HEAD with `files` added (`export_index`), never the working tree nor the index:
+    a source named without its built release is refused, and unrelated unfinished work, staged or not, neither
+    passes nor fails the commit. Every step runs in the export with `GIT_INDEX_FILE` naming its scratch index,
+    and both are removed on every way out. The export's release must be current (`stale` empty) before the gate runs in it. Nothing is staged
     or committed on any failure: each failing step is named with the tail of its output. On a pass,
     `git add -- FILES` then `git commit -m MSG -- FILES`, so whatever else is staged or changed stays as it was.
 
@@ -2137,13 +2154,13 @@ def commit_files(message: str, files: list[str], root: Path = ROOT, gate=COMMIT_
     failed = []
     with tempfile.TemporaryDirectory(prefix="release-commit-") as scratch:
         export = Path(scratch) / "tree"
-        export_index(root, files, export)
+        env = {**os.environ, "GIT_INDEX_FILE": str(export_index(root, files, export))}
         problems = stale(export)
         if problems:
             raise RefusedError(f"commit: what would be committed holds a stale release ({len(problems)} problems, "
                                f"first: {problems[0]}); run `release.py build` and name its files too")
         for name, command in gate:
-            run = subprocess.run(command, cwd=export, capture_output=True, text=True)
+            run = subprocess.run(command, cwd=export, capture_output=True, text=True, env=env)
             if run.returncode != 0:
                 failed.append((name, run.returncode, (run.stdout + run.stderr).rstrip("\n").split("\n")[-COMMIT_TAIL:]))
             print(f"  {'x' if run.returncode else '.'} {name}: exit {run.returncode}")

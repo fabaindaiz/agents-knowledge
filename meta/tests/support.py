@@ -20,6 +20,11 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# `release.py commit` runs the suite with GIT_INDEX_FILE naming its scratch index (as a git hook would): the
+# throwaway repositories the tests make must not read or write that index, nor another repository's.
+for _var in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE"):
+    os.environ.pop(_var, None)
+
 
 def _load(name: str, path: Path):  # noqa: ANN202 -- a module
     if name in sys.modules:

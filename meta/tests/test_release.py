@@ -1354,6 +1354,80 @@ class CommitCommand(Base):
             code = self.R.commit_files("docs: x", ["sources/bundle/knowledge/README.md", ".agents"], home, gate=self.PASS)
         self.assertEqual(code, 0, out.getvalue())
 
+    def test_a_change_staged_but_not_named_is_neither_gated_nor_committed(self) -> None:
+        # `git commit -- FILES` commits HEAD plus FILES: the gate reads the same, so a staged source cannot
+        # make a release named alone look current while the commit holds a stale one.
+        (self.repo / "a.md").write_text("a two\n")
+        (self.repo / "c.md").write_text("c two\n")
+        git(self.repo, "add", "c.md")
+        seen = {}
+
+        def stale(root: Path) -> list[str]:
+            seen.update(a=(root / "a.md").read_text(), c=(root / "c.md").read_text())
+            return []
+
+        code, out = self.call(["a.md"], stale=stale)
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(seen, {"a": "a two\n", "c": "c.md one\n"})
+        self.assertEqual(git(self.repo, "show", "HEAD:c.md"), "c.md one\n")
+        self.assertEqual(sorted(git(self.repo, "status", "--porcelain").splitlines()), ["M  c.md"])
+
+    def test_a_named_file_deleted_or_renamed_leaves_the_export_and_the_commit(self) -> None:
+        (self.repo / "b.md").unlink()
+        (self.repo / "c.md").rename(self.repo / "d.md")
+        seen = {}
+
+        def stale(root: Path) -> list[str]:
+            seen.update(b=(root / "b.md").exists(), c=(root / "c.md").exists(), d=(root / "d.md").read_text())
+            return []
+
+        code, out = self.call(["b.md", "c.md", "d.md"], stale=stale)
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(seen, {"b": False, "c": False, "d": "c.md one\n"})
+        self.assertEqual(sorted(git(self.repo, "ls-files").split()), ["a.md", "d.md"])
+        self.assertEqual(git(self.repo, "status", "--porcelain"), "")
+
+    def test_a_repository_with_no_commit_yet_commits_the_named_files(self) -> None:
+        fresh = init_repo(self.root / "fresh")
+        (fresh / "a.md").write_text("a\n")
+        (fresh / "b.md").write_text("b\n")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = self.R.commit_files("docs: a", ["a.md"], fresh, gate=self.PASS, stale=lambda root: [])
+        self.assertEqual(code, 0, out.getvalue())
+        self.assertEqual(git(fresh, "ls-files").split(), ["a.md"])
+
+    def test_every_step_reads_the_scratch_index_and_it_is_removed_on_every_way_out(self) -> None:
+        # Inside the export git reads the scratch index, so a newly named file is tracked there
+        # (`privacy --tracked` reads `git ls-files`); the index goes with the export, a refusal included.
+        (self.repo / "new.md").write_text("new\n")
+        listed, index = self.root / "listed", self.root / "index-path"
+        probe = ("import os, subprocess; "
+                 f"open({str(listed)!r}, 'w').write(subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout); "
+                 f"open({str(index)!r}, 'w').write(os.environ.get('GIT_INDEX_FILE', ''))")
+        for code_out in (0, 1):
+            with self.subTest(exit=code_out):
+                gate = (("check", [sys.executable, "-c", probe + f"; raise SystemExit({code_out})"]),)
+                code, out = self.call(["new.md"], gate=gate)
+                self.assertEqual(code, code_out, out)
+                self.assertIn("new.md", listed.read_text().split())
+                self.assertTrue(index.read_text(), "GIT_INDEX_FILE is not set for the step")
+                self.assertFalse(Path(index.read_text()).exists())
+                git(self.repo, "reset", "-q", "--soft", "HEAD~1") if code_out == 0 else None
+                git(self.repo, "reset", "-q") if code_out == 0 else None
+        seen = {}
+
+        def refuse(root: Path) -> list[str]:
+            seen["index"] = root.parent / "index"
+            seen["existed"] = seen["index"].exists()
+            return ["x.md: differs from its build"]
+        with self.assertRaises(self.R.RefusedError):
+            self.call(["new.md"], stale=refuse)
+        self.assertTrue(seen["existed"])
+        self.assertFalse(seen["index"].exists())
+
     def test_the_command_line_takes_a_message_and_files(self) -> None:
         with mock.patch.object(self.R, "commit_files", return_value=0) as called:
             self.assertEqual(self.R.main(["commit", "-m", "docs: b", "b.md", "c.md"]), 0)
@@ -1584,3 +1658,44 @@ class CheckRunsRedCheck(Base):
         problems, notes = release().red_check_problems(repo)
         self.assertEqual(len(problems), 1, (problems, notes))
         self.assertTrue([n for n in notes if "v0.0.1" in n], notes)
+
+    def _main_with_a_fix(self, name: str) -> Path:
+        repo = init_repo(self.root / name)
+        (repo / ".agents").mkdir()
+        (repo / ".agents/carrier.toml").write_text('carrier = "r-aaaaaa"\n[red_check]\ncode = ["tools/**"]\ntests = ["tests/test_*.py"]\n')
+        (repo / "tools").mkdir()
+        (repo / "tools/bundle.py").write_text("# " + bundle.RED_CHECK_MARK + "\n")
+        commit(repo, "chore: start")
+        git(repo, "branch", "-M", "main")
+        return repo
+
+    def test_a_detached_head_at_main_is_judged_as_main(self) -> None:
+        # How CI checks out: a detached HEAD whose merge-base with main is HEAD itself.
+        repo = self._main_with_a_fix("d")
+        git(repo, "tag", "-a", "v0.0.1", "-m", "0.0.1")
+        (repo / "tools/calc.py").write_text("X = 1\n")
+        commit(repo, "fix: x is one")
+        git(repo, "checkout", "-q", "--detach", "HEAD")
+        problems, notes = release().red_check_problems(repo)
+        self.assertEqual(len(problems), 1, (problems, notes))
+        self.assertTrue([n for n in notes if "v0.0.1" in n], notes)
+
+    def test_only_a_release_tag_is_the_base(self) -> None:
+        repo = self._main_with_a_fix("t")
+        git(repo, "tag", "-a", "v0.0.1", "-m", "0.0.1")
+        (repo / "tools/calc.py").write_text("X = 1\n")
+        commit(repo, "fix: x is one")
+        git(repo, "tag", "-a", "nightly", "-m", "not a release")
+        self.assertEqual(release().review_base(repo)[1], "v0.0.1")
+
+    def test_on_main_with_no_release_tag_check_says_nothing_was_judged(self) -> None:
+        repo = self._main_with_a_fix("n")
+        (repo / "tools/calc.py").write_text("X = 1\n")
+        commit(repo, "fix: x is one")
+        R = release()
+        self.assertEqual(R.review_base(repo)[0], None)
+        problems, notes = R.red_check_problems(repo)
+        self.assertEqual(problems, [])
+        self.assertTrue([n for n in notes if "red-check" in n and "no base" in n and "judged nothing" in n], notes)
+        _, notes = R.baseline_growth(repo)
+        self.assertTrue([n for n in notes if "baseline" in n and "no base" in n and "judged nothing" in n], notes)
