@@ -4624,7 +4624,7 @@ def red_check(repo: Path, rev_range: str, config: dict | None = None) -> RedRepo
     config = config or red_config(repo)
     if config is None:
         return RedReport(False, [])
-    entries = []
+    entries, remembered = [], _red_remembered(repo)
     for sha in git(repo, "rev-list", "--reverse", "--no-merges", rev_range).split():
         message = git(repo, "log", "-1", "--format=%B", sha)
         subject = message.split("\n", 1)[0]
@@ -4633,9 +4633,45 @@ def red_check(repo: Path, rev_range: str, config: dict | None = None) -> RedRepo
             entries.append(RedEntry(sha, subject, "skipped", "not a fix"))
         elif not parents:
             entries.append(RedEntry(sha, subject, "skipped", "no parent"))
+        elif (key := f"{sha} {_red_config_key(config)}") in remembered:
+            entries.append(RedEntry(sha, subject, "pass", "remembered: judged a pass before, and a commit's trees never change"))
         else:
-            entries.append(RedEntry(sha, subject, *_red_judge(repo, sha, parents[0], message, config)))
+            entry = RedEntry(sha, subject, *_red_judge(repo, sha, parents[0], message, config))
+            entries.append(entry)
+            if entry.verdict == "pass":
+                _red_remember(repo, key)
     return RedReport(True, entries)
+
+
+
+def _red_cache(repo: Path) -> Path | None:
+    try:
+        return Path(git(repo, "rev-parse", "--path-format=absolute", "--git-path", "red-check-passes").strip())
+    except (RefusedError, OSError, subprocess.CalledProcessError):
+        return None
+
+
+def _red_config_key(config: dict) -> str:
+    return hashlib.sha256(json.dumps(config, sort_keys=True, default=str).encode()).hexdigest()[:12]
+
+
+def _red_remembered(repo: Path) -> set[str]:
+    cache = _red_cache(repo)
+    try:
+        return set(cache.read_text(encoding="utf-8").splitlines()) if cache else set()
+    except OSError:
+        return set()
+
+
+def _red_remember(repo: Path, key: str) -> None:
+    cache = _red_cache(repo)
+    if cache is None:
+        return
+    try:
+        with cache.open("a", encoding="utf-8") as handle:
+            handle.write(key + "\n")
+    except OSError:
+        pass
 
 
 

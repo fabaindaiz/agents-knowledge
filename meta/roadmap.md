@@ -85,20 +85,16 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   refused and it used `checkout`. Say it once in the method's delegation rule (the brief names the commit to start
   from), or have the merging session push the branch first where pushing is allowed. *Estimate:* one sentence in
   `prompt-sync.md` *Worktrees*, 5 min. *Collides with:* the coding budget if it went into §*Long runs and delegates*.
-- **`i-5ed7e8-33c9b5` · `red-check` judged one sound fix commit as failing on itself, twice, then passed on rerun.** Seen on
-  2026-11-26 over commit `1cf8db0` (its `CommitCommand` tests), once in a lane and once in this session's gate, with no
-  git variable in the environment; eight later runs passed, with the index staged and not. The leak round 4 found
-  (`GIT_DIR` and its kin inherited from a hook) was a cause of the same message and is fixed; this one is not that. A
-  flaky gate blocks a commit at random, so it is a finding, never retried away. Next: run the commit's ten tests in a
-  loop under `red-check`'s export with their output kept, until one fails. Also from round 4, low: a test helper
-  imported through `sys.path` (`import lib` for `evals/lib.py`) is not recognised as test support, so its parent run
-  reads as red. Also low, met at the close: `shell-check` does not see a loop variable taking a quoted
-  list's words (`for row in "a b"; do set -- $row`), which zsh leaves unsplit; it took a second run.
-  *Estimate:* 20–40 min, 80k tokens. *Collides with:* nothing.
-  **And a decision for the owner:** the privacy baseline's fingerprint includes the path (`d-5ed7e8-af36e9`), so a
-  known line moved to another file, as every close moves the hand-off into `meta/archive/roadmap-states.md`, reads as
-  new and fails the check until reworded. Recommendation: keep the path (a leak copied to a new file must not hide)
-  and reword figures when archiving, as was done on 2026-11-26; the alternative drops the path from the fingerprint.
+- **`i-5ed7e8-33c9b5` · What is left of the intermittent `red-check` verdict: two lows and one decision.** **The
+  verdict itself is explained and closed (2026-11-26):** the judged commit's own code built its scratch index as a
+  copy of the real one, so git trusted a file changed in the same second at the same size (racy git) and exported the
+  old blob, about once in fifteen runs; a later commit had already replaced the copy with an index read from HEAD,
+  and `red-check` now remembers a pass by commit, so an old commit is never judged again. Left, low: a test helper
+  imported through `sys.path` is not recognised as test support; `shell-check` does not see a loop variable taking a
+  quoted list's words. **A decision for the owner:** the privacy baseline's fingerprint includes the path
+  (`d-5ed7e8-af36e9`), so a known line moved to another file, as every close moves the hand-off into the archive,
+  reads as new until reworded. Recommendation: keep the path and reword figures when archiving.
+  *Estimate:* the two lows, 30 min, 80k tokens. *Collides with:* nothing.
 - **`i-5ed7e8-516d7a` · The 0.0.36 plan: the eight decisions of the 0.0.35 walk, task by task** (`d-5ed7e8-5dc49a`). Each task
   lands on its own with its review, by severity (`d-5ed7e8-6db1f7`), and carries its estimate in what is measured:
   agent wall minutes, tokens, review rounds, with the actual written beside it (`d-5ed7e8-9dc00d`). Calibration so

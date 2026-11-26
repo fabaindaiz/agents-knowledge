@@ -79,6 +79,8 @@ version it holds with `bundle.py changelog --since <its version>`.
   whose tests only moved fails unless it carries a `Red: none, <reason>` line.
 - `bundle.py red-check` runs a judged commit's tests without the git context a hook exports (`GIT_DIR` and its
   kin), which bound their throwaway repositories to the real one, so a sound fix read once as failing on itself.
+- `bundle.py red-check` remembers a pass by commit and configuration, in the repository's git folder, and does not
+  judge that commit again: a historical commit's own flaky test had made the gate flaky. A fail is never kept.
 
 ## [0.0.36] - 2026-11-25
 

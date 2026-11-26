@@ -4169,6 +4169,28 @@ class RedCheck(Base):
         self.fix(repo, "fix!: add adds", "def one():\n    return 1\n\n\ndef add(a, b):\n    return a * b\n", self.ADD_TEST)
         self.assertEqual(self.verdicts(repo, base), ["fail"])
 
+    def test_a_pass_is_remembered_by_sha_and_not_judged_again(self) -> None:
+        # A commit's trees never change, so a pass seen once stands; re-judging every old fix on every check made a
+        # historical commit's own flaky test a flaky gate (`i-5ed7e8-33c9b5`). Only a pass is kept, never a fail.
+        repo, base = self.repo()
+        self.fix(repo, "fix(calc): add adds", self.FIXED, self.ADD_TEST)
+        self.assertEqual(self.verdicts(repo, base), ["pass"])
+        with mock.patch.object(B, "_red_run", side_effect=AssertionError("judged again")):
+            report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["pass"])
+        self.assertIn("remembered", report.entries[0].detail)
+
+    def test_a_fail_is_never_remembered(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: one stays one", self.FIXED.replace("return 1", "return 2 - 1"),
+                 "\n    def test_one_again(self):\n        self.assertEqual(calc.one(), 1)\n")
+        self.assertEqual(self.verdicts(repo, base), ["fail"])
+        calls = []
+        real = B._red_run
+        with mock.patch.object(B, "_red_run", side_effect=lambda *a: calls.append(a) or real(*a)):
+            self.assertEqual(self.verdicts(repo, base), ["fail"])
+        self.assertTrue(calls)
+
     def test_a_red_none_line_is_accepted_and_reported(self) -> None:
         repo, base = self.repo()
         self.fix(repo, "fix: add adds\n\nRed: none, a regression guard that passed on arrival", self.FIXED, None)

@@ -39,7 +39,7 @@ none: no device or production system is touched in this phase.
 
 ### Before the phase
 
-- T1 the intermittent `red-check` verdict (`i-5ed7e8-33c9b5`) · waiting
+- T1 the intermittent `red-check` verdict (`i-5ed7e8-33c9b5`) · done: racy git in an old commit; passes remembered
 - T2 the cut of 0.0.37 · waiting
 - → P0
 
@@ -89,7 +89,7 @@ none: no device or production system is touched in this phase.
 
 | # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
 |---|---|---|---|---|---|---|---|---|
-| 1 | The intermittent `red-check` verdict | waiting | P0 | 30 | | 80 | | 1 |
+| 1 | The intermittent `red-check` verdict | done | P0 | 30 | 35 | 80 | 90 | 0 |
 | 2 | The cut of 0.0.37 | waiting | P0 | 20 | | 60 | | 0 |
 | 3 | The plan of the cut | waiting | P1 | 60 | | 150 | | 1 |
 | 4 | The topic map by mechanism | waiting | P1 | 45 | | 120 | | 1 |

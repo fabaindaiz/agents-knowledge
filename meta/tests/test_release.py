@@ -1354,6 +1354,25 @@ class CommitCommand(Base):
             code = self.R.commit_files("docs: x", ["sources/bundle/knowledge/README.md", ".agents"], home, gate=self.PASS)
         self.assertEqual(code, 0, out.getvalue())
 
+    def test_a_file_changed_in_the_same_second_at_the_same_size_is_exported_as_it_is(self) -> None:
+        # Racy git: an index whose stat data the file still matches (same size, same second) trusts the old blob.
+        # A scratch index copied from the real one carried that data, and the export held the stale file
+        # (`i-5ed7e8-33c9b5`); an index read from HEAD carries none, so the named file is hashed as it is.
+        (self.repo / "a.md").write_text("a two\n")
+        git(self.repo, "add", "a.md")
+        (self.repo / "a.md").write_text("a 2nd\n")
+        seen = {}
+
+        def stale(root: Path) -> list[str]:
+            seen["a"] = (root / "a.md").read_text()
+            return []
+
+        code, out = self.call(["a.md"], stale=stale)
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(seen, {"a": "a 2nd\n"})
+        self.assertEqual(git(self.repo, "show", "HEAD:a.md"), "a 2nd\n")
+
     def test_a_change_staged_but_not_named_is_neither_gated_nor_committed(self) -> None:
         # `git commit -- FILES` commits HEAD plus FILES: the gate reads the same, so a staged source cannot
         # make a release named alone look current while the commit holds a stale one.
