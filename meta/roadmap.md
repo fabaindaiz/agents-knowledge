@@ -106,14 +106,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   different ids; nothing for a host other than Claude Code. The owner chose to record them and cut 0.0.36
   (`d-5ed7e8-e09f5f`). *Estimate:* the text fixes 45 min wall, 150k tokens, one round; the re-run on fresh copies
   30 min, 250k tokens. *Collides with:* the update and harvest sessions' token budgets.
-- **`i-5ed7e8-468621` · A fix's test written beside it, so its red is never seen: three incidents in one session.**
-  In the 0.0.36 plan's review rounds, three fixes went in with their test in the same command, so the test was never
-  seen failing, against §18's "say which red each test showed"; the roadmap's plan table names each. The sentence
-  was loaded and did not hold. What would: the controller sends the test and its run as one command and the fix as
-  the next, never both at once, and a fix commit whose test was not seen red says so in its message. Next step: a
-  `bundle.py` check that a `fix` commit touching code also touches a test is cheap but proves nothing about the order.
-  *Estimate:* the habit, nothing; a check, 20–30 min wall, 60k tokens, one review round. *Collides with:* nothing.
-- **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the
+- **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
   session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
   ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own
   prediction. What would: the host's command hook refuses a command that expands an unquoted variable holding
@@ -191,13 +184,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   comes before any text. *Estimate:* a design round and about half a session to write. *Collides with:*
   `prompt-context.md` §*Long runs and delegates*, which 0.0.32 has just changed for delegates
   (`d-5ed7e8-6069fe`), and the delegate-brief bullet.
-- **`i-5ed7e8-655151` · Moving a candidate row to the history is done by hand at every release.** Second
-  occurrence, counted: 0.0.31 and 0.0.32 both moved rows between `meta/tracking/candidates.md` and `history.md`
-  by hand, and 0.0.32 shipped nine answers whose rows a reviewer had to find — the release had left them queued.
-  A `release.py` subcommand that takes a slug, a verdict and a release, removes the row and writes the history
-  line would make it one checked command, and a check could refuse a release that ships an answer whose row is
-  still queued. *Estimate:* about two hours with tests. *Collides with:* `candidates.md`, `history.md` and the
-  ledger the build generates.
 - **`i-5ed7e8-023814` · The session proposes the split itself, after a thinking step.** The owner asked for
   parallelising to be something the session offers, not something they have to ask for — and for the method to
   carry the *reasoning* that reaches it, not only the rule. The step, as it worked in practice on 2026-10-15:
@@ -319,20 +305,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
      the procedure; a method note; `check-local` checks the attribution setting and the hooks path.
   7. *Triggers* (`skill-triggers`): `trigger.py`'s changes and the eval protocol, with the owner labelling the
      ambiguous cases.
-- **`i-5ed7e8-89ec30` · Refuse a commit chained on a gate whose output goes through a filter.** The second occurrence in
-  this repository (0.0.25 committed and pushed a stale release folder; on 2026-10-05 a commit landed with three
-  generated files stale), each time the gate's status was the filter's. The rule is in the close skill and the
-  bootstrap; it does not act at the moment the command is typed. *Remedy:* the session hook that already guards
-  `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
-  about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
-  `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
-- **`i-5ed7e8-bd65a0` · A home command that runs the gate and commits the named files.** Two frictions recur in the
-  typed chain `tests && check && git add && git commit`: a gate piped through a filter (`i-5ed7e8-89ec30`, four
-  occurrences in the archived hand-offs) and an edit chained into the same command as `git`, which the privacy hook
-  refuses whole so the edit never lands (twice, the last two sessions). *Remedy:* `release.py commit -m MSG FILE...`
-  runs the tests and `check` on their own exit status, prints the failures, and commits only the named files; the
-  root file's checks section names it as the one way to commit here. About an hour with tests. *Collision:*
-  `i-5ed7e8-89ec30`, the privacy hook.
 - **`i-5ed7e8-94f262` · Review the method changes published on one carrier's evidence (0.0.26 and 0.0.27).**
   Each is marked *one carrier's evidence* in `.agents/CHANGELOG.md` and `meta/tracking/history.md`: keep it
   where a second carrier's entries or harvest show it acting, rework it where they show friction, withdraw
@@ -369,7 +341,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   into one candidate per file (eight to `prompt-bootstrap` at 0.0.26), and a refused one is recorded under
   that name; 0.0.26 recorded them by id by hand. Give `propose` a topic slug beside the file, and have
   `intake` key on it. *Collision:* the proposal format, and every carrier's harvest.
-- **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the
+- **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
   privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
   (and was pushed, because the check that failed was piped through a filter; proposal
   `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
@@ -473,10 +445,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   tool uses `.agents/` with a manifest and a lockfile; the survey (`sources/layout.md`) compares three
   drafts and misses both. *Collides with:* the survey and `prompt-context.md`, *Three agents, one
   source*.
-- **`i-5ed7e8-1e9567` · Resolve the persistent privacy warnings.** The same warnings print on every
-  run and none changes; a warning that is always there stops being read. Reword each line or, where the
-  user explicitly decides it may stay, mark it with a reason. *Collides with:* nothing but the warned
-  lines.
 - **`i-5ed7e8-3fa5c5` · A release cadence.** The method moved through about two dozen versions in
   one week, each needing a meta-session, and one carrier already trails. Batch releases on a cadence.
   The discard half of this item is closed without a discard: by the user's decision of 2026-09-25
@@ -632,6 +600,40 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **2026-11-26: phase 2's tool lanes** (`meta/plans/2026-11-26-next-phase-2.md`): `bundle.py red-check` (`d-5ed7e8-8c417c`), the privacy ratchet (`d-5ed7e8-af36e9`), `release.py commit` and `release.py dequeue`. The items, whole:
+  - **`i-5ed7e8-468621` · A fix's test written beside it, so its red is never seen: three incidents in one session.**
+    In the 0.0.36 plan's review rounds, three fixes went in with their test in the same command, so the test was never
+    seen failing, against §18's "say which red each test showed"; the roadmap's plan table names each. The sentence
+    was loaded and did not hold. What would: the controller sends the test and its run as one command and the fix as
+    the next, never both at once, and a fix commit whose test was not seen red says so in its message. Next step: a
+    `bundle.py` check that a `fix` commit touching code also touches a test is cheap but proves nothing about the order.
+    *Estimate:* the habit, nothing; a check, 20–30 min wall, 60k tokens, one review round. *Collides with:* nothing.
+  - **`i-5ed7e8-655151` · Moving a candidate row to the history is done by hand at every release.** Second
+    occurrence, counted: 0.0.31 and 0.0.32 both moved rows between `meta/tracking/candidates.md` and `history.md`
+    by hand, and 0.0.32 shipped nine answers whose rows a reviewer had to find — the release had left them queued.
+    A `release.py` subcommand that takes a slug, a verdict and a release, removes the row and writes the history
+    line would make it one checked command, and a check could refuse a release that ships an answer whose row is
+    still queued. *Estimate:* about two hours with tests. *Collides with:* `candidates.md`, `history.md` and the
+    ledger the build generates.
+  - **`i-5ed7e8-89ec30` · Refuse a commit chained on a gate whose output goes through a filter.** The second occurrence in
+    this repository (0.0.25 committed and pushed a stale release folder; on 2026-10-05 a commit landed with three
+    generated files stale), each time the gate's status was the filter's. The rule is in the close skill and the
+    bootstrap; it does not act at the moment the command is typed. *Remedy:* the session hook that already guards
+    `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
+    about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
+    `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
+  - **`i-5ed7e8-bd65a0` · A home command that runs the gate and commits the named files.** Two frictions recur in the
+    typed chain `tests && check && git add && git commit`: a gate piped through a filter (`i-5ed7e8-89ec30`, four
+    occurrences in the archived hand-offs) and an edit chained into the same command as `git`, which the privacy hook
+    refuses whole so the edit never lands (twice, the last two sessions). *Remedy:* `release.py commit -m MSG FILE...`
+    runs the tests and `check` on their own exit status, prints the failures, and commits only the named files; the
+    root file's checks section names it as the one way to commit here. About an hour with tests. *Collision:*
+    `i-5ed7e8-89ec30`, the privacy hook.
+  - **`i-5ed7e8-1e9567` · Resolve the persistent privacy warnings.** The same warnings print on every
+    run and none changes; a warning that is always there stops being read. Reword each line or, where the
+    user explicitly decides it may stay, mark it with a reason. *Collides with:* nothing but the warned
+    lines.
 
 - **2026-11-26: phase 2's records lane** (`meta/plans/2026-11-26-next-phase-2.md`, task 7 and 8): four queued extensions admitted into their notes and the queue's three defects fixed; the eval instrument's four remaining defects fixed; `docs fingerprint` named in `prompt-sync.md`. The items, whole:
   - **`i-5ed7e8-fe15a8` · The fifty-four oldest candidates, read, and three defects the queue itself carries.**

@@ -1,0 +1,47 @@
+--- .claude/hooks/privacy_guard.py
++++ .claude/hooks/privacy_guard.py
+@@ -8,7 +8,9 @@
+ 
+     privacy_guard.py remind   SessionStart (which fires again after a compaction): print the rule into the session
+     privacy_guard.py gate     PreToolUse on Bash: block `git commit` / `git push` while
+-                              `bundle.py privacy` fails (exit 2 feeds the reason back to the agent)
++                              `bundle.py privacy` fails (exit 2 feeds the reason back to the agent); then,
++                              under zsh, refuse a command that expands a spaced variable unquoted
++                              (`bundle.py shell-check --hook`, d-5ed7e8-1d383e)
+ 
+ The user may override one finding, and only on their explicit instruction: the agent writes
+ `privacy-allow: <reason>` on that line, and `bundle.py privacy` lists every such allowance on every
+@@ -65,11 +67,31 @@
+ 
+ 
+ def gate() -> int:
++    raw = sys.stdin.read()
+     try:
+-        payload = json.load(sys.stdin)
++        payload = json.loads(raw)
+     except ValueError:
+         payload = {}
+-    command = str((payload.get("tool_input") or {}).get("command", ""))
++    command = str((payload.get("tool_input") or {}).get("command", "")) if isinstance(payload, dict) else ""
++    # The privacy gate first: it refuses whatever stopped it deciding. The zsh check only after it passes.
++    return privacy_gate(command) or shell_gate(raw)
++
++
++def shell_gate(raw: str) -> int:
++    """Under zsh, refuse a command that assigns a variable words with spaces and expands it unquoted. A lint on the
++    agent's own command, not a privacy guard: when it cannot run (no tool, an older one, no interpreter) it lets the
++    call through, since refusing then would stop every command, the one that repairs it included."""
++    python = modern_python() if TOOL.exists() else None
++    if python is None:
++        return 0
++    result = subprocess.run([python, str(TOOL), "shell-check", "--hook"], input=raw, capture_output=True, text=True)
++    if result.returncode == 2 and result.stderr.startswith("shell-check:"):
++        print(result.stderr.strip(), file=sys.stderr)
++        return 2
++    return 0
++
++
++def privacy_gate(command: str) -> int:
+     if not GIT_WRITE.search(command):
+         return 0
+     if not TOOL.exists():
