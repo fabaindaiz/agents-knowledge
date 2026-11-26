@@ -39,13 +39,13 @@ T18 and T13, about sixteen agent hours, by the plan's table.
 phase, its record-format change resetting criterion 4 of `i-5ed7e8-3e6760`; its A/B pilot is the proposed validation,
 not run.
 
-**Waiting on the owner:** the first minor's scope (the phase's build first, then the minor, or the minor's new items
-folded into the phase); the two rulings in `i-5ed7e8-44591b`; the unattended mode's design round (`i-5ed7e8-d23f66`);
-the private-terms list remains the owner's alone.
+**Settled on 2026-11-26, on the other machine, before the build:** the first minor's scope (the phase whole first,
+the minor after, `d-5ed7e8-12cb12`); both rulings of `i-5ed7e8-44591b` (`d-5ed7e8-79ed41`, `d-5ed7e8-79a26e`); the
+unattended mode's design round runs inside T18 (`d-5ed7e8-385da4`). **Waiting on the owner:** each guard's approval
+during the build; the private-terms list remains the owner's alone.
 
-**First step next session:** decide the first minor's scope with the owner (the review above lists what is new, what
-the phase already holds and what conflicts); then start the build at T7 as decided (the text lane delegated, T8 and T9
-in the main thread with each guard shown).
+**First step next session:** the build, at T7 as decided (the text lane delegated in its own worktree, T8, T9 and T11
+in the main thread with each guard shown tested before approval).
 
 **To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases`; enable the hooks
 (`git config core.hooksPath .githooks`), keep this machine's private-terms list, Python 3.11 or newer. The carrier's
@@ -77,12 +77,10 @@ never committed; the names of private carriers are in the local private-terms li
 ## Next
 
 - **`i-5ed7e8-44591b` · Two rulings of the owner before the first minor** (`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`).
-  (1) Whether 0.0.37's optional `[red_check]` table in `carrier.toml` reset criterion 4 of `i-5ed7e8-3e6760` (the layout
-  held for one full release). Recommendation: no, an optional table a carrier may ignore leaves the layout it must hold
-  unchanged; say so in the criterion. (2) Whether the proposed A/B pilot may send a private carrier's code to a model of
-  another provider as oracle and judge. Recommendation: not before a protocol is registered in `evals/` with a budget
-  cap, and then only on tasks the carrier's owner approves one by one. *Estimate:* two questions. *Collides with:* the
-  first minor's scope.
+  *Settled by the owner on 2026-11-26, at the opening questions of the build.* (1) An optional table **does** reset
+  criterion 4, against the recommendation: `d-5ed7e8-79ed41`, written into the criterion. (2) The A/B pilot **may** send a
+  private carrier's code to another provider as oracle and judge, after a protocol registered in `evals/` with a budget
+  cap and only on tasks that carrier's owner approves one by one: `d-5ed7e8-79a26e`. Nothing left open here.
 
 - **`i-5ed7e8-592937` · A domain word beside a record id fails the privacy check while records are written.** Counted
   2026-11-26: three incidents in one session (decision and roadmap rows naming a kind of loop, a kind of device and a
@@ -106,8 +104,22 @@ never committed; the names of private carriers are in the local private-terms li
   state (`bundle.py now`, the parked questions surviving a compaction), the question rules (T9), and the owner's own
   standing rule to ask everything before working alone. **Open for its design round:** what counts as needing new
   validation (the guards, the user-visible, the owner's content), how a parked question records the work it blocks, and
-  how the return is reported. *Estimate:* a design round, then about 60 min and 150k tokens inside T18. *Collides
-  with:* T9, T18.
+  how the return is reported. *Scheduled by the owner on 2026-11-26* (`d-5ed7e8-385da4`): the design round runs
+  **inside T18**, once the `plan` skill, the live state and the question rules exist, not before the build.
+  *Estimate:* a design round, then about 60 min and 150k tokens inside T18. *Collides with:* T9, T18.
+
+- **`i-5ed7e8-837b2c` · A pilot cohort: which carriers adopt each release first, and serve as the local test beds.**
+  *Chosen by the owner on 2026-11-26.* The rule: a carrier enters the cohort on **commits in the last thirty days and
+  number of authors**, measured by reading each listed repository, and the owner narrows the set by hand. Eight were
+  chosen. **Where the list lives:** the machine's own configuration, in a file of its own beside the carriers manifest,
+  never here — a cohort ranked by activity is a description of each repository, which this repository may not write
+  beside a carrier id. It is not in the manifest itself because `release.py register` and `release.py carriers` rewrite
+  that file with a fixed set of keys (`meta/tools/release.py`, the manifest writer) and would drop any flag added by
+  hand. **What follows:** every carrier in the cohort is six releases behind, so each needs the releases carried into it
+  before its first harvest; that carry is what criterion 1 of `i-5ed7e8-3e6760` counts. **What it does not give:** they
+  are one owner's repositories, so for admission they remain **one source**, whatever their number
+  (`sources/README.md`). *Estimate:* the carry, about 15 min per carrier plus each one's own gate. *Collides with:* the
+  phase's build, which the owner put first (`d-5ed7e8-12cb12`).
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
@@ -408,7 +420,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
      sessions, and the pilot tasks cost at most twice the unaided arm on the non-trivial tasks
      (`i-5ed7e8-1ac328`), with every discriminating task still passing.
   4. **The layout held.** One full release with no change to the files a carrier owns
-     (`carrier.toml`, `proposals/`, `incoming/`).
+     (`carrier.toml`, `proposals/`, `incoming/`). **An optional field counts** (`d-5ed7e8-79ed41`): 0.0.37's
+     `[red_check]` table restarted the count, so the earliest release that can meet this one is the first whose
+     predecessor changed none of those files.
   5. **Nothing open that loses data.** No finding of an adversarial review of the carrying tools left
      open that can lose or duplicate a carrier's record (`i-5ed7e8-d3ee51`).
   Until then every release is `0.0.z`, where any release may change what a carrier depends on, and the
