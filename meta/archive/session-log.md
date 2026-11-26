@@ -9,6 +9,58 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-26 · s-5ed7e8-6f6750 — The phase on the session designed with the owner, 0.0.37 and 0.0.38 cut, one carrier's harvest taken in
+
+**What.** A pre-release close on this machine; the final close and the first minor continue on another. Research on
+context windows and compaction (`meta/reviews/2026-11-26-context-and-compaction.md`) and on optimisation (twenty-four
+cards, proposed as twelve); a new phase, *the session*, planned and designed with the owner at every round
+(`meta/plans/2026-11-26-the-session.md`): the plan of the cut and the topic map by mechanism walked (the cut a build rule
+that keeps every original whole, topic export deferred), T5 (a `plan` skill that measures and proposes its split, checked
+by `lanes check`), T6 (fresh delegates by default, resumes measured), the live state's files (one per session in the
+common git folder, adopted only explicitly, fixed fields checked for privacy), the build's questions (short skill
+descriptions derived for the release, guards shown tested, the text lane delegated). The intermittent `red-check`
+verdict explained (racy git in an old commit's own code) and fixed (passes remembered by commit). **0.0.37** cut, merged
+and pushed; **0.0.38** cut: one carrier's harvest of twenty-five proposals and the home's twelve received, three queued,
+fourteen merged, one extending a note, two experiment runs, five refused; spliced into that carrier's harvest
+worktree; the template refreshed at both. The carrier's proposed plan for the first minor read and priced
+(`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`).
+
+**Areas.** `meta/` (decisions, roadmap, plans, reviews, tracking), `sources/bundle/tools/bundle.py` and its tests,
+`sources/bundle/CHANGELOG.md`, `.agents/` (built), one carrier's `.agents/`, `.claude/skills/` and log.
+
+**Why.** The owner asked to focus on the development process, the questions put to them and context windows, then for
+optimisation cards, then to take in a carrier's harvest and close here before continuing elsewhere.
+
+**Architecture.** ✅ Complies: nothing in the method changed in either release beyond the tools' fix; every design
+decision is a row in `meta/decisions.md`.
+
+**Cards relied on, and the checks that ran.** `a-check-must-be-seen-to-fail` (the cache test seen red first, two guard
+tests green on arrival, `red-check` passing on the fix); `an-isolated-copy-is-not-the-working-checkout` (the carrier's
+gate failed in its worktree for an ignored file and ran with the SDK passed by environment).
+
+**Review.** One fresh-context agent over the range to be merged, before the cut: two high (the claims and evidence of
+two candidates lost when merged into others), four medium (a queued row in the merge section, a miscount shipped in the
+changelog, a stale hand-off line, owner rows whose reasons were the agent's recommendations), five low; all fixed
+(`8cc295f`) before 0.0.38. Earlier: the drafts and the verdicts were read by delegates and checked here.
+
+**What went wrong on the way.** A delegated plan of the cut proposed removing text from the originals, against the
+owner's rule on the two forms, and this session presented it without catching it; the owner's free text did (counted,
+the second incident, roadmap). The privacy check refused commits four times for a domain word beside a record id
+(counted, roadmap). An option said an illustrative ratio as if measured; corrected in the next turn. The verdict
+delegate called a candidate existing that was not; caught when the intake queued it. Merging two queued candidates by
+`dequeue` dropped their text; the review caught it. A hook refused a whole command, so the build in it never ran and
+the gate failed on stale files.
+
+**What was left undone.** The phase's build, T7 to T18 and T13 (about sixteen agent hours), and the first minor's
+scope and rulings: both on the other machine. The carrier's own walk of 0.0.33 to 0.0.38 for its procedures.
+
+**Measured.** The phase's design tasks: T1 30 min estimated, 35 taken; T2 20, 25; T3 60, 20; T4 45, 20; T5 40, 15; T6 60,
+10 (the design rounds ran at a quarter to a sixth of their estimate, the delegated drafts at about a third).
+
+**Learned.** General: a merge of one queued record into another must carry the merged record's text, not only its
+pointer (the review's high findings); a delegate drafting changes to the originals must be told the rule on the two
+forms. Local: both routed to the roadmap. Captured: 2 learnings, 2 frictions (`roadmap`). Nothing needs you.
+
 ## 2026-11-26 · s-5ed7e8-50510c — The Next plan, phases 1 and 2
 
 **What.** Phases 1 and 2 of the *Next* plan, on `plan/next-phases`, not cut. Phase 1 (three lanes, then a re-run on

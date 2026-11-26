@@ -837,3 +837,41 @@ reached a carrier's remote, most by a check, two by the owner.
 **What went wrong.** A shell word-splitting slip edited this home's own `carrier.toml` and committed it to `main`; the push was refused and the commit undone before anything left the machine. Two record slugs were written into the history table from memory and did not exist. Both are now proposals, `p-88cc26de4e` and `p-75679cf56f`, each with a roadmap item. One literature search reversed a candidate's conclusion, the process working. `changelog --since` was found answering silently for a version it no longer holds, and was fixed the same day (`i-5ed7e8-5e0415`).
 
 **To continue on another machine:** `git pull --tags`; everything of this close is on the remote.
+
+## Archived 2026-11-26, at the pre-release close that followed the 0.0.38 cut
+
+### Where we were
+
+**Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
+
+**Later the same day (mid-session, superseding what follows until the close rewrites this):** the flake is fixed
+(`9e6bc33`), 0.0.37 is cut, merged to `main`, pushed with its tag and the template refreshed; twelve optimisation
+candidates are proposed by the home; the plan of the cut and the topic map are walked and confirmed
+(`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`; the cut is a build rule, `d-5ed7e8-9f47b1`). T5, T6 and the live state's files are walked too; **next:** the build, the text lane delegated (`meta/plans/2026-11-26-the-session.md`). **Waiting outside:** one carrier's harvest is in progress; gather it afresh when the owner says it is ready (an earlier read-only gather was discarded).
+
+**State on 2026-11-26: phases 1 and 2 of the *Next* plan are done on `plan/next-phases`, committed, not pushed, not
+cut.** Phase 1 (`meta/plans/2026-11-25-next-phase-1.md`): the harvest and the update followable unattended, criterion 2
+re-run on fresh copies with four small doubts left and fixed, the carrying tools, a proposal's `topic:`. Phase 2
+(`meta/plans/2026-11-26-next-phase-2.md`), run unattended overnight at the owner's word: `bundle.py red-check` (a
+fix's tests re-run on its parent), `shell-check` (zsh), the privacy ratchet, `release.py commit` and `dequeue`, four
+queued extensions admitted, the queue's and the evals' defects. Four review rounds; the last left one finding open, an
+intermittent `red-check` verdict on one commit (`i-5ed7e8-33c9b5`).
+
+**Waiting on the owner:** the cut of 0.0.37, decided at the close to follow the open flake; the private-terms list is
+the owner's alone (`d-5ed7e8-4c5c53`), eight carriers of this machine having no term there; the ratchet's path question
+(in `i-5ed7e8-33c9b5`). The two guard wirings were applied at the close, at the owner's word.
+
+**First step next session:** the open flake (`i-5ed7e8-33c9b5`): run commit `1cf8db0`'s ten tests in a loop under
+`red-check`'s export, output kept, until one fails; fix it test first; then the cut of 0.0.37 on the owner's word.
+
+**Next, in order:** the open flake (`i-5ed7e8-33c9b5`); phase 3's decision walk (method decisions, bounded by the
+coding budget); phases 4 and 5; then the pilot splice of one or two carriers (`d-5ed7e8-f6858b`). Still the owner's:
+the spec pilot's feature (`d-5ed7e8-cb0531`), the carriers' 0.0.35 branches, the two uncommitted carriers, the four
+flagged carrier commits.
+
+**Budgets are nearly spent:** the coding session reads within a few tokens of its cap, and the skill descriptions within a few characters of theirs
+characters; nothing in phases 1 and 2 added to either.
+
+**To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases` (pushed only when the owner
+says). The full suite now takes about ten minutes; run it in the background. The carriers' worktrees, 0.0.35 branches
+and backups live only on this machine (`meta/tracking/machines.md`).

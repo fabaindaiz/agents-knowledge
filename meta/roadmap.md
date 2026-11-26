@@ -20,37 +20,37 @@ something else depends on — because that is what decides its order.
 
 **Read this first when resuming.** Rewritten at every close, within 500 words (`MANIFEST.md`); the hand-off it replaces is first added whole to `meta/archive/roadmap-states.md`, the home's session log.
 
-**Later the same day (mid-session, superseding what follows until the close rewrites this):** the flake is fixed
-(`9e6bc33`), 0.0.37 is cut, merged to `main`, pushed with its tag and the template refreshed; twelve optimisation
-candidates are proposed by the home; the plan of the cut and the topic map are walked and confirmed
-(`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`; the cut is a build rule, `d-5ed7e8-9f47b1`). T5, T6 and the live state's files are walked too; **next:** the build, the text lane delegated (`meta/plans/2026-11-26-the-session.md`). **Waiting outside:** one carrier's harvest is in progress; gather it afresh when the owner says it is ready (an earlier read-only gather was discarded).
+**State on 2026-11-26: a pre-release close on one machine; the final close and the first minor continue on
+another.** 0.0.37 (phases 1 and 2 of the *Next* plan, the `red-check` flake fixed) and 0.0.38 (one carrier's harvest of
+twenty-five proposals and the home's twelve received; nothing a session follows changed) are cut, tagged, merged to
+`main` and pushed; the template is at 0.0.38. The carrier whose harvest was taken in got 0.0.38 in its harvest
+worktree, committed there under its own gate, **not pushed**: its owner integrates that branch.
 
-**State on 2026-11-26: phases 1 and 2 of the *Next* plan are done on `plan/next-phases`, committed, not pushed, not
-cut.** Phase 1 (`meta/plans/2026-11-25-next-phase-1.md`): the harvest and the update followable unattended, criterion 2
-re-run on fresh copies with four small doubts left and fixed, the carrying tools, a proposal's `topic:`. Phase 2
-(`meta/plans/2026-11-26-next-phase-2.md`), run unattended overnight at the owner's word: `bundle.py red-check` (a
-fix's tests re-run on its parent), `shell-check` (zsh), the privacy ratchet, `release.py commit` and `dequeue`, four
-queued extensions admitted, the queue's and the evals' defects. Four review rounds; the last left one finding open, an
-intermittent `red-check` verdict on one commit (`i-5ed7e8-33c9b5`).
+**The phase on the session** (`meta/plans/2026-11-26-the-session.md`) is designed, every round with the owner: the plan
+of the cut and the topic map (`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`: the cut is a build rule that keeps
+every original whole, `d-5ed7e8-9f47b1`; topic export deferred, `i-5ed7e8-17f776`), T5 (a `plan` skill that measures
+and proposes its split, `lanes check`), T6 (fresh delegates by default), the live state's files (one per session in the
+common git folder), and the build's questions (short skill descriptions derived for the release, `d-5ed7e8-7a4324`;
+guards shown tested before the owner approves each; the text lane delegated; a push per milestone). **Not built:** T7 to
+T18 and T13, about sixteen agent hours, by the plan's table.
 
-**Waiting on the owner:** the cut of 0.0.37, decided at the close to follow the open flake; the private-terms list is
-the owner's alone (`d-5ed7e8-4c5c53`), eight carriers of this machine having no term there; the ratchet's path question
-(in `i-5ed7e8-33c9b5`). The two guard wirings were applied at the close, at the owner's word.
+**The first minor.** The carrier proposed a plan for it, read and priced in
+`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`: stale against 0.0.36 and 0.0.37, a third overlapping the
+phase, its record-format change resetting criterion 4 of `i-5ed7e8-3e6760`; its A/B pilot is the proposed validation,
+not run.
 
-**First step next session:** the open flake (`i-5ed7e8-33c9b5`): run commit `1cf8db0`'s ten tests in a loop under
-`red-check`'s export, output kept, until one fails; fix it test first; then the cut of 0.0.37 on the owner's word.
+**Waiting on the owner:** the first minor's scope (the phase's build first, then the minor, or the minor's new items
+folded into the phase); the two rulings in `i-5ed7e8-44591b`; the unattended mode's design round (`i-5ed7e8-d23f66`);
+the private-terms list remains the owner's alone.
 
-**Next, in order:** the open flake (`i-5ed7e8-33c9b5`); phase 3's decision walk (method decisions, bounded by the
-coding budget); phases 4 and 5; then the pilot splice of one or two carriers (`d-5ed7e8-f6858b`). Still the owner's:
-the spec pilot's feature (`d-5ed7e8-cb0531`), the carriers' 0.0.35 branches, the two uncommitted carriers, the four
-flagged carrier commits.
+**First step next session:** decide the first minor's scope with the owner (the review above lists what is new, what
+the phase already holds and what conflicts); then start the build at T7 as decided (the text lane delegated, T8 and T9
+in the main thread with each guard shown).
 
-**Budgets are nearly spent:** the coding session reads 10077 of 10100 tokens and the skill descriptions 2760 of 2776
-characters; nothing in phases 1 and 2 added to either.
-
-**To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases` (pushed only when the owner
-says). The full suite now takes about ten minutes; run it in the background. The carriers' worktrees, 0.0.35 branches
-and backups live only on this machine (`meta/tracking/machines.md`).
+**To continue on another machine:** `git pull --tags`, then `git switch plan/next-phases`; enable the hooks
+(`git config core.hooksPath .githooks`), keep this machine's private-terms list, Python 3.11 or newer. The carrier's
+proposals and its plan are not needed there: their reading is in the review above. Nothing waits on this machine but
+that carrier's unpushed harvest commit, which belongs to its own repository.
 
 ## Standing rules and facts
 
@@ -75,6 +75,14 @@ never committed; the names of private carriers are in the local private-terms li
 `v0.0.20` exists only on a local backup branch, never tagged or pushed.
 
 ## Next
+
+- **`i-5ed7e8-44591b` · Two rulings of the owner before the first minor** (`meta/reviews/2026-11-26-harvest-and-a-proposed-minor.md`).
+  (1) Whether 0.0.37's optional `[red_check]` table in `carrier.toml` reset criterion 4 of `i-5ed7e8-3e6760` (the layout
+  held for one full release). Recommendation: no, an optional table a carrier may ignore leaves the layout it must hold
+  unchanged; say so in the criterion. (2) Whether the proposed A/B pilot may send a private carrier's code to a model of
+  another provider as oracle and judge. Recommendation: not before a protocol is registered in `evals/` with a budget
+  cap, and then only on tasks the carrier's owner approves one by one. *Estimate:* two questions. *Collides with:* the
+  first minor's scope.
 
 - **`i-5ed7e8-592937` · A domain word beside a record id fails the privacy check while records are written.** Counted
   2026-11-26: three incidents in one session (decision and roadmap rows naming a kind of loop, a kind of device and a
@@ -121,7 +129,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   old blob, about once in fifteen runs; a later commit had already replaced the copy with an index read from HEAD,
   and `red-check` now remembers a pass by commit, so an old commit is never judged again. Left, low: a test helper
   imported through `sys.path` is not recognised as test support; `shell-check` does not see a loop variable taking a
-  quoted list's words. **A decision for the owner:** the privacy baseline's fingerprint includes the path
+  quoted list's words; `bundle.py ids` does not flag a roadmap item id cited and defined nowhere (2026-11-26: a hand-off cited an item whose row a refused command never wrote). **A decision for the owner:** the privacy baseline's fingerprint includes the path
   (`d-5ed7e8-af36e9`), so a known line moved to another file, as every close moves the hand-off into the archive,
   reads as new until reworded. Recommendation: keep the path and reword figures when archiving.
   *Estimate:* the two lows, 30 min, 80k tokens. *Collides with:* nothing.
