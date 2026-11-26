@@ -30,12 +30,13 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-0633cfe548` | 0.0.27 | — |
 | `p-06475b65b2` | 0.0.27 | — |
 | `p-0649c42ead` | 0.0.33 | — |
-| `p-069d110c27` | 0.0.35 | another occurrence of `no-foreign-shell-constructs`, to merge |
+| `p-069d110c27` | 0.0.35 | — |
 | `p-0724a44a03` | 0.0.27 | — |
 | `p-0728ee228d` | 0.0.30 | — |
 | `p-07342d3860` | 0.0.34 | — |
 | `p-07753c3965` | 0.0.27 | — |
 | `p-0785e65129` | 0.0.33 | — |
+| `p-07b6730095` | 0.0.38 | refused: already in the note `an-isolated-copy-is-not-the-working-checkout` and §21.3, the same incidents |
 | `p-080479aecc` | 0.0.27 | — |
 | `p-0833e6d3e6` | 0.0.33 | — |
 | `p-0907e14e60` | 0.0.32 | — |
@@ -44,6 +45,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-0a1b8bf5c4` | 0.0.27 | — |
 | `p-0a421dcd81` | 0.0.27 | — |
 | `p-0ab0598a86` | 0.0.26 | — |
+| `p-0ac8fbdcd1` | 0.0.38 | queued as `a-newest-first-log-conflicts-on-every-parallel-merge`, with `p-a4f59815b0` and `changelog-order-is-checked` merged in |
 | `p-0ada0e51e1` | 0.0.33 | — |
 | `p-0ae4431bd4` | 0.0.27 | — |
 | `p-0b49b094ed` | 0.0.33 | — |
@@ -85,6 +87,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-12ff19f698` | 0.0.33 | — |
 | `p-1316b0ef30` | 0.0.26 | — |
 | `p-13325a6333` | 0.0.33 | — |
+| `p-1385d1b922` | 0.0.38 | merged into `verification-load-competes-with-the-product` |
 | `p-1420579d20` | 0.0.27 | — |
 | `p-1545f8de70` | 0.0.26 | — |
 | `p-15e0f40f16` | 0.0.32 | — |
@@ -93,9 +96,11 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-17255de1c9` | 0.0.33 | — |
 | `p-188af06a93` | 0.0.33 | — |
 | `p-18f9f5711f` | 0.0.33 | — |
+| `p-1945075103` | 0.0.38 | run logged against `a-version-bump-spends-the-forward-compatibility-it-was-protecting` |
 | `p-19902c2747` | 0.0.33 | — |
 | `p-19e2887fcf` | 0.0.34 | — |
 | `p-1a2eedf51d` | 0.0.32 | — |
+| `p-1afaf6d675` | 0.0.38 | refused: already in the note `validate-each-transformation-run`, the same occurrence |
 | `p-1b12e34621` | 0.0.33 | — |
 | `p-1b8559b29c` | 0.0.27 | — |
 | `p-1ba10e1a86` | 0.0.29 | — |
@@ -116,6 +121,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-25adfe5ab5` | 0.0.27 | — |
 | `p-25ed1d040b` | 0.0.27 | — |
 | `p-2688a9b9a6` | 0.0.27 | — |
+| `p-26922d9b43` | 0.0.38 | refused: already in the method, §21.3 (the merge gate by `pre-merge-commit`) |
 | `p-26dc5c14cd` | 0.0.32 | — |
 | `p-271241e4dc` | 0.0.27 | — |
 | `p-272e889ea9` | 0.0.27 | — |
@@ -125,7 +131,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-287e3711e4` | 0.0.33 | — |
 | `p-28f485e075` | 0.0.27 | — |
 | `p-290a632863` | 0.0.27 | — |
+| `p-2963c4631d` | 0.0.38 | merged into `kill-by-command-line-pattern-matches-own-shell` |
 | `p-296baf47a1` | 0.0.34 | — |
+| `p-29a7d2310d` | 0.0.38 | merged into `a-retry-loop-needs-a-ceiling-and-a-dead-letter` |
 | `p-29b56acbc2` | 0.0.27 | — |
 | `p-29be475822` | 0.0.27 | — |
 | `p-29d3876651` | 0.0.33 | — |
@@ -133,10 +141,12 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-2a495db2eb` | 0.0.33 | — |
 | `p-2b25ab65ae` | 0.0.30 | — |
 | `p-2ca970c511` | 0.0.33 | — |
+| `p-2d5f446ddf` | 0.0.38 | merged into `index-unread-where-rules-absorbed-it` |
 | `p-2d8db87a40` | 0.0.27 | — |
 | `p-2dd8588046` | 0.0.27 | — |
 | `p-2e680bc5bb` | 0.0.27 | — |
 | `p-2e724dea78` | 0.0.27 | — |
+| `p-2e74861ed2` | 0.0.38 | refused as a rule change: already in §15 and §21.2; its figures kept as the baseline of the question-tool hook |
 | `p-2f8a0dc1d5` | 0.0.33 | — |
 | `p-2fa5a68b2e` | 0.0.29 | — |
 | `p-303423ae22` | 0.0.27 | — |
@@ -154,6 +164,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-340fde359e` | 0.0.27 | — |
 | `p-341eb8d346` | 0.0.33 | — |
 | `p-3442086fca` | 0.0.34 | — |
+| `p-345b1132ad` | 0.0.38 | queued as `a-decision-page-is-kept-with-its-decision`, with `p-7f494ce585` merged in |
 | `p-348b99a34d` | 0.0.34 | — |
 | `p-349520fae9` | 0.0.27 | — |
 | `p-34b1cc73d4` | 0.0.34 | — |
@@ -192,6 +203,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-3d5f7e5d77` | 0.0.32 | — |
 | `p-3da35ed9c3` | 0.0.32 | — |
 | `p-3e70d3877f` | 0.0.33 | — |
+| `p-3f1cf3e0d8` | 0.0.38 | merged into `a-model-change-needs-a-coexistence-step`, its literature added |
 | `p-3f46f661f4` | 0.0.34 | — |
 | `p-3f4d37d256` | 0.0.34 | — |
 | `p-3f77d91862` | 0.0.33 | — |
@@ -221,7 +233,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-486cadec03` | 0.0.27 | — |
 | `p-48fbda6d86` | 0.0.33 | — |
 | `p-497b9879db` | 0.0.33 | — |
+| `p-49bcc0921b` | 0.0.38 | queued as `superlinear-cost-in-a-cheap-looking-step` |
 | `p-4a2be00ec2` | 0.0.26 | — |
+| `p-4a4ed1d71d` | 0.0.38 | run logged against `a-default-scope-is-the-widest-one` |
 | `p-4cab5bbc94` | 0.0.34 | — |
 | `p-4cbe922a45` | 0.0.29 | — |
 | `p-4ce378d8b4` | 0.0.27 | — |
@@ -243,6 +257,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-51ada0c8e8` | 0.0.33 | — |
 | `p-51bbf01068` | 0.0.33 | — |
 | `p-51cd17c789` | 0.0.27 | — |
+| `p-51fc264f05` | 0.0.38 | queued as `an-access-path-is-read-in-the-plan` |
 | `p-5243221d44` | 0.0.27 | — |
 | `p-532edbd1fc` | 0.0.26 | — |
 | `p-5359d96cfe` | 0.0.33 | — |
@@ -250,6 +265,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-5395727cbb` | 0.0.33 | — |
 | `p-53b1e16730` | 0.0.26 | — |
 | `p-5473653cb3` | 0.0.27 | — |
+| `p-5579a00ea2` | 0.0.38 | queued as `choose-the-algorithm-by-n-and-input-shape` |
 | `p-558d9bb6f6` | 0.0.27 | — |
 | `p-5596dcb9a9` | 0.0.33 | — |
 | `p-56092db9f7` | 0.0.24 | — |
@@ -266,6 +282,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-5a33d7a5d9` | 0.0.26 | — |
 | `p-5a407946ce` | 0.0.32 | — |
 | `p-5a6ba4beba` | 0.0.33 | — |
+| `p-5acdb1b0b0` | 0.0.38 | queued as `a-blocked-ui-thread-is-not-only-slow-code` |
 | `p-5acfdc3439` | 0.0.33 | — |
 | `p-5c8af95499` | 0.0.33 | — |
 | `p-5c945ae226` | 0.0.27 | — |
@@ -287,6 +304,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-6233578da7` | 0.0.33 | — |
 | `p-635164963a` | 0.0.33 | — |
 | `p-63e0444f85` | 0.0.27 | — |
+| `p-64fb44083e` | 0.0.38 | queued as `an-agent-credits-its-call-to-the-person` |
 | `p-652328dc7f` | 0.0.27 | — |
 | `p-652ae09111` | 0.0.33 | — |
 | `p-6570f77eec` | 0.0.27 | — |
@@ -310,6 +328,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-6d6cdea1bb` | 0.0.27 | — |
 | `p-6dabc6b60b` | 0.0.24 | — |
 | `p-6dfbef0661` | 0.0.33 | — |
+| `p-6e1ddf12d1` | 0.0.38 | queued as `kernel-memory-defaults-are-trade-offs` |
 | `p-6e2034080b` | 0.0.27 | — |
 | `p-6e440b2922` | 0.0.24 | — |
 | `p-6f21be4805` | 0.0.27 | — |
@@ -360,8 +379,12 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-7eafee1538` | 0.0.27 | — |
 | `p-7ef07de020` | 0.0.26 | — |
 | `p-7ef44f43d4` | 0.0.33 | — |
+| `p-7f494ce585` | 0.0.38 | merged into `a-decision-page-is-kept-with-its-decision` |
 | `p-80072dc30b` | 0.0.34 | — |
 | `p-80486d03e9` | 0.0.30 | — |
+| `p-804b98e40c` | 0.0.38 | queued as `concurrency-past-the-bottleneck-adds-latency` |
+| `p-80e0071ad9` | 0.0.38 | merged into `a-granted-parallelism-is-kept-filled` |
+| `p-819ad83bdf` | 0.0.38 | queued as an extension of the note `merge-by-shared-fact-not-shared-shape` |
 | `p-81f946fe00` | 0.0.27 | — |
 | `p-821dc17801` | 0.0.33 | — |
 | `p-822de2ac26` | 0.0.26 | — |
@@ -384,6 +407,8 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-85fe8ad387` | 0.0.27 | — |
 | `p-862b7f9f7d` | 0.0.26 | — |
 | `p-8631416143` | 0.0.33 | — |
+| `p-86c52b0a9e` | 0.0.38 | merged into `a-plan-keeps-a-status-table` |
+| `p-878707a024` | 0.0.38 | merged into `clean-context-review-closes-a-batch` |
 | `p-881066296a` | 0.0.27 | — |
 | `p-881a079866` | 0.0.34 | — |
 | `p-888bb155cc` | 0.0.27 | — |
@@ -415,7 +440,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-8f90a4d24e` | 0.0.33 | — |
 | `p-8fa65c3651` | 0.0.27 | — |
 | `p-9010dbb333` | 0.0.34 | — |
+| `p-9075bee7e8` | 0.0.38 | merged into `a-plan-keeps-a-status-table` |
 | `p-90881430a6` | 0.0.34 | — |
+| `p-90dc49e85a` | 0.0.38 | queued as `window-by-event-time` |
 | `p-90fb6e90b5` | 0.0.34 | — |
 | `p-91486eed54` | 0.0.27 | — |
 | `p-91673f2e26` | 0.0.33 | — |
@@ -444,6 +471,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-99aa6e1da6` | 0.0.27 | — |
 | `p-99f5c50238` | 0.0.27 | — |
 | `p-99fc55db59` | 0.0.27 | — |
+| `p-9a69540ab9` | 0.0.38 | queued as `a-single-thread-baseline-before-more-cores` |
 | `p-9af01cda05` | 0.0.33 | — |
 | `p-9b2fbaad7a` | 0.0.32 | — |
 | `p-9b3e664daf` | 0.0.27 | — |
@@ -479,6 +507,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-a3b4441308` | 0.0.27 | — |
 | `p-a4151acb08` | 0.0.33 | — |
 | `p-a4af960922` | 0.0.34 | — |
+| `p-a4f59815b0` | 0.0.38 | merged into `a-newest-first-log-conflicts-on-every-parallel-merge` |
 | `p-a4fdcd562e` | 0.0.24 | — |
 | `p-a54735cd61` | 0.0.34 | — |
 | `p-a5a8909619` | 0.0.26 | — |
@@ -510,6 +539,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-ad97de28a0` | 0.0.27 | — |
 | `p-aede899fd0` | 0.0.32 | — |
 | `p-aff1ec32e4` | 0.0.33 | — |
+| `p-b0b9eef7a9` | 0.0.38 | refused: already in the method (§21.3 and the note `a-check-must-be-seen-to-fail`) |
 | `p-b102eeae6f` | 0.0.30 | — |
 | `p-b10b689423` | 0.0.31 | — |
 | `p-b19ea8150f` | 0.0.26 | — |
@@ -576,6 +606,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-c59eb782a0` | 0.0.27 | — |
 | `p-c5ccb46250` | 0.0.31 | — |
 | `p-c5d2122992` | 0.0.33 | — |
+| `p-c6045cdb07` | 0.0.38 | queued as `reordering-a-float-sum-changes-it` |
 | `p-c604d1066e` | 0.0.29 | — |
 | `p-c6083df1c2` | 0.0.34 | — |
 | `p-c64ce00cd5` | 0.0.34 | — |
@@ -599,6 +630,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-cacafbf6a4` | 0.0.26 | — |
 | `p-caf6eb5f4f` | 0.0.33 | — |
 | `p-cb1ba3bc96` | 0.0.26 | — |
+| `p-cc00fe80fe` | 0.0.38 | queued as `a-benchmark-measures-what-it-ran` |
 | `p-cc533b4818` | 0.0.32 | — |
 | `p-cc620f4084` | 0.0.31 | — |
 | `p-cd7569810c` | 0.0.31 | — |
@@ -625,6 +657,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-d4bcf0e9bf` | 0.0.33 | — |
 | `p-d4e7c33d0e` | 0.0.32 | — |
 | `p-d54485ce58` | 0.0.33 | — |
+| `p-d568457eb2` | 0.0.38 | merged into `a-review-fix-is-a-new-change-and-gets-its-own-pass`, as evidence; the rule unchanged |
 | `p-d5b044935c` | 0.0.26 | — |
 | `p-d76c834891` | 0.0.33 | — |
 | `p-d7956af6c5` | 0.0.27 | — |
@@ -647,7 +680,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-db9415fe19` | 0.0.27 | — |
 | `p-dbccef40a4` | 0.0.34 | — |
 | `p-dc22c63de8` | 0.0.29 | — |
-| `p-dc5b3531b3` | 0.0.35 | another occurrence of `prompt-harvest`, to merge |
+| `p-dc5b3531b3` | 0.0.35 | — |
 | `p-dc709911f6` | 0.0.33 | — |
 | `p-dca124752d` | 0.0.33 | — |
 | `p-dcc52047a5` | 0.0.26 | — |
@@ -691,6 +724,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-e7988eb53a` | 0.0.26 | — |
 | `p-e81f0b8744` | 0.0.33 | — |
 | `p-e8e7ae397b` | 0.0.32 | — |
+| `p-e8f72acd95` | 0.0.38 | merged into `a-delegates-result-is-an-artefact` |
 | `p-e9ae388290` | 0.0.27 | — |
 | `p-e9c72b7355` | 0.0.27 | — |
 | `p-e9dc244466` | 0.0.27 | — |
@@ -717,7 +751,9 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-f0796da18d` | 0.0.34 | — |
 | `p-f0a6cbc260` | 0.0.34 | — |
 | `p-f0c33844ff` | 0.0.33 | — |
+| `p-f108c6b4c9` | 0.0.38 | merged into `clean-context-review-closes-a-batch` |
 | `p-f1421f4f31` | 0.0.33 | — |
+| `p-f1a4501794` | 0.0.38 | merged into `a-plan-carries-a-cost-ledger` |
 | `p-f1d4188f8a` | 0.0.27 | — |
 | `p-f23391f5cc` | 0.0.31 | — |
 | `p-f293147191` | 0.0.33 | — |
@@ -733,6 +769,7 @@ Generated at each release from the home's records. Each row is a proposal some c
 | `p-f599058a12` | 0.0.34 | — |
 | `p-f5a11f09fc` | 0.0.33 | — |
 | `p-f5e5eef0cf` | 0.0.26 | — |
+| `p-f6113591da` | 0.0.38 | queued as `a-guarantee-stops-at-its-own-boundary` |
 | `p-f62a14e734` | 0.0.27 | — |
 | `p-f63866a6a4` | 0.0.27 | — |
 | `p-f692458588` | 0.0.31 | — |

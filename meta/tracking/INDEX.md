@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (275)
+## Candidates in the queue (287)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -33,7 +33,6 @@ None.
 - `derive-dependent-config` — K, since 0.0.20 · lacks a boundary is already known (derivation couples controls)
 - `append-only-collides-with-erasure` — K, since 0.0.20 · lacks an incident; it is a recorded open collision
 - `obligations-accrue-across-versions` — K, since 0.0.20 · lacks a second occurrence
-- `changelog-order-is-checked` — M, since 0.0.20 · lacks a carrier under a second owner: every occurrence so far, this row's and the merged row's, is one owner's (`i-5ed7e8-9a72da`)
 - `privileged-call-inside-the-host-gesture` — K, since 0.0.20 · lacks a measurement on the target runtime (the design is unverified there); generality beyond browsers
 - `classify-client-storage-by-rebuild-cost` — K, since 0.0.20 · lacks an eviction occurrence (the policy is still an open question there)
 - `accept-only-what-can-win` — K, since 0.0.20 · lacks an incident
@@ -145,7 +144,6 @@ None.
 - `kill-by-command-line-pattern-matches-own-shell` — M, since 0.0.32 · lacks a repository of another owner or host; the typed refusal rule is unbuilt in both repositories seen
 - `a-batch-states-why-it-is-split-and-which-model` — M, since 0.0.32 · lacks a second occurrence
 - `a-push-that-deploys-is-a-publish` — M, since 0.0.32 · lacks a second occurrence
-- `a-board-of-what-is-active-while-agents-run` — M, since 0.0.32 · lacks a carrier of another owner, or a check (a second occurrence arrived at 0.0.34, from the same owner)
 - `a-failure-before-the-limiter-counts-is-a-free-attempt` — K, since 0.0.32 · lacks a second occurrence
 - `a-remaining-budget-reorders-the-plan-toward-closing` — M, since 0.0.32 · lacks a second occurrence
 - `a-guided-test-holds-the-blind-in-the-agent` — M, since 0.0.32 · lacks a second occurrence
@@ -292,13 +290,29 @@ None.
 - `a-property-that-needs-a-filter-to-pass-is-a-finding` — K, since 0.0.34 · lacks thin: one occurrence; literature cited narrows it to what rate-based discard checks miss
 - `a-pairwise-rule-is-not-an-order-until-acyclic` — K, since 0.0.34 · lacks thin: one occurrence; the sort library's behaviour on a violated contract is unverified
 - `researcher-returns-its-report-in-the-reply` — M, since 0.0.36 · lacks a second occurrence, or a check that warns when a researcher brief names an output file
+- `a-decision-page-is-kept-with-its-decision` — M, since 0.0.38 · lacks a second carrier; the design-rationale literature checked for whether alternatives are kept with the decision
+- `an-agent-credits-its-call-to-the-person` — M, since 0.0.38 · lacks a check; a second carrier
+- `merge-by-shared-fact-not-shared-shape` — K, since 0.0.38 · lacks a second occurrence in another carrier
+- `superlinear-cost-in-a-cheap-looking-step` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `an-access-path-is-read-in-the-plan` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `choose-the-algorithm-by-n-and-input-shape` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `a-blocked-ui-thread-is-not-only-slow-code` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `kernel-memory-defaults-are-trade-offs` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `concurrency-past-the-bottleneck-adds-latency` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `window-by-event-time` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `a-single-thread-baseline-before-more-cores` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `reordering-a-float-sum-changes-it` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `a-benchmark-measures-what-it-ran` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `a-guarantee-stops-at-its-own-boundary` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
 
-## Offered again, to merge (0)
+## Offered again, to merge (1)
 
-None.
+- `a-newest-first-log-conflicts-on-every-parallel-merge` — another occurrence to merge
 
-## Answered: admitted, folded, refused or dropped (341)
+## Answered: admitted, folded, refused or dropped (343)
 
+- `a-board-of-what-is-active-while-agents-run` — **merged at 0.0.38**: merged into a-granted-parallelism-is-kept-filled: the board and the lane schedule are one card, with the carrier's …
+- `changelog-order-is-checked` — **merged at 0.0.38**: merged into a-newest-first-log-conflicts-on-every-parallel-merge, with the proposals p-0ac8fbdcd1 and p-a4f59815b0 …
 - `nested-partial-update-replaces` — **extended**, applying the queued 0.0.21 row: the embedded document store's semantics, measured rather than assumed (a nested object …
 - `absent-constraint-widens` — **extended**, applying the queued 0.0.21 row: two forms outside a data query, an optional predicate whose default answers "not satisfied" …
 - `best-effort-side-channels` — **extended**, applying the queued 0.0.21 row: the pattern's own cost in *What it costs*, a wrapped call that cannot be told from outside …

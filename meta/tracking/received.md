@@ -765,3 +765,40 @@ Every proposal a carrier offered that `release.py intake` took in, by its id, th
 | `p-069d110c27` | 0.0.35 | another occurrence of `no-foreign-shell-constructs`, to merge |
 | `p-dc5b3531b3` | 0.0.35 | another occurrence of `prompt-harvest`, to merge |
 | `p-920709a5b4` | 0.0.36 | queued as `researcher-returns-its-report-in-the-reply` |
+| `p-07b6730095` | 0.0.38 | refused: already in the note `an-isolated-copy-is-not-the-working-checkout` and §21.3, the same incidents |
+| `p-0ac8fbdcd1` | 0.0.38 | queued as `a-newest-first-log-conflicts-on-every-parallel-merge`, with `p-a4f59815b0` and `changelog-order-is-checked` merged in |
+| `p-1385d1b922` | 0.0.38 | merged into `verification-load-competes-with-the-product` |
+| `p-1945075103` | 0.0.38 | run logged against `a-version-bump-spends-the-forward-compatibility-it-was-protecting` |
+| `p-1afaf6d675` | 0.0.38 | refused: already in the note `validate-each-transformation-run`, the same occurrence |
+| `p-26922d9b43` | 0.0.38 | refused: already in the method, §21.3 (the merge gate by `pre-merge-commit`) |
+| `p-2963c4631d` | 0.0.38 | merged into `kill-by-command-line-pattern-matches-own-shell` |
+| `p-2d5f446ddf` | 0.0.38 | merged into `index-unread-where-rules-absorbed-it` |
+| `p-2e74861ed2` | 0.0.38 | refused as a rule change: already in §15 and §21.2; its figures kept as the baseline of the question-tool hook |
+| `p-345b1132ad` | 0.0.38 | queued as `a-decision-page-is-kept-with-its-decision`, with `p-7f494ce585` merged in |
+| `p-3f1cf3e0d8` | 0.0.38 | merged into `a-model-change-needs-a-coexistence-step`, its literature added |
+| `p-4a4ed1d71d` | 0.0.38 | run logged against `a-default-scope-is-the-widest-one` |
+| `p-64fb44083e` | 0.0.38 | queued as `an-agent-credits-its-call-to-the-person` |
+| `p-7f494ce585` | 0.0.38 | merged into `a-decision-page-is-kept-with-its-decision` |
+| `p-80e0071ad9` | 0.0.38 | merged into `a-granted-parallelism-is-kept-filled` |
+| `p-819ad83bdf` | 0.0.38 | queued as an extension of the note `merge-by-shared-fact-not-shared-shape` |
+| `p-86c52b0a9e` | 0.0.38 | merged into `a-plan-keeps-a-status-table` |
+| `p-878707a024` | 0.0.38 | merged into `clean-context-review-closes-a-batch` |
+| `p-9075bee7e8` | 0.0.38 | merged into `a-plan-keeps-a-status-table` |
+| `p-a4f59815b0` | 0.0.38 | merged into `a-newest-first-log-conflicts-on-every-parallel-merge` |
+| `p-b0b9eef7a9` | 0.0.38 | refused: already in the method (§21.3 and the note `a-check-must-be-seen-to-fail`) |
+| `p-d568457eb2` | 0.0.38 | merged into `a-review-fix-is-a-new-change-and-gets-its-own-pass`, as evidence; the rule unchanged |
+| `p-e8f72acd95` | 0.0.38 | merged into `a-delegates-result-is-an-artefact` |
+| `p-f108c6b4c9` | 0.0.38 | merged into `clean-context-review-closes-a-batch` |
+| `p-f1a4501794` | 0.0.38 | merged into `a-plan-carries-a-cost-ledger` |
+| `p-29a7d2310d` | 0.0.38 | merged into `a-retry-loop-needs-a-ceiling-and-a-dead-letter` |
+| `p-49bcc0921b` | 0.0.38 | queued as `superlinear-cost-in-a-cheap-looking-step` |
+| `p-51fc264f05` | 0.0.38 | queued as `an-access-path-is-read-in-the-plan` |
+| `p-5579a00ea2` | 0.0.38 | queued as `choose-the-algorithm-by-n-and-input-shape` |
+| `p-5acdb1b0b0` | 0.0.38 | queued as `a-blocked-ui-thread-is-not-only-slow-code` |
+| `p-6e1ddf12d1` | 0.0.38 | queued as `kernel-memory-defaults-are-trade-offs` |
+| `p-804b98e40c` | 0.0.38 | queued as `concurrency-past-the-bottleneck-adds-latency` |
+| `p-90dc49e85a` | 0.0.38 | queued as `window-by-event-time` |
+| `p-9a69540ab9` | 0.0.38 | queued as `a-single-thread-baseline-before-more-cores` |
+| `p-c6045cdb07` | 0.0.38 | queued as `reordering-a-float-sum-changes-it` |
+| `p-cc00fe80fe` | 0.0.38 | queued as `a-benchmark-measures-what-it-ran` |
+| `p-f6113591da` | 0.0.38 | queued as `a-guarantee-stops-at-its-own-boundary` |

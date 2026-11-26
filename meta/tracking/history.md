@@ -6,6 +6,13 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue for the release 0.0.38
+
+| Candidate | Where it went |
+|---|---|
+| `a-board-of-what-is-active-while-agents-run` | **merged at 0.0.38**: merged into a-granted-parallelism-is-kept-filled: the board and the lane schedule are one card, with the carrier's proposal p-80e0071ad9 |
+| `changelog-order-is-checked` | **merged at 0.0.38**: merged into a-newest-first-log-conflicts-on-every-parallel-merge, with the proposals p-0ac8fbdcd1 and p-a4f59815b0: one candidate for record logs written by parallel sessions |
+
 ## Taken out of the queue for the release 0.0.37
 
 Four of the six oldest extensions, each waiting only for a release since 0.0.21, admitted into their notes by the

@@ -76,6 +76,17 @@ never committed; the names of private carriers are in the local private-terms li
 
 ## Next
 
+- **`i-5ed7e8-d23f66` · An unattended mode that keeps the normal flow and spends the owner's attention once.** The owner's
+  suggestion, 2026-11-26: before leaving, the session asks every pending question at once and starts the plan; a
+  question that arises later is parked for the owner's return, never asked while away, and the session continues
+  whatever needs no new validation, stopping a task only where its next step waits on a parked answer. The flow is the
+  normal one; only the interactions are batched. **Fits:** the `plan` skill (`d-5ed7e8-4b1883`) as a mode, the live
+  state (`bundle.py now`, the parked questions surviving a compaction), the question rules (T9), and the owner's own
+  standing rule to ask everything before working alone. **Open for its design round:** what counts as needing new
+  validation (the guards, the user-visible, the owner's content), how a parked question records the work it blocks, and
+  how the return is reported. *Estimate:* a design round, then about 60 min and 150k tokens inside T18. *Collides
+  with:* T9, T18.
+
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
 - **`i-5ed7e8-7cb101` · Three more routine skills, after the phase on the session.** `carry` (the release into carriers:
