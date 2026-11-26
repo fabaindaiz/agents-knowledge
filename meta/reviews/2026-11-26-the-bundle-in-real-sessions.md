@@ -32,8 +32,16 @@ the knowledge small, and it does.
 | | By operation | By bytes returned |
 |---|---:|---:|
 | The bundle, all of it | about 13 % (median session) | **about 9 % (median session)** |
-| — the gate | about four fifths of that | about 7 % |
+| — the gate | about four fifths of that | about 5 % (median); about 7 % pooled over all sessions |
 | — **the knowledge base** | about a twelfth of that | **about 1 % (median), at most about 15 %** |
+
+Every other cell in the table is a median over sessions; the gate's share by bytes is the one that
+reads differently in each form, so both are given. Reproduced by `bundle.py usage measure` on the same
+machine: median by operation 12 %, by bytes 10 %, knowledge by bytes 0.8 % (at most about 15 %), the gate
+5.7 % median and 7.1 % pooled, and the same fifteen of twenty-two sessions consulting. Counts drift by a
+few operations between runs, since other sessions append to their transcripts while the command reads
+them; the ratios do not move, but a figure sitting on a fraction's edge can change the generalised
+wording between two runs of the same day.
 
 **Two sessions in three opened the index or a card at least once** (fifteen of twenty-two). The spread
 between sessions is wide: the bundle's share runs from none at all to about three quarters of a short
