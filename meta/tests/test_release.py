@@ -623,6 +623,30 @@ class Carry(Base):
 
         self.assertIn("knowledge/notes/active/alpha.md: differs from the tagged release", " ".join(gathered["carriers"]["one"]["forked"]))
 
+    def test_a_nearby_privacy_warning_is_listed_but_holds_no_proposal_back(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
+        self.splice(repo)
+        rid, noun = "r-" + "4c1d2e", "pay" + "ments service"
+        a_proposal(repo / ".agents", f"The findings of {rid} came from\nthe {noun}, generalised.", target="nearby-one")
+        commit(repo, "harvest")
+        self.R.gather([repo], self.root / "out", self.home)
+        result = self.R.intake(self.root / "out", "0.0.2", self.home)
+        self.assertEqual(result["queued"], ["nearby-one"])
+        self.assertEqual(result["privacy"], [])
+
+    def test_a_topic_on_a_note_is_another_occurrence_of_that_note(self) -> None:
+        repo = make_carrier(self.root, "one")
+        B.mint_carrier_id(repo, upstream="r-aaaaaa")
+        self.splice(repo)
+        note = next(p.stem for p in (self.home / "sources/notes").rglob("*.md"))
+        a_proposal(repo / ".agents", "Seen again here.", target=note, topic="a-corner", action="extends")
+        commit(repo, "harvest")
+        self.R.gather([repo], self.root / "out", self.home)
+        result = self.R.intake(self.root / "out", "0.0.2", self.home)
+        self.assertEqual(result["queued"], [])
+        self.assertIn(note, " ".join(result["duplicates"]))
+
     def test_an_intake_that_fails_before_writing_leaves_no_marker(self) -> None:
         (self.root / "out").mkdir()
         (self.root / "out/gather.json").write_text('{"packs": {}}')

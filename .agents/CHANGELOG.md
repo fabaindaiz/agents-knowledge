@@ -13,7 +13,7 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 - **A proposal's optional `topic:`** (`d-5ed7e8-9f14d5`): `propose --topic SLUG` names which part of the target a
   proposal concerns, and the home's intake groups by target and topic, so proposals extending one method file become
-  one candidate per topic rather than one per file. A proposal without it reads, renders and keeps its id as before.
+  one candidate per topic rather than one per file. A proposal without it reads, renders and keeps its id as before. A topic on a note or a candidate already known is another occurrence of it (d-5ed7e8-2505a2).
 
 ### Changed
 
@@ -40,7 +40,7 @@ version it holds with `bundle.py changelog --since <its version>`.
   worktree's own empty one.
 - **An id beside a description across lines** (`i-5ed7e8-408166`): the privacy check's `id-beside-domain` read one
   line at a time, so a carrier or record id on one line and a description of it on the next passed. Two adjacent
-  lines of one paragraph are now read together, as a warning (`id-beside-domain-nearby`), never a failure.
+  lines of one paragraph are now read together, as a warning (`id-beside-domain-nearby`), never a failure. It is listed by gather and intake and holds no proposal back (d-5ed7e8-feeec8).
 
 ## [0.0.36] - 2026-11-25
 

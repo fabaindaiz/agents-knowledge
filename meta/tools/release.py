@@ -1143,6 +1143,9 @@ def _offered(tree: Path, base: Path | None) -> tuple[list[dict], list[str]]:
     return offered, problems
 
 
+PRIVACY_LISTED_ONLY = {"id-beside-domain-nearby"}
+
+
 def proposal_privacy(offered: list[dict]) -> dict[str, list[str]]:
     """Each proposal's privacy findings, read as the carrier's own file is read: a FAIL, or a WARN that no
     `privacy-allow: <reason>` on its line answered, keeps it out of the intake until the carrier generalises
@@ -1157,7 +1160,9 @@ def proposal_privacy(offered: list[dict]) -> dict[str, list[str]]:
             proposal = B.Proposal(**{k: v for k, v in item.items() if k != "source"})
             path = folder / f"{proposal.id}.md"
             path.write_text(B.render_proposal(proposal), encoding="utf-8")
-            findings = B.privacy_check(paths=[path]).findings
+            # A nearby id warns and is listed, but holds nothing back (`d-5ed7e8-feeec8`): its window reads a
+            # wrapped line, where a word like "controller" on the next line is the usual match.
+            findings = [f for f in B.privacy_check(paths=[path]).findings if f.rule not in PRIVACY_LISTED_ONLY]
             if findings:
                 found[proposal.id] = [f"{f.level} {f.rule} at line {f.where.rsplit(':', 1)[-1]}" for f in findings]
     return found
@@ -1380,7 +1385,9 @@ def _intake(out: Path, version: str, root: Path, report: dict, wrote: list[bool]
                     refused.append(f"| `{slug}` | {p.lacks} |")
                     result["refused"].append(slug)
                     verdict = "refused by its harvest; recorded in the history"
-                elif slug in queued or slug in notes or f"`{slug}`" in history:
+                elif (slug in queued or slug in notes or f"`{slug}`" in history
+                      or (p.topic and (p.target in queued or p.target in notes or f"`{p.target}`" in history))):
+                    # A topic on a known note or candidate is another occurrence of it, its topic in the cell.
                     result["duplicates"].append(f"{name}: {slug} (already {'a note' if slug in notes else 'queued or answered'})")
                     again.append(_row([*cells, version]))
                     verdict = f"another occurrence of `{slug}`, to merge"
