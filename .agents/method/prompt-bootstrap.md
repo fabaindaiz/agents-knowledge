@@ -583,10 +583,11 @@ in the same environment — a clean export of `HEAD` (`git archive HEAD | tar -x
 
 **A change meant to change nothing is proved by what it must preserve, compared
 mechanically.** Before a refactor, move, regeneration, reformat or translation,
-name the invariant, capture it, and compare byte for byte afterwards,
-normalising known nondeterminism explicitly and saying you did; "looks the same"
-is not a comparison. Move code by script, not by retyping. Such a change is its
-own commit, and its message states the comparison
+name the invariant — the rendered output, the emitted file, the token stream, or
+for prose every number, identifier and link target — capture it, and compare
+byte for byte afterwards, normalising known nondeterminism explicitly and saying
+you did; "looks the same" is not a comparison. Move code by script, not by
+retyping. Such a change is its own commit, and its message states the comparison
 (`../knowledge/notes/active/validate-each-transformation-run.md`).
 
 ### 5. Look at what you made
