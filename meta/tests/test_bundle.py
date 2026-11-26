@@ -3495,6 +3495,165 @@ class UsageMeasure(Usage):
                 self.measure(*rest)
 
 
+class UsageOverTranscripts(Usage):
+    """`usage measure bundle-share|consult-rate`: counted over fixture transcripts, never this machine's.
+
+    The attribution rule under test: a tool call is one operation, its serialised input is what is read for
+    paths, and it is the bundle's when it names a path under the release or runs the carrier's tool.
+    """
+
+    CONSULTING, PLAIN = 8, 4  # the fixture's sessions: those that open the knowledge base, and those that do not
+
+    def measure(self, *rest: str, raw: bool = False, record: str | None = None, approve: bool = False) -> list[str]:
+        return B.usage_command(self.repo, "measure", list(rest), memory=self.memory, today=self.TODAY,
+                               raw_too=raw, record=record, approve=approve)
+
+    def leaks(self) -> list[str]:
+        """What a real transcript carries and no output may: assembled here, so this file never holds it."""
+        return ["-".join(("inner", "client", "ledger")), "@".join(("owner", "example-mail.test")),
+                " ".join(("pasted", "customer", "rows"))]
+
+    def transcript(self, repo: Path, name: str, ops: list[tuple[dict, str]], text: str = "") -> None:
+        folder = Path(os.environ["HOME"]) / ".claude/projects" / B._encoded(repo)
+        folder.mkdir(parents=True, exist_ok=True)
+        lines = []
+        if text:
+            lines.append(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}))
+        for n, (payload, returned) in enumerate(ops):
+            ident = f"{name}-{n}"
+            lines.append(json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": ident, "name": "Read", "input": payload}]}}))
+            lines.append(json.dumps({"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": ident, "content": [{"type": "text", "text": returned}]}]}}))
+        (folder / f"{name}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def carrier(self, name: str) -> Path:
+        repo = self.root / "carriers" / name
+        repo.mkdir(parents=True, exist_ok=True)
+        return repo
+
+    def manifest(self, *repos: Path) -> None:
+        path = B._config_dir() / "carriers.toml"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("carriers = [\n" + "".join(f'  "{r}",\n' for r in repos) + "]\n", encoding="utf-8")
+
+    def machine(self, consulting: int | None = None, plain: int | None = None) -> tuple[Path, Path]:
+        """Two carriers: sessions that consult the knowledge base, and sessions that do file work only.
+
+        A consulting session: one index read of a thousand characters, one gate run of a hundred, eight
+        file reads of a thousand each, and one command naming no file, which no denominator may count.
+        """
+        consulting = self.CONSULTING if consulting is None else consulting
+        plain = self.PLAIN if plain is None else plain
+        first, second = self.carrier("one"), self.carrier("two")
+        leak = self.leaks()
+        for n in range(consulting):
+            self.transcript(first, f"c{n}", [
+                ({"file_path": f"{first}/.agents/knowledge/INDEX.md"}, "k" * 1000),
+                ({"command": "python3 .agents/tools/bundle.py verify"}, "g" * 100),
+                *[({"file_path": f"/w/{leak[1]}/{leak[0]}/src/module.py"}, leak[2] * 50) for _ in range(8)],
+                ({"command": "echo done"}, "done"),
+            ], text=f"reading {leak[0]} for {leak[1]}")
+        for n in range(plain):
+            self.transcript(second, f"p{n}", [
+                ({"file_path": f"/w/{leak[1]}/{leak[0]}/src/module.py"}, leak[2] * 50) for _ in range(10)])
+        self.manifest(first, second)
+        return first, second
+
+    def test_the_two_questions_count_the_operations_and_the_bytes_each_returned(self) -> None:
+        self.machine()
+
+        share = "\n".join(self.measure("bundle-share", raw=True))
+        sessions = self.CONSULTING + self.PLAIN
+        self.assertIn(f"read: {sessions} sessions that did file work, in 2 carriers,", share)
+        self.assertIn("by operation median 20.0%", share)        # the index read and the gate run, of ten
+        self.assertIn("by bytes median 12.1%", share)            # what those two returned, of what all ten did
+        self.assertIn("knowledge by bytes median 11.0%", share)  # the index read alone
+        self.assertIn("gate by bytes median 1.1%", share)        # the gate run alone, far smaller by bytes
+        self.assertIn("the bundle is about a fifth by operation and about an eighth by bytes returned", share)
+        rate = "\n".join(self.measure("consult-rate", raw=True))
+        self.assertIn(f"{self.CONSULTING} of {sessions} sessions consulted", rate)
+        self.assertIn("about two thirds of the sessions that did file work opened", rate)
+
+    def test_an_operation_that_names_no_file_is_in_no_denominator(self) -> None:
+        first = self.carrier("one")
+        self.manifest(first)
+        for n in range(12):
+            self.transcript(first, f"s{n}", [({"command": "echo hello"}, "hello")])
+
+        self.assertIn("nothing to measure", "\n".join(self.measure("bundle-share")))
+
+    def test_nothing_read_from_a_transcript_is_printed_or_written_under_any_flag(self) -> None:
+        self.machine()
+        record = self.root / "record.md"
+        record.write_text("# a record\n")
+        shown = "\n".join(self.measure() + self.measure("bundle-share") + self.measure("bundle-share", raw=True)
+                          + self.measure("consult-rate") + self.measure("consult-rate", raw=True)
+                          + self.measure("consult-rate", record=str(record))
+                          + self.measure("bundle-share", raw=True, record=str(record), approve=True))
+
+        for leak in self.leaks():
+            self.assertNotIn(leak, shown)
+            self.assertNotIn(leak, record.read_text())
+            self.assertNotIn(leak, self.state("measures.jsonl").read_text())
+
+    def test_a_record_is_not_written_without_the_approval_and_the_trace_is_said_aloud(self) -> None:
+        self.machine()
+        record = self.root / "record.md"
+        record.write_text("# a record\n")
+
+        said = "\n".join(self.measure("consult-rate", record=str(record)))
+        self.assertIn("not written", said)
+        self.assertIn("a measurement of `consult-rate` ran on this machine", said)
+        self.assertEqual(record.read_text(), "# a record\n")
+        self.assertIn('"state": "pending"', self.state("measures.jsonl").read_text())
+
+    def test_with_the_approval_the_generalised_sentence_is_appended_to_that_record(self) -> None:
+        self.machine()
+        record = self.root / "record.md"
+        record.write_text("# a record\n")
+
+        self.measure("consult-rate", record=str(record), approve=True)
+        written = record.read_text().splitlines()[-1]
+        self.assertTrue(written.startswith(f"Measured on one machine on {self.TODAY} (`usage measure consult-rate`):"))
+        self.assertIn("about two thirds", written)
+        self.assertNotIn("%", written)
+        self.assertIn('"state": "entered"', self.state("measures.jsonl").read_text())
+
+    def test_the_approval_needs_the_one_record_and_the_record_must_exist(self) -> None:
+        self.machine()
+        for rest, kwargs in ((("consult-rate",), {"approve": True}),
+                             (("consult-rate",), {"record": str(self.root / "no-such.md"), "approve": True})):
+            with self.assertRaises(B.RefusedError):
+                self.measure(*rest, **kwargs)
+        self.assertFalse(self.state("measures.jsonl").exists())
+
+    def test_a_home_is_left_out_and_so_is_a_carrier_with_no_transcript(self) -> None:
+        first, _ = self.machine(consulting=12, plain=2)
+        home = self.carrier("home")
+        (home / "sources/bundle/tools").mkdir(parents=True)
+        (home / "sources/bundle/tools/bundle.py").write_text("# the originals\n")
+        self.transcript(home, "h0", [({"file_path": f"{home}/.agents/knowledge/INDEX.md"}, "k" * 1000)])
+        self.manifest(first, home, self.carrier("empty"))
+
+        self.assertIn("read: 12 sessions that did file work, in 1 carrier,", "\n".join(self.measure("bundle-share")))
+
+    def test_too_few_sessions_or_none_at_all_measure_nothing(self) -> None:
+        self.manifest(self.carrier("one"))
+        code, out = run("usage", "measure", "bundle-share", "--repo", str(self.repo))
+        self.assertEqual(code, 0, out)
+        self.assertIn("no session transcript", out)
+        self.machine(consulting=3, plain=2)
+        self.assertIn("too few sessions", "\n".join(self.measure("bundle-share")))
+        self.assertFalse(self.state("measures.jsonl").exists())
+
+    def test_a_ratio_is_generalised_to_a_fraction_or_an_order_of_magnitude(self) -> None:
+        for value, said in ((0, "none of it"), (0.99, "nearly all of it"), (0.5, "about half"),
+                            (0.2, "about a fifth"), (0.67, "about two thirds"), (0.0082, "about a hundredth"),
+                            (0.057, "about a twentieth"), (0.0004, "about one in 2000")):
+            self.assertEqual(B._about(value), said, value)
+
+
 class SpecCheck(Base):
     """`bundle.py spec`: shape B's check, an open marker blocking the plan."""
 

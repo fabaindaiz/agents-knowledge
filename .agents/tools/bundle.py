@@ -42,6 +42,11 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py usage show|set|add|use|forget|brief|summary|report|needs-consent|measure
                                                                 consented usage data, local only; `show` says where;
                                                                 `measure` a generalised figure the owner enters, or not
+    python3 .agents/tools/bundle.py usage measure QUESTION [--raw] [--record FILE [--approve]]
+                                                                a named question answered already generalised, over
+                                                                this machine's own sessions; `--raw` the exact counts
+                                                                for the owner alone; without `--approve` nothing is
+                                                                written and the refusal is said aloud
     python3 .agents/tools/bundle.py spec FILE [--decisions LOG] [--plan PLAN]   a spec's requirements: each decided,
                                                                 with a scenario, nothing open; --plan: each one cited
     python3 .agents/tools/bundle.py docs fingerprint OLD NEW | --rev REV FILE   what carries meaning, kept by an edit
@@ -5941,10 +5946,181 @@ def _measure_ablation(records):
             f"mean repeats on {mean['on']:.2f} (n={len(arms['on'])}), off {mean['off']:.2f} (n={len(arms['off'])})")
 
 
+
+USAGE_SOURCE_EXT = frozenset("""bash c cc cfg cjs conf cpp css csv go gradle h hpp html ini java js json jsx kt
+    kts lock md mjs php py rb rs scss sh sql swift toml ts tsv tsx txt xml yaml yml""".split())
+_USAGE_FILE_TOKEN = re.compile(r"[\w./-]*\.(\w{1,6})\b")
+USAGE_RELEASE, USAGE_KNOWLEDGE, USAGE_GATE = ".agents/", ".agents/knowledge/", "bundle.py"
+USAGE_PARTS = ("knowledge", "gate", "rest")
+USAGE_TRANSCRIPTS = "this machine's session transcripts"
+
+
+def _usage_names_a_file(text: str) -> bool:
+    """An operation names a file when its input holds a path-like token with a source extension."""
+    return any(match.group(1).lower() in USAGE_SOURCE_EXT for match in _USAGE_FILE_TOKEN.finditer(text))
+
+
+def _usage_part(text: str) -> str | None:
+    """Which part of the bundle an operation is — the knowledge base, the gate (the carrier's tool), or the
+    rest of the release — and None for an operation that is not the bundle's at all."""
+    if USAGE_KNOWLEDGE in text:
+        return "knowledge"
+    if USAGE_GATE in text:
+        return "gate"
+    return "rest" if USAGE_RELEASE in text else None
+
+
+def _usage_returned(entry: dict) -> int:
+    """How many characters a result handed back: a string, or the text of each of its parts."""
+    content = entry.get("content")
+    if isinstance(content, str):
+        return len(content)
+    if isinstance(content, list):
+        return sum(len(part["text"]) for part in content
+                   if isinstance(part, dict) and isinstance(part.get("text"), str))
+    return 0
+
+
+def session_usage(path: Path) -> dict[str, int] | None:
+    """One session's counts, or None when it did no file work at all.
+
+    Every tool call whose input names a file is one operation, tied to the bytes its result returned, and
+    split into the bundle's parts. Nothing read from the transcript is kept beyond these numbers.
+    """
+    ops: list[tuple[str, str | None]] = []
+    returned: dict[str, int] = {}
+    for record in _probe_records(path):
+        message = record.get("message")
+        content = message.get("content") if isinstance(message, dict) else None
+        for entry in content if isinstance(content, list) else []:
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("type") == "tool_use":
+                text = json.dumps(entry.get("input", {}), sort_keys=True, default=str)
+                if _usage_names_a_file(text):
+                    ops.append((str(entry.get("id")), _usage_part(text)))
+            elif entry.get("type") == "tool_result":
+                returned[str(entry.get("tool_use_id"))] = _usage_returned(entry)
+    if not ops:
+        return None
+    row = {"ops": len(ops), "bytes": sum(returned.get(ident, 0) for ident, _ in ops)}
+    for part in USAGE_PARTS:
+        row[part + "_ops"] = sum(1 for _, found in ops if found == part)
+        row[part + "_bytes"] = sum(returned.get(ident, 0) for ident, found in ops if found == part)
+    row["bundle_ops"] = sum(row[part + "_ops"] for part in USAGE_PARTS)
+    row["bundle_bytes"] = sum(row[part + "_bytes"] for part in USAGE_PARTS)
+    return row
+
+
+def _is_bundle_home(repo: Path) -> bool:
+    """A home writes the release instead of running it, so its sessions work *on* the bundle and its share
+    would measure the wrong thing. It is the repository that holds the originals the release is built from."""
+    return (repo / "sources/bundle/tools/bundle.py").is_file()
+
+
+def usage_sessions(manifest: Path | None = None) -> tuple[list[dict[str, int]], int]:
+    """(a row per session that did file work, how many carriers those sessions came from).
+
+    Over the carriers this machine lists, the home left out. One machine at a time, never combined with
+    another's: the manifest read is this machine's, and no figure travels into it.
+    """
+    path = manifest or (_config_dir() / "carriers.toml")
+    rows: list[dict[str, int]] = []
+    carriers, seen = 0, set()
+    for name in manifest_carriers(path) if path.is_file() else []:
+        repo = Path(name).expanduser()
+        if not repo.is_dir() or _is_bundle_home(repo):
+            continue
+        files = [file for folder in transcript_dirs(repo) for file in sorted(folder.glob("*.jsonl"))
+                 if file not in seen]
+        seen.update(files)
+        found = [row for row in (session_usage(file) for file in files) if row]
+        rows += found
+        carriers += bool(found)
+    return rows, carriers
+
+
+_ABOUT_WORDS = {2: "half", 3: "a third", 4: "a quarter", 5: "a fifth", 6: "a sixth", 7: "a seventh",
+                8: "an eighth", 9: "a ninth", 10: "a tenth", 11: "an eleventh", 12: "a twelfth",
+                20: "a twentieth", 30: "a thirtieth", 40: "a fortieth", 50: "a fiftieth",
+                100: "a hundredth", 1000: "a thousandth"}
+_ABOUT_PLURAL = {2: "halves", 3: "thirds", 4: "quarters", 5: "fifths", 6: "sixths", 7: "sevenths",
+                 8: "eighths", 9: "ninths", 10: "tenths", 11: "elevenths", 12: "twelfths"}
+_ABOUT_COUNT = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine",
+                10: "ten", 11: "eleven"}
+
+
+def _about(value: float) -> str:
+    """A ratio in words: a simple fraction, or an order of magnitude when it is smaller than a twelfth.
+
+    What a record may carry of a measurement. Never an exact figure: the exact one is the owner's alone.
+    """
+    if value <= 0:
+        return "none of it"
+    if 1 - value <= 1 / 20:
+        return "nearly all of it"
+    if value < 1 / 12:
+        rounded = int(float(f"{1 / value:.1g}"))
+        return "about " + (_ABOUT_WORDS.get(rounded) or f"one in {rounded}")
+    top, bottom = min(((max(round(value * q), 1), q) for q in range(2, 13)),
+                      key=lambda pair: abs(value - pair[0] / pair[1]) + pair[1] / 100)
+    if top == 1:
+        return "about " + _ABOUT_WORDS[bottom]
+    return f"about {_ABOUT_COUNT[top]} {_ABOUT_PLURAL[bottom]}"
+
+
+def _pct(values: list[float]) -> str:
+    return (f"median {statistics.median(values) * 100:.1f}%, range {min(values) * 100:.1f}% to "
+            f"{max(values) * 100:.1f}%") if values else "none"
+
+
+def _usage_share(rows: list[dict[str, int]], key: str, over: str = "bytes") -> list[float]:
+    return [row[key] / row[over] for row in rows if row[over]]
+
+
+def _measure_bundle_share(rows):
+    """The bundle's share of what a session reads, by operation and by bytes returned, per session."""
+    if not rows:
+        return None
+    if len(rows) < MEASURE_MIN:
+        return "too few"
+    by_op, by_byte = _usage_share(rows, "bundle_ops", "ops"), _usage_share(rows, "bundle_bytes")
+    knowledge, gate = _usage_share(rows, "knowledge_bytes"), _usage_share(rows, "gate_bytes")
+    gate_ops = [row["gate_ops"] / row["bundle_ops"] for row in rows if row["bundle_ops"]]
+    general = (
+        f"of what a session reads through operations that name a file, the bundle is {_about(statistics.median(by_op))} "
+        f"by operation and {_about(statistics.median(by_byte))} by bytes returned, in the median session; within it "
+        f"the gate is {_about(statistics.median(gate_ops))} of the bundle's operations and "
+        f"{_about(statistics.median(gate))} of the bytes returned, and the knowledge base "
+        f"{_about(statistics.median(knowledge))} of the bytes returned, at most {_about(max(knowledge))}; "
+        f"between sessions the share by bytes runs from {_about(min(by_byte))} to {_about(max(by_byte))}")
+    raw = (f"by operation {_pct(by_op)}; by bytes {_pct(by_byte)}; knowledge by bytes {_pct(knowledge)}; "
+           f"gate by bytes {_pct(gate)}; gate of the bundle's operations {_pct(gate_ops)}; "
+           f"totals {sum(r['ops'] for r in rows)} operations and {sum(r['bytes'] for r in rows)} characters "
+           f"returned, of them {sum(r['bundle_bytes'] for r in rows)} the bundle's; n={len(rows)}")
+    return general, raw
+
+
+def _measure_consult_rate(rows):
+    """How many sessions opened the index or a card at least once, over the sessions with file work."""
+    if not rows:
+        return None
+    if len(rows) < MEASURE_MIN:
+        return "too few"
+    opened = sum(1 for row in rows if row["knowledge_ops"])
+    general = (f"{_about(opened / len(rows))} of the sessions that did file work opened the knowledge base's index "
+               f"or a card at least once; the rest never opened it")
+    raw = (f"{opened} of {len(rows)} sessions consulted; {sum(r['knowledge_ops'] for r in rows)} knowledge "
+           f"operations over {sum(r['ops'] for r in rows)} file-naming operations")
+    return general, raw
+
+
 USAGE_QUESTIONS = {
     "agent-cost-ratio": ("agent_costs", "how far delegated work's actual time and tokens run from their estimate", _measure_costs),
     "frictions-per-session": ("frictions", "how often each friction happens in a session", _measure_frictions),
     "ablation-effect": ("ablation", "whether stored preferences change how often an instruction is repeated", _measure_ablation),
+    "bundle-share": (USAGE_TRANSCRIPTS, "what share of what a real session reads is the bundle's", _measure_bundle_share),
+    "consult-rate": (USAGE_TRANSCRIPTS, "how often a real session consults the knowledge base", _measure_consult_rate),
 }
 MEASURE_ID = re.compile(r"^u-[0-9a-f]{6}$")
 MEASURE_MIN = 10
@@ -5968,8 +6144,28 @@ def _measures(repo, today):
     return path, kept
 
 
-def usage_measure(repo, rest, today):
-    """`measure` lists the questions; `measure Q` answers one; `measure ID into|withhold RECORD` settles it."""
+def _measure_sentence(question, today, generalised):
+    """What a record may carry: the date, the question's name, and the generalised figure. Never the raw one."""
+    return f"Measured on one machine on {today} (`usage measure {question}`): {generalised}."
+
+
+def _measure_record(record, sentence):
+    """The sentence appended to a record that exists; a record is never created by a measurement."""
+    path = Path(record)
+    if not path.is_file():
+        raise RefusedError(f"{record}: no such file; a measurement enters a record that exists already")
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text + ("" if not text or text.endswith("\n") else "\n") + sentence + "\n", encoding="utf-8")
+
+
+def usage_measure(repo, rest, today, raw_too=False, record=None, approve=False):
+    """`measure` lists the questions; `measure Q` answers one; `measure ID into|withhold RECORD` settles it.
+
+    `--record FILE` writes nothing of itself: without `--approve` it says that a measurement exists and was
+    not recorded, which is the trace a refusal still leaves (`d-5ed7e8-7b6df4`).
+    """
+    if approve and not record:
+        raise RefusedError("usage measure --approve: name the one record it enters, with --record FILE")
     if not rest:
         return [f"  {name}: {what} (from {category})" for name, (category, what, _) in USAGE_QUESTIONS.items()]
     path, rows = _measures(repo, today)
@@ -5992,22 +6188,50 @@ def usage_measure(repo, rest, today):
     if rest[0] not in USAGE_QUESTIONS or len(rest) != 1:
         raise RefusedError(f"usage measure: one of {', '.join(USAGE_QUESTIONS)}, or ID into|withhold RECORD")
     category, what, answer = USAGE_QUESTIONS[rest[0]]
-    if not usage_effective(usage_consent()).get(category):
-        return [f"nothing to measure: {category} is not recorded on this machine (`usage set`)"]
-    found = answer(usage_records(repo, category, today))
+    read = ""
+    if category in USAGE_CATEGORIES:
+        if not usage_effective(usage_consent()).get(category):
+            return [f"nothing to measure: {category} is not recorded on this machine (`usage set`)"]
+        found, what_few = answer(usage_records(repo, category, today)), f"{category} records"
+    else:
+        sessions, carriers = usage_sessions()
+        if not sessions:
+            return ["nothing to measure: no session transcript of a carrier this machine lists did file work "
+                    "(the carriers are listed in this machine's manifest, and a home is left out)"]
+        found, what_few = answer(sessions), "sessions"
+        read = (f"read: {len(sessions)} sessions that did file work, in {carriers} carrier{'s' * (carriers != 1)}, "
+                "this machine's alone and never combined with another machine's")
     if found is None:
         return [f"nothing to measure: no {category} records within the retention"]
     if found == "too few":
-        return [f"nothing to measure: too few {category} records (fewer than {MEASURE_MIN}) to generalise without "
+        return [f"nothing to measure: too few {what_few} (fewer than {MEASURE_MIN}) to generalise without "
                 "showing the raw figure"]
     generalised, raw = found
+    if approve and not Path(record).is_file():
+        raise RefusedError(f"{record}: no such file; a measurement enters a record that exists already")
     taken = {r["id"] for r in rows}
     ident = next(i for i in iter(lambda: "u-" + secrets.token_hex(3), None) if i not in taken)
-    rows.append({"id": ident, "question": rest[0], "at": str(today), "generalised": generalised, "state": "pending", "record": ""})
+    rows.append({"id": ident, "question": rest[0], "at": str(today), "generalised": generalised,
+                 "state": "entered" if approve else "pending", "record": record or ""})
     _usage_write(path, _usage_header("measures") + "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
-    return [f"question: {what}", f"generalised: {generalised}",
-            f"raw, for you only, never into a record: {raw}",
-            f"ask the owner, naming the one record: `usage measure {ident} into RECORD`, or `usage measure {ident} withhold RECORD`"]
+    lines = [f"question: {what}", f"generalised: {generalised}"]
+    if read:
+        lines.append(read)
+    if raw_too or category in USAGE_CATEGORIES:
+        lines.append(f"raw, for you only, never into a record: {raw}")
+    if record is None:
+        lines.append(f"ask the owner, naming the one record: `usage measure {ident} into RECORD`, or "
+                     f"`usage measure {ident} withhold RECORD`")
+        return lines
+    sentence = _measure_sentence(rest[0], today, generalised)
+    lines.append(f"the sentence for {record}: {sentence}")
+    if not approve:
+        lines.append(f"not written: a measurement of `{rest[0]}` ran on this machine on {today} and was not "
+                     f"recorded in {record}; run it again with --approve to enter it there, and nowhere else")
+        return lines
+    _measure_record(record, sentence)
+    lines.append(f"written to {record} with the owner's approval, which is for that record only ({ident})")
+    return lines
 
 
 def usage_needs_consent(repo, consent, today):
@@ -6019,7 +6243,7 @@ def usage_needs_consent(repo, consent, today):
     return "ok: " + (" ".join(c for c, on in usage_effective(consent).items() if on) or "none")
 
 
-def usage_command(repo, action, rest, as_json=None, memory=None, today=None):
+def usage_command(repo, action, rest, as_json=None, memory=None, today=None, raw_too=False, record=None, approve=False):
     today = today or datetime.date.today()
     consent = usage_consent() if action == "needs-consent" else None
     ops = {"needs-consent": lambda: [usage_needs_consent(repo, consent, today)],
@@ -6029,7 +6253,7 @@ def usage_command(repo, action, rest, as_json=None, memory=None, today=None):
            "use": lambda: [usage_use(repo, rest[0], today)], "forget": lambda: usage_forget(repo, rest[0] if rest else None),
            "show": lambda: usage_show(repo, today), "brief": lambda: usage_brief(repo, today, memory),
            "summary": lambda: usage_summary(repo, today), "report": lambda: usage_report(repo, today),
-           "measure": lambda: usage_measure(repo, rest, today)}
+           "measure": lambda: usage_measure(repo, rest, today, raw_too, record, approve)}
     if len(rest) > (1 if action == "forget" else 0) and action not in ("set", "add", "use", "measure"):
         raise RefusedError(f"usage {action}: unexpected arguments")
     try:
@@ -6419,10 +6643,13 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE))
     p = sub.add_parser("usage", help="consented usage data, local only: " + " | ".join(USAGE_ACTIONS))
     p.add_argument("action", choices=USAGE_ACTIONS)
-    p.add_argument("rest", nargs="*", help="set: level L | CATEGORY on|off | retention DAYS; add: CATEGORY [k=v...] (without fields, lists them); use: ID; forget: [CATEGORY]; measure: [QUESTION | ID into|withhold RECORD]")
+    p.add_argument("rest", nargs="*", help="set: level L | CATEGORY on|off | retention DAYS; add: CATEGORY [k=v...] (without fields, lists them); use: ID; forget: [CATEGORY]; measure: [QUESTION [--raw] [--record FILE [--approve]] | ID into|withhold RECORD]")
     p.add_argument("--json", help="add: the fields as one JSON object")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="brief: the assistant's memory folder")
+    p.add_argument("--raw", action="store_true", help="measure: also the exact counts, for this machine's owner only, never for a record")
+    p.add_argument("--record", help="measure: the one record the figure would enter; nothing is written without --approve")
+    p.add_argument("--approve", action="store_true", help="measure: the owner's approval to append the generalised sentence to --record, that record only")
     p = sub.add_parser("export", help="this bundle's shipped files and SHA256SUMS into a new folder (or, with --replace, over an older release): a release as it travels")
     p.add_argument("dest")
     p.add_argument("--tree", default=str(OWN_BUNDLE))
@@ -7011,7 +7238,9 @@ def _run(args: argparse.Namespace) -> int:
         print("\n".join(home_report(Path(args.tree))))
         return 0
     if args.command == "usage":
-        for line in usage_command(Path(args.repo).resolve(), args.action, args.rest, args.json, Path(args.memory) if args.memory else None):
+        for line in usage_command(Path(args.repo).resolve(), args.action, args.rest, args.json,
+                                  Path(args.memory) if args.memory else None,
+                                  raw_too=args.raw, record=args.record, approve=args.approve):
             print(line)
         return 0
     if args.command == "export":
