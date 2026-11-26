@@ -4829,6 +4829,29 @@ def _red_run(runner: list[str], ids: list[str], where: Path) -> subprocess.Compl
                           env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
 
 
+def _glob_dir(pattern: str) -> str:
+    """The folder a glob names before its first wildcard (`tests/` for `tests/test_*.py`, `` for `**/test_*.py`)."""
+    out = ""
+    for part in pattern.split("/")[:-1]:
+        if any(c in part for c in "*?["):
+            break
+        out += part + "/"
+    return out
+
+
+def _red_missing_support(repo: Path, parent: str, sha: str, output: str, is_code: Callable[[str], bool]) -> str | None:
+    """The module a parent run could not import that the commit adds outside every `code` glob: test support the
+    overlay did not bring, so the parent's failure says nothing about the defect. None when there is none; a missing
+    module that is code is the red a test of new code is meant to show."""
+    def exists(rev: str, path: str) -> bool:
+        return subprocess.run(["git", "-C", str(repo), "cat-file", "-e", f"{rev}:{path}"], capture_output=True).returncode == 0
+    for name in dict.fromkeys(re.findall(r"No module named '([\w.]+)'", output)):
+        for path in (name.replace(".", "/") + ".py", name.replace(".", "/") + "/__init__.py"):
+            if exists(sha, path) and not exists(parent, path) and not is_code(path):
+                return name
+    return None
+
+
 def _red_judge(repo: Path, sha: str, parent: str, message: str, config: dict) -> tuple[str, str]:
     changed = [line.split("\t") for line in git(repo, "diff-tree", "-r", "--no-commit-id", "--name-status", parent, sha).splitlines()]
     paths = [cells[-1] for cells in changed if cells[0][:1] != "D"]
@@ -4840,10 +4863,15 @@ def _red_judge(repo: Path, sha: str, parent: str, message: str, config: dict) ->
     if m := RED_NONE.search(message):
         return "accepted", f"Red: none, {m.group(1).strip()}"
     is_test = lambda p: any(_path_glob(g).match(p) for g in config["tests"])  # noqa: E731
+    is_code = lambda p: any(_path_glob(g).match(p) for g in config["code"])  # noqa: E731
     tests = [p for p in paths if is_test(p)]
+    # what the tests read beside them (a helper, a fixture, a data file) comes along; code never does
+    dirs = {_glob_dir(g) for g in config["tests"]}
+    overlay = [p for p in paths if is_test(p) or (not is_code(p) and any(p.startswith(d) for d in dirs))]
     ids, moved = red_test_ids(repo, parent, sha, tests, [c[-1] for c in changed if c[0][:1] == "D" and is_test(c[-1])])
     if not ids and moved:
-        return "skipped", f"its tests only moved or were renamed ({', '.join(moved[:3])}): nothing new to see red"
+        return "fail", (f"a fix touching code has its tests only moved or renamed ({', '.join(moved[:3])}): nothing new "
+                        "to see red; say why with a `Red: none, <reason>` line")
     if not ids:
         return "fail", ("a fix touching code adds or changes no test, and says no `Red: none, <reason>` (a fix that only "
                         "deletes code needs one too)")
@@ -4852,13 +4880,16 @@ def _red_judge(repo: Path, sha: str, parent: str, message: str, config: dict) ->
         before.mkdir()
         after.mkdir()
         _export(repo, parent, before)
-        _export(repo, sha, before, *tests)  # only the test files: a test beside its code must not bring the fix along
+        _export(repo, sha, before, *overlay)  # never a code file: a test beside its code must not bring the fix along
         _export(repo, sha, after)
         try:
             red, green = _red_run(config["runner"], ids, before), _red_run(config["runner"], ids, after)
         except subprocess.TimeoutExpired as error:
             return "fail", f"not judged: the tests timed out after {error.timeout:g} s"
     named = ", ".join(ids[:4]) + (f" and {len(ids) - 4} more" if len(ids) > 4 else "")
+    if red.returncode != 0 and (missing := _red_missing_support(repo, parent, sha, red.stderr + red.stdout, is_code)):
+        return "fail", (f"not judged: on the parent the tests cannot import `{missing}`, which the commit adds outside "
+                        "every `code` glob and test folder; keep test support under a test folder")
     if red.returncode == 0:
         return "fail", f"{named}: passed on the parent too, so it does not catch the defect"
     if green.returncode != 0:
@@ -6525,7 +6556,7 @@ class ShellFinding:
 _SHELL_ASSIGN = re.compile(r"([A-Za-z_]\w*)=")
 # `${X}`, and `${X:-d}`, `${X#p}`, `${X/a/b}` and the like: X expanded, then changed; `${X[@]}` and `${#X}` are not.
 _SHELL_EXPANSION = re.compile(r"\$(?:\{([A-Za-z_]\w*)(?=[}:#%/^,+=?-])|([A-Za-z_]\w*))")
-_SHELL_HEREDOC = re.compile(r"<<(-?)[ \t]*(?:'([A-Za-z_]\w*)'|\"([A-Za-z_]\w*)\"|\\?([A-Za-z_]\w*))")  # not `$((1<<2))`
+_SHELL_HEREDOC = re.compile(r"<<(-?)[ \t]*(?:'([A-Za-z_]\w*)'|\"([A-Za-z_]\w*)\"|\\?([A-Za-z_]\w*))")  # never inside `$(( ))`
 _SHELL_TEST = re.compile(r"\[\[[ \t]")
 _SHELL_TEST_END = re.compile(r"[ \t]\]\](?=[ \t\n;&|)]|$)")
 _SHELL_WORD_END = " \t\n;|&()<>"
@@ -6584,7 +6615,8 @@ def shell_findings(command: str) -> list[ShellFinding]:
 
     A scan, not a parser: single and double quotes, backslashes, comments, `$( )` (inside double quotes too) and
     `( )` are followed, and what they assign stays inside them; a here-document's body is skipped (no shell splits
-    it, and a quoted one is text another program reads); `[[ ]]` never splits, and `X=v cmd` sets nothing here.
+    it, and a quoted one is text another program reads), while a here-string (`<<<`) and a shift inside `$(( ))` or
+    `(( ))` open none; `[[ ]]` never splits, and `X=v cmd` sets nothing here.
     """
     spaced: set[str] = set()
     found: dict[str, ShellFinding] = {}
@@ -6594,12 +6626,26 @@ def shell_findings(command: str) -> list[ShellFinding]:
     i, start = 0, True
     while i < len(command):
         ctx, ch = stack[-1], command[i]
+        if ctx[0] == "arith":  # `$(( ))` and `(( ))`: `<<` shifts, nothing splits; only a `$( )` inside is followed
+            if command.startswith("$(", i) and not command.startswith("$((", i):
+                stack.append(["sub", 0, set(spaced)])
+                i, start = i + 2, True
+            elif ch == ")" and ctx[1] == 0 and command.startswith("))", i):
+                stack.pop()
+                i, start = i + 2, False
+            else:
+                ctx[1] += {"(": 1, ")": -1}.get(ch, 0)
+                i += 1
+            continue
         if ctx[0] == "dq":
             if ch == "\\":
                 i += 2
             elif ch == '"':
                 stack.pop()
                 i, start = i + 1, False
+            elif command.startswith("$((", i):
+                stack.append(["arith", 0])
+                i += 3
             elif command.startswith("$(", i):
                 stack.append(["sub", 0, set(spaced)])
                 i, start = i + 2, True
@@ -6621,6 +6667,10 @@ def shell_findings(command: str) -> list[ShellFinding]:
             end = command.find("\n", i)
             i = len(command) if end < 0 else end
             continue
+        if command.startswith("$((", i) or (start and command.startswith("((", i)):
+            stack.append(["arith", 0])
+            i, start = i + (3 if ch == "$" else 2), False
+            continue
         if command.startswith("$(", i) or (ch == "(" and start):
             stack.append(["sub", 0, set(spaced)])
             i, start = i + (2 if ch == "$" else 1), True
@@ -6635,7 +6685,10 @@ def shell_findings(command: str) -> list[ShellFinding]:
             i, start = _shell_heredoc_end(command, i, heredocs), True
             heredocs = []
             continue
-        if ch == "<" and not command.startswith("<<<", i) and (m := _SHELL_HEREDOC.match(command, i)):
+        if command.startswith("<<<", i):  # a here-string: its word is read on this line, and opens no body
+            i, start = i + 3, False
+            continue
+        if ch == "<" and (m := _SHELL_HEREDOC.match(command, i)):
             heredocs.append((m.group(2) or m.group(3) or m.group(4), m.group(1) == "-"))
             i, start = m.end(), False
             continue

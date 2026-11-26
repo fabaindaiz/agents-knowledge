@@ -73,6 +73,11 @@ version it holds with `bundle.py changelog --since <its version>`.
   the failure for a fix with no test says a fix that only deletes code needs a `Red: none` line too. `shell-check`:
   a here-document's body is skipped, not read as commands; what a subshell assigns stays inside it; `[[ ]]` is never
   a finding; a prefix assignment (`X=v cmd`) sets nothing; and `${X:-d}`, `${X#p}` and the like expand X.
+  Then: a here-string (`<<<`) and a shift inside `$(( ))` or `(( ))` no longer open a here-document that swallowed
+  the rest of the command. `red-check` lays over the parent every changed file under the test globs' folders that
+  matches no `code` glob, so a new helper, fixture or data file comes along; a parent run that cannot import a module
+  the commit adds outside the code and the test folders is not judged, a failure, never a red; and a fix touching code
+  whose tests only moved fails unless it carries a `Red: none, <reason>` line.
 
 ## [0.0.36] - 2026-11-25
 

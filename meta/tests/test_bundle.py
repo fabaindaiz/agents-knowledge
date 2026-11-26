@@ -4063,6 +4063,14 @@ class ShellCheck(Base):
         self.assertEqual(self.names('X="a b"; cat <<<$X; ls $X'), ["X"])
         self.assertEqual(self.names('echo $((1<<2))\nX="a b"; ls $X'), ["X"])
 
+    def test_a_here_string_and_an_arithmetic_shift_open_no_heredoc(self) -> None:
+        for command in ('X="a b"\ncat <<< hi\necho $X', 'X="a b"; cat <<<"x"\nls $X', 'X="a b"; cat <<<x; ls $X',
+                        'X="a b"; echo $((a<<b))\nls $X', 'X="a b"; (( n = 1<<b ))\nls $X',
+                        'X="a b"; echo $(( (1)<<EOF ))\nls $X'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), ["X"])
+        self.assertEqual(self.names('echo $((1<<2)); cat <<EOF\nX="a b"; ls $X\nEOF'), [])
+
     def test_a_subshell_a_test_and_a_prefix_assignment_are_not_found(self) -> None:
         for command in ('(X="a b"); echo $X', 'X="a b"; [[ -n $X ]] && echo ok', 'X="a b" env | grep $X',
                         'X="a b" Y=1 env; ls $X', 'echo "$(X="a b")"; ls $X'):
@@ -4202,8 +4210,50 @@ class RedCheck(Base):
         (repo / "tests/test_more.py").write_text(CALC_TEST.split("    def test_one")[0].rstrip() + "\n" + body.replace("test_add", "test_add_zero"))
         self.fix(repo, "fix: add adds", self.FIXED, None)
         report = B.red_check(repo, f"{base}..HEAD")
-        self.assertEqual([e.verdict for e in report.entries], ["skipped"], report.entries)
+        self.assertEqual([e.verdict for e in report.entries], ["fail"], report.entries)
         self.assertIn("moved", report.entries[0].detail)
+        self.assertIn("Red: none", report.entries[0].detail)
+        git(repo, "commit", "--amend", "-q", "-m", "fix: add adds\n\nRed: none, the moved test is the guard")
+        self.assertEqual(self.verdicts(repo, base), ["accepted"])
+
+    def test_a_commit_that_only_moves_tests_is_skipped(self) -> None:
+        repo, base = self.repo()
+        (repo / "tests/test_calc.py").write_text("import unittest\n")
+        (repo / "tests/test_more.py").write_text(CALC_TEST)
+        commit(repo, "fix(tests): one file per subject")
+        self.assertEqual(self.verdicts(repo, base), ["skipped"])
+
+    def test_a_new_helper_beside_the_tests_is_laid_over_the_parent(self) -> None:
+        repo, base = self.repo()
+        (repo / "tests/support.py").write_text("ONE = 1\n")
+        (repo / "tests/one.txt").write_text("1\n")
+        self.fix(repo, "fix: add adds", self.FIXED, "\n    def test_one_from_support(self):\n        from tests import support\n"
+                 "        from pathlib import Path\n        self.assertEqual(calc.one(), support.ONE)\n"
+                 "        self.assertEqual(Path('tests/one.txt').read_text().strip(), '1')\n")
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["fail"], report.entries)
+        self.assertIn("passed on the parent too", report.entries[0].detail)
+
+    def test_a_parent_missing_a_test_support_module_is_not_judged(self) -> None:
+        repo, base = self.repo()
+        (repo / "testsupport").mkdir()
+        (repo / "testsupport/__init__.py").write_text("THREE = 3\n")
+        self.fix(repo, "fix: add adds", self.FIXED, "\n    def test_add_from_support(self):\n        import testsupport\n"
+                 "        self.assertEqual(calc.add(2, 1), testsupport.THREE)\n")
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["fail"], report.entries)
+        self.assertIn("not judged", report.entries[0].detail)
+        self.assertIn("testsupport", report.entries[0].detail)
+
+    def test_a_test_importing_new_code_the_parent_lacks_is_red(self) -> None:
+        repo, base = self.repo(config=RED_CONFIG.replace('"tools/calc.py"', '"tools/*.py"'))
+        (repo / "tools/__init__.py").write_text("")
+        base = commit(repo, "chore: a package")
+        (repo / "tools/calc2.py").write_text("def two():\n    return 2\n")
+        self.fix(repo, "fix: two exists", None, "\n    def test_two(self):\n        from tools import calc2\n"
+                 "        self.assertEqual(calc2.two(), 2)\n")
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["pass"], report.entries)
 
     def test_a_run_that_times_out_is_a_problem_not_a_crash(self) -> None:
         repo, base = self.repo()
