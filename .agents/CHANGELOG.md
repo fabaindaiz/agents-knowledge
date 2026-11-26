@@ -66,6 +66,13 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **An id beside a description across lines** (`i-5ed7e8-408166`): the privacy check's `id-beside-domain` read one
   line at a time, so a carrier or record id on one line and a description of it on the next passed. Two adjacent
   lines of one paragraph are now read together, as a warning (`id-beside-domain-nearby`), never a failure. It is listed by gather and intake and holds no proposal back (d-5ed7e8-feeec8). A carrier's own `privacy` reports it as a warning, never as a failure its hook would block.
+- **`red-check` and `shell-check` read what they judge more exactly.** `red-check`: a `Red: none,` line takes its
+  reason from its own line only, never the next; only the files matching the `tests` globs are laid over the parent,
+  so a test kept beside its code no longer brings the fix along; a test only moved or renamed (the same body under a
+  new name or file) is not new; a run that times out reports the commit as not judged, a failure, never a crash; and
+  the failure for a fix with no test says a fix that only deletes code needs a `Red: none` line too. `shell-check`:
+  a here-document's body is skipped, not read as commands; what a subshell assigns stays inside it; `[[ ]]` is never
+  a finding; a prefix assignment (`X=v cmd`) sets nothing; and `${X:-d}`, `${X#p}` and the like expand X.
 
 ## [0.0.36] - 2026-11-25
 

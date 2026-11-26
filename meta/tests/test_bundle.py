@@ -4051,6 +4051,33 @@ class ShellCheck(Base):
             with self.subTest(command=command):
                 self.assertEqual(self.names(command), [])
 
+    def test_a_heredoc_body_is_not_read_as_commands(self) -> None:
+        message = 'git commit -m "$(cat <<\'EOF\'\nfix: it\'s done\nEOF\n)"; X="a b"; ls $X'
+        self.assertEqual(self.names(message), ["X"])
+        for command in ('cat > s.sh <<\'EOF\'\nFILES="a b"\nfor f in $FILES; do echo "$f"; done\nEOF\nbash s.sh',
+                        'cat <<EOF > s.sh\nFILES="a b"\nls $FILES\nEOF', 'cat <<-"END"\n\tX="a b"; ls $X\n\tEND\necho ok',
+                        'echo "$(cat <<EOF\nX="a b" ls $X\nEOF\n)"'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), [])
+        self.assertEqual(self.names('cat <<EOF\nbody\nEOF\nX="a b"; ls $X'), ["X"])
+        self.assertEqual(self.names('X="a b"; cat <<<$X; ls $X'), ["X"])
+        self.assertEqual(self.names('echo $((1<<2))\nX="a b"; ls $X'), ["X"])
+
+    def test_a_subshell_a_test_and_a_prefix_assignment_are_not_found(self) -> None:
+        for command in ('(X="a b"); echo $X', 'X="a b"; [[ -n $X ]] && echo ok', 'X="a b" env | grep $X',
+                        'X="a b" Y=1 env; ls $X', 'echo "$(X="a b")"; ls $X'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), [])
+        for command in ('(X="a b"; ls $X)', 'X="a b"; [[ -n $X ]]; ls $X', 'X="a b" Y=1; ls $X'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), ["X"])
+
+    def test_a_parameter_expansion_with_an_operator_is_an_expansion(self) -> None:
+        for form in ("${X:-d}", "${X:=d}", "${X#p}", "${X%p}", "${X/a/b}", "${X-d}"):
+            with self.subTest(form=form):
+                self.assertEqual(self.names(f'X="a b"; ls {form}'), ["X"])
+        self.assertEqual(self.names('X="a b"; ls "${X:-d}"'), [])
+
     def test_the_command_applies_only_under_zsh(self) -> None:
         command = 'X="a b"; ls $X'
         self.assertEqual(run("shell-check", "--shell", "bash", "--", command)[0], 0)
@@ -4135,6 +4162,56 @@ class RedCheck(Base):
         repo, base = self.repo()
         self.fix(repo, "fix: add adds\n\nRed: none,", self.FIXED, None)
         self.assertEqual(self.verdicts(repo, base), ["fail"])
+
+    def test_a_red_none_line_never_reads_the_next_line_as_its_reason(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: add adds\n\nRed: none,\nSession: s-123", self.FIXED, None)
+        self.assertEqual(self.verdicts(repo, base), ["fail"])
+
+    def test_a_fix_that_only_deletes_code_is_told_it_needs_a_red_line(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: drop add", "def one():\n    return 1\n", None)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["fail"])
+        self.assertIn("only deletes code", report.entries[0].detail)
+
+    def test_tests_beside_the_code_lay_over_only_the_test_files(self) -> None:
+        repo = init_repo(self.root / "r")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/carrier.toml").write_text('carrier = "r-aaaaaa"\n[red_check]\ncode = ["pkg/*.py"]\ntests = ["pkg/test_*.py"]\n')
+        (repo / "tools").mkdir()
+        (repo / "tools/bundle.py").write_text(f"# {B.RED_CHECK_MARK}\n")
+        (repo / "pkg").mkdir()
+        (repo / "pkg/__init__.py").write_text("")
+        (repo / "pkg/calc.py").write_text("def add(a, b):\n    return a - b\n")
+        (repo / "pkg/test_calc.py").write_text("import unittest\nfrom pkg import calc\n\n\nclass Calc(unittest.TestCase):\n    pass\n")
+        base = commit(repo, "chore: the start")
+        (repo / "pkg/calc.py").write_text("def add(a, b):\n    return a + b\n")
+        (repo / "pkg/test_calc.py").write_text("import unittest\nfrom pkg import calc\n\n\nclass Calc(unittest.TestCase):\n"
+                                               "    def test_add(self):\n        self.assertEqual(calc.add(2, 1), 3)\n")
+        commit(repo, "fix: add adds")
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["pass"], report.entries)
+
+    def test_a_moved_or_renamed_test_is_not_new(self) -> None:
+        repo, base = self.repo()
+        body = "\n    def test_add(self):\n        self.assertEqual(calc.add(2, 0), 2)\n"
+        self.fix(repo, "test: add with zero", None, body)
+        base = git(repo, "rev-parse", "HEAD").strip()
+        (repo / "tests/test_calc.py").write_text(CALC_TEST)
+        (repo / "tests/test_more.py").write_text(CALC_TEST.split("    def test_one")[0].rstrip() + "\n" + body.replace("test_add", "test_add_zero"))
+        self.fix(repo, "fix: add adds", self.FIXED, None)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["skipped"], report.entries)
+        self.assertIn("moved", report.entries[0].detail)
+
+    def test_a_run_that_times_out_is_a_problem_not_a_crash(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix(calc): add adds", self.FIXED, self.ADD_TEST)
+        with mock.patch.object(B, "_red_run", side_effect=subprocess.TimeoutExpired(["python"], 900)):
+            report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["fail"], report.entries)
+        self.assertIn("timed out", report.entries[0].detail)
 
     def test_other_commits_and_fixes_outside_the_code_are_skipped(self) -> None:
         repo, base = self.repo()

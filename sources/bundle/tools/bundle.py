@@ -4735,7 +4735,7 @@ def machine_step(repo: Path) -> "CloseStep":
 # Present in a tree that holds this check; a commit whose parent lacks it was made before it existed and is not judged.
 RED_CHECK_MARK = 'add_parser("red-check"'
 FIX_SUBJECT = re.compile(r"^fix(?:\([^)]*\))?!?:")
-RED_NONE = re.compile(r"^Red:\s*none,\s*(\S.*)$", re.M)
+RED_NONE = re.compile(r"^Red:[ \t]*none,[ \t]*(\S.*)$", re.M)  # never across a line
 RED_RUNNER = ("{python}", "-m", "unittest")
 
 
@@ -4777,13 +4777,19 @@ def red_config(repo: Path) -> dict | None:
 
 
 def _test_bodies(source: str) -> dict[str, str]:
-    """{Class.method: its syntax tree, dumped} for every `test*` method of a class: what unittest runs."""
+    """{Class.method: its syntax tree, dumped without its name} for every `test*` method of a class: what unittest
+    runs. Without the name, a test renamed or moved to another file keeps its body's dump."""
     try:
         tree = ast.parse(source)
     except SyntaxError:
         return {}
-    return {f"{cls.name}.{fn.name}": ast.dump(fn) for cls in tree.body if isinstance(cls, ast.ClassDef)
-            for fn in cls.body if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and fn.name.startswith("test")}
+    out = {}
+    for cls in tree.body:
+        for fn in cls.body if isinstance(cls, ast.ClassDef) else []:
+            if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and fn.name.startswith("test"):
+                name, fn.name = fn.name, "test"
+                out[f"{cls.name}.{name}"] = ast.dump(fn)
+    return out
 
 
 def _blob(repo: Path, rev: str, path: str) -> str:
@@ -4793,14 +4799,22 @@ def _blob(repo: Path, rev: str, path: str) -> str:
         return ""
 
 
-def red_test_ids(repo: Path, parent: str, sha: str, files: list[str]) -> list[str]:
-    """The ids (`pkg.module.Class.method`) of the tests a commit adds or changes in `files`."""
-    ids = []
+def red_test_ids(repo: Path, parent: str, sha: str, files: list[str], gone: list[str] = ()) -> tuple[list[str], list[str]]:
+    """(the ids, `pkg.module.Class.method`, of the tests a commit adds or changes in `files`; those of the tests it
+    only moved or renamed): a body the parent held in one of `files` or `gone` (the test files changed or deleted),
+    and the commit no longer holds there under that name, was moved, wherever it now lives. A copy is new."""
+    held = set()
+    for path in {*files, *gone}:
+        now = _test_bodies(_blob(repo, sha, path))
+        held |= {body for name, body in _test_bodies(_blob(repo, parent, path)).items() if now.get(name) != body}
+    ids, moved = [], []
     for path in files:
         before, after = _test_bodies(_blob(repo, parent, path)), _test_bodies(_blob(repo, sha, path))
         module = path.removesuffix(".py").replace("/", ".")
-        ids += [f"{module}.{name}" for name, body in after.items() if before.get(name) != body]
-    return ids
+        for name, body in after.items():
+            if before.get(name) != body:
+                (moved if body in held else ids).append(f"{module}.{name}")
+    return ids, moved
 
 
 def _export(repo: Path, rev: str, dest: Path, *paths: str) -> None:
@@ -4825,18 +4839,25 @@ def _red_judge(repo: Path, sha: str, parent: str, message: str, config: dict) ->
         return "skipped", "its parent was made before red-check existed"
     if m := RED_NONE.search(message):
         return "accepted", f"Red: none, {m.group(1).strip()}"
-    tests = [p for p in paths if any(_path_glob(g).match(p) for g in config["tests"])]
-    ids = red_test_ids(repo, parent, sha, tests)
+    is_test = lambda p: any(_path_glob(g).match(p) for g in config["tests"])  # noqa: E731
+    tests = [p for p in paths if is_test(p)]
+    ids, moved = red_test_ids(repo, parent, sha, tests, [c[-1] for c in changed if c[0][:1] == "D" and is_test(c[-1])])
+    if not ids and moved:
+        return "skipped", f"its tests only moved or were renamed ({', '.join(moved[:3])}): nothing new to see red"
     if not ids:
-        return "fail", "a fix touching code adds or changes no test, and says no `Red: none, <reason>`"
+        return "fail", ("a fix touching code adds or changes no test, and says no `Red: none, <reason>` (a fix that only "
+                        "deletes code needs one too)")
     with tempfile.TemporaryDirectory(prefix="red-check-") as scratch:
         before, after = Path(scratch) / "parent", Path(scratch) / "commit"
         before.mkdir()
         after.mkdir()
         _export(repo, parent, before)
-        _export(repo, sha, before, *sorted({posixpath.dirname(p) or "." for p in tests}))
+        _export(repo, sha, before, *tests)  # only the test files: a test beside its code must not bring the fix along
         _export(repo, sha, after)
-        red, green = _red_run(config["runner"], ids, before), _red_run(config["runner"], ids, after)
+        try:
+            red, green = _red_run(config["runner"], ids, before), _red_run(config["runner"], ids, after)
+        except subprocess.TimeoutExpired as error:
+            return "fail", f"not judged: the tests timed out after {error.timeout:g} s"
     named = ", ".join(ids[:4]) + (f" and {len(ids) - 4} more" if len(ids) > 4 else "")
     if red.returncode == 0:
         return "fail", f"{named}: passed on the parent too, so it does not catch the defect"
@@ -6502,7 +6523,11 @@ class ShellFinding:
 
 
 _SHELL_ASSIGN = re.compile(r"([A-Za-z_]\w*)=")
-_SHELL_EXPANSION = re.compile(r"\$(?:\{([A-Za-z_]\w*)\}|([A-Za-z_]\w*))")
+# `${X}`, and `${X:-d}`, `${X#p}`, `${X/a/b}` and the like: X expanded, then changed; `${X[@]}` and `${#X}` are not.
+_SHELL_EXPANSION = re.compile(r"\$(?:\{([A-Za-z_]\w*)(?=[}:#%/^,+=?-])|([A-Za-z_]\w*))")
+_SHELL_HEREDOC = re.compile(r"<<(-?)[ \t]*(?:'([A-Za-z_]\w*)'|\"([A-Za-z_]\w*)\"|\\?([A-Za-z_]\w*))")  # not `$((1<<2))`
+_SHELL_TEST = re.compile(r"\[\[[ \t]")
+_SHELL_TEST_END = re.compile(r"[ \t]\]\](?=[ \t\n;&|)]|$)")
 _SHELL_WORD_END = " \t\n;|&()<>"
 
 
@@ -6526,16 +6551,46 @@ def _shell_value(command: str, i: int) -> tuple[str, int]:
     return "".join(out), i
 
 
+def _shell_heredoc_end(command: str, i: int, pending: list[tuple[str, bool]]) -> int:
+    """Where the commands go on after the here-documents `pending` opened on the line ending at `i` (its newline):
+    each body runs to the line holding only its delimiter (leading tabs allowed for `<<-`), and is never a command."""
+    pos = i + 1
+    for delimiter, tabs in pending:
+        while pos < len(command):
+            end = command.find("\n", pos)
+            end = len(command) if end < 0 else end
+            line = command[pos:end]
+            pos = end + 1
+            if (line.lstrip("\t") if tabs else line) == delimiter:
+                break
+    return min(pos, len(command))
+
+
+def _shell_prefix(command: str, i: int) -> bool:
+    """Whether the assignments from `i` on are a command's prefix (`X=v cmd`), which sets nothing in the shell."""
+    while True:
+        while i < len(command) and command[i] in " \t":
+            i += 1
+        if i >= len(command) or command[i] in ";|&\n)#":
+            return False
+        if not (m := _SHELL_ASSIGN.match(command, i)) or command.startswith("(", m.end()):
+            return True
+        _, i = _shell_value(command, m.end())
+
+
 def shell_findings(command: str) -> list[ShellFinding]:
     """Each variable the command assigns a literal holding whitespace and later expands unquoted, as `$NAME` or
     `${NAME}`, outside every quote; `"$NAME"`, `${=NAME}` (split on purpose), an array and `"${NAME[@]}"` pass.
 
-    A scan, not a parser: single and double quotes, backslashes, comments and `$( )` (inside double quotes too)
-    are followed; a here-document's body is read as commands, which can only add a finding.
+    A scan, not a parser: single and double quotes, backslashes, comments, `$( )` (inside double quotes too) and
+    `( )` are followed, and what they assign stays inside them; a here-document's body is skipped (no shell splits
+    it, and a quoted one is text another program reads); `[[ ]]` never splits, and `X=v cmd` sets nothing here.
     """
     spaced: set[str] = set()
     found: dict[str, ShellFinding] = {}
-    stack: list[list] = [["top", 0]]  # contexts: top level, double quotes, command substitution (with its depth)
+    # contexts: top level, double quotes, a command substitution or subshell (its depth, and what was spaced before)
+    stack: list[list] = [["top", 0]]
+    heredocs: list[tuple[str, bool]] = []
     i, start = 0, True
     while i < len(command):
         ctx, ch = stack[-1], command[i]
@@ -6546,7 +6601,7 @@ def shell_findings(command: str) -> list[ShellFinding]:
                 stack.pop()
                 i, start = i + 1, False
             elif command.startswith("$(", i):
-                stack.append(["sub", 0])
+                stack.append(["sub", 0, set(spaced)])
                 i, start = i + 2, True
             else:
                 i += 1
@@ -6566,16 +6621,28 @@ def shell_findings(command: str) -> list[ShellFinding]:
             end = command.find("\n", i)
             i = len(command) if end < 0 else end
             continue
-        if command.startswith("$(", i):
-            stack.append(["sub", 0])
-            i, start = i + 2, True
+        if command.startswith("$(", i) or (ch == "(" and start):
+            stack.append(["sub", 0, set(spaced)])
+            i, start = i + (2 if ch == "$" else 1), True
             continue
         if ctx[0] == "sub" and ch in "()":
             if ch == ")" and ctx[1] == 0:
-                stack.pop()
+                spaced = stack.pop()[2]  # what a subshell assigns never reaches the shell around it
                 i, start = i + 1, False
                 continue
             ctx[1] += 1 if ch == "(" else -1
+        if ch == "\n" and heredocs:
+            i, start = _shell_heredoc_end(command, i, heredocs), True
+            heredocs = []
+            continue
+        if ch == "<" and not command.startswith("<<<", i) and (m := _SHELL_HEREDOC.match(command, i)):
+            heredocs.append((m.group(2) or m.group(3) or m.group(4), m.group(1) == "-"))
+            i, start = m.end(), False
+            continue
+        if start and _SHELL_TEST.match(command, i):  # `[[ ]]` splits nothing
+            end = _SHELL_TEST_END.search(command, i + 2)
+            i, start = (len(command) if end is None else end.end()), False
+            continue
         if ch == "$" and (m := _SHELL_EXPANSION.match(command, i)):
             name = m.group(1) or m.group(2)
             if name in spaced and name not in found:
@@ -6591,7 +6658,8 @@ def shell_findings(command: str) -> list[ShellFinding]:
                 i, start = m.end(), False
                 continue
             value, i = _shell_value(command, m.end())
-            (spaced.add if re.search(r"\s", value) else spaced.discard)(m.group(1))
+            if not _shell_prefix(command, i):
+                (spaced.add if re.search(r"\s", value) else spaced.discard)(m.group(1))
             start = False
             continue
         start = ch in _SHELL_WORD_END
