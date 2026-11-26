@@ -1143,10 +1143,7 @@ def _offered(tree: Path, base: Path | None) -> tuple[list[dict], list[str]]:
     return offered, problems
 
 
-PRIVACY_LISTED_ONLY = {"id-beside-domain-nearby"}
-
-
-def proposal_privacy(offered: list[dict]) -> dict[str, list[str]]:
+def proposal_privacy(offered: list[dict], listed: dict[str, list[str]] | None = None) -> dict[str, list[str]]:
     """Each proposal's privacy findings, read as the carrier's own file is read: a FAIL, or a WARN that no
     `privacy-allow: <reason>` on its line answered, keeps it out of the intake until the carrier generalises
     it or its owner answers. Only the rule and the line are reported, never what matched."""
@@ -1162,7 +1159,10 @@ def proposal_privacy(offered: list[dict]) -> dict[str, list[str]]:
             path.write_text(B.render_proposal(proposal), encoding="utf-8")
             # A nearby id warns and is listed, but holds nothing back (`d-5ed7e8-feeec8`): its window reads a
             # wrapped line, where a word like "controller" on the next line is the usual match.
-            findings = [f for f in B.privacy_check(paths=[path]).findings if f.rule not in PRIVACY_LISTED_ONLY]
+            every = B.privacy_check(paths=[path]).findings
+            if listed is not None and (shown := [f for f in every if f.rule in B.PRIVACY_LISTED_ONLY]):
+                listed[proposal.id] = [f"{f.level} {f.rule} at line {f.where.rsplit(':', 1)[-1]}" for f in shown]
+            findings = [f for f in every if f.rule not in B.PRIVACY_LISTED_ONLY]
             if findings:
                 found[proposal.id] = [f"{f.level} {f.rule} at line {f.where.rsplit(':', 1)[-1]}" for f in findings]
     return found
@@ -1226,7 +1226,9 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
             gaps = []
         entry["harvested_gaps"] = [str(g) for g in gaps] if isinstance(gaps, list) else [str(gaps)]
         entry["later_harvests"] = [] if home else later_harvests(repo, received)
-        entry["privacy"] = [f"{pid}: {'; '.join(found)}" for pid, found in proposal_privacy(entry["proposals"]).items()]
+        nearby: dict[str, list[str]] = {}
+        entry["privacy"] = [f"{pid}: {'; '.join(found)}" for pid, found in proposal_privacy(entry["proposals"], nearby).items()]
+        entry["privacy_listed"] = [f"{pid}: {'; '.join(found)}" for pid, found in nearby.items()]
         report["carriers"][name] = entry
         offered = entry["proposals"]
         old = sum(not o["source"].startswith(B.PROPOSALS) for o in offered)
@@ -1237,6 +1239,7 @@ def gather(repos: list[Path], out: Path, root: Path = ROOT, packs: list[Path] | 
                   *[f"- a later harvest on {h}; gather that branch, or a worktree of it, before taking this one in" for h in entry["later_harvests"]],
                   *[f"- not readable as a proposal: {p}" for p in entry["problems"]],
                   *[f"- privacy, not taken in until generalised or answered: {p}" for p in entry["privacy"]],
+                  *[f"- privacy, listed only (read it; it holds nothing back): {p}" for p in entry["privacy_listed"]],
                   *[f"- changed what only a release writes: {p}" for p in entry["forked"]],
                   *[f"- added over its release, and not in the home: {p}" for p in entry["lost"]], ""]
     from dataclasses import asdict
@@ -1352,7 +1355,7 @@ def _intake(out: Path, version: str, root: Path, report: dict, wrote: list[bool]
     heard = {r[0].strip("`") for r in received_rows(root / "meta")}
     available = set(tags(root))
     result: dict = {"queued": [], "duplicates": [], "refused": [], "runs": 0, "received": [], "skipped": 0,
-                    "moved": [], "malformed": [], "privacy": []}
+                    "moved": [], "malformed": [], "privacy": [], "privacy_listed": []}
     new_rows, new_runs, refused, again, ledger = [], [], [], [], []
     sources = [*report["carriers"].items(), *[(f"pack {k}", v) for k, v in report.get("packs", {}).items()]]
     for name, entry in sources:
@@ -1368,7 +1371,9 @@ def _intake(out: Path, version: str, root: Path, report: dict, wrote: list[bool]
                 continue
             # Read again here, whatever gather said: gather.json is a file anyone can edit, and a pack or a
             # carrier without the hooks never ran the check. A warning no owner answered stays out too.
-            flagged = proposal_privacy([offered]).get(p.id)
+            nearby: dict[str, list[str]] = {}
+            flagged = proposal_privacy([offered], nearby).get(p.id)
+            result["privacy_listed"] += [f"{name}: {p.id}: {'; '.join(found)}" for found in nearby.values()]
             if flagged:
                 result["privacy"].append(f"{name}: {p.id}: {'; '.join(flagged)}")
                 continue
@@ -1944,6 +1949,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
                 print(f"  ! written against an older release: {line}")
             for line in result["malformed"]:
                 print(f"  x not taken in: {line}")
+            for line in result["privacy_listed"]:
+                print(f"  ! taken in, privacy listed only (read it; it holds nothing back): {line}")
             for line in result["privacy"]:
                 print(f"  x not taken in, privacy (generalise it, or the carrier's owner answers with privacy-allow): {line}")
             print(f"intake: {len(result['received'])} proposals received ({len(result['queued'])} candidates queued, "

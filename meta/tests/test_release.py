@@ -6,6 +6,8 @@ import contextlib
 import io
 import json
 from pathlib import Path
+import subprocess
+import sys
 from unittest import mock
 
 from meta.tests.support import BOOTSTRAP, CONTEXT, README, Base, a_proposal, bundle, commit, git, init_repo, old_outbox, release
@@ -634,6 +636,12 @@ class Carry(Base):
         result = self.R.intake(self.root / "out", "0.0.2", self.home)
         self.assertEqual(result["queued"], ["nearby-one"])
         self.assertEqual(result["privacy"], [])
+        self.assertIn("id-beside-domain-nearby", " ".join(result["privacy_listed"]))
+        ran = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[2] / "sources/bundle/tools/bundle.py"), "privacy", "--paths",
+                              *map(str, (repo / ".agents/proposals").glob("p-*.md"))], cwd=repo, capture_output=True, text=True)
+        code, out = ran.returncode, ran.stdout + ran.stderr
+        self.assertEqual(code, 0, out)
+        self.assertIn("id-beside-domain-nearby", out)
 
     def test_a_topic_on_a_note_is_another_occurrence_of_that_note(self) -> None:
         repo = make_carrier(self.root, "one")
@@ -1210,8 +1218,10 @@ class UnattendedRule(Base):
     """Both built prompts carry the shared unattended rule in their pre-flight, with every choice it may never take."""
 
     ROOT = Path(__file__).resolve().parents[2]
-    NEVER = ("a privacy warning or allowance", "step 3's candidate list", "a delete outside an approved table",
-             "a merge or push")
+    NEVER = {"prompt-harvest.md": ("a privacy warning or allowance", "step 3's candidate list",
+                                   "a delete outside an approved table", "a merge or push"),
+             "prompt-update.md": ("a privacy warning or allowance", "step 5's approval",
+                                  "a delete outside an approved table", "a merge or push")}
 
     def test_the_harvest_and_the_update_state_the_unattended_rule_before_they_start(self) -> None:
         for name in ("prompt-harvest.md", "prompt-update.md"):
@@ -1223,6 +1233,16 @@ class UnattendedRule(Base):
                 self.assertIn("**Unattended run (no one to answer).**", preflight)
                 self.assertIn("`unattended: <question> -> <default>`", preflight)
                 self.assertIn("Never take a choice that needs the human's yes", preflight)
-                for choice in self.NEVER:
+                for choice in self.NEVER[name]:
                     self.assertIn(choice, preflight)
                 self.assertIn("Record it as pending and leave it unwritten. Stop rules still stop.", preflight)
+                if name == "prompt-harvest.md":
+                    self.assertIn("unless the run is unattended", preflight)
+
+    def test_bundle_updates_alone_are_nothing_to_harvest_and_each_harvest_entry_has_its_own_title(self) -> None:
+        harvest = " ".join((self.ROOT / ".agents/method/prompt-harvest.md").read_text(encoding="utf-8").split())
+        update = " ".join((self.ROOT / ".agents/method/prompt-update.md").read_text(encoding="utf-8").split())
+        for text in (harvest, update):
+            self.assertIn("only the bundle's own updates", text)
+        self.assertIn('new entry "harvest through', harvest)
+        self.assertIn("its own `tools/bundle.py export`", update)

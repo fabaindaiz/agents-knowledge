@@ -911,6 +911,10 @@ def harvest_gap_problems(gaps: object, through: object = None) -> list[str]:
     return problems
 
 
+# Warnings the home lists over a proposal but never holds it back for (`d-5ed7e8-feeec8`).
+PRIVACY_LISTED_ONLY = {"id-beside-domain-nearby"}
+
+
 def held_proposal_warnings(result: "PrivacyResult") -> list:
     """The warnings the home's intake would hold a proposal back for: a WARN on a file under `proposals/`
     that no `privacy-allow` on its line answered (0.0.32). The carrier's own run reports them as failures,
@@ -922,7 +926,7 @@ def held_proposal_warnings(result: "PrivacyResult") -> list:
     """
     held = []
     for f in result.findings:
-        if f.level != "WARN":
+        if f.level != "WARN" or f.rule in PRIVACY_LISTED_ONLY:
             continue
         path = f.where.rsplit(":", 1)[0].replace("\\", "/")
         if PROPOSALS in [part for part in path.split("/") if part]:
@@ -5276,8 +5280,11 @@ def memory_dir(repo: Path, home: Path | None = None) -> Path:
 
 def _main_checkout(repo: Path) -> Path:
     """The main repository a linked worktree belongs to (`git rev-parse --git-common-dir`); else `repo`."""
-    result = subprocess.run(["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir"],
-                            capture_output=True, text=True, check=False)
+    try:
+        result = subprocess.run(["git", "-C", str(repo), "rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir"],
+                                capture_output=True, text=True, check=False)
+    except OSError:  # no git on this machine: the path given is the only one known
+        return repo
     dirs = result.stdout.split("\n")
     if result.returncode != 0 or len(dirs) < 2 or dirs[0] == dirs[1] or Path(dirs[1]).name != ".git":
         return repo
@@ -6116,7 +6123,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--bundle", default=str(OWN_BUNDLE))
     p.add_argument("--check", action="store_true", help="install nothing; fail (exit 1) when an installed skill is stale or edited")
-    p.add_argument("--force", action="store_true", help="overwrite a SKILL.md the repository wrote, once its rules are in LOCAL.md")
+    p.add_argument("--force", action="store_true", help="overwrite a SKILL.md the repository wrote, or one edited under its banner, once its rules are in LOCAL.md")
     p = sub.add_parser("surfaces", help="Cursor's and Copilot's copies of what Claude Code reads (rules, subagents, a pointer); "
                                         "experimental; --write")
     p.add_argument("--repo", default=str(OWN_REPO))

@@ -27,6 +27,9 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The update's harvest runs in a session of its own** (`d-5ed7e8-87d7b9`), and a carrier's own audit no longer
   re-checks the release's index and cards, which `verify` covers (`d-5ed7e8-1d9ff1`); the update and harvest read
   less (`i-5ed7e8-0ae753`).
+- **The re-run on fresh copies closed the last gaps**: the pre-flight's stop yields to an unattended run; a period of
+  the bundle's own updates alone is nothing to harvest; each harvest's log entry has its own title, so its own id;
+  an unattended update never takes step 5's approval; a release exported elsewhere runs its own `export`.
 
 ### Fixed
 
@@ -40,7 +43,7 @@ version it holds with `bundle.py changelog --since <its version>`.
   worktree's own empty one.
 - **An id beside a description across lines** (`i-5ed7e8-408166`): the privacy check's `id-beside-domain` read one
   line at a time, so a carrier or record id on one line and a description of it on the next passed. Two adjacent
-  lines of one paragraph are now read together, as a warning (`id-beside-domain-nearby`), never a failure. It is listed by gather and intake and holds no proposal back (d-5ed7e8-feeec8).
+  lines of one paragraph are now read together, as a warning (`id-beside-domain-nearby`), never a failure. It is listed by gather and intake and holds no proposal back (d-5ed7e8-feeec8). A carrier's own `privacy` reports it as a warning, never as a failure its hook would block.
 
 ## [0.0.36] - 2026-11-25
 

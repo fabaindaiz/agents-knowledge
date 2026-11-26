@@ -4,7 +4,8 @@
 
 **Put the newer release in `.agents/incoming/release/` first** — run the tool of the
 tree that holds the release, the home or any other: `python3 <that tree>/.agents/tools/bundle.py export
-<this repository>/.agents/incoming/release` copies only the files its `SHA256SUMS` lists — **then paste the block below into
+<this repository>/.agents/incoming/release` copies only the files its `SHA256SUMS` lists (a release exported to
+another folder runs its own `tools/bundle.py export` the same way) — **then paste the block below into
 the agent at the root of the repository being updated.** Do **not** overwrite the
 live bundle: an update needs both copies readable at once.
 
@@ -70,7 +71,8 @@ you discard.
 
 **4. Harvest before replacing, in a session of its own.** Compare
 `harvested_through` and `harvested_gaps` in `carrier.toml` with this repository's
-records. When anything since the frontier is unharvested, stop and say so: a
+records; records holding only the bundle's own updates (an update's log entry and its commits) are nothing to
+harvest. When anything else since the frontier is unharvested, stop and say so: a
 harvest (`prompt-harvest.md`) runs first, in a session of its own, never inside
 this update; it writes only proposals, so it needs no approval here. Resume at
 this step once its commit stands, and report what it sent up; when nothing is
@@ -140,8 +142,8 @@ in `prompt-context.md` §*The pre-flight*.
 
 **Unattended run (no one to answer).** Say so first, take every proposed default, and write each one taken
 as `unattended: <question> -> <default>` at the head of the report and in the log entry. Never take a choice
-that needs the human's yes: a privacy warning or allowance, step 3's candidate list (the harvest's), a delete outside an
-approved table, a merge or push. Record it as pending and leave it unwritten. Stop rules still stop.
+that needs the human's yes: a privacy warning or allowance, step 5's approval (the triage, the replacement and
+its removals), a delete outside an approved table, a merge or push. Record it as pending and leave it unwritten. Stop rules still stop.
 
 *The agent will print something like this, and then wait:*
 

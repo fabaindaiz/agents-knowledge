@@ -71,7 +71,7 @@ waits for the next release.
 
 ## Before you start — ask these
 
-**Ask all of them in one message, then stop.**
+**Ask all of them in one message, then stop**, unless the run is unattended (below).
 
 **Unattended run (no one to answer).** Say so first, take every proposed default, and write each one taken
 as `unattended: <question> -> <default>` at the head of the report and in the log entry. Never take a choice
@@ -193,7 +193,8 @@ session without being told: the uncommitted diff is their work.
 
 1. **Read what this repository recorded since `harvested_through`**, that day included, **and every
    span listed in `harvested_gaps`, which the frontier passed over**: a gap read is removed from the
-   field, and a gap left unread stays in it. Not what the records summarise, but them: the root
+   field, and a gap left unread stays in it. A period holding only the bundle's own updates (an update's log
+   entry and its commits) is nothing to harvest: say so, move the frontier, and write no proposal. Not what the records summarise, but them: the root
    instruction file, the area rules, the decisions log and its evidence (never the private folder), the changelog in full (it
    holds the discarded alternatives and the numbers), the roadmap, the audit script's comments, and
    the commit messages of the period. With several repositories open, one read-only agent per
@@ -264,8 +265,9 @@ session without being told: the uncommitted diff is their work.
    silence, leaving it reads the recent work again — and a note in the repository's own roadmap is the one
    place the next harvest is not sent. The next harvest reads the gaps before fixing its period, and the
    home's `gather` reports them. Then
-   `bundle.py new entry "harvest" --write` writes the harvest's own log entry, unless this repository's rules say
-   a harvest writes none; then `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local .` pass; then one commit in this
+   `bundle.py new entry "harvest through <harvested_through>" --write` writes the harvest's own log entry (the
+   date in the title keeps each harvest's id its own), and you fill the skeleton it prints, unless this repository's
+   rules say a harvest writes none; then `bundle.py privacy`, `bundle.py verify` and `bundle.py check-local .` pass; then one commit in this
    repository's own style, under its own commit rules and bar: offered and left to the user where those
    rules say so. An allowance the privacy check lists exists only because the user asked for
    it. A proposal is never edited: if one is wrong, delete it before it is committed, or write a second
