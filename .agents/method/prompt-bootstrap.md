@@ -423,6 +423,11 @@ anything is decided; step 8 returns what the session learned to the repository;
 together they make the loop compound instead of repeat. Steps 1, 2, 6 and 7 are
 the ones agents skip, and cost the most when skipped.
 
+**Context is a budget**: whatever enters it is paid again at every later turn,
+and whatever must survive a compaction is written to a file rather than
+remembered (`prompt-context.md` §*22. Context is a budget, and a summary is not
+a store*).
+
 **Three phases, and what each one loads.** Steps 0 to 2 plan, from the
 repository's own records and, on a change that touches state, a contract, data,
 security or verification, the cards the knowledge index links (one lookup, one
@@ -771,6 +776,20 @@ forever out of habit. Phase 2's rules apply. A delegated agent that
 downloads or writes is given its own scratch directory outside the
 repository; otherwise it writes where you stand. A destructive step there
 first checks that its target resolves inside that directory.
+
+### Where to read further
+
+**Nothing here is loaded by default.** Read one when its trigger is met, and
+only then:
+
+| When | Read |
+|---|---|
+| A plan of several tasks | [`prompt-context.md`](prompt-context.md) §*21.1 Plan* |
+| A trade-off to evaluate | [`prompt-context.md`](prompt-context.md) §*15. Ask the few decisions that are the human's; decide the rest* |
+| A review is asked for, or a plan's last task is done | [`prompt-context.md`](prompt-context.md) §*21.4 Review* |
+| A formatter on a dirty tree, generated churn, a scripted edit across files, a commit split, the gate's own limit | [`topics/environment.md`](topics/environment.md) |
+| Before a long delegate | [`prompt-context.md`](prompt-context.md) §*22. Context is a budget, and a summary is not a store* |
+| Closing the session | the `close` skill |
 
 ---
 

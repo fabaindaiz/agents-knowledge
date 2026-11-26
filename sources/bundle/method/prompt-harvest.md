@@ -168,7 +168,8 @@ The table step 3 shows is these piles, numbered, so the human can answer by row 
 
 **A harvest reads what was written down, so it is worth nothing until what happened is written
 down.** For each repository, run the closing review of the session loop (`prompt-bootstrap.md`
-§*The session loop*, step 8) over whatever it has in flight:
+§*The session loop*, step 8, whose two routing tables are in the `close` skill, §*2. The documents,
+true again* and §*4. Count, never remember*) over whatever it has in flight:
 
 1. **Re-run what the work invalidated** — a measurement recorded elsewhere that is now wrong, a
    roadmap entry a change unblocked, a rule that became checkable.

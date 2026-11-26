@@ -861,7 +861,8 @@ This is cheap, it is the
 same evidence the red step would have given, and it catches the stub that is
 never consulted and the test that asserts the absence of the behaviour it is
 named for. Where the tree may not be stashed or reverted (`prompt-bootstrap.md`,
-*Working safely*), see the red after the code exists by moving the
+*Working safely*, whose recipes are in `method/topics/environment.md`), see the
+red after the code exists by moving the
 implementation file to a scratch directory and back, or by mutating; undo by
 editing forward, and prove the file is back with `git diff --exit-code <path>`.
 
