@@ -415,60 +415,39 @@ web application and was left with two installed skills pointing at the old place
 
 ## The session loop
 
-The nine phases happen once. **This is what every session after them looks
-like**: where the artifacts earn their keep or sit unread.
+The nine phases happen once; **this is what every session after them looks
+like.** **Two bookends and seven steps**: step 0 loads the state of the world
+before anything is decided, step 8 returns what the session learned, and steps
+1, 2, 6 and 7 are the ones agents skip and cost the most when skipped. Steps 0
+to 2 plan, from the repository's own records and, on a change that touches
+state, a contract, data, security or verification, the cards the knowledge index
+links; step 3 builds, with no knowledge note; step 4 verifies and runs the
+checks of the cards the change relied on; steps 5 to 8 close.
 
-**Two bookends and seven steps.** Step 0 loads the state of the world before
-anything is decided; step 8 returns what the session learned to the repository;
-together they make the loop compound instead of repeat. Steps 1, 2, 6 and 7 are
-the ones agents skip, and cost the most when skipped.
-
-**Context is a budget**: whatever enters it is paid again at every later turn,
-and whatever must survive a compaction is written to a file rather than
-remembered (`prompt-context.md` §*22. Context is a budget, and a summary is not
-a store*).
-
-**Three phases, and what each one loads.** Steps 0 to 2 plan, from the
-repository's own records and, on a change that touches state, a contract, data,
-security or verification, the cards the knowledge index links (one lookup, one
-small file each). Step 3 builds, with the repository in view and no knowledge
-note. Step 4 verifies, and runs the checks of the cards the change relied on.
-Steps 5 to 8 close. Whatever enters the author's context is paid again at every
-later turn, which is why a card is read and not a note. The card review in a
+**Context is a budget**: whatever enters it is paid again at every later turn —
+which is why a card is read and not a note — and whatever must survive a
+compaction is written to a file rather than remembered (`prompt-context.md`
+§*22. Context is a budget, and a summary is not a store*). The card review in a
 fresh context (step 4) runs on request, and a whole-branch review is offered
-when a multi-task plan is done; what it costs, and what it was measured to find,
-are in `prompt-context.md` §*21.4 Review*.
+when a multi-task plan is done (§*21.4 Review*).
 
 ### 0. The opening brief — load the world before you touch the request
 
 **Do this before answering, before planning, and before agreeing that the
-request makes sense.** A complex task is routed by
-its signals (`.agents/method/skills/README.md`).
+request makes sense.** A complex task is routed by its signals
+(`.agents/method/skills/README.md`).
 
-Gather, in this order, stopping as soon as a source has nothing to add:
-
-- **What is in motion.** The roadmap's *Where we are*, and the last handful of
-  changelog entries. What is half-finished, and what did the last session say it
-  left undone?
-- **What is in the tree.** Uncommitted and staged changes, here and in every
-  worktree (one inside the repository doubles every scan, runs the main
-  checkout's hooks and hides its work from the next session). Some may be another
-  session's, and none of it is yours to fold in.
-- **What constrains today.** The decisions and measurements that bear on the
-  area the request touches, from the repository's own records (the cards come
-  at step 2). Read the *why*, not just the rule — you will be tempted to re-open it in
-  about an hour.
-- **What is stale.** Anything that must be re-checked before it can be trusted:
-  a number from a version ago, a research entry whose upstream may have shipped,
-  a document that names a file you should confirm still exists.
-- **What plans already exist here**, and — the part that is actually valuable —
-  **how today's request changes their conditions.** A request often silently
-  unblocks, forecloses or reprioritises something already written down, and the
-  human asking for it usually does not know that.
-- **What friction is still open.** Process items recorded and not yet fixed,
-  especially any that today's work will hit again.
-
-Run `bundle.py usage brief` and apply what it prints; it prints nothing without consent to preferences.
+Gather, in this order, stopping as soon as a source has nothing to add: **what
+is in motion** (the roadmap's *Where we are*, the last changelog entries, what
+the last session left undone); **what is in the tree** (uncommitted and staged
+changes, here and in every worktree — some may be another session's, and none of
+it is yours to fold in); **what constrains today** (the decisions and
+measurements bearing on the area, read for the *why*; the cards come at step 2);
+**what is stale** (anything to re-check before it can be trusted); **what plans
+already exist here, and how today's request changes their conditions**, which it
+silently does and the human asking usually does not know; **what friction is
+still open** that this work will hit again. Run `bundle.py usage brief` and apply
+what it prints; it prints nothing without consent to preferences.
 
 **Then say it out loud, in six lines. Not a dump — a brief.**
 
@@ -483,20 +462,13 @@ Changes it     <how the above alters your request — one sentence>
 Friction       <process items still open that this work will touch>
 ```
 
-The first two lines are dropped entirely when a single repository is open. The
-other six are never dropped.
-
-Four rules for the brief, each learned from its opposite:
-
-- **A line with nothing in it says `nothing`.** An omitted line is ambiguous
-  between *checked and clean* and *did not check*. This single rule is most of
-  the brief's value.
-- **`Changes it` is the point of the whole exercise.** If the state of the repo
-  does not alter the request, say so: "nothing here changes what you asked" is
-  information the human paid for.
-- **Written for someone who has not been here since last week**, because that is
-  usually true. Name things, do not allude to them.
-- **Six lines, not six paragraphs.** Anything longer gets skimmed.
+The first two lines are dropped when a single repository is open; the other six
+are never dropped. **A line with nothing in it says `nothing`**, since an
+omitted line is ambiguous between *checked and clean* and *did not check*, and
+that one rule is most of the brief's value. **`Changes it` is the point of the
+whole exercise**: "nothing here changes what you asked" is information the human
+paid for. Write it for someone who has not been here since last week — name
+things, do not allude to them — in six lines, not six paragraphs.
 
 The brief is the written state principle 22 asks for, which is why it is read
 from the repository and not remembered; its worked example is there.
@@ -506,18 +478,12 @@ from the repository and not remembered; its worked example is there.
 Do not start with the most interesting item. Survey what is available and rank
 it on two axes the repo can actually see — **what it costs the core invariant**
 (the roadmap's own table) and **whether this repo can verify it** — then report
-the ranking before building.
-
-Sort every candidate into one of three buckets, and say which:
-
-- **Ready.** Nothing to decide that the repo has not already answered.
-- **Blocked on a decision that is the human's.** Name the decision. "It's
-  complicated" is not a bucket.
-- **Blocked outside.** Upstream, hardware, licensing, someone else's roadmap.
-  Say what would reopen it and move on.
-
-**Also name what you would not take, and why**: the reason usually outlives
-the session.
+the ranking before building. Sort every candidate into **ready** (nothing to
+decide that the repo has not already answered), **blocked on a decision that is
+the human's** (name the decision; "it's complicated" is not a bucket) or
+**blocked outside** (upstream, hardware, licensing, someone else's roadmap — say
+what would reopen it and move on), and say which. **Also name what you would not
+take, and why**: the reason usually outlives the session.
 
 **A plan of several tasks maps its criteria to its tasks and carries its
 estimate**: `prompt-context.md` §*21.1 Plan*.
@@ -561,18 +527,16 @@ undone.
 Prefer extending the module that already does this job. Before adding a new
 concept, check whether the rung-4 move is available: can the **format** absorb
 the rule so the bad state stops being expressible? That question is cheapest
-before the code exists and nearly worthless after.
+before the code exists and nearly worthless after. **The reason travels with the
+number** (`prompt-context.md` §*Documentation, in the code*).
 
-Two habits that carry the reasoning forward:
-
-- **A throwaway probe is the normal way to measure.** Write it, have it print
-  the **state transitions** rather than a bare pass/fail, paste its output into
-  the changelog as the measurement, and delete it in the same change. A probe
-  that survives becomes untested infrastructure nobody owns. Make the deletion
-  checked: name probes so the audit recognises them and warns while one is in
-  the tree. And make cleanup the runner's, not the probe's: snapshot the state a
-  probe can dirty and restore it from outside — a hung probe never reaches its
-  own cleanup line (`../knowledge/notes/active/cleanup-belongs-to-the-supervisor.md`).
+**A throwaway probe is the normal way to measure.** Write it, have it print the
+**state transitions** rather than a bare pass/fail, paste its output into the
+changelog as the measurement, and delete it in the same change; a probe that
+survives becomes untested infrastructure nobody owns. Name probes so the audit
+recognises them and warns while one is in the tree, and make cleanup the
+runner's, not the probe's — a hung probe never reaches its own cleanup line
+(`../knowledge/notes/active/cleanup-belongs-to-the-supervisor.md`).
 
 ### 4. Verify — run the invariant test when you *claim* it, not when you think you touched it
 
@@ -583,15 +547,12 @@ cheap and reproducible, and its result is proven; where it is not, run the
 check from the main working copy's environment and read its result as
 unproven. Either way the report names which of the two it was.
 
-**A document that tells a reader what to run is verified by running it.** When
-the change alters what a procedure, a runbook, an invocation, a checklist or a
-worked example tells its reader to run or copy, follow it command by command in
-a scratch copy, as its reader would, examples assembled as written and put
-through the gate: reading it again finds what the author meant, running it finds
-what it says. Where no disposable copy of the target exists, the guide carries
-a tested undo section, is run once for real with approval, and each expected
-output it states is replaced by the observed one. An instruction that cannot be
-followed as written is a defect of the change.
+**A document that tells a reader what to run is verified by running it**,
+command by command in a scratch copy, as its reader would, examples assembled as
+written and put through the gate; where no disposable copy of the target exists,
+the guide carries a tested undo section, is run once for real with approval, and
+each expected output it states is replaced by the observed one. An instruction
+that cannot be followed as written is a defect of the change.
 
 #### The review, in a fresh context
 
@@ -622,13 +583,11 @@ in the same environment — a clean export of `HEAD` (`git archive HEAD | tar -x
 
 **A change meant to change nothing is proved by what it must preserve, compared
 mechanically.** Before a refactor, move, regeneration, reformat or translation,
-name the invariant — the rendered output, the emitted file, the token stream, or
-for prose every number, identifier and link target — capture it, and compare
-byte for byte afterwards. Normalise known nondeterminism (generated ids,
-timestamps) explicitly and say you did; "looks the same" is not a comparison.
-Move code by script, not by retyping. Such a change is its own commit, and its
-message states the comparison. The general form, for any tool that rewrites an
-artefact, is `../knowledge/notes/active/validate-each-transformation-run.md`.
+name the invariant, capture it, and compare byte for byte afterwards,
+normalising known nondeterminism explicitly and saying you did; "looks the same"
+is not a comparison. Move code by script, not by retyping. Such a change is its
+own commit, and its message states the comparison
+(`../knowledge/notes/active/validate-each-transformation-run.md`).
 
 ### 5. Look at what you made
 
@@ -666,76 +625,55 @@ procedure for splitting after the fact is in
 **What to show the user**
 
 **Never hide or soften the technical content.** There is no "simplified version"
-that drops a constraint, a cost or a caveat — a human who is given a summary
-without the constraint will make a decision the constraint would have changed.
-What varies is **order and
-emphasis**, never inclusion.
+that drops a constraint, a cost or a caveat — a human given a summary without
+the constraint will make a decision the constraint would have changed. What
+varies is **order and emphasis**, never inclusion.
 
-The order, the same every time:
+The order, the same every time: **1.** what is true now — what was built, and
+whether it works, in one or two lines; **2.** what it cost, and what it
+forecloses, in the repo's own units; **3.** what you need from them — the
+structural decision you declined to take, the question you could not answer, the
+thing they must schedule, separate and unmissable; **4.** the mechanism, for
+anyone who wants it: how it works, what you measured, what you rejected and why;
+**5.** what you did not do, always, even when nothing was left out.
 
-1. **What is true now** — what was built, and whether it works. One or two lines.
-2. **What it cost, and what it forecloses.** In the repo's own units.
-3. **What you need from them** — the structural decision you declined to take,
-   the question you could not answer, the thing they must schedule. Separate and
-   unmissable, because this is the part that must be acted on.
-4. **The mechanism**, for anyone who wants it: how it works, what you measured,
-   what you rejected and why.
-5. **What you did not do**, always, even when nothing was left out — "nothing was
-   left out" is a sentence worth writing.
-
-Three rules underneath it:
-
-- **Technical names stay in their own language.** Identifiers, commands, types,
-  file paths and error strings are quoted exactly, in English, whatever language
-  the prose around them is in; the headings and keywords a tool parses (a plan
-  skill's task heading) follow the tool.
-- **Talk to the human in their language; write documents in the
-  repository's.** The method documents are English (`prompt-context.md`
-  §*The set*).
-- **A number always brings its method.** "Faster" is worthless; "63 → 41 ms at
-  p99, measured over 200 runs with the cache warm" can be checked, argued with,
-  and reused.
+Three rules underneath it: **technical names stay in their own language** —
+identifiers, commands, types, file paths and error strings quoted exactly, in
+English, whatever language the prose around them is in, while the headings and
+keywords a tool parses follow the tool; **talk to the human in their language,
+write documents in the repository's** (`prompt-context.md` §*The set*); and **a
+number always brings its method** — "63 → 41 ms at p99, measured over 200 runs
+with the cache warm" can be checked and reused, "faster" cannot.
 
 ### 8. The closing review — return what the session learned
 
 **The step after the documents and the commits, and what makes a hundred
 sessions add up rather than just happen.** Three parts, a few minutes.
 
-**A. Re-run what this change invalidated.** Work does not only add; it ages
-things: a measurement that just became wrong, a question this settled, an entry
-this unblocked, a rule this made checkable, a research entry whose outside
-moved, a document you did not open. The list to walk is in the `close` skill
-(§*2. The documents, true again*).
+**A. Re-run what this change invalidated**: a measurement that just became
+wrong, a question this settled (a `d-` row, enforcer filled), an entry this
+unblocked, a rule this made checkable, a research entry whose outside moved, a
+document you did not open. The list to walk is in the `close` skill (§*2. The
+documents, true again*).
 
-**B. Harvest the learnings, and route each one.** The question is not "did I
-learn something" — it is **"what does this session know that the repository does
-not?"** Then send each answer to its home; a learning with no home is a learning
-that dies with the context window. The general part — what holds with none of
-this repository's nouns — becomes a proposal through the harvest
-(`prompt-harvest.md`), never an edit to a note or a method document here. The
-table of learning to home is in the `close` skill (§*4. Count, never remember*).
+**B. Route what this session knows that the repository does not** to its owning
+document; a learning with no home dies with the context window. The general part
+— what holds with none of this repository's nouns — becomes a proposal through
+the harvest (`prompt-harvest.md`), never an edit to a note or a method document
+here. The table is in the `close` skill (§*4. Count, never remember*).
 
-**C. Propose the process improvements you found, and do not perform them.**
-Principle 17 has the discipline. List them with the arithmetic, say which is the
-one-line reversible one you already took, and leave the rest for the human to
-schedule.
+**C. Propose the process improvements you found, and do not perform them**
+(principle 17): list them with the arithmetic, say which one-line reversible one
+you already took, and leave the rest for the human to schedule.
 
-**Capture is unconditional; proposing is throttled.** Conflating the two makes
-process work either absent or exhausting:
-
-- **Always capture, every session, without being asked and without judging
-  whether it matters.** A learning or a friction that is not written down when
-  it happens is gone, and no later session can recover it. It costs seconds:
-  **no session is allowed to lose what it learned.**
-- **Surface a proposal only when it has earned it**: the friction has been hit a
-  second time, or the human asked, or the recurring review is running. Otherwise
-  it stays recorded and silent. **Count by searching**, never from memory: the
-  log and any ledger, for each friction's symptom under several spellings and
-  for each procedure done by hand. A hit is an entry, not an incident: read
-  each, count an event copied into later entries once, and write the incidents.
-- **In the report, the whole thing is one line.** `Captured: 3 learnings, 1
-  friction (2nd hit — see roadmap). Nothing needs you.` Expand only if asked.
-  The changelog entry's *Learned* carries the same line.
+**Capture is unconditional; proposing is throttled.** Always capture, every
+session, without being asked and without judging whether it matters: **no
+session is allowed to lose what it learned.** Surface a proposal only when it
+has earned it — a second hit, the human asking, or the recurring review —
+**counting by searching** and never from memory, incidents and not entries. In
+the report the whole thing is one line, `Captured: 3 learnings, 1 friction (2nd
+hit — see roadmap). Nothing needs you.`, and the changelog entry's *Learned*
+carries the same line.
 
 **The closing question, asked plainly:** *if the next session is a different
 agent, on another machine, with no memory of this one, what would it have to
@@ -751,14 +689,13 @@ recipes, and the recipes for the other four are in
 - **The uncommitted diff is the work, and it has no copy.** Never revert the
   working tree: no `git checkout` or `git restore` of a path, no `git stash`, no
   `git reset --hard`, no `git clean`. Compare against `HEAD` by *reading*
-  `git diff` and `git show HEAD:<path>`; replace an attempt that was wrong by
-  editing it forward. Back the rule with a permission deny (artifact 4), because
-  it is the one mistake that destroys something nobody can rebuild. The one
-  exception is a split tool that backs up what it rewrites first and proves the
-  restore byte for byte (step 7): it makes the copy this rule says does not exist.
+  `git diff` and `git show HEAD:<path>`, and replace an attempt that was wrong
+  by editing it forward. Back the rule with a permission deny (artifact 4). The
+  one exception is a split tool that backs up what it rewrites first and proves
+  the restore byte for byte (step 7).
 - **The tree may already hold another session's work.** Check before you start.
   Never fold someone else's uncommitted or staged change into yours, and name it
-  in your report so the human knows it is there.
+  in your report.
 - **A formatter that can lose data never runs on a dirty tree**; **generated
   churn is put back by writing `HEAD` over it**, never by a revert command; **a
   scripted edit checks every anchor before it writes any**; and **the gate's own
@@ -769,27 +706,23 @@ recipes, and the recipes for the other four are in
 ### Research does not end at Phase 2
 
 When an item comes off the roadmap for implementation, **re-check the outside
-for that item specifically.** The upstream issue that blocked it may have
-shipped, or the pinned version grown the API you worked around. This five-minute
-check is the only thing that keeps a *blocked outside* entry from being blocked
-forever out of habit. Phase 2's rules apply. A delegated agent that
-downloads or writes is given its own scratch directory outside the
-repository; otherwise it writes where you stand. A destructive step there
-first checks that its target resolves inside that directory.
+for that item specifically**: the upstream issue that blocked it may have
+shipped, or the pinned version grown the API you worked around. Phase 2's rules
+apply. A delegated agent that downloads or writes is given its own scratch
+directory outside the repository, and a destructive step there first checks that
+its target resolves inside that directory.
 
 ### Where to read further
 
 **Nothing here is loaded by default.** Read one when its trigger is met, and
-only then:
-
-| When | Read |
-|---|---|
-| A plan of several tasks | [`prompt-context.md`](prompt-context.md) §*21.1 Plan* |
-| A trade-off to evaluate | [`prompt-context.md`](prompt-context.md) §*15. Ask the few decisions that are the human's; decide the rest* |
-| A review is asked for, or a plan's last task is done | [`prompt-context.md`](prompt-context.md) §*21.4 Review* |
-| A formatter on a dirty tree, generated churn, a scripted edit across files, a commit split, the gate's own limit | [`topics/environment.md`](topics/environment.md) |
-| Before a long delegate | [`prompt-context.md`](prompt-context.md) §*22. Context is a budget, and a summary is not a store* |
-| Closing the session | the `close` skill |
+only then. In [`prompt-context.md`](prompt-context.md): a plan of several tasks
+→ §*21.1 Plan*; a trade-off → §*15. Ask the few decisions that are the
+human's; decide the rest*; a review asked for, or a plan's last task done →
+§*21.4 Review*; before a long delegate → §*22. Context is a budget, and a
+summary is not a store*. A formatter on a dirty tree, generated churn, a
+scripted edit across files, a commit split or the gate's own limit →
+[`topics/environment.md`](topics/environment.md). Closing the session → the
+`close` skill.
 
 ---
 

@@ -234,7 +234,7 @@ CUT_LEDGER_HEADER = "| File | Block | Item | Verdict |"
 # losing one silently is how a cut turns a rule into a suggestion.
 NORMATIVE_WORDS = frozenset("""
     must never always only every each no not nor none nothing cannot unless without required forbidden
-    refuse refuses refused wins overrides before after
+    refuse refuses refused wins overrides before after may should any all
 """.split())
 CUT_ITEM_PATTERNS = (
     re.compile(r"`[^`\n]+`"),                              # inline code

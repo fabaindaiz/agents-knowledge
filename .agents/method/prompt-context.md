@@ -993,9 +993,10 @@ carrier is private, is described only by a neutral kind, and **never has its
 carrier id written beside a description** — the id is what would join every
 other detail to it.
 
-**A carrier's confidential records stay in its private folder** (`.private/`, at the
-root; gitignored where the repository is public): no tool and no harvest reads it, and
-each file opens with the sentinel line the privacy check fails on anywhere else.
+**A carrier's confidential records stay in its private folder** (`.private/`, at
+the root, gitignored where the repository is public): no tool and no harvest
+reads it, and each file opens the sentinel line the privacy check fails on
+anywhere else.
 
 **Usage data, and a long delegate's price, are principle 22's** (`prompt-context.md`
 §*22. Context is a budget, and a summary is not a store*): usage data stays on the
@@ -1005,25 +1006,20 @@ its estimate before it runs.
 **Privacy wins over record-keeping.** Where this rule meets "never lose
 information", this rule wins. Sensitive detail is generalised while the lesson
 is still useful, and deleted when the specific detail was its only value, or
-when it is obsolete and nothing current depends on it. Changelogs, history,
-evidence and every other record are **not exempt because they are history**: a
-record that is otherwise never rewritten may be rewritten or deleted by a privacy
-scrub, and the release that does it says so. A deletion is recorded generically —
-"carrier-specific detail removed for privacy" and the date — never by restating
-what was removed.
+when it is obsolete. Changelogs, history, evidence and every other record are
+**not exempt because they are history**: a record that is otherwise never
+rewritten may be rewritten or deleted by a privacy scrub, and the release that
+does it says so, generically — "carrier-specific detail removed for privacy" and
+the date — never by restating what was removed.
 
 **It holds whether or not you remember loading it.** An agent writing any file
 that travels — a proposal, `carrier.toml`, a note, a method document — applies
-the rule even when this section is not in its context — and
-does not trust itself to have applied it. The carrier-owned files are checked like
-the released ones. `bundle.py privacy` checks the tree against generic
-patterns (addresses, home paths, forge URLs, currency amounts, time-zone
-offsets, pinned versions, chosen ids, code identifiers in evidence, a record id
-beside a domain noun) and against this machine's own
-`~/.config/agent-guides/private-terms.txt`, which is never committed;
-`bundle.py verify` runs it. The one override is a `privacy-allow: <reason>` marker on the line,
-written only when the user explicitly says so; every run lists every allowance,
-so none is silent.
+the rule even when this section is not in its context, and does not trust itself
+to have applied it; the carrier-owned files are checked like the released ones.
+`bundle.py privacy` checks the tree against generic patterns and against this
+machine's own `~/.config/agent-guides/private-terms.txt`, which is never
+committed; `bundle.py verify` runs it, and `privacy --help` lists the patterns
+and the one override.
 
 **Prevents:** a private codebase, its customers or the people behind it being
 found by anyone who reads a public copy of the bundle — the one mistake in this
@@ -1227,13 +1223,11 @@ takes with it the only copy of what the session knew.
 
 ## Engineering standards
 
-The principles say what the repository must guarantee. This says what the code
-itself must look like. **These are the defaults the method assumes**; a host
-repository that has already decided differently keeps its decision (principle
-19), and the substitution goes in the `adapted` list of `.agents/carrier.toml`.
-
-Every standard here is stated as *what it prevents*, and every one of them is
-something an agent gets wrong in a characteristic way.
+What the code itself must look like, each standard stated as *what it prevents*
+and each one something an agent gets wrong in a characteristic way. **These are
+the defaults the method assumes**; a host repository that has already decided
+differently keeps its decision (principle 19), and the substitution goes in the
+`adapted` list of `.agents/carrier.toml`.
 
 ### Tests
 
@@ -1322,14 +1316,13 @@ last one is not part of the pyramid; it is the thing the pyramid is holding up.
 ### Evaluation — how you know it works
 
 Four layers, and they answer different questions. A repo needs all four; most
-have one and believe they have four.
-
-| Layer | Answers | Example |
-|---|---|---|
-| The gate | did we break a rule we already knew about? | format, lint, types, tests, the structural audit |
-| The invariant test | does the one thing that must always be true still hold? | replay, round trip, seek-and-compare, clean-install smoke |
-| The pre-ship check | does it work **in the artefact we actually deliver**? | the built wheel, the release bundle, the container (principle 7) |
-| Looking at it | is the thing we produced any good? | render it, run it, read the output (principle 14) |
+have one and believe they have four. **The gate** — did we break a rule we
+already knew about: format, lint, types, tests, the structural audit. **The
+invariant test** — does the one thing that must always be true still hold:
+replay, round trip, seek-and-compare, clean-install smoke. **The pre-ship
+check** — does it work in the artefact we actually deliver: the built wheel, the
+bundle, the container (principle 7). **Looking at it** — is the thing we
+produced any good: render it, run it, read the output (principle 14).
 
 **For repositories that ship model behaviour, add a fifth: evals.** They are
 tests whose subject is non-deterministic, and they follow the same discipline

@@ -6073,7 +6073,13 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--migrate", action="store_true", help="add the Status column to a four-column log, each row "
                    "`accepted recorded <date>` from the commit that wrote it; prints what it would change")
     p.add_argument("--write", action="store_true", help="with --migrate: write the files")
-    p = sub.add_parser("privacy", help="nothing that identifies a private repository, its people or its infrastructure (exit 1 on a FAIL)")
+    p = sub.add_parser("privacy", help="nothing that identifies a private repository, its people or its infrastructure (exit 1 on a FAIL)",
+                       description="Checks the tree against this machine's own `private-terms.txt`, which is never "
+                                   "committed, and against generic patterns: addresses, home paths, forge URLs, "
+                                   "currency amounts, time-zone offsets, pinned versions, chosen ids, code identifiers "
+                                   "in evidence, and a record id beside a domain noun. The one override is a "
+                                   "`privacy-allow: <reason>` marker on the line, written only when the user explicitly "
+                                   "says so; every run lists every allowance, so none is silent.")
     p.add_argument("tree", nargs="?", default=str(OWN_BUNDLE), help="the bundle whose files are read")
     p.add_argument("--paths", nargs="+", metavar="FILE", help="read these files instead of the tree, anywhere (a repository's README, a staged file)")
     p.add_argument("--terms", metavar="FILE", help="the private terms file (default: $XDG_CONFIG_HOME or ~/.config, agent-guides/private-terms.txt)")
