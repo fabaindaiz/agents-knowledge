@@ -253,9 +253,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-6cf312` · `bundle.py new entry` refuses a missing log in one line, and the home names its session
   log.** **Half done on 2026-11-24:** this repository now names its session log, and the file exists with its first entry. The other half stands and is worse than recorded — asked to write into a log that does not exist, the command does not refuse in one line, it raises an unhandled error and prints a traceback. Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
   close skill's step 3 does not know. *Estimate:* an hour with a test. *Collides with:* `new entry`, the close skill.
-- **`i-5ed7e8-11e17f` · `memory-diff` from a linked worktree reads the repository's memory.** It reads the
-  worktree's own, empty, folder; `--memory` is the workaround. *Estimate:* an hour with a test. *Collides with:*
-  `memory-diff`, `close`.
 - **`i-5ed7e8-307d02` · Carriers stop re-checking the release's internals in their own audits.** Six carrier audits
   re-check the index and note layout that `bundle.py verify` owns, and each layout change breaks them all. Offer
   each carrier, at its next update, to drop those checks and rely on `verify`; or ship a documented,
@@ -426,10 +423,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   with an unclosed thematic break and after a shebang's encoding line; the session loop's steps 3 and 4 citing full
   notes; the working invocation's `Reads:` not reaching the *Done* checklist (over the coding budget). From the 0.0.36 adversarial review: `install-skills` overwrites a hand-edited `SKILL.md` that keeps its banner, which `verify` flags only before the install. *Estimate:* the
   first and the banner, 20–30 min wall, 80k tokens, one round; the text ones wait on the budget. *Collides with:* nothing.
-- **`i-5ed7e8-0ae753` · Trim the update and bootstrap sessions.** The update's `Reads:` names
-  `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700
-  estimated tokens); the bootstrap states the minting instructions twice; `knowledge/OPEN.md` is about
-  half of a harvest's load. *Collides with:* the `Reads:` lists and `report --check` budgets.
 - **`i-5ed7e8-d65a4c` · An `applies_if` precondition per note, naming where its fact is usually
   found.** No pilot trial read the file that held the decisive fact; agents applied the principle by
   default, which is also how the one over-application happened. A precondition with where to look
@@ -610,6 +603,15 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **2026-11-26: two items phase 1 finished but left in *Next*, found at the next session's start**: `memory-diff` from a worktree (lane B, `9331e02`) and the update and bootstrap reads trimmed (lane A, `5924e91`). The items, whole:
+  - **`i-5ed7e8-11e17f` · `memory-diff` from a linked worktree reads the repository's memory.** It reads the
+    worktree's own, empty, folder; `--memory` is the workaround. *Estimate:* an hour with a test. *Collides with:*
+    `memory-diff`, `close`.
+  - **`i-5ed7e8-0ae753` · Trim the update and bootstrap sessions.** The update's `Reads:` names
+    `prompt-context.md` §*Which document to run*, which pulls in two subsections it never uses (about 700
+    estimated tokens); the bootstrap states the minting instructions twice; `knowledge/OPEN.md` is about
+    half of a harvest's load. *Collides with:* the `Reads:` lists and `report --check` budgets.
 
 - **2026-11-26: the two guard wirings applied at the owner's word** at the close: the zsh check in the command hook and `build --check` on an export of the index in the pre-commit hook, each probed live. The items, whole:
   - **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
