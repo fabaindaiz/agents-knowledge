@@ -28,7 +28,7 @@ line what you are not asking.
 
 Reads:
 - method/prompt-bootstrap.md §The process
-- method/prompt-context.md §The enforcement ladder §The principles §Engineering standards §The artifacts §Three agents, one source §The platform's own mechanics §Adapting to another stack §Adopting into a repository that already works
+- method/prompt-context.md §The enforcement ladder §The principles §Engineering standards §The domain's own standards §The artifacts §Three agents, one source §The platform's own mechanics §Adapting to another stack §Adopting into a repository that already works
 - README.md §The fields that are this repository's
 
 If `prompt-context.md` is not next to this file, say so and stop.
@@ -429,10 +429,10 @@ security or verification, the cards the knowledge index links (one lookup, one
 small file each). Step 3 builds, with the repository in view and no knowledge
 note. Step 4 verifies, and runs the checks of the cards the change relied on.
 Steps 5 to 8 close. Whatever enters the author's context is paid again at every
-later turn, which is why a card is read and not a note. The
-card review in a fresh context (step 4) runs on request: measured, it cost
-several times a session without it and made no task pass that the cards alone
-did not. A whole-branch review is offered when a multi-task plan is done.
+later turn, which is why a card is read and not a note. The card review in a
+fresh context (step 4) runs on request, and a whole-branch review is offered
+when a multi-task plan is done; what it costs, and what it was measured to find,
+are in `prompt-context.md` §*21.4 Review*.
 
 ### 0. The opening brief — load the world before you touch the request
 
@@ -493,12 +493,8 @@ Four rules for the brief, each learned from its opposite:
   usually true. Name things, do not allude to them.
 - **Six lines, not six paragraphs.** Anything longer gets skimmed.
 
-> **Example.** A session opened on "keep adding roadmap items". Three lines of
-> the brief mattered: a task-runner change **staged by another session**, not to
-> be touched; the deploy path fixed twice in the last few entries, so anything
-> touching the build was hot; and the only roadmap item that cost the core
-> invariant nothing was one the human had not named. That last line changed what
-> got built.
+The brief is the written state principle 22 asks for, which is why it is read
+from the repository and not remembered; its worked example is there.
 
 ### 1. Pick from the roadmap, and price it before you touch anything
 
@@ -518,19 +514,8 @@ Sort every candidate into one of three buckets, and say which:
 **Also name what you would not take, and why**: the reason usually outlives
 the session.
 
-**A plan of several tasks maps criteria to tasks both ways**: each criterion a
-fact that is true or false, verified by a task; a task serving none is its own
-work item.
-
-**A plan carries its estimate**: the release it lands in, and per task its agent wall minutes, tokens and review
-rounds, in a table whose *actual* column is filled as each task lands, with the
-ratio the earlier plans measured; human work hours only when the user asks, with
-their conversion. The close compares the totals with the outcome.
-
-> **Example.** "Any variant on demand" looked ready: the limit is an interface
-> constant, not a platform one. But **no data definition declares more variants
-> than the limit already allows**: interface for a problem that does not exist
-> yet, and saying so with the count stops it being picked up again next month.
+**A plan of several tasks maps its criteria to its tasks and carries its
+estimate**: `prompt-context.md` §*21.1 Plan*.
 
 ### 2. Ask the few decisions before writing: together, or one per turn in a review
 
@@ -575,11 +560,6 @@ before the code exists and nearly worthless after.
 
 Two habits that carry the reasoning forward:
 
-- **The reason travels with the number.** A constant whose comment records the
-  measurement that produced it — *"any lower opacity let the background through
-  and the title stopped being readable"* — defends itself against the next
-  session in a way a line in a document does not, because it is read at the
-  moment of changing it.
 - **A throwaway probe is the normal way to measure.** Write it, have it print
   the **state transitions** rather than a bare pass/fail, paste its output into
   the changelog as the measurement, and delete it in the same change. A probe
@@ -610,34 +590,14 @@ followed as written is a defect of the change.
 
 #### The review, in a fresh context
 
-**The card review, on request only.** When the user asks for a review in a
-fresh context or names the reviewer, the last thing before claiming done is a review by the reviewer subagent, installed
-from `.agents/agents/knowledge-reviewer.md` (in Claude Code,
-`.claude/agents/knowledge-reviewer.md`). Give it the diff and one line of intent,
-nothing else, and wait for its answer. It reads the cards, cites evidence from
-the repository for each, runs their checks (a check that needs a planted test
-runs in a scratch copy, or comes back as the test you must write), and returns
-findings; its reading never enters your context. When a change deletes or
-rewrites stored data, moves money or touches authentication and no review was
-asked for, the report offers one, in one line; it does not run it.
-
-**The whole branch, offered when a multi-task plan is done.** Before the close,
-ask in one question whether a fresh agent should review the whole branch, given
-the plan and its decisions as intent, and give the cost (in five repositories each took four to twenty minutes,
-about a hundred thousand tokens where counted; thin evidence: principle 19). Not for one small
-commit.
-
-- **Fix the findings and nothing else**, then send only what changed for a
-  second review. **Re-review by severity**, which the reviewer assigns and the
-  author never lowers: *high*, data lost, security or a gate broken; *medium*, a
-  wrong result, lost rule or false claim someone would meet; *low*, wording or a
-  cosmetic edge. Rounds run while one finds medium or worse, stop when only low
-  remain (listed), and at five ask the user; a medium or high fix gets its own pass,
-  counted as a round. Re-reviews follow only a review asked for or accepted.
-- A finding you reject is reported with the evidence that rejects it.
-- Where no subagent can run (another assistant, a restricted session), do the
-  same here, in order: the card, the evidence, the check; and say in the report
-  that the review was not isolated.
+**The card review, on request only.** When the user asks for a review in a fresh
+context or names the reviewer, the last thing before claiming done is a review by
+the reviewer subagent; give it the diff and one line of intent, and wait. When a
+change deletes or rewrites stored data, moves money or touches authentication and
+no review was asked for, **the report offers one, in one line**; it does not run
+it. When a multi-task plan is done, offer a review of the whole branch, in one
+question with its cost. How the reviewer is installed and fed, how severity ends
+the rounds, and what a review costs are in `prompt-context.md` §*21.4 Review*.
 
 The gate is the floor. The core invariant's own test — the replay, the round
 trip, the wheel installed clean — is cheap relative to a wrong claim: **if the
@@ -671,19 +631,10 @@ Principle 14, applied. Render it, run it, open it, read it.
 
 ### 6. Put the documents back to true — in this change, not later
 
-Write this table once for your repo, in Phase 4, and follow it every session;
-what a script can check goes in `docs-map.toml` too (principle 16):
-
-| What you changed | What must move, in the same change |
-|---|---|
-| A rule, or the answer to a settled question | the decisions log: a new row with a `d-` id, its Status, **enforcer column filled** |
-| A number some document claims | the document that owns that number, with the new measurement |
-| A file, a layer, a public name | the architecture document, and every map that names it |
-| Something the roadmap planned | that entry's **state**, and what is still missing |
-| A command, a flag, a task-runner entry | every document that quotes it — these go stale fastest |
-| A new dated record (research, a report, a plan) | its folder's index |
-| A user-visible behaviour | the guide written for the non-programmer, if the repo has one |
-| Anything at all | the changelog, including what went wrong on the way |
+Write the *what changed → what must move* table once for your repo, in Phase 4
+(it is in `prompt-context.md` §*16. A change is not done until the documents it
+falsified are true again*), and follow it every session; what a script can check
+goes in `docs-map.toml` too.
 
 The test for this step is not "did I write documentation". It is: **is there a
 sentence anywhere in the repo that my change just made false?**
@@ -703,15 +654,9 @@ and kind of change, and a grouping the human asked for wins. The report lists
 what was offered and what still waits.
 
 **Offer each commit when its piece passes the bar, not at the close**: once two
-finished pieces touch the same lines, no hunk-level tool separates them. If you
-must split after the fact: an agent cannot use interactive staging, so write a map of
-hunks to commits and keep the tool that applies it; build every intermediate
-tree from the commit you started on, never from the moving `HEAD`; prove before
-writing that taking nothing gives `HEAD` and taking everything gives the current
-tree; back up what it rewrites and check equality at the end — the one way a
-tool may rewrite the working tree, because it makes the copy the rule below says
-does not exist; and **run the gate on every
-intermediate tree**, since none of them existed while you worked.
+finished pieces touch the same lines, no hunk-level tool separates them. The
+procedure for splitting after the fact is in
+`method/topics/environment.md` §*Splitting commits after the fact*.
 
 **What to show the user**
 
@@ -752,35 +697,18 @@ Three rules underneath it:
 sessions add up rather than just happen.** Three parts, a few minutes.
 
 **A. Re-run what this change invalidated.** Work does not only add; it ages
-things. Walk the list:
-
-| Ask | If yes |
-|---|---|
-| Did a measurement recorded elsewhere just become wrong? | re-measure, or mark it superseded with the date |
-| Did this settle a question that was open? | a decisions row with a `d-` id, enforcer column filled |
-| Did this **unblock** something the roadmap called blocked? | change that entry's state now, while you know why |
-| Did this make a rule checkable that was on rung 1? | write the check, or add it to the process area |
-| Did the outside change under a research entry you relied on? | update the entry with what you verified and when |
-| Did any document you did not open become false? | the *what changed → what must move* table, run properly |
+things: a measurement that just became wrong, a question this settled, an entry
+this unblocked, a rule this made checkable, a research entry whose outside
+moved, a document you did not open. The list to walk is in the `close` skill
+(§*2. The documents, true again*).
 
 **B. Harvest the learnings, and route each one.** The question is not "did I
 learn something" — it is **"what does this session know that the repository does
 not?"** Then send each answer to its home; a learning with no home is a learning
-that dies with the context window.
-
-| What you learned | Where it goes |
-|---|---|
-| A question is now settled | `decisions.md`, with a `d-` id, a Status and its enforcer |
-| A number, and how you got it | the document that owns that number |
-| An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
-| A rule a script could check | the audit script, and note the rung it moved to |
-| A trap that will be hit again | the root file if it is always relevant, the area file if it is local |
-| A procedure done by hand that an earlier session also did | a skill, proposed with its cost |
-| Friction, hit for the second time | the roadmap's process area, with the arithmetic |
-| A fact or rule only in this machine's memory or user-level file, an ignored ledger or a scratch file | the repository document that owns it; a rule also into a hook or the gate where checkable, or other machines silently revert it |
-| A plan whose conditions changed | that roadmap entry's state |
-| Something true only of this change | the changelog entry — and that is a complete answer, not a failure |
-| Something about building software or about the method that holds with none of this repository's nouns | the changelog entry, marked as such; the harvest (`prompt-harvest.md`) writes it as a proposal in `.agents/proposals/`, for the next release. Never an edit to a note or a method document here |
+that dies with the context window. The general part — what holds with none of
+this repository's nouns — becomes a proposal through the harvest
+(`prompt-harvest.md`), never an edit to a note or a method document here. The
+table of learning to home is in the `close` skill (§*4. Count, never remember*).
 
 **C. Propose the process improvements you found, and do not perform them.**
 Principle 17 has the discipline. List them with the arithmetic, say which is the
@@ -811,7 +739,9 @@ next two minutes, and will never close as cheaply again.
 
 ### Working safely in a tree you do not own
 
-Six hazards, all of which have cost real time:
+Six hazards, all of which have cost real time; two are rules that are never
+recipes, and the recipes for the other four are in
+`method/topics/environment.md`:
 
 - **The uncommitted diff is the work, and it has no copy.** Never revert the
   working tree: no `git checkout` or `git restore` of a path, no `git stash`, no
@@ -824,33 +754,12 @@ Six hazards, all of which have cost real time:
 - **The tree may already hold another session's work.** Check before you start.
   Never fold someone else's uncommitted or staged change into yours, and name it
   in your report so the human knows it is there.
-- **A formatter that can lose data never runs on a dirty tree.** When the gate
-  demands formatting and the tree has unsaved work, do not run it in place:
-  **copy the file to a scratch directory, format the copy, diff it, and apply
-  the diff by hand.** It cannot destroy anything. That is the fallback. When it recurs, make it one command: format copies of the
-  flagged files that are in the change, write a copy back only if every comment survived and the
-  non-layout tokens are identical and the original did not change meanwhile,
-  and name every file it refused. Prefer the `--check` variant everywhere else —
-  it writes nothing and is always safe.
-  **Format only the files in the change**: a repo-wide format mixes unrelated
-  diffs into yours and can move a suppression pragma off the line it covered.
-- **Generated artefacts churn.** Regenerating can rewrite a file with new random
-  identifiers and no real change. Put back the ones that did not actually change
-  — only files *your* change regenerated, by writing `HEAD`'s content over them
-  (`git show HEAD:<path> > <path>`), never with the commands above: a diff nobody
-  can read is a diff nobody reads, and the real change hides in it.
-- **A scripted edit across files checks every anchor before it writes any.**
-  Each anchor must match exactly once, in every file it targets; present is not
-  enough, since an anchor found twice edits the wrong place. Check them all, then
-  write: a run that stops halfway leaves files half-edited (two repositories).
-- **When the gate's own limits block your change**, take the moves in this
-  order. (a) **Relocate** — is there code in this file that belonged somewhere
-  else anyway? This is usually available and usually an improvement. (b)
-  **Tighten what you added**, not what was already there. (c) **Raise the
-  limit** — never silently, never as part of unrelated work. And if the honest
-  answer is that the file needs splitting, **say so and leave it**: that is a
-  structural decision, and mid-feature is the worst possible moment to take it
-  unasked.
+- **A formatter that can lose data never runs on a dirty tree**; **generated
+  churn is put back by writing `HEAD` over it**, never by a revert command; **a
+  scripted edit checks every anchor before it writes any**; and **the gate's own
+  limits are met by relocating, then tightening what you added, then raising the
+  limit, never silently**. The recipe for each is in
+  `method/topics/environment.md`.
 
 ### Research does not end at Phase 2
 

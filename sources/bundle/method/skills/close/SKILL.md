@@ -46,6 +46,18 @@ free text of question answers (it overrides the options). List each part as **do
 
 ## 2. The documents, true again
 
+**First, what this change invalidated.** Work does not only add; it ages things.
+Walk the list:
+
+| Ask | If yes |
+|---|---|
+| Did a measurement recorded elsewhere just become wrong? | re-measure, or mark it superseded with the date |
+| Did this settle a question that was open? | a decisions row with a `d-` id, enforcer column filled |
+| Did this **unblock** something the roadmap called blocked? | change that entry's state now, while you know why |
+| Did this make a rule checkable that was on rung 1? | write the check, or add it to the process area |
+| Did the outside change under a research entry you relied on? | update the entry with what you verified and when |
+| Did any document you did not open become false? | the *what changed → what must move* table, run properly |
+
 - Where the repository keeps a `docs-map.toml`, run `python3 .agents/tools/bundle.py docs-drift --range
   <the session's base>..HEAD` and fix what it flags, or say why in a `docs-unchanged: <reason>` line.
 - `grep` the documents for every claim the diff made false: a number, a path, a rule, a count, a
@@ -79,6 +91,23 @@ states none). Replace each comment, and beyond the format:
   of more than about twice is a learning, and its reason goes in it.
 
 ## 4. Count, never remember
+
+**Route each learning to its home**; a learning with no home is a learning that
+dies with the context window:
+
+| What you learned | Where it goes |
+|---|---|
+| A question is now settled | `decisions.md`, with a `d-` id, a Status and its enforcer |
+| A number, and how you got it | the document that owns that number |
+| An external fact that changed or confirmed a decision | `docs/references.md`, saying what you do differently on purpose |
+| A rule a script could check | the audit script, and note the rung it moved to |
+| A trap that will be hit again | the root file if it is always relevant, the area file if it is local |
+| A procedure done by hand that an earlier session also did | a skill, proposed with its cost |
+| Friction, hit for the second time | the roadmap's process area, with the arithmetic |
+| A fact or rule only in this machine's memory or user-level file, an ignored ledger or a scratch file | the repository document that owns it; a rule also into a hook or the gate where checkable, or other machines silently revert it |
+| A plan whose conditions changed | that roadmap entry's state |
+| Something true only of this change | the changelog entry — and that is a complete answer, not a failure |
+| Something about building software or about the method that holds with none of this repository's nouns | the changelog entry, marked as such; the harvest (`prompt-harvest.md`) writes it as a proposal in `.agents/proposals/`, for the next release. Never an edit to a note or a method document here |
 
 - **Frictions:** for each one hit, `python3 .agents/tools/bundle.py count "<symptom>" <log>
   <ledgers>`, under several spellings of the symptom. It counts entries, not incidents: read each
