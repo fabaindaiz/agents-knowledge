@@ -15,6 +15,17 @@ version it holds with `bundle.py changelog --since <its version>`.
   proposal concerns, and the home's intake groups by target and topic, so proposals extending one method file become
   one candidate per topic rather than one per file. A proposal without it reads, renders and keeps its id as before. A topic on a note or a candidate already known is another occurrence of it (d-5ed7e8-2505a2).
 
+- **`bundle.py red-check RANGE`** (`d-5ed7e8-8c417c`): each `fix` commit in the range that touches code has its new or
+  changed test methods (found by syntax tree) run on its parent's tree with the commit's test folder laid over it,
+  where they must fail, and on the commit's own tree, where they must pass; a `Red: none, <reason>` line in the
+  message is accepted without the parent run and reported. A commit whose parent does not yet hold the check is
+  skipped, and a carrier without a `[red_check]` table in `carrier.toml` (`code`, `tests`, optional `runner`) gets
+  "not configured: skipped". `bundle.py close --base B` runs it over `B..HEAD`; a carrier file's table may now hold
+  lists of strings.
+- **`bundle.py shell-check`** (`d-5ed7e8-1d383e`): under zsh, a variable assigned a literal holding spaces and expanded
+  unquoted later in the same command (`$NAME`, `${NAME}`, `for x in $NAME`) is reported with its fix, `${=NAME}` or
+  an array and `"${NAME[@]}"`; `--hook` reads a command hook's payload and refuses with exit 2. Any other shell passes.
+
 ### Changed
 
 - **The harvest and the update, followable unattended** (criterion 2 of the first minor, `i-5ed7e8-b9628b`): both

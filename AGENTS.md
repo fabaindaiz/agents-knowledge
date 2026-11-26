@@ -151,7 +151,7 @@ Python 3.11 or newer, standard library only (PyYAML only for `check_yaml.py`):
 ```bash
 python3 -m unittest discover -s meta/tests -t .        # the tools' tests
 python3 .agents/tools/bundle.py verify                 # checksums, links, routing, session reads, privacy, proposals, incoming
-python3 meta/tools/release.py check                    # the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets
+python3 meta/tools/release.py check                    # the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets, red-check of the branch
 python3 meta/tools/release.py build [--check]          # the whole release and SHA256SUMS, from sources/
 python3 meta/tools/release.py report                   # sizes, budgets and the knowledge funnel
 python3 .agents/tools/bundle.py privacy                # nothing private, direct or reconstructible; over a proposal, a warning no allowance answered fails, as the home's intake does
@@ -160,6 +160,8 @@ python3 .agents/tools/bundle.py trailers               # no commit message credi
 python3 .agents/tools/bundle.py docs-drift --range origin/main..HEAD   # documents a change left stale (docs-map.toml)
 python3 .agents/tools/bundle.py surfaces --only cursor copilot   # Cursor's and Copilot's copies of .claude/ (experimental)
 python3 .agents/tools/bundle.py close --base origin/main   # a close's deterministic checks in one command
+python3 .agents/tools/bundle.py red-check origin/main..HEAD   # each fix's new tests fail on its parent, pass on it (carrier.toml [red_check])
+python3 .agents/tools/bundle.py shell-check -- CMD      # under zsh, a spaced variable expanded unquoted in one command
 python3 .agents/tools/bundle.py docs lint FILE...       # Markdown headings, links, anchors and mechanics
 python3 .agents/tools/bundle.py docs fingerprint OLD NEW   # what carries meaning, kept by an edit (or --rev REV FILE)
 python3 .agents/tools/bundle.py spec FILE --decisions meta/decisions.md [--plan PLAN]   # a spec's requirements decided, with scenarios

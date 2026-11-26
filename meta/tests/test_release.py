@@ -1246,3 +1246,27 @@ class UnattendedRule(Base):
             self.assertIn("only the bundle's own updates", text)
         self.assertIn('new entry "harvest through', harvest)
         self.assertIn("its own `tools/bundle.py export`", update)
+
+
+class CheckRunsRedCheck(Base):
+    """`release.py check` runs `red-check` over the merge-base with main to HEAD, when in git (d-5ed7e8-8c417c)."""
+
+    def test_outside_git_it_is_skipped(self) -> None:
+        problems, notes = release().red_check_problems(self.root)
+        self.assertEqual(problems, [])
+        self.assertTrue([n for n in notes if "red-check" in n and "skipped" in n], notes)
+
+    def test_a_branch_s_untested_fix_is_a_problem(self) -> None:
+        repo = init_repo(self.root / "r")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/carrier.toml").write_text('carrier = "r-aaaaaa"\n[red_check]\ncode = ["tools/**"]\ntests = ["tests/test_*.py"]\n')
+        (repo / "tools").mkdir()
+        (repo / "tools/bundle.py").write_text("# " + bundle.RED_CHECK_MARK + "\n")
+        commit(repo, "chore: start")
+        git(repo, "branch", "-M", "main")
+        git(repo, "switch", "-q", "-c", "work")
+        (repo / "tools/calc.py").write_text("X = 1\n")
+        commit(repo, "fix: x is one")
+        problems, notes = release().red_check_problems(repo)
+        self.assertEqual(len(problems), 1, (problems, notes))
+        self.assertIn("red-check", problems[0])

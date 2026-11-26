@@ -878,10 +878,35 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     log = root / "meta/decisions.md"  # the home's own decisions log, in the format artifact 6 asks of carriers
     errors, warnings, _ = B.decision_check([log]) if log.is_file() else ([], [], {})
     problems += [f"decisions: {e}" for e in errors]
+    red_problems, red_notes = red_check_problems(root)
+    problems += red_problems
     over = export_over_cap(root, EXPORT_CAP)
-    return problems, (privacy.notes() + home.notes() + [f"  ! decisions: {w}" for w in warnings]
+    return problems, (privacy.notes() + home.notes() + red_notes + [f"  ! decisions: {w}" for w in warnings]
                       + ([f"  ! WARN {over}"] if over else []) + [f"  ! {w}" for w in slug_warnings]
                       + [f"  ! {w}" for w in B.user_deny_warnings(root)])
+
+
+def red_check_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
+    """`bundle.py red-check` over the branch: from its merge-base with `main` (else `origin/main`) to HEAD.
+
+    Returns:
+        (problems, notes): a failed fix each, and one line saying what was judged or why nothing was.
+    """
+    base = None
+    for ref in ("main", "origin/main"):
+        found = subprocess.run(["git", "-C", str(root), "merge-base", "HEAD", ref], capture_output=True, text=True)
+        if found.returncode == 0:
+            base = found.stdout.strip()
+            break
+    if base is None:
+        return [], ["  - red-check: not in git, or no main to compare with: skipped"]
+    report = B.red_check(root, f"{base}..HEAD")
+    problems = [f"red-check: {e.sha[:9]} {e.subject[:60]}: {e.detail}" for e in report.failed]
+    judged = [e for e in report.entries if e.verdict != "skipped"]
+    notes = [f"  ! red-check: {e.sha[:9]} accepted: {e.detail}" for e in judged if e.verdict == "accepted"]
+    summary = report.lines()[0] if not report.configured else \
+        f"{len(judged)} fixes judged of {len(report.entries)} commits since {base[:9]}"
+    return problems, [*notes, f"  - red-check: {summary}"]
 
 
 QUEUE_ROW = re.compile(r"^(?:(?:extends|overlaps)\s+)?`?[a-z0-9][\w.-]*`?(?:\s*\+\s*`?[a-z0-9][\w.-]*`?)*\s+—\s")

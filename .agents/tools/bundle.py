@@ -21,6 +21,12 @@ own tool, never by this one.
     python3 .agents/tools/bundle.py trailers [RANGE] [--repo R] no commit message in the range credits an assistant
                                                                 (an attribution trailer, a "Generated with" line);
                                                                 default @{u}..HEAD, else the commits on no remote
+    python3 .agents/tools/bundle.py red-check RANGE [--repo R]  each fix commit touching code: its new or changed
+                                                                tests fail on its parent and pass on it, or it says
+                                                                `Red: none, <reason>`; carrier.toml's [red_check]
+    python3 .agents/tools/bundle.py shell-check [--shell S] [--hook] [-- CMD]
+                                                                under zsh, a variable assigned words with spaces and
+                                                                expanded unquoted in the same command
     python3 .agents/tools/bundle.py carrier-id [REPO] [--mint]  the carrier's stored random id; --mint writes one
     python3 .agents/tools/bundle.py id d|i|s TEXT... [--repo R] a record id: decision, roadmap item, session
     python3 .agents/tools/bundle.py ids [--carrier REPO] FILE... record ids in files: malformed, defined twice,
@@ -1976,9 +1982,9 @@ def dump_frontmatter(data: dict, comment: str | None = None, plain: bool = False
 
 
 CARRIER_FILE = "carrier.toml"
-CARRIER_TABLES = ("skills",)
+CARRIER_TABLES = ("skills", "red_check")
 CARRIER_KEYS = ("carrier", "adopted", "upstream", "log", "skills", "surfaces", "harvested_through", "harvested_gaps",
-               "adapted", "declined", "visibility", "private_folder", "lineage")
+               "adapted", "declined", "visibility", "private_folder", "lineage", "red_check")
 VISIBILITIES = ("public", "private")
 HARVEST_SPAN = re.compile(r"^(?P<span>\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2})(?::\s*(?P<unread>\S.*))?$")
 
@@ -1999,6 +2005,11 @@ def _toml_str(value: str) -> str:
     return "".join(out) + '"'
 
 
+def _strings(value: object) -> bool:
+    """A string, or a list of strings: what a carrier file's table may hold."""
+    return isinstance(value, str) or (isinstance(value, list) and all(isinstance(i, str) for i in value))
+
+
 def dump_carrier(data: dict) -> str:
     """The carrier file's TOML: known keys first in their order, strings and arrays of strings only."""
     lines = ["# This repository's own fields. Carrier-owned: never listed in SHA256SUMS, never written by a release."]
@@ -2014,9 +2025,10 @@ def dump_carrier(data: dict) -> str:
         else:
             raise RefusedError(f"{CARRIER_FILE}: `{key}` must be a string or a list of strings")
     for key, table in tables.items():
-        if not all(isinstance(k, str) and isinstance(v, str) for k, v in table.items()):
-            raise RefusedError(f"{CARRIER_FILE}: `[{key}]` maps names to strings")
-        lines += ["", f"[{key}]", *[f"{k} = {_toml_str(v)}" for k, v in table.items()]]
+        if not all(isinstance(k, str) and _strings(v) for k, v in table.items()):
+            raise RefusedError(f"{CARRIER_FILE}: `[{key}]` maps names to strings or lists of strings")
+        lines += ["", f"[{key}]", *[f"{k} = {_toml_str(v)}" if isinstance(v, str)
+                                    else f"{k} = [" + ", ".join(_toml_str(i) for i in v) + "]" for k, v in table.items()]]
     return "\n".join(lines) + "\n"
 
 
@@ -2030,7 +2042,7 @@ def read_carrier(tree: Path) -> dict | None:
     except tomllib.TOMLDecodeError as error:
         raise RefusedError(f"{path}: not valid TOML ({error})") from error
     bad = [k for k, v in data.items() if not (isinstance(v, str) or (isinstance(v, list) and all(isinstance(i, str) for i in v))
-                                              or (k in CARRIER_TABLES and isinstance(v, dict) and all(isinstance(i, str) for i in v.values())))]
+                                              or (k in CARRIER_TABLES and isinstance(v, dict) and all(_strings(i) for i in v.values())))]
     if bad:
         raise RefusedError(f"{path}: {', '.join(bad)} must be strings or lists of strings")
     return data
@@ -4356,6 +4368,139 @@ def machine_step(repo: Path) -> "CloseStep":
 
 
 
+RED_CHECK_MARK = 'add_parser("red-check"'
+FIX_SUBJECT = re.compile(r"^fix(?:\([^)]*\))?!?:")
+RED_NONE = re.compile(r"^Red:\s*none,\s*(\S.*)$", re.M)
+RED_RUNNER = ("{python}", "-m", "unittest")
+
+
+@dataclass(frozen=True)
+class RedEntry:
+    sha: str
+    subject: str
+    verdict: str
+    detail: str
+
+
+@dataclass(frozen=True)
+class RedReport:
+    configured: bool
+    entries: list[RedEntry]
+
+    @property
+    def failed(self) -> list[RedEntry]:
+        return [e for e in self.entries if e.verdict == "fail"]
+
+    def lines(self) -> list[str]:
+        if not self.configured:
+            return [f"not configured: skipped (no `[red_check]` table with `code` and `tests` in .agents/{CARRIER_FILE})"]
+        mark = {"pass": ".", "fail": "x", "accepted": "!", "skipped": "-"}
+        shown = [e for e in self.entries if e.verdict != "skipped"]
+        return [f"{mark[e.verdict]} {e.sha[:9]} {e.verdict}: {e.subject[:60]} ({e.detail})" for e in shown] + \
+            [f"{len(self.entries) - len(shown)} of {len(self.entries)} commits skipped (not a fix touching code, or made "
+             "before red-check)"]
+
+
+def red_config(repo: Path) -> dict | None:
+    """The carrier's `[red_check]` table: `code` and `tests` globs, and an optional `runner` (argv; `{python}` is this
+    interpreter, test ids are appended). None when the carrier keeps none, as one without a Python layout does."""
+    table = (read_carrier(repo / ".agents") or {}).get("red_check")
+    if not isinstance(table, dict) or not table.get("code") or not table.get("tests"):
+        return None
+    as_list = lambda v: [v] if isinstance(v, str) else list(v)
+    return {"code": as_list(table["code"]), "tests": as_list(table["tests"]), "runner": as_list(table.get("runner") or list(RED_RUNNER))}
+
+
+def _test_bodies(source: str) -> dict[str, str]:
+    """{Class.method: its syntax tree, dumped} for every `test*` method of a class: what unittest runs."""
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return {}
+    return {f"{cls.name}.{fn.name}": ast.dump(fn) for cls in tree.body if isinstance(cls, ast.ClassDef)
+            for fn in cls.body if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and fn.name.startswith("test")}
+
+
+def _blob(repo: Path, rev: str, path: str) -> str:
+    try:
+        return git(repo, "show", f"{rev}:{path}")
+    except subprocess.CalledProcessError:
+        return ""
+
+
+def red_test_ids(repo: Path, parent: str, sha: str, files: list[str]) -> list[str]:
+    """The ids (`pkg.module.Class.method`) of the tests a commit adds or changes in `files`."""
+    ids = []
+    for path in files:
+        before, after = _test_bodies(_blob(repo, parent, path)), _test_bodies(_blob(repo, sha, path))
+        module = path.removesuffix(".py").replace("/", ".")
+        ids += [f"{module}.{name}" for name, body in after.items() if before.get(name) != body]
+    return ids
+
+
+def _export(repo: Path, rev: str, dest: Path, *paths: str) -> None:
+    data = git(repo, "archive", "--format=tar", rev, *(["--", *paths] if paths else []), binary=True)
+    with tarfile.open(fileobj=io.BytesIO(data)) as tar:
+        tar.extractall(dest, **({"filter": "data"} if hasattr(tarfile, "data_filter") else {}))
+
+
+def _red_run(runner: list[str], ids: list[str], where: Path) -> subprocess.CompletedProcess:
+    argv = [sys.executable if word == "{python}" else word for word in runner] + ids
+    return subprocess.run(argv, cwd=where, capture_output=True, text=True, timeout=900,
+                          env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+
+
+def _red_judge(repo: Path, sha: str, parent: str, message: str, config: dict) -> tuple[str, str]:
+    changed = [line.split("\t") for line in git(repo, "diff-tree", "-r", "--no-commit-id", "--name-status", parent, sha).splitlines()]
+    paths = [cells[-1] for cells in changed if cells[0][:1] != "D"]
+    if not any(_path_glob(g).match(p) for g in config["code"] for p in [c[-1] for c in changed]):
+        return "skipped", "touches no code"
+    if subprocess.run(["git", "-C", str(repo), "grep", "-q", "-F", "-e", RED_CHECK_MARK, parent, "--", ":(glob)**/bundle.py"],
+                      capture_output=True).returncode != 0:
+        return "skipped", "its parent was made before red-check existed"
+    if m := RED_NONE.search(message):
+        return "accepted", f"Red: none, {m.group(1).strip()}"
+    tests = [p for p in paths if any(_path_glob(g).match(p) for g in config["tests"])]
+    ids = red_test_ids(repo, parent, sha, tests)
+    if not ids:
+        return "fail", "a fix touching code adds or changes no test, and says no `Red: none, <reason>`"
+    with tempfile.TemporaryDirectory(prefix="red-check-") as scratch:
+        before, after = Path(scratch) / "parent", Path(scratch) / "commit"
+        before.mkdir()
+        after.mkdir()
+        _export(repo, parent, before)
+        _export(repo, sha, before, *sorted({posixpath.dirname(p) or "." for p in tests}))
+        _export(repo, sha, after)
+        red, green = _red_run(config["runner"], ids, before), _red_run(config["runner"], ids, after)
+    named = ", ".join(ids[:4]) + (f" and {len(ids) - 4} more" if len(ids) > 4 else "")
+    if red.returncode == 0:
+        return "fail", f"{named}: passed on the parent too, so it does not catch the defect"
+    if green.returncode != 0:
+        tail = (green.stderr or green.stdout).strip().splitlines()[-1:] or [""]
+        return "fail", f"{named}: fails on the commit itself ({tail[0][:80]})"
+    return "pass", f"{named}: red on the parent, green on the commit"
+
+
+def red_check(repo: Path, rev_range: str, config: dict | None = None) -> RedReport:
+    """Each `fix` commit in the range that touches code, judged by its tests on its parent and on itself."""
+    config = config or red_config(repo)
+    if config is None:
+        return RedReport(False, [])
+    entries = []
+    for sha in git(repo, "rev-list", "--reverse", "--no-merges", rev_range).split():
+        message = git(repo, "log", "-1", "--format=%B", sha)
+        subject = message.split("\n", 1)[0]
+        parents = git(repo, "log", "-1", "--format=%P", sha).split()
+        if not FIX_SUBJECT.match(subject):
+            entries.append(RedEntry(sha, subject, "skipped", "not a fix"))
+        elif not parents:
+            entries.append(RedEntry(sha, subject, "skipped", "no parent"))
+        else:
+            entries.append(RedEntry(sha, subject, *_red_judge(repo, sha, parents[0], message, config)))
+    return RedReport(True, entries)
+
+
+
 @dataclass(frozen=True)
 class CloseStep:
     name: str
@@ -4391,6 +4536,11 @@ def close_report(repo: Path, base: str | None = None) -> list[CloseStep]:
         if memory.is_dir() else []
     steps.append(CloseStep("memory", False, tuple(f"only on this machine: {m.name}" for m in lone) or ("nothing only on this machine",)))
     steps.append(machine_step(repo))
+    if rev:
+        red = red_check(repo, rev)
+        steps.append(CloseStep("red-check", bool(red.failed), tuple(red.lines())))
+    else:
+        steps.append(CloseStep("red-check", False, ("no base given",)))
     return steps
 
 
@@ -5811,6 +5961,12 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--write", action="store_true", help="insert it above the newest entry instead of printing it")
     p.add_argument("--date", default="", help="YYYY-MM-DD (default: today)")
     sub.add_parser("research-hook", help="the researcher agent's PreToolUse hook: one call on stdin; exit 2 refuses it")
+    p = sub.add_parser("shell-check", help="under zsh, a variable assigned words with spaces and expanded unquoted in "
+                       "the same command (exit 1); --hook: the command hook's payload on stdin, exit 2 refuses it")
+    p.add_argument("command_words", nargs="*", metavar="CMD", help="the command, after `--`")
+    p.add_argument("--shell", help="the shell the command runs in (default: $CLAUDE_CODE_SHELL, else $SHELL); "
+                                   "anything but zsh passes")
+    p.add_argument("--hook", action="store_true", help="read a PreToolUse payload on stdin instead of CMD")
     p = sub.add_parser("lookup", help="the index's rows a change matches, from its words, files or diff; nothing when none")
     p.add_argument("words", nargs="*", help="what the change does, in words")
     p.add_argument("--files", nargs="*", type=Path, help="files the change will touch")
@@ -5818,9 +5974,14 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--top", type=int, default=3)
     p.add_argument("--cards", action="store_true", help="also print each card's Not when and Check")
     p.add_argument("--bundle", default=str(OWN_BUNDLE))
-    p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory, machines (exit 1 on any)")
+    p = sub.add_parser("close", help="the close's deterministic checks in one command: verify, trailers, ids, decisions, docs-drift, memory, machines, "
+                       "red-check (exit 1 on any)")
     p.add_argument("--repo", default=str(OWN_REPO))
-    p.add_argument("--base", help="the session's first commit's parent: trailers and docs-drift read BASE..HEAD")
+    p.add_argument("--base", help="the session's first commit's parent: trailers, docs-drift and red-check read BASE..HEAD")
+    p = sub.add_parser("red-check", help="each fix commit touching code: its new or changed tests fail on its parent and pass "
+                       "on it, or it says `Red: none, <reason>` (exit 1 on a failure); the carrier file's [red_check]")
+    p.add_argument("range", metavar="RANGE", help="the commits to judge, as BASE..HEAD")
+    p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("docs-drift", help="documents left stale by a change, from the carrier's docs-map.toml (exit 1 on a blocking rule)")
     mode = p.add_mutually_exclusive_group(required=True)
     mode.add_argument("--staged", action="store_true", help="warn on the staged changes (a pre-commit hook)")
@@ -5911,6 +6072,134 @@ def research_hook(stdin: str) -> int:
         return 2
 
 
+
+@dataclass(frozen=True)
+class ShellFinding:
+    name: str
+    message: str
+
+
+_SHELL_ASSIGN = re.compile(r"([A-Za-z_]\w*)=")
+_SHELL_EXPANSION = re.compile(r"\$(?:\{([A-Za-z_]\w*)\}|([A-Za-z_]\w*))")
+_SHELL_WORD_END = " \t\n;|&()<>"
+
+
+def _shell_value(command: str, i: int) -> tuple[str, int]:
+    """(the literal an assignment's value spells, quotes removed, and where it ends) from `i`."""
+    out = []
+    while i < len(command) and command[i] not in _SHELL_WORD_END:
+        ch = command[i]
+        if ch == "\\":
+            out.append(command[i + 1: i + 2])
+            i += 2
+        elif ch in "'\"":
+            end = i + 1
+            while end < len(command) and command[end] != ch:
+                end += 2 if ch == '"' and command[end] == "\\" else 1
+            out.append(command[i + 1: end])
+            i = end + 1
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out), i
+
+
+def shell_findings(command: str) -> list[ShellFinding]:
+    """Each variable the command assigns a literal holding whitespace and later expands unquoted, as `$NAME` or
+    `${NAME}`, outside every quote; `"$NAME"`, `${=NAME}` (split on purpose), an array and `"${NAME[@]}"` pass.
+
+    A scan, not a parser: single and double quotes, backslashes, comments and `$( )` (inside double quotes too)
+    are followed; a here-document's body is read as commands, which can only add a finding.
+    """
+    spaced: set[str] = set()
+    found: dict[str, ShellFinding] = {}
+    stack: list[list] = [["top", 0]]
+    i, start = 0, True
+    while i < len(command):
+        ctx, ch = stack[-1], command[i]
+        if ctx[0] == "dq":
+            if ch == "\\":
+                i += 2
+            elif ch == '"':
+                stack.pop()
+                i, start = i + 1, False
+            elif command.startswith("$(", i):
+                stack.append(["sub", 0])
+                i, start = i + 2, True
+            else:
+                i += 1
+            continue
+        if ch == "\\":
+            i, start = i + 2, False
+            continue
+        if ch == "'":
+            end = command.find("'", i + 1)
+            i, start = (len(command) if end < 0 else end + 1), False
+            continue
+        if ch == '"':
+            stack.append(["dq", 0])
+            i, start = i + 1, False
+            continue
+        if ch == "#" and start:
+            end = command.find("\n", i)
+            i = len(command) if end < 0 else end
+            continue
+        if command.startswith("$(", i):
+            stack.append(["sub", 0])
+            i, start = i + 2, True
+            continue
+        if ctx[0] == "sub" and ch in "()":
+            if ch == ")" and ctx[1] == 0:
+                stack.pop()
+                i, start = i + 1, False
+                continue
+            ctx[1] += 1 if ch == "(" else -1
+        if ch == "$" and (m := _SHELL_EXPANSION.match(command, i)):
+            name = m.group(1) or m.group(2)
+            if name in spaced and name not in found:
+                found[name] = ShellFinding(name, (
+                    f"`{m.group(0)}` expands `{name}`, assigned words with spaces in this command, unquoted: zsh does not "
+                    f"split it, so it arrives as one argument. Split it with `${{={name}}}`, or make it an array "
+                    f"(`{name}=(a b)`) and expand `\"${{{name}[@]}}\"`; quote it (`\"${name}\"`) if one word is meant."))
+            i, start = m.end(), False
+            continue
+        if start and (m := _SHELL_ASSIGN.match(command, i)):
+            if command.startswith("(", m.end()):
+                spaced.discard(m.group(1))
+                i, start = m.end(), False
+                continue
+            value, i = _shell_value(command, m.end())
+            (spaced.add if re.search(r"\s", value) else spaced.discard)(m.group(1))
+            start = False
+            continue
+        start = ch in _SHELL_WORD_END
+        i += 1
+    return list(found.values())
+
+
+def is_zsh(shell: str | None = None) -> bool:
+    """Whether commands run under zsh: the shell named, else the host's (`CLAUDE_CODE_SHELL`), else `SHELL`."""
+    shell = shell or os.environ.get("CLAUDE_CODE_SHELL") or os.environ.get("SHELL") or ""
+    return Path(shell).name == "zsh"
+
+
+def shell_hook(stdin: str, shell: str | None = None) -> int:
+    """The command hook's form: one call on stdin; 2 refuses it with the findings on standard error. A payload it
+    cannot read passes: this guard is a lint on the agent's own command, and a broken one must not stop every call."""
+    try:
+        payload = json.loads(stdin)
+    except ValueError:
+        return 0
+    if not isinstance(payload, dict) or payload.get("tool_name", "Bash") != "Bash" or not is_zsh(shell):
+        return 0
+    findings = shell_findings(str((payload.get("tool_input") or {}).get("command", "")))
+    if not findings:
+        return 0
+    print("shell-check: refused under zsh, run it again rewritten:\n" + "\n".join(f"  x {f.message}" for f in findings),
+          file=sys.stderr)
+    return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(_trailers_argv(list(sys.argv[1:] if argv is None else argv)))
     try:
@@ -5923,6 +6212,17 @@ def main(argv: list[str] | None = None) -> int:
 def _run(args: argparse.Namespace) -> int:
     if args.command == "research-hook":
         return research_hook(sys.stdin.read())
+    if args.command == "shell-check":
+        if args.hook:
+            return shell_hook(sys.stdin.read(), args.shell)
+        if not is_zsh(args.shell):
+            print("shell-check: not zsh, nothing to check")
+            return 0
+        findings = shell_findings(" ".join(args.command_words))
+        for finding in findings:
+            print(f"  x {finding.message}")
+        print(f"shell-check: {len(findings)} unquoted expansions of a spaced value" if findings else "shell-check: clean")
+        return 1 if findings else 0
     if args.command == "verify":
         tree = Path(args.tree)
         privacy = privacy_check(tree) if not is_legacy(_a_bundle(tree)) else None
@@ -6218,6 +6518,12 @@ def _run(args: argparse.Namespace) -> int:
         failed = [s.name for s in steps if s.failed]
         print("close: " + (f"{len(failed)} checks failed ({', '.join(failed)})" if failed else "every check passed"))
         return 1 if failed else 0
+    if args.command == "red-check":
+        judged = red_check(Path(args.repo), args.range)
+        for line in judged.lines():
+            print(f"  {line}")
+        print("red-check: " + (f"{len(judged.failed)} fixes failed" if judged.failed else "passed"))
+        return 1 if judged.failed else 0
     if args.command == "docs-drift":
         repo = Path(args.repo)
         if args.staged or args.range:

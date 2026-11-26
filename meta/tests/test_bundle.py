@@ -3918,3 +3918,147 @@ class MemoryFromWorktree(Base):
 
         self.assertEqual(B.memory_dir(main.resolve(), home).parent.name, re.sub(r"[^A-Za-z0-9]", "-", main.resolve().as_posix()))
         self.assertEqual(B.memory_dir(Path("/no/such/repo"), home), home / ".claude/projects/-no-such-repo/memory")
+
+
+class ShellCheck(Base):
+    """`bundle.py shell-check`: under zsh, a variable assigned words with spaces and expanded unquoted (d-5ed7e8-1d383e)."""
+
+    def names(self, command: str) -> list[str]:
+        return [f.name for f in B.shell_findings(command)]
+
+    def test_each_unquoted_form_of_a_spaced_literal_is_found(self) -> None:
+        for command in ('X="a b"; ls $X', "X='a b'; ls ${X}", 'X="a b"\nfor f in $X; do echo "$f"; done',
+                        'export X="a b"; ls $X', 'X="a b"; echo "$(ls $X)"', 'X=a\\ b; ls $X'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), ["X"])
+
+    def test_a_finding_names_both_fixes(self) -> None:
+        finding = B.shell_findings('FILES="a b"; ls $FILES')[0]
+        self.assertIn("${=FILES}", finding.message)
+        self.assertIn('"${FILES[@]}"', finding.message)
+
+    def test_quoted_split_array_unassigned_and_earlier_uses_are_not_found(self) -> None:
+        for command in ('X="a b"; ls "$X"', 'X="a b"; ls "${X}"', 'X="a b"; ls ${=X}', 'X=(a b); ls "${X[@]}"',
+                        "X=(a b); ls $X", "ls $HOME", "X=ab; ls $X", 'ls $X; X="a b"', "echo 'X=\"a b\"; ls $X'",
+                        'X="a b"; echo ${#X}', 'Y="a b"; ls $YY'):
+            with self.subTest(command=command):
+                self.assertEqual(self.names(command), [])
+
+    def test_the_command_applies_only_under_zsh(self) -> None:
+        command = 'X="a b"; ls $X'
+        self.assertEqual(run("shell-check", "--shell", "bash", "--", command)[0], 0)
+        code, out = run("shell-check", "--shell", "/bin/zsh", "--", command)
+        self.assertEqual(code, 1, out)
+        self.assertIn("${=X}", out)
+        self.assertEqual(run("shell-check", "--shell", "zsh", "--", 'X="a b"; ls "$X"')[0], 0)
+
+    def test_the_hook_form_reads_the_payload_and_refuses_with_two(self) -> None:
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": 'X="a b"; ls $X'}})
+        for shell, expected in (("/bin/zsh", 2), ("/bin/bash", 0)):
+            with self.subTest(shell=shell), mock.patch.dict(os.environ, {"SHELL": shell, "CLAUDE_CODE_SHELL": ""}), \
+                    mock.patch("sys.stdin", io.StringIO(payload)), contextlib.redirect_stderr(io.StringIO()) as err:
+                code, _ = run("shell-check", "--hook")
+                self.assertEqual(code, expected, err.getvalue())
+                self.assertEqual("shell-check:" in err.getvalue(), expected == 2)
+        with mock.patch.dict(os.environ, {"SHELL": "/bin/zsh"}), mock.patch("sys.stdin", io.StringIO(json.dumps({"tool_name": "Read"}))):
+            self.assertEqual(run("shell-check", "--hook")[0], 0)
+
+
+RED_CONFIG = '[red_check]\ncode = ["tools/calc.py"]\ntests = ["tests/test_*.py"]\n'
+CALC_TEST = "import unittest\nfrom tools import calc\n\n\nclass Calc(unittest.TestCase):\n    def test_one(self):\n        self.assertEqual(calc.one(), 1)\n"
+
+
+class RedCheck(Base):
+    """`bundle.py red-check RANGE`: a fix's new tests fail on its parent and pass on it (d-5ed7e8-8c417c)."""
+
+    def repo(self, marked: bool = True, config: str = RED_CONFIG) -> tuple[Path, str]:
+        repo = init_repo(self.root / "r")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/carrier.toml").write_text('carrier = "r-aaaaaa"\n' + config)
+        (repo / "tools").mkdir()
+        (repo / "tools/bundle.py").write_text(f"# {B.RED_CHECK_MARK if marked else 'nothing yet'}\n")
+        (repo / "tools/calc.py").write_text("def one():\n    return 1\n\n\ndef add(a, b):\n    return a - b\n")
+        (repo / "tests").mkdir()
+        (repo / "tests/__init__.py").write_text("")
+        (repo / "tests/test_calc.py").write_text(CALC_TEST)
+        return repo, commit(repo, "chore: the start")
+
+    def fix(self, repo: Path, message: str, code: str | None, test: str | None) -> str:
+        if code is not None:
+            (repo / "tools/calc.py").write_text(code)
+        if test is not None:
+            (repo / "tests/test_calc.py").write_text(CALC_TEST + test)
+        return commit(repo, message)
+
+    def verdicts(self, repo: Path, base: str) -> list[str]:
+        return [e.verdict for e in B.red_check(repo, f"{base}..HEAD").entries]
+
+    ADD_TEST = "\n    def test_add(self):\n        self.assertEqual(calc.add(2, 1), 3)\n"
+    FIXED = "def one():\n    return 1\n\n\ndef add(a, b):\n    return a + b\n"
+
+    def test_a_fix_whose_test_fails_on_its_parent_passes(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix(calc): add adds", self.FIXED, self.ADD_TEST)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["pass"], report.entries)
+        self.assertIn("tests.test_calc.Calc.test_add", report.entries[0].detail)
+        code, out = run("red-check", f"{base}..HEAD", "--repo", str(repo))
+        self.assertEqual(code, 0, out)
+
+    def test_a_fix_whose_test_already_passed_on_its_parent_fails(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: one stays one", self.FIXED.replace("return 1", "return 2 - 1"),
+                 "\n    def test_one_again(self):\n        self.assertEqual(calc.one(), 1)\n")
+        self.assertEqual(self.verdicts(repo, base), ["fail"])
+        self.assertEqual(run("red-check", f"{base}..HEAD", "--repo", str(repo))[0], 1)
+
+    def test_a_fix_whose_test_fails_on_the_commit_too_fails(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix!: add adds", "def one():\n    return 1\n\n\ndef add(a, b):\n    return a * b\n", self.ADD_TEST)
+        self.assertEqual(self.verdicts(repo, base), ["fail"])
+
+    def test_a_red_none_line_is_accepted_and_reported(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: add adds\n\nRed: none, a regression guard that passed on arrival", self.FIXED, None)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["accepted"])
+        self.assertIn("a regression guard", report.entries[0].detail)
+
+    def test_a_fix_without_a_test_or_a_red_line_fails(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "fix: add adds\n\nRed: none,", self.FIXED, None)
+        self.assertEqual(self.verdicts(repo, base), ["fail"])
+
+    def test_other_commits_and_fixes_outside_the_code_are_skipped(self) -> None:
+        repo, base = self.repo()
+        self.fix(repo, "feat: add adds", self.FIXED, None)
+        (repo / "notes.md").write_text("x\n")
+        commit(repo, "fix(docs): a typo")
+        self.assertEqual(self.verdicts(repo, base), ["skipped", "skipped"])
+
+    def test_a_commit_whose_parent_predates_the_check_is_skipped(self) -> None:
+        repo, base = self.repo(marked=False)
+        self.fix(repo, "fix: add adds", self.FIXED, None)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertEqual([e.verdict for e in report.entries], ["skipped"])
+        self.assertIn("before red-check", report.entries[0].detail)
+
+    def test_a_carrier_without_the_table_is_not_configured(self) -> None:
+        repo, base = self.repo(config="")
+        self.fix(repo, "fix: add adds", self.FIXED, None)
+        report = B.red_check(repo, f"{base}..HEAD")
+        self.assertFalse(report.configured)
+        self.assertEqual(report.entries, [])
+        code, out = run("red-check", f"{base}..HEAD", "--repo", str(repo))
+        self.assertEqual(code, 0, out)
+        self.assertIn("not configured: skipped", out)
+
+    def test_close_runs_it_over_the_session(self) -> None:
+        repo, _ = self.repo()
+        agents = make_bundle(repo)
+        B.write_carrier(agents, {**B.read_carrier(agents), "red_check": {"code": ["tools/calc.py"], "tests": ["tests/test_*.py"]}})
+        base = commit(repo, "chore: the bundle")
+        self.fix(repo, "fix: add adds", self.FIXED, None)
+        step = {s.name: s for s in B.close_report(repo, base)}["red-check"]
+        self.assertTrue(step.failed, step)
+        self.assertEqual({s.name: s for s in B.close_report(repo)}["red-check"].failed, False)

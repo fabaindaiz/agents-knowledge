@@ -27,3 +27,7 @@ lineage = [
 
 
 ]
+
+[red_check]
+code = ["sources/bundle/tools/**", "meta/tools/**"]
+tests = ["meta/tests/test_*.py"]
