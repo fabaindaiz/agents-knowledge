@@ -33,12 +33,16 @@ if sys.version_info < (3, 11):
              "Run it with a newer one: python3.11 meta/tools/release.py ... (or uv run --python 3.11 ...)")
 
 import argparse
+import collections
 import datetime
 import importlib.util
 import io
+import os
 import re
+import shutil
 import subprocess
 import tarfile
+import tempfile
 import tokenize
 import tomllib
 from dataclasses import dataclass, field
@@ -865,6 +869,23 @@ def home_session_problems(root: Path = ROOT) -> list[str]:
 PRIVACY_BASELINE = "meta/tracking/privacy-baseline.txt"
 
 
+def baseline_growth(root: Path) -> list[str]:
+    """The baseline's shrink-only rule, enforced: every fingerprint (with its count) must be in its version at
+    the base (`review_base`), so deleting the file and writing it again, or adding a line by hand, cannot admit a
+    warning. Absent at the base, the file is being created, and that is allowed; outside git nothing is read."""
+    base, named = review_base(root)
+    if base is None:
+        return []
+    shown = subprocess.run(["git", "-C", str(root), "show", f"{base}:{PRIVACY_BASELINE}"], capture_output=True, text=True)
+    if shown.returncode != 0:
+        return []
+    before = collections.Counter(line for line in shown.stdout.split("\n") if line.strip() and not line.startswith("#"))
+    grown = B.read_privacy_baseline(root / PRIVACY_BASELINE) - before
+    return [f"{PRIVACY_BASELINE}: {mark.split(chr(9), 1)[0]}: a fingerprint not in its version at the base {named}"
+            f"{f' (added {n} times)' if n > 1 else ''}; the baseline only shrinks, so reword the warning or the "
+            "owner answers it on its line with privacy-allow" for mark, n in sorted(grown.items())]
+
+
 def home_privacy(root: Path, home: "B.PrivacyReport") -> tuple[list[str], list[str]]:
     """The records' privacy read against the baseline: a FAIL, or a warning the baseline does not hold, is a
     problem; the known ones are counted and a stale fingerprint is a note (`--write-baseline` removes it)."""
@@ -874,6 +895,7 @@ def home_privacy(root: Path, home: "B.PrivacyReport") -> tuple[list[str], list[s
     problems = [f"privacy: {f.where} {f.rule}: {f.match}" for f in home.failures]
     problems += [f"privacy: {f.where} {f.rule}: {f.match} — a new warning, not in {PRIVACY_BASELINE}; reword it, "
                  "or the owner answers it on its line with privacy-allow" for f in split.new]
+    problems += baseline_growth(root)
     stale = sum(split.stale.values())
     notes = [f"  . privacy baseline: {split.known} known warnings in meta/ and sources/, {len(split.new)} new, {stale} stale"
              + (" (`bundle.py privacy --tracked --baseline ... --write-baseline` removes them)" if stale else "")]
@@ -913,18 +935,35 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
                       + [f"  ! {w}" for w in B.user_deny_warnings(root)])
 
 
+def review_base(root: Path = ROOT) -> tuple[str | None, str]:
+    """The commit a branch's work is judged from: its merge-base with `main` (else `origin/main`). With `main`
+    itself checked out, after a fast-forward, that merge-base is HEAD and would judge nothing, so the base is
+    then the last tag reachable from HEAD (`git describe --tags --abbrev=0`): what main gained since the last
+    release. A new branch with no commit of its own keeps HEAD: its work is what the working tree changes.
+
+    Returns:
+        (sha, name): the base commit and how to name it (a tag, or a short sha); (None, "") outside git or with
+        no main to compare with.
+    """
+    def git_out(*args: str) -> str | None:
+        done = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+        return done.stdout.strip() if done.returncode == 0 else None
+    base = next((found for ref in ("main", "origin/main") if (found := git_out("merge-base", "HEAD", ref))), None)
+    if base is None:
+        return None, ""
+    on_main = git_out("symbolic-ref", "-q", "--short", "HEAD") == "main"
+    if on_main and base == git_out("rev-parse", "HEAD") and (tag := git_out("describe", "--tags", "--abbrev=0", "HEAD")):
+        return git_out("rev-parse", f"{tag}^{{commit}}"), tag
+    return base, base[:9]
+
+
 def red_check_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
-    """`bundle.py red-check` over the branch: from its merge-base with `main` (else `origin/main`) to HEAD.
+    """`bundle.py red-check` over the branch: from its base (`review_base`) to HEAD.
 
     Returns:
         (problems, notes): a failed fix each, and one line saying what was judged or why nothing was.
     """
-    base = None
-    for ref in ("main", "origin/main"):
-        found = subprocess.run(["git", "-C", str(root), "merge-base", "HEAD", ref], capture_output=True, text=True)
-        if found.returncode == 0:
-            base = found.stdout.strip()
-            break
+    base, named = review_base(root)
     if base is None:
         return [], ["  - red-check: not in git, or no main to compare with: skipped"]
     report = B.red_check(root, f"{base}..HEAD")
@@ -932,7 +971,7 @@ def red_check_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
     judged = [e for e in report.entries if e.verdict != "skipped"]
     notes = [f"  ! red-check: {e.sha[:9]} accepted: {e.detail}" for e in judged if e.verdict == "accepted"]
     summary = report.lines()[0] if not report.configured else \
-        f"{len(judged)} fixes judged of {len(report.entries)} commits since {base[:9]}"
+        f"{len(judged)} fixes judged of {len(report.entries)} commits since {named}"
     return problems, [*notes, f"  - red-check: {summary}"]
 
 
@@ -1926,12 +1965,16 @@ def funnel(root: Path = ROOT) -> dict:
 # --- a candidate leaves the queue (`i-5ed7e8-655151`) --------------------------------------------------------
 # Moving a row from `candidates.md` to `history.md` was done by hand at every release, and 0.0.32 shipped nine
 # answers whose rows had stayed queued. One command removes the row and writes the history line, in the
-# history's own form: newest section first, `## Taken out of the queue by the release X.Y.Z`, one row per
-# candidate, its slug in backticks and its verdict in bold with the release.
+# history's own form: newest section first, `## Taken out of the queue for the release X.Y.Z` (older sections say
+# `by the release`, and either is joined rather than doubled), one row per candidate, its slug in backticks and its
+# verdict in bold with the release.
 DEQUEUE_VERDICTS = ("admitted", "folded", "extended", "merged", "applied", "answered", "fixed", "refused", "dropped")
-DEQUEUE_HEADING = "## Taken out of the queue by the release {version}"
+DEQUEUE_HEADING = "## Taken out of the queue for the release {version}"
+_DEQUEUE_SECTION = re.compile(r"^## Taken out of the queue (for|by) the release (\d+\.\d+\.\d+)\s*$")
 HISTORY_HEADER = "| Candidate | Where it went |"
 _DEQUEUED = re.compile(r"^\*\*(" + "|".join(DEQUEUE_VERDICTS) + r") at (\d+\.\d+\.\d+)\*\*:")
+# the hand-written form a `for the release` section already holds: `**extended**, ...`, its release in the heading
+_DEQUEUED_BARE = re.compile(r"^\*\*(" + "|".join(DEQUEUE_VERDICTS) + r")\*\*[\s,:]")
 
 
 def _queue_table(lines: list[str]) -> tuple[int, int]:
@@ -1974,8 +2017,10 @@ def dequeue(slug: str, verdict: str, version: str, reason: str, root: Path = ROO
     text = history_path.read_text(encoding="utf-8")
     heading = DEQUEUE_HEADING.format(version=version)
     history = text.split("\n")
-    if heading in history:
-        at = history.index(heading)
+    sections = [i for i, line in enumerate(history) if (m := _DEQUEUE_SECTION.match(line)) and m.group(2) == version]
+    if sections:
+        at = sections[0]
+        heading = history[at]
         table = next((i for i in range(at + 1, len(history)) if history[i].startswith(HISTORY_HEADER)), None)
         if table is None or any(history[i].startswith("## ") for i in range(at + 1, table)):
             raise RefusedError(f"dequeue: meta/tracking/history.md: {heading!r} holds no {HISTORY_HEADER!r} table")
@@ -1999,8 +2044,10 @@ def dequeue(slug: str, verdict: str, version: str, reason: str, root: Path = ROO
 
 def answered_still_queued(root: Path = ROOT) -> list[str]:
     """A slug `dequeue` wrote into the history that is queued again: a release that ships its answer with the row
-    still waiting (0.0.32 shipped nine). Only the command's own form is read, so older hand-written rows, some of
-    which rightly leave a row queued (narrowed, an occurrence merged into it), are not judged."""
+    still waiting (0.0.32 shipped nine). The command's own form (`**verdict at X.Y.Z**:`) is read anywhere, and
+    the bare `**verdict**` only under a `for the release X.Y.Z` heading, the form the command now writes: older
+    hand-written rows under `by the release` headings, some of which rightly leave a row queued (narrowed, an
+    occurrence merged into it), are not judged."""
     queue_path, history_path = root / "meta/tracking/candidates.md", root / "meta/tracking/history.md"
     if not queue_path.is_file() or not history_path.is_file():
         return []
@@ -2010,12 +2057,21 @@ def answered_still_queued(root: Path = ROOT) -> list[str]:
     except RefusedError:
         return []
     queued = {slug_of(split_row(lines[i])[0]) for i in range(start, end)}
-    problems = []
+    problems, section = [], None
     for line in history_path.read_text(encoding="utf-8").split("\n"):
+        if line.startswith("## "):
+            section = m.group(2) if (m := _DEQUEUE_SECTION.match(line)) and m.group(1) == "for" else None
         cells = split_row(line) if line.startswith("| `") else []
-        if len(cells) >= 2 and (m := _DEQUEUED.match(cells[1])) and cells[0].strip("`") in queued:
-            problems.append(f"meta/tracking/candidates.md: {cells[0]}: still queued, and the history says it was "
-                            f"{m.group(1)} at {m.group(2)}; remove the row (`release.py dequeue` does both)")
+        if len(cells) < 2 or cells[0].strip("`") not in queued:
+            continue
+        if m := _DEQUEUED.match(cells[1]):
+            verdict, version = m.group(1), m.group(2)
+        elif section and (m := _DEQUEUED_BARE.match(cells[1])):
+            verdict, version = m.group(1), section
+        else:
+            continue
+        problems.append(f"meta/tracking/candidates.md: {cells[0]}: still queued, and the history says it was "
+                        f"{verdict} at {version}; remove the row (`release.py dequeue` does both)")
     return problems
 
 
@@ -2030,44 +2086,67 @@ COMMIT_GATE: tuple[tuple[str, list[str]], ...] = (
 COMMIT_TAIL = 30  # lines of a failing step's output printed
 
 
-def _under_release(root: Path, name: str) -> bool:
-    path = Path(name) if Path(name).is_absolute() else root / name
-    try:
-        return path.resolve().relative_to(root.resolve()).parts[:1] == (".agents",)
-    except ValueError:
-        return False
+def export_index(root: Path, files: list[str], into: Path) -> None:
+    """What a commit of `files` would hold, written out as a tree into `into`: the index with `files` added,
+    exported by `git checkout-index -a`, on a copy of the index, so the real one is left as it was.
+
+    The export carries a `.git` file naming the repository's git directory, so the gate's read-only git steps
+    (red-check, the baseline's base version, the tags) still see the history.
+
+    Raises:
+        RefusedError: not a git repository, or git refused to stage a named file or to export the index.
+    """
+    def run(*args: str, env: dict | None = None) -> str:
+        done = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, env=env)
+        if done.returncode != 0:
+            raise RefusedError(f"commit: git {args[0]} refused (exit {done.returncode}): {(done.stdout + done.stderr).strip()}")
+        return done.stdout
+    git_dir, index = run("rev-parse", "--absolute-git-dir", "--git-path", "index").split("\n")[:2]
+    index_path = Path(index) if Path(index).is_absolute() else root / index
+    scratch = into.parent / "index"
+    if index_path.is_file():
+        shutil.copyfile(index_path, scratch)
+    env = {**os.environ, "GIT_INDEX_FILE": str(scratch)}
+    run("add", "--", *files, env=env)
+    into.mkdir(parents=True, exist_ok=True)
+    run("checkout-index", "-a", f"--prefix={into}/", env=env)
+    (into / ".git").write_text(f"gitdir: {git_dir}\n", encoding="utf-8")
 
 
 def commit_files(message: str, files: list[str], root: Path = ROOT, gate=COMMIT_GATE,  # noqa: ANN001
                  stale=lambda root: build(root, check=True)) -> int:
-    """Runs every step of the gate in `root`, each on its own exit status, and commits only `files` when all pass.
+    """Runs every step of the gate on what would be committed, each on its own exit status, and commits only
+    `files` when all pass.
 
-    Nothing is staged or committed on any failure: each failing step is named with the tail of its output. On a
-    pass, `git add -- FILES` then `git commit -m MSG -- FILES`, so whatever else is staged or changed stays as it
-    was. A file under `.agents/` is refused before the gate runs unless the build is current (`stale` is empty).
+    The gate reads an export of the index with `files` added (`export_index`), never the working tree: a source
+    named without its built release is refused, and unrelated unfinished work neither passes nor fails the
+    commit. The export's release must be current (`stale` empty) before the gate runs in it. Nothing is staged
+    or committed on any failure: each failing step is named with the tail of its output. On a pass,
+    `git add -- FILES` then `git commit -m MSG -- FILES`, so whatever else is staged or changed stays as it was.
 
     Returns:
         0 when committed, 1 when a step failed.
 
     Raises:
-        RefusedError: no file or no message, or a release file while the build is stale.
+        RefusedError: no file or no message, git refusing a named file, or a stale release in the export.
     """
     if not files:
         raise RefusedError("commit: name the files to commit; nothing is committed by default")
     if not message.strip():
         raise RefusedError("commit: -m MSG is empty; the message follows Conventional Commits")
-    released = [f for f in files if _under_release(root, f)]
-    if released:
-        problems = stale(root)
-        if problems:
-            raise RefusedError(f"commit: {', '.join(released)} under .agents/, and the build is not current "
-                               f"({len(problems)} problems, first: {problems[0]}); run `release.py build` and name its files")
     failed = []
-    for name, command in gate:
-        run = subprocess.run(command, cwd=root, capture_output=True, text=True)
-        if run.returncode != 0:
-            failed.append((name, run.returncode, (run.stdout + run.stderr).rstrip("\n").split("\n")[-COMMIT_TAIL:]))
-        print(f"  {'x' if run.returncode else '.'} {name}: exit {run.returncode}")
+    with tempfile.TemporaryDirectory(prefix="release-commit-") as scratch:
+        export = Path(scratch) / "tree"
+        export_index(root, files, export)
+        problems = stale(export)
+        if problems:
+            raise RefusedError(f"commit: what would be committed holds a stale release ({len(problems)} problems, "
+                               f"first: {problems[0]}); run `release.py build` and name its files too")
+        for name, command in gate:
+            run = subprocess.run(command, cwd=export, capture_output=True, text=True)
+            if run.returncode != 0:
+                failed.append((name, run.returncode, (run.stdout + run.stderr).rstrip("\n").split("\n")[-COMMIT_TAIL:]))
+            print(f"  {'x' if run.returncode else '.'} {name}: exit {run.returncode}")
     if failed:
         for name, code, tail in failed:
             print(f"--- {name} failed (exit {code}); its last {len(tail)} lines:")

@@ -1180,6 +1180,35 @@ class PrivacyRatchet(Base):
         self.assertFalse([p for p in problems if "baseline" in p], problems)
         self.assertTrue([n for n in notes if "1 stale" in n], notes)
 
+    def test_a_fingerprint_not_in_the_base_version_of_the_baseline_fails(self) -> None:
+        # Shrink-only, enforced: against its version at the merge-base, the baseline may lose lines, never gain.
+        R = release()
+        home = make_home(self.root)
+        git(home, "branch", "-M", "main")
+        roadmap, baseline = home / "meta/roadmap.md", home / "meta/tracking/privacy-baseline.txt"
+        roadmap.write_text(roadmap.read_text() + "\n" + self.WARNED + "\n")
+        known = B.privacy_fingerprint("meta/roadmap.md", "exact-count", self.WARNED)
+        baseline.write_text("# baseline\n" + known + "\n")
+        commit(home, "docs: the baseline")
+        git(home, "switch", "-q", "-c", "work")
+        problems, _ = R.check(home)
+        self.assertFalse([p for p in problems if "baseline" in p], problems)
+
+        leak = "It took " + "2," + "345" + " runs to see it."
+        roadmap.write_text(roadmap.read_text() + leak + "\n")
+        added = B.privacy_fingerprint("meta/roadmap.md", "exact-count", leak)
+        for how, text in (("hand-added", "# baseline\n" + known + "\n" + added + "\n"),
+                          ("rewritten", "\n".join(sorted([known, added])) + "\n")):
+            with self.subTest(how=how):
+                baseline.write_text(text)
+                problems, _ = R.check(home)
+                self.assertTrue([p for p in problems if "privacy-baseline.txt" in p and "version at the base" in p], problems)
+                self.assertFalse([p for p in problems if "a new warning" in p], problems)
+
+        baseline.write_text("")  # shrunk to nothing: allowed, the warning is new again
+        problems, _ = R.check(home)
+        self.assertFalse([p for p in problems if "privacy-baseline.txt" in p and "version at the base" in p], problems)
+
     def test_any_warning_in_the_release_fails_whatever_the_baseline(self) -> None:
         R = release()
         home = make_home(self.root)
@@ -1276,6 +1305,55 @@ class CommitCommand(Base):
         code, out = self.call([".agents/x.md"], gate=gate)
         self.assertEqual(code, 0, out)
 
+    def test_the_gate_reads_what_is_committed_not_the_working_tree(self) -> None:
+        # The named file's new text is in the export; an unnamed change and an untracked file are not.
+        (self.repo / "a.md").write_text("a two\n")
+        (self.repo / "b.md").write_text("b unfinished\n")
+        (self.repo / "u.md").write_text("untracked\n")
+        seen = {}
+
+        def stale(root: Path) -> list[str]:
+            seen.update(root=root, a=(root / "a.md").read_text(), b=(root / "b.md").read_text(),
+                        u=(root / "u.md").exists())
+            return []
+        where = self.root / "cwd"
+        gate = (("tests", [sys.executable, "-c", f"import os; open({str(where)!r}, 'w').write(os.getcwd())"]),)
+
+        code, out = self.call(["a.md"], gate=gate, stale=stale)
+
+        self.assertEqual(code, 0, out)
+        self.assertNotEqual(Path(seen["root"]).resolve(), self.repo.resolve())
+        self.assertEqual((seen["a"], seen["b"], seen["u"]), ("a two\n", "b.md one\n", False))
+        self.assertEqual(Path(where.read_text()).resolve(), Path(seen["root"]).resolve())
+        self.assertFalse(Path(seen["root"]).exists())  # the export is removed afterwards
+        self.assertEqual(sorted(git(self.repo, "status", "--porcelain").splitlines()), [" M b.md", "?? u.md"])
+
+    def test_a_stale_export_refuses_and_leaves_the_index_as_it_was(self) -> None:
+        (self.repo / "a.md").write_text("a two\n")
+        (self.repo / "c.md").write_text("c two\n")
+        git(self.repo, "add", "c.md")
+        before = git(self.repo, "rev-parse", "HEAD")
+
+        with self.assertRaises(self.R.RefusedError) as caught:
+            self.call(["a.md"], stale=lambda root: ["x.md: differs from its build"])
+
+        self.assertIn("build", str(caught.exception))
+        self.assertEqual(git(self.repo, "rev-parse", "HEAD"), before)
+        self.assertEqual(sorted(git(self.repo, "status", "--porcelain").splitlines()), [" M a.md", "M  c.md"])
+
+    def test_sources_committed_without_their_built_release_are_refused(self) -> None:
+        home = make_home(self.root / "h")
+        readme = home / "sources/bundle/knowledge/README.md"
+        readme.write_text(readme.read_text() + "\nA new line.\n")
+        self.R.build(home)  # the working tree is current; what is named is not
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), self.assertRaises(self.R.RefusedError) as caught:
+            self.R.commit_files("docs: x", ["sources/bundle/knowledge/README.md"], home, gate=self.PASS)
+        self.assertIn("build", str(caught.exception))
+        with contextlib.redirect_stdout(out):
+            code = self.R.commit_files("docs: x", ["sources/bundle/knowledge/README.md", ".agents"], home, gate=self.PASS)
+        self.assertEqual(code, 0, out.getvalue())
+
     def test_the_command_line_takes_a_message_and_files(self) -> None:
         with mock.patch.object(self.R, "commit_files", return_value=0) as called:
             self.assertEqual(self.R.main(["commit", "-m", "docs: b", "b.md", "c.md"]), 0)
@@ -1304,7 +1382,7 @@ class Dequeue(Base):
         self.assertNotIn("old-idea", self.queue.read_text())
         self.assertIn("new-idea", self.queue.read_text())
         history = self.history.read_text()
-        self.assertIn("## Taken out of the queue by the release 0.0.2\n\n| Candidate | Where it went |\n|---|---|\n"
+        self.assertIn("## Taken out of the queue for the release 0.0.2\n\n| Candidate | Where it went |\n|---|---|\n"
                       "| `old-idea` | **refused at 0.0.2**: one occurrence, and textbook |\n", history)
         self.assertLess(history.index("0.0.2"), history.index("## First"))
         self.assertIn("old-idea", (self.home / "meta/tracking/INDEX.md").read_text())
@@ -1315,7 +1393,7 @@ class Dequeue(Base):
         self.R.dequeue("new-idea", "admitted", "0.0.2", "as the note `alpha`", self.home)
 
         history = self.history.read_text()
-        self.assertEqual(history.count("## Taken out of the queue by the release 0.0.2"), 1)
+        self.assertEqual(history.count("## Taken out of the queue for the release 0.0.2"), 1)
         self.assertIn("| `old-idea` | **refused at 0.0.2**: textbook |\n| `new-idea` | **admitted at 0.0.2**: as the note `alpha` |",
                       history)
         self.assertNotIn("| new-idea", self.queue.read_text())
@@ -1327,6 +1405,32 @@ class Dequeue(Base):
             with self.subTest(args=args), self.assertRaises(self.R.RefusedError):
                 self.R.dequeue(*args, root=self.home)
         self.assertEqual((self.queue.read_text(), self.history.read_text()), before)
+
+    HAND = ("# History\n\n## Taken out of the queue for the release 0.0.2\n\nWritten by hand, before the command.\n\n"
+            "| Candidate | Where it went |\n|---|---|\n| `gone-idea` | **extended**, applying the queued row: in its note |\n\n"
+            "## First\n\nnothing\n")
+
+    def test_the_release_s_hand_written_section_is_joined_not_doubled(self) -> None:
+        self.history.write_text(self.HAND)
+
+        self.R.dequeue("old-idea", "refused", "0.0.2", "textbook", self.home)
+
+        history = self.history.read_text()
+        self.assertEqual(history.count("## Taken out of the queue"), 1, history)
+        self.assertIn("| `gone-idea` | **extended**, applying the queued row: in its note |\n"
+                      "| `old-idea` | **refused at 0.0.2**: textbook |\n", history)
+
+    def test_an_older_by_the_release_heading_is_joined_too(self) -> None:
+        self.history.write_text(self.HAND.replace("for the release", "by the release"))
+        self.R.dequeue("old-idea", "refused", "0.0.2", "textbook", self.home)
+        self.assertEqual(self.history.read_text().count("## Taken out of the queue"), 1)
+
+    def test_a_hand_written_bold_verdict_still_queued_fails_the_check(self) -> None:
+        # The history's hand-written form, `**extended**, ...`, under the release's section, read as the command's.
+        self.history.write_text(self.HAND.replace("gone-idea", "old-idea"))
+        problems = self.R.answered_still_queued(self.home)
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("extended at 0.0.2", problems[0])
 
     def test_a_row_answered_by_the_command_and_still_queued_fails_the_check(self) -> None:
         self.R.dequeue("old-idea", "fixed", "0.0.2", "the tool now refuses it", self.home)
@@ -1464,3 +1568,19 @@ class CheckRunsRedCheck(Base):
         problems, notes = release().red_check_problems(repo)
         self.assertEqual(len(problems), 1, (problems, notes))
         self.assertIn("red-check", problems[0])
+
+    def test_on_main_itself_the_commits_since_the_last_tag_are_judged(self) -> None:
+        # After a fast-forward the merge-base with main is HEAD: the last tag reachable from HEAD is the base.
+        repo = init_repo(self.root / "m")
+        (repo / ".agents").mkdir()
+        (repo / ".agents/carrier.toml").write_text('carrier = "r-aaaaaa"\n[red_check]\ncode = ["tools/**"]\ntests = ["tests/test_*.py"]\n')
+        (repo / "tools").mkdir()
+        (repo / "tools/bundle.py").write_text("# " + bundle.RED_CHECK_MARK + "\n")
+        commit(repo, "chore: start")
+        git(repo, "branch", "-M", "main")
+        git(repo, "tag", "-a", "v0.0.1", "-m", "0.0.1")
+        (repo / "tools/calc.py").write_text("X = 1\n")
+        commit(repo, "fix: x is one")
+        problems, notes = release().red_check_problems(repo)
+        self.assertEqual(len(problems), 1, (problems, notes))
+        self.assertTrue([n for n in notes if "v0.0.1" in n], notes)

@@ -182,7 +182,7 @@ committed.
 
 **The one way to commit here** is `release.py commit -m MSG FILE...`: it runs the tests and `check`, each on
 its own exit status, prints the tail of any failure and then commits only the files named, leaving everything
-else as it was; it refuses a file under `.agents/` while the build is stale. A `git commit` chained on the gate
+else as it was; the gate runs on an export of what would be committed, so a stale `.agents/` or unrelated unfinished work is judged as committed, not as it sits in the tree. A `git commit` chained on the gate
 (`tests && check && git commit`, nothing piped) stays valid.
 
 Commands that write, each replacing a hand edit that used to go wrong:
