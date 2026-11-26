@@ -686,6 +686,29 @@ is not independent and waits for it.
 - **A mockup or a throwaway prototype only for a question about how it looks or
   feels**; a scenario walked through each option for an irreversible one.
 
+**Evaluating the trade-off before you ask.** A question whose options were never
+weighed is a question the human has to answer twice.
+
+1. **Name the axis in the repository's own units.** Not "heavier" — *"this adds
+   40 ms at p99"*, *"this is the first native dependency in a repository that is
+   currently script and data"*. An option priced in adjectives cannot be compared
+   with anything.
+2. **Say what each option forecloses**, not only what it costs today.
+3. **Count the exceptions.** If an option needs an exception to a stated rule,
+   *that* is the real price, and it has to be written into the roadmap **with a
+   name** — one mechanism, one owner, one way back. An exception nobody named
+   becomes the new rule.
+4. **Name the cheap reversible option**, and say so plainly when it is the one
+   you recommend.
+5. **Keep "do nothing" on the table.** It wins more often than it is offered.
+6. **Say what would change your answer.** A trade-off you cannot falsify is a
+   preference. *"If the target ever reports dropped frames, this measurement gets
+   redone and the conclusion may flip"* is an analysis; *"this should be fine"*
+   is not.
+
+Then recommend one. A trade-off presented without a recommendation is the work,
+undone.
+
 **A review turn has a fixed shape**, because the human is its final reviewer: the
 one who holds the knowledge to decide, but not your context.
 

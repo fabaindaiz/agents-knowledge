@@ -602,27 +602,11 @@ invariant that contradicts a note, the repository wins, and the report says whic
 note gave way. A typo, a text or a local rename consults nothing. The step that comes before asking is
 evaluating, and it has a shape worth following:
 
-**How to evaluate a trade-off**
-
-1. **Name the axis in the repo's own units.** Not "heavier" — *"this adds
-   40 ms at p99"*, *"this is the first native dependency in a repo that is
-   currently script and data"*. An option priced in adjectives cannot be
-   compared with anything.
-2. **Say what each option forecloses**, not only what it costs today.
-3. **Count the exceptions.** If an option needs an exception to a stated rule,
-   *that* is the real price, and it has to be written into the roadmap **with a
-   name** — one mechanism, one owner, one way back. An exception nobody named
-   becomes the new rule.
-4. **Name the cheap reversible option**, and say so plainly when it is the one
-   you recommend.
-5. **Keep "do nothing" on the table.** It wins more often than it is offered.
-6. **Say what would change your answer.** A trade-off you cannot falsify is a
-   preference. *"If the target ever reports dropped frames, this measurement gets
-   redone and the conclusion may flip"* is an analysis; *"this should be fine"*
-   is not.
-
-Then recommend one. A trade-off presented without a recommendation is the work,
-undone.
+**How to evaluate a trade-off** is principle 15 of
+`method/prompt-context.md`, §*Evaluating the trade-off before you ask*: the axis
+in the repository's own units, what each option forecloses, the exceptions it
+needs, the cheap reversible one, "do nothing", and what would change your
+answer. Then recommend one.
 
 ### 3. Build — extend before creating, and let the format do the work
 

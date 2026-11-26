@@ -16,6 +16,7 @@ the owner approved.
 
 | File | Block | Item | Verdict |
 |---|---|---|---|
+| sources/bundle/method/prompt-bootstrap.md | step-2-trade-off | * | kept at `prompt-context.md` §15, *Evaluating the trade-off before you ask*: the six points moved whole to that original and the step keeps a pointer naming all six, by `d-5ed7e8-4dea71`. Row 2 of the plan of the cut, held back from the text lane because §15 is another lane's region |
 | sources/bundle/method/prompt-bootstrap.md | loop-opening | each | dropped: the heading *Three phases, and what each one loads* goes; the three phases and what each loads are still named, one after the other, in the short form |
 | sources/bundle/method/prompt-bootstrap.md | step-4-preserve | every | kept at the short form: the owner restored the invariant kinds on 2026-11-26, reading that a rule which says to capture something is weaker than one that says what to capture, for an agent new to the repository |
 | sources/bundle/method/prompt-bootstrap.md | step-8 | each | kept at the `close` skill §*4. Count, never remember*: the sentence sending every answer to its home, and the one telling the counter to read every hit and count a copied event once, travel with the routing table and the counting procedure, which the short form names |
