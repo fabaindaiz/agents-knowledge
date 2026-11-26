@@ -9,6 +9,56 @@ The hand-off each close replaces lives beside this file, in `roadmap-states.md`:
 states, this one holds what happened on the way. Sessions before 2026-11-24 are recorded only as
 those states and in `meta/tracking/history.md`.
 
+## 2026-11-26 · s-5ed7e8-50510c — The Next plan, phases 1 and 2
+
+**What.** Phases 1 and 2 of the *Next* plan, on `plan/next-phases`, not cut. Phase 1 (three lanes, then a re-run on
+fresh copies): the harvest and the update followable unattended (an unattended rule, the eleven criterion 2 gaps, the
+update's harvest in a session of its own, audits no longer re-checking the release), `install-skills` refusing a
+hand-edited skill, `new entry` refusing a missing log, `memory-diff` from a worktree, a proposal's optional `topic:`,
+a privacy warning for an id beside a description across lines. Phase 2, its decisions walked with the owner and then
+run unattended overnight at the owner's word: `bundle.py red-check` (a fix's tests re-run on its parent),
+`bundle.py shell-check` (zsh) and its hook, the privacy ratchet, `release.py commit` and `dequeue`, `build --check`
+in the pre-commit, four queued extensions admitted into their notes, the queue's and the evals' defects. The two
+guard wirings were applied at the close at the owner's word.
+
+**Areas.** `sources/bundle/` (method texts, `tools/bundle.py`, `CHANGELOG.md`, four notes), `meta/tools/release.py`,
+`meta/tests/`, `meta/tracking/` (candidates, history, experiments, the privacy baseline), `evals/`, `.claude/hooks/`,
+`.githooks/pre-commit`, `AGENTS.md`, `meta/decisions.md`, `meta/roadmap.md`, two plans and a search in `meta/`.
+
+**Why.** The owner: finish every *Next* item before carrying to carriers, in phases, each phase's decisions walked
+first; up to three parallel agents; phase 2 implemented unattended overnight; close and keep what is pending for the
+next session.
+
+**Architecture.** ✅ Complies: originals edited and the release built; the coding session still reads what it did before, within its cap.
+
+**Cards relied on, and the checks that ran.** `a-check-must-be-seen-to-fail` (the reason for `red-check`); the full
+suite before each lane's commit, `release.py check` before every commit, `red-check` over every fix commit since it
+existed (five, all red on the parent and green on the commit), the guards probed live.
+
+**Review.** Isolated, by severity. Phase 1: one high (the nearby warning failed a carrier's own privacy, so its hook
+would block a harvest), three medium, lows; fixed and the copies re-run. Phase 2, four rounds: 5 medium; then 2 high
+(`release.py commit` gated a copy of the index while committing HEAD and the files; a here-string swallowed every
+later shell finding) and 3 medium; then 1 medium (a git context leaking into `red-check`'s runs); all fixed test
+first. Deferred: one intermittent `red-check` verdict and one low (`i-5ed7e8-33c9b5`).
+
+**What went wrong on the way.** Every lane's worktree began at an older commit than the branch and had to be moved
+first (eight lanes). Twice an edit chained with a git command was refused whole by the privacy hook, so the edit never
+landed, though `release.py commit` now exists for this. A test of the nearby warning passed while proving the opposite
+of its name, caught by review. The first ratchet baseline counted a line moved to the archive as a new warning.
+
+**What was left undone.** The intermittent `red-check` verdict on one commit (`i-5ed7e8-33c9b5`); the cut of 0.0.37;
+phases 3 to 5; the pilot splice.
+
+**Measured.** Phase 1: about 45 agent minutes and 0.9M tokens against 130 minutes and 1.3M estimated. Phase 2: about
+150 agent minutes and 1.5M tokens against 90 and 0.75M; the four review rounds took most of the excess, a miss of
+about twice, whose reason is that each round's fixes to new checks opened findings of their own.
+
+**Learned.** General: a check of the checks (one that judges other commits) needs its own review rounds priced as
+the work's, not as a fix's: each round on `red-check` found what the last round's fix had opened. Local: the ratchet's
+path question and the open flake to the roadmap (`i-5ed7e8-33c9b5`); the worktree base friction to the roadmap.
+Captured: 1 learning, 2 frictions (lane worktrees at an older commit, eight times; an edit chained with git refused,
+four times counting the archived sessions). Nothing needs you beyond the hand-off.
+
 ## 2026-11-25 · s-5ed7e8-eb4ffa — The 0.0.36 plan executed and reviewed by severity, and the first usage measurement
 
 **What.** The 0.0.36 plan (`i-5ed7e8-516d7a`) ran task by task on `release/0.0.36`: the development flow as one map, a plan's contents and fresh read, review by severity, estimates in measured units, the spec format and `bundle.py spec`, the `edit-docs` skill with `bundle.py docs fingerprint` and `docs lint`, `usage measure`, the machine register, and the plan page. Each task had isolated review rounds by severity; a whole-branch review followed, and its findings were fixed and re-reviewed. The first `usage measure` ran, and the owner approved its generalised figure into three candidates. Not cut, at the owner's choice; the branch is pushed, unmerged.

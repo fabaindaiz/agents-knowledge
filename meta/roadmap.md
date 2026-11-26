@@ -73,6 +73,12 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-1914cd` · A delegate's isolated worktree begins at an older commit than the branch it was cut from: eight lanes of
+  2026-11-25 and -26.** Each started at the remote main or the last pushed head, not at the local branch, and had to
+  run `git checkout --detach <sha>` first, which every brief carried after the first time; one lane's `reset` was
+  refused and it used `checkout`. Say it once in the method's delegation rule (the brief names the commit to start
+  from), or have the merging session push the branch first where pushing is allowed. *Estimate:* one sentence in
+  `prompt-sync.md` *Worktrees*, 5 min. *Collides with:* the coding budget if it went into §*Long runs and delegates*.
 - **`i-5ed7e8-33c9b5` · `red-check` judged one sound fix commit as failing on itself, twice, then passed on rerun.** Seen on
   2026-11-26 over commit `1cf8db0` (its `CommitCommand` tests), once in a lane and once in this session's gate, with no
   git variable in the environment; eight later runs passed, with the index staged and not. The leak round 4 found
@@ -80,7 +86,9 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   flaky gate blocks a commit at random, so it is a finding, never retried away. Next: run the commit's ten tests in a
   loop under `red-check`'s export with their output kept, until one fails. Also from round 4, low: a test helper
   imported through `sys.path` (`import lib` for `evals/lib.py`) is not recognised as test support, so its parent run
-  reads as red. *Estimate:* 20–40 min, 80k tokens. *Collides with:* nothing.
+  reads as red. Also low, met at the close: `shell-check` does not see a loop variable taking a quoted
+  list's words (`for row in "a b"; do set -- $row`), which zsh leaves unsplit; it took a second run.
+  *Estimate:* 20–40 min, 80k tokens. *Collides with:* nothing.
   **And a decision for the owner:** the privacy baseline's fingerprint includes the path (`d-5ed7e8-af36e9`), so a
   known line moved to another file, as every close moves the hand-off into `meta/archive/roadmap-states.md`, reads as
   new and fails the check until reworded. Recommendation: keep the path (a leak copied to a new file must not hide)
