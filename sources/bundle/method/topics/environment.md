@@ -1,0 +1,67 @@
+# Environment — a verdict that depends on where it was produced
+
+The first topic document: a mechanism, its recipes and the cards that carry it, read **at the moment
+of use** and not by every session. The session loop points here; nothing in it is loaded by default.
+
+Load it when a gate, a formatter, a generator or a commit has to run somewhere other than the working
+tree you are standing in: a scratch copy, a clean export, an intermediate tree, a worktree, a pinned
+image.
+
+**The mechanism.** A check's verdict is produced *somewhere*, and the somewhere is part of the claim.
+An isolated copy is not the working checkout; a clean export of `HEAD` is not the dirty tree; a tree
+built from the moving `HEAD` is not the tree you worked on. Every recipe below exists because a verdict
+was read as if the place did not matter.
+
+**The cards**, in `../../knowledge/cards/`:
+`reproduce-the-checkout-not-only-the-environment.md`,
+`an-isolated-copy-is-not-the-working-checkout.md`,
+`ratchet-in-a-pinned-environment.md`,
+`detect-by-observation-not-build-flag.md`.
+**Read with it:** [`prompt-context.md`](../prompt-context.md) §*7. Name the class of bug this repo
+cannot see — then check it before it ships*, and
+[`prompt-bootstrap.md`](../prompt-bootstrap.md) §*Working safely in a tree you do not own*, which keeps
+the two rules that are never recipes: never revert the working tree, never fold another session's work.
+
+## Splitting commits after the fact
+
+**Offer each commit when its piece passes the bar, not at the close**: once two finished pieces touch
+the same lines, no hunk-level tool separates them. If you must split after the fact: an agent cannot
+use interactive staging, so write a map of hunks to commits and keep the tool that applies it; build
+every intermediate tree from the commit you started on, never from the moving `HEAD`; prove before
+writing that taking nothing gives `HEAD` and taking everything gives the current tree; back up what it
+rewrites and check equality at the end — the one way a tool may rewrite the working tree, because it
+makes the copy *Working safely* says does not exist; and **run the gate on every intermediate tree**,
+since none of them existed while you worked.
+
+## Formatting a tree that has unsaved work
+
+**A formatter that can lose data never runs on a dirty tree.** When the gate demands formatting and the
+tree has unsaved work, do not run it in place: **copy the file to a scratch directory, format the copy,
+diff it, and apply the diff by hand.** It cannot destroy anything. That is the fallback. When it
+recurs, make it one command: format copies of the flagged files that are in the change, write a copy
+back only if every comment survived and the non-layout tokens are identical and the original did not
+change meanwhile, and name every file it refused. Prefer the `--check` variant everywhere else — it
+writes nothing and is always safe. **Format only the files in the change**: a repo-wide format mixes
+unrelated diffs into yours and can move a suppression pragma off the line it covered.
+
+## Putting back generated churn
+
+**Generated artefacts churn.** Regenerating can rewrite a file with new random identifiers and no real
+change. Put back the ones that did not actually change — only files *your* change regenerated, by
+writing `HEAD`'s content over them (`git show HEAD:<path> > <path>`), never with a revert command: a
+diff nobody can read is a diff nobody reads, and the real change hides in it.
+
+## A scripted edit across files
+
+**A scripted edit across files checks every anchor before it writes any.** Each anchor must match
+exactly once, in every file it targets; present is not enough, since an anchor found twice edits the
+wrong place. Check them all, then write: a run that stops halfway leaves files half-edited (two
+repositories).
+
+## When the gate's own limits block the change
+
+Take the moves in this order. (a) **Relocate** — is there code in this file that belonged somewhere
+else anyway? This is usually available and usually an improvement. (b) **Tighten what you added**, not
+what was already there. (c) **Raise the limit** — never silently, never as part of unrelated work. And
+if the honest answer is that the file needs splitting, **say so and leave it**: that is a structural
+decision, and mid-feature is the worst possible moment to take it unasked.

@@ -59,11 +59,11 @@ written in a language the tool cannot track):
 | the plan is written, before its first task | a fresh-context read of the plan against the code, each finding fixed or answered (`prompt-context.md` §21.1) |
 | the plan runs | a plan-executing or subagent-driven skill; rulings taken there go in its ledger, never asked; an implementer's change to a check (a filter on its output, a skipped red run, an added exemption) is a finding the controller reviews |
 | each piece of code | a test-first skill, or principle 18 |
-| the plan's last task is done | a fresh-context review of the whole branch, offered in one question with its cost (`prompt-bootstrap.md` step 4), then `close`; merging or pushing only when the human asks |
+| the plan's last task is done | a fresh-context review of the whole branch, offered in one question with its cost (`prompt-context.md` §*21.4 Review*), then `close`; merging or pushing only when the human asks |
 | a push or deploy is about to end the plan, and no close has run | `close`, offered in one question first: a rule acts only where the action reads it (`prompt-context.md` §*The enforcement ladder*) |
 | a failure whose cause is unknown | a systematic-debugging skill, before any fix |
 | the work splits into independent parts | a parallel-dispatch skill; unlike a plan-executing skill, the parts share no state |
-| claiming the work is done | a verification skill, or `prompt-bootstrap.md` step 4 |
+| claiming the work is done | a verification skill, or `prompt-bootstrap.md` step 4; the review itself is `prompt-context.md` §*21.4 Review* |
 | work that must not touch the checkout | an isolated-worktree skill, with a check run from its own environment |
 | a review of the diff is wanted | a code-review request; the bootstrap's fresh-context review is the one for a whole branch at its end |
 | the branch is ready to merge | a branch-finishing skill, after `close`, which records the session; finishing only integrates |

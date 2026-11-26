@@ -1,6 +1,7 @@
 ---
 name: edit-docs
 description: "Improves, proofreads or formats documentation by editing levels (audit, structure, style, copy, mechanics), checking the meaning kept with `bundle.py docs`. Not for writing new docs or code."
+release_description: "Improves, proofreads or formats documentation by editing levels, checking the meaning kept with `bundle.py docs`. Not for writing new docs or code."
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 

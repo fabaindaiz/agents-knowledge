@@ -207,9 +207,156 @@ def form_problems(root: Path) -> list[str]:
 GENERATED_MARKER = re.compile(r"^<!-- generated: (cards|about|founded|principles) ?([\w-]*) -->$", re.MULTILINE)
 PHASE_TOKEN = re.compile(r"\{\{notes:([\w-]+)\}\}")
 # Anything that looks like a marker or a token must be one the build knows: a misspelt one would ship
-# literally, and its table would be silently missing.
-ANY_MARKER = re.compile(r"(?i)<!--\s*generated\b[^>]*-->|\{\{[^}]*\}\}")
+# literally, and its table would be silently missing. `release:` markers are read everywhere an original
+# is copied (`cut_blocks`); they are listed here so an area template cannot carry a half-written one.
+ANY_MARKER = re.compile(r"(?i)<!--\s*(?:generated|/?release)\b[^>]*-->|\{\{[^}]*\}\}")
 REVIEW_MARK = " ⚠ review"
+
+# --- the cut: an original keeps its full block, the release ships the short one -----------------------
+# The cut of the coding read is a build rule, never an edit that removes text from an original
+# (`d-5ed7e8-9f47b1`). A block of an original is written twice: its full text, then the short form the
+# release ships. Nothing is deleted in the home; the shrinking happens at the export, where it is paid.
+#
+#     <!-- release: short name -->     the full text, home only
+#     <!-- release: as -->             the short form, what a carrier reads
+#     <!-- /release -->
+#
+# An empty short form is a home-only block: the release ships nothing in its place. Every normative word,
+# number, inline code span, link or record id the short form drops is accounted for in `meta/tracking/
+# cut-ledger.md`, as *kept at X* or *dropped: why*, or the build fails.
+CUT_OPEN = re.compile(r"^<!-- release: short(?: ([A-Za-z0-9][\w.-]*))? -->$")
+CUT_AS = "<!-- release: as -->"
+CUT_END = "<!-- /release -->"
+CUT_ANY = re.compile(r"^\s*<!--\s*/?release\b.*-->\s*$")
+CUT_LEDGER = "meta/tracking/cut-ledger.md"
+CUT_LEDGER_HEADER = "| File | Block | Item | Verdict |"
+# What a drop has to account for. A word on this list carries an obligation, a prohibition or a count;
+# losing one silently is how a cut turns a rule into a suggestion.
+NORMATIVE_WORDS = frozenset("""
+    must never always only every each no not nor none nothing cannot unless without required forbidden
+    refuse refuses refused wins overrides before after may should any all
+""".split())
+CUT_ITEM_PATTERNS = (
+    re.compile(r"`[^`\n]+`"),                              # inline code
+    re.compile(r"\]\(([^)\s]+)"),                          # a link target
+    re.compile(r"\b[dips]-[0-9a-f]{6}-[0-9a-f]{6}\b"),     # a record id
+    re.compile(r"\b\d[\d,.]*\b"),                          # a number
+)
+
+
+@dataclass
+class CutBlock:
+    """One block of an original, in both its forms."""
+    where: str
+    name: str
+    full: str
+    short: str
+
+
+def _cut_items(text: str) -> set[str]:
+    """Every item of `text` a drop has to account for, casefolded."""
+    out = set()
+    for pattern in CUT_ITEM_PATTERNS:
+        for m in pattern.finditer(text):
+            out.add((m.group(1) if m.groups() else m.group(0)).casefold().rstrip(".,;:").strip("`"))
+    out |= {w.casefold() for w in re.findall(r"[A-Za-z]+", text) if w.casefold() in NORMATIVE_WORDS}
+    return {i for i in (s.strip() for s in out) if i}
+
+
+def cut_blocks(text: str, where: str) -> tuple[str, list[CutBlock]]:
+    """(the text as the release ships it, every block it held).
+
+    Raises:
+        BuildError: a marker the build does not know, or one that is never closed.
+    """
+    lines, out, blocks = text.split("\n"), [], []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not CUT_ANY.match(line):
+            out.append(line)
+            i += 1
+            continue
+        opened = CUT_OPEN.match(line)
+        if not opened:
+            raise BuildError(f"{where}: line {i + 1}: {line.strip()!r} is not a marker the build knows; "
+                             f"a block is `<!-- release: short [name] -->`, `{CUT_AS}`, `{CUT_END}`")
+        name = opened.group(1) or f"line {i + 1}"
+        try:
+            as_at = next(j for j in range(i + 1, len(lines)) if lines[j].strip() == CUT_AS)
+            end_at = next(j for j in range(as_at + 1, len(lines)) if lines[j].strip() == CUT_END)
+        except StopIteration:
+            raise BuildError(f"{where}: the block opened at line {i + 1} has no `{CUT_AS}` and `{CUT_END}`") from None
+        stray = [j for j in range(i + 1, as_at) if CUT_ANY.match(lines[j])]
+        stray += [j for j in range(as_at + 1, end_at) if CUT_ANY.match(lines[j])]
+        if stray:
+            raise BuildError(f"{where}: line {stray[0] + 1}: a `release:` marker inside a block; blocks do not nest")
+        full = "\n".join(lines[i + 1 : as_at]).strip("\n")
+        short = "\n".join(lines[as_at + 1 : end_at]).strip("\n")
+        blocks.append(CutBlock(where, name, full, short))
+        if short:
+            out.append(short)
+        elif out and out[-1] == "" and end_at + 1 < len(lines) and lines[end_at + 1] == "":
+            out.pop()  # a home-only block leaves one blank line behind it, not two
+        i = end_at + 1
+    return "\n".join(out), blocks
+
+
+def read_cut_ledger(root: Path) -> dict[tuple[str, str], list[str]]:
+    """{(file, block): the items its rows account for}, from `meta/tracking/cut-ledger.md`.
+
+    A row whose block cell is `*` accounts for its item in every block of that file.
+    """
+    path = root / CUT_LEDGER
+    out: dict[tuple[str, str], list[str]] = {}
+    if not path.is_file():
+        return out
+    for line in path.read_text(encoding="utf-8").split("\n"):
+        if not line.startswith("| ") or line.startswith(CUT_LEDGER_HEADER) or set(line) <= set("| -:"):
+            continue
+        cells = [c.strip() for c in split_row(line)]
+        if len(cells) < 4 or not cells[3].startswith(("kept at ", "dropped: ")):
+            continue
+        item = cells[2].replace("\\|", "|").strip().strip("`").casefold()
+        out.setdefault((cells[0].strip("`"), cells[1].strip("`")), []).append(item)
+    return out
+
+
+def cut_problems(blocks: list[CutBlock], ledger: dict[tuple[str, str], list[str]]) -> list[str]:
+    """One problem per item a short form drops that the ledger does not account for."""
+    problems = []
+    for block in blocks:
+        lost = sorted(_cut_items(block.full) - _cut_items(block.short))
+        if not lost:
+            continue
+        accounted = set(ledger.get((block.where, block.name), [])) | set(ledger.get((block.where, "*"), []))
+        for item in lost:
+            if item not in accounted:
+                problems.append(f"{block.where}: block {block.name!r} drops {item!r} and {CUT_LEDGER} does not "
+                                f"account for it; add a row saying *kept at X* or *dropped: why*")
+    return problems
+
+
+def release_description(text: str, where: str) -> str:
+    """A skill's original as it ships: its short `release_description` in place of its full `description`.
+
+    A skill's full description stays in the home, where the trigger phrasings are worked on and where the
+    home installs the skill from; the release ships the short one, and the descriptions cap is measured
+    over the release (`d-5ed7e8-7a4324`).
+    """
+    lines = text.split("\n")
+    if not lines or lines[0] != "---":
+        return text
+    end = next((i for i in range(1, len(lines)) if lines[i] == "---"), None)
+    short = next((i for i in range(1, end or 1) if lines[i].startswith("release_description:")), None)
+    if end is None or short is None:
+        return text
+    full = next((i for i in range(1, end) if lines[i].startswith("description:")), None)
+    if full is None:
+        raise BuildError(f"{where}: a `release_description` with no `description` to ship in place of")
+    lines[full] = "description:" + lines[short][len("release_description:"):]
+    del lines[short]
+    return "\n".join(lines)
 
 
 @dataclass
@@ -637,6 +784,7 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
     out["knowledge/OPEN.md"] = head + render_open(root / "meta")
     out[B.RECEIVED] = (RECORDS_BANNER if banner else "") + render_received(root / "meta")
     originals = root / ORIGINALS
+    cut: list[CutBlock] = []
     for skill in sorted(originals.glob("method/skills/*/SKILL.md")):
         try:
             named = B.read_frontmatter(skill.read_text(encoding="utf-8"), str(skill))[0].get("model")
@@ -655,7 +803,14 @@ def build_outputs(root: Path, order: Order | None = None, cards: bool = True, ba
                 text = trim_changelog(text, oldest_carrier_version(root / "meta"))
             elif rel == "tools/bundle.py":
                 text = strip_comments(text)
+            if rel.endswith(".md"):
+                text, found = cut_blocks(text, f"{ORIGINALS}/{rel}")
+                cut += found
+            if re.fullmatch(r"method/skills/[^/]+/SKILL\.md", rel):
+                text = release_description(text, f"{ORIGINALS}/{rel}")
             out[rel] = with_banner(rel, text)
+    if problems := cut_problems(cut, read_cut_ledger(root)):
+        raise BuildError("\n".join(problems))
     return out
 
 
@@ -1055,7 +1210,11 @@ def tracking_slug_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
 # caps below and in `MANIFEST.md` are, and they bind. The room is still not a budget: each growth is justified on
 # its own. It binds at the cut: between releases the export may grow past it and `check` warns; `release` refuses.
 EXPORT_CAP = 1_250_000
-DESCRIPTIONS_CAP = 2_776  # chars of the skill and agent descriptions a carrier loads on every turn, in total
+# Chars of the skill and agent descriptions a carrier loads on every turn, in total, measured over the
+# release: a skill's original keeps the full description it is worked on, and ships a short
+# `release_description` (`d-5ed7e8-7a4324`, which raised the cap by about a thousand to make room for
+# the phase's five new skills).
+DESCRIPTIONS_CAP = 3_200
 # Each description is capped by its kind, since a long process must recognise varied phrasing and an agent run only
 # on request need not (the descriptions' caps by kind, in meta/decisions.md).
 DESCRIPTION_KIND_CAPS = {"long process": 750, "light skill": 250, "agent on request": 250, "delegated agent": 200}

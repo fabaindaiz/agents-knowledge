@@ -1,6 +1,7 @@
 ---
 name: next
 description: "Use when the user asks what to do now or next, where the session stands, or which of the method's processes fits, in any language, or types /next. Not when the user has already named the task."
+release_description: "Use when the user asks what to do now or next, where the session stands, or which of the method's processes fits, in any language, or types /next. Not when the task is already named."
 allowed-tools: Bash, Read, Grep, Glob
 ---
 

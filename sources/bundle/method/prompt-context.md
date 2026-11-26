@@ -204,7 +204,8 @@ thirteen are about the repository; 14 to 17 are about the session and the
 process it runs in; 18 and 19 are about how code is written and how the method
 enters a repository that already has its own way of doing things; 20 is about
 what may leave a repository at all; 21 names the four stages the work passes
-through and the failure each one has.
+through and the failure each one has; 22 is about the window the session
+reasons in, and what a compaction takes with it.
 
 ### 1. Every rule names its consequence and its enforcer
 
@@ -730,7 +731,20 @@ an obligation, not a tidy-up.** The moment a change lands, some sentence
 somewhere became false; the cheapest time to fix it is while you still know
 which sentence.
 
-Write down, once, the map of *what changed → what must move*, as `docs-map.toml` at
+The map itself, to write once into the repository and follow every session:
+
+| What you changed | What must move, in the same change |
+|---|---|
+| A rule, or the answer to a settled question | the decisions log: a new row with a `d-` id, its Status, **enforcer column filled** |
+| A number some document claims | the document that owns that number, with the new measurement |
+| A file, a layer, a public name | the architecture document, and every map that names it |
+| Something the roadmap planned | that entry's **state**, and what is still missing |
+| A command, a flag, a task-runner entry | every document that quotes it — these go stale fastest |
+| A new dated record (research, a report, a plan) | its folder's index |
+| A user-visible behaviour | the guide written for the non-programmer, if the repo has one |
+| Anything at all | the changelog, including what went wrong on the way |
+
+Write it down, once, as `docs-map.toml` at
 the repository's root: each document agents load or follow, the paths it describes,
 a reason, and whether a change without it blocks or warns. It is short, it is
 repo-specific, and without it the decay is invisible until a session acts on a
@@ -856,7 +870,8 @@ This is cheap, it is the
 same evidence the red step would have given, and it catches the stub that is
 never consulted and the test that asserts the absence of the behaviour it is
 named for. Where the tree may not be stashed or reverted (`prompt-bootstrap.md`,
-*Working safely*), see the red after the code exists by moving the
+*Working safely*, whose recipes are in `method/topics/environment.md`), see the
+red after the code exists by moving the
 implementation file to a scratch directory and back, or by mutating; undo by
 editing forward, and prove the file is back with `git diff --exit-code <path>`.
 
@@ -986,23 +1001,23 @@ carrier is private, is described only by a neutral kind, and **never has its
 carrier id written beside a description** — the id is what would join every
 other detail to it.
 
+<!-- release: short privacy-private-folder -->
 **A carrier's confidential records stay in its private folder** (`.private/`, at the
 root; gitignored where the repository is public): no tool and no harvest reads it, and
 each file opens with the sentinel line the privacy check fails on anywhere else.
+<!-- release: as -->
+**A carrier's confidential records stay in its private folder** (`.private/`, at
+the root, gitignored where the repository is public): no tool and no harvest
+reads it, and each file opens the sentinel line the privacy check fails on
+anywhere else.
+<!-- /release -->
 
-**Usage data is local, per user and consented.** It lives outside every repository
-(`bundle.py usage show` says where) and nothing is stored without the user's
-consent: the default is nothing, and a missing consent means never asked. Only the
-tool writes it (`usage add`). It never leaves the machine, except a figure
-`usage measure` generalised and the user approved into one named record; a preference
-never leaves, even summarised. The close asks for consent (`usage needs-consent`).
+**Usage data, and a long delegate's price, are principle 22's** (`prompt-context.md`
+§*22. Context is a budget, and a summary is not a store*): usage data stays on the
+machine and is stored only as the user consented, and a long background agent states
+its estimate before it runs.
 
-**A long background agent states its price first:** an estimate of wall time and
-tokens, and its model, corrected by the ratio the last recorded pairs showed. When
-it returns, write the actual beside it where the estimate was written, and with
-consent record both (`usage add agent_costs`). Several heavy gates run at once on
-one machine slow each other: price that contention, or run them in turn.
-
+<!-- release: short privacy-wins-and-holds -->
 **Privacy wins over record-keeping.** Where this rule meets "never lose
 information", this rule wins. Sensitive detail is generalised while the lesson
 is still useful, and deleted when the specific detail was its only value, or
@@ -1025,6 +1040,25 @@ beside a domain noun) and against this machine's own
 `bundle.py verify` runs it. The one override is a `privacy-allow: <reason>` marker on the line,
 written only when the user explicitly says so; every run lists every allowance,
 so none is silent.
+<!-- release: as -->
+**Privacy wins over record-keeping.** Where this rule meets "never lose
+information", this rule wins. Sensitive detail is generalised while the lesson
+is still useful, and deleted when the specific detail was its only value, or
+when it is obsolete. Changelogs, history, evidence and every other record are
+**not exempt because they are history**: a record that is otherwise never
+rewritten may be rewritten or deleted by a privacy scrub, and the release that
+does it says so, generically — "carrier-specific detail removed for privacy" and
+the date — never by restating what was removed.
+
+**It holds whether or not you remember loading it.** An agent writing any file
+that travels — a proposal, `carrier.toml`, a note, a method document — applies
+the rule even when this section is not in its context, and does not trust itself
+to have applied it; the carrier-owned files are checked like the released ones.
+`bundle.py privacy` checks the tree against generic patterns and against this
+machine's own `~/.config/agent-guides/private-terms.txt`, which is never
+committed; `bundle.py verify` runs it, and `privacy --help` lists the patterns
+and the one override.
+<!-- /release -->
 
 **Prevents:** a private codebase, its customers or the people behind it being
 found by anyone who reads a public copy of the bundle — the one mistake in this
@@ -1042,7 +1076,9 @@ checking for. It is written from counted frictions in a set of repositories
 under one owner, so **treat the counts as one source**, and see the notes it
 points at for the evidence.
 
-**1. Plan — a plan that does not name its collisions is a plan for one branch.**
+#### 21.1 Plan
+
+**A plan that does not name its collisions is a plan for one branch.**
 A change that reshapes something every module reads lists, before it starts,
 every live branch and file it will collide with and the order the merges must
 take; where the shape itself changes, the plan carries a step in which both
@@ -1060,11 +1096,23 @@ the review's brief; and where the answer to an unknown would move tasks, it
 each answer to the tasks it moves. **A plan gets a fresh read before its first
 task**: an agent that did not write it reads it against the code, for
 order, gaps, collisions and estimates, and each finding is fixed or answered.
+**A plan of several tasks maps criteria to tasks both ways**: each criterion a
+fact that is true or false, verified by a task; a task serving none is its own
+work item. The estimate names **the release it lands in** as well, and **the close
+compares the totals with the outcome**.
+
+> **Example.** "Any variant on demand" looked ready: the limit is an interface
+> constant, not a platform one. But **no data definition declares more variants
+> than the limit already allows**: interface for a problem that does not exist
+> yet, and saying so with the count stops it being picked up again next month.
+
 **Check:** the plan names the branches it collides with, or says there are none,
 every landed task has its actual beside its estimate, and the plan's fresh read
 is recorded.
 
-**2. Settle the questions — an approval is not a confirmation.**
+#### 21.2 Settle the questions
+
+**An approval is not a confirmation.**
 Decisions the agent reasoned on its own stay marked unconfirmed until the human
 touches each one; approving a design as a whole is given against its shape, not
 against each row, and rows approved in a block are replaced later often enough
@@ -1081,7 +1129,9 @@ other, ask a third question built from the case where they disagree instead of
 choosing. **Check:** every decision row says whose reasoning it is, and no row
 states the human's position without the human's words.
 
-**3. Build — the environment is part of the change.**
+#### 21.3 Build
+
+**The environment is part of the change.**
 An isolated working copy is not the working checkout: it lacks everything
 version control ignores, a delegate created in one starts from the branch it was
 cut from and not the one being worked on, and checks run inside it walk paths
@@ -1100,7 +1150,9 @@ agent will obey one of them without saying which: when a prohibition is added,
 reconcile the rule it collides with in the same change. **Check:** the gate
 passes from a clean copy of the index, not only from the working tree.
 
-**4. Review — a review per task does not see what breaks between tasks.**
+#### 21.4 Review
+
+**A review per task does not see what breaks between tasks.**
 Defects whose evidence lies outside the piece under review are the hardest to
 find, so the final review of the whole branch is not skipped however many tasks
 were approved one by one. A reviewer who did not write the code is independent
@@ -1109,9 +1161,36 @@ given. The cap on re-review rounds (five) assumes the target is fixed — when
 the human revises the rule between rounds the count restarts at one, because
 the rounds are the target moving and not the reviewer failing to converge.
 Rounds end by severity, not by count: one carrier's rounds three to five still
-found medium defects in three lanes of four (`prompt-bootstrap.md`, the review
-step). **Check:** the branch
+found medium defects in three lanes of four. **Check:** the branch
 has one review that read it whole, and the report says what it was given.
+
+**How the reviewer is run.** The reviewer subagent is installed from
+`.agents/agents/knowledge-reviewer.md` (in Claude Code,
+`.claude/agents/knowledge-reviewer.md`). Give it the diff and one line of intent,
+nothing else, and wait for its answer. It reads the cards, cites evidence from
+the repository for each, runs their checks (a check that needs a planted test
+runs in a scratch copy, or comes back as the test you must write), and returns
+findings; its reading never enters your context. The whole branch is offered
+before the close of a multi-task plan, with the plan and its decisions as intent.
+
+- **Fix the findings and nothing else**, then send only what changed for a
+  second review. **Re-review by severity**, which the reviewer assigns and the
+  author never lowers: *high*, data lost, security or a gate broken; *medium*, a
+  wrong result, lost rule or false claim someone would meet; *low*, wording or a
+  cosmetic edge. Rounds run while one finds medium or worse, stop when only low
+  remain (listed), and at five ask the user; a medium or high fix gets its own pass,
+  counted as a round. Re-reviews follow only a review asked for or accepted.
+- A finding you reject is reported with the evidence that rejects it.
+- Where no subagent can run (another assistant, a restricted session), do the
+  same here, in order: the card, the evidence, the check; and say in the report
+  that the review was not isolated.
+
+**What a card review costs.** Measured, the card review in a fresh context cost
+several times a session without it and made no task pass that the cards alone
+did not; that is why it runs on request and is not a default step. A whole-branch
+review of a finished multi-task plan is offered with its cost: in five repositories
+each took four to twenty minutes, about a hundred thousand tokens where counted
+(thin evidence: principle 19). Not for one small commit.
 
 **Where it is already written:** principle 15 holds how to ask; principle 17 how
 to price a process change; principle 18 the order of the test; principle 2 the
@@ -1123,10 +1202,67 @@ that collides at merge time, a decision nobody confirmed, a gate that passed on
 a tree nobody will commit, and a branch declared ready by reviews that never saw
 it whole.
 
+### 22. Context is a budget, and a summary is not a store
+
+**The window a session advertises is not the window it reasons in.** Accuracy
+falls when what matters sits in the middle of a long input, falls further with
+length and with distractors, and falls again once literal matches are removed;
+across the published tests about half the long-context models stop holding up
+well below their advertised size, and a focused input of a few hundred tokens
+has beaten a full history of about a hundred thousand. Long multi-turn work is
+less reliable than the same work asked once, and a wrong turn is rarely
+recovered inside the same conversation. Treat the window as a budget that is
+spent, not a room that is filled, and remember that **whatever enters the
+context is paid again at every later turn**.
+
+**A summary is not a store.** Every harness that compacts says the same thing:
+what must survive is written to a file the harness reads again from disk.
+Rewritten summaries lose domain detail and erode it further on each rewrite, and
+incremental structured updates beat whole rewrites. So:
+
+- **Write the session's state into files as it arrives, not at the close.** Each
+  answer beside the question it answered, each delegate's report as it lands,
+  and a short *where we are now* — the current step, the files in play and why,
+  the last verified fact with the command that verified it. What a compaction
+  reliably keeps is a standing rule restated from a file; what it reliably thins
+  is the reason behind a decision, the exact text of an error, and an answer
+  whose question is gone.
+- **Delegate large reads and long loops**, so the reading is paid once and the
+  main thread receives a short report rather than the material.
+- **After a wrong turn or several compactions, prefer a fresh session with a
+  written brief** to one more turn in the old one. Step 0's brief is exactly
+  that brief, which is why it is read from the repository and not remembered.
+
+> **Example.** A session opened on "keep adding roadmap items". Three lines of
+> the brief mattered: a task-runner change **staged by another session**, not to
+> be touched; the deploy path fixed twice in the last few entries, so anything
+> touching the build was hot; and the only roadmap item that cost the core
+> invariant nothing was one the human had not named. That last line changed what
+> got built — and none of it was in the session's head, because none of it could
+> have been.
+
+**A long background agent states its price first:** an estimate of wall time and
+tokens, and its model, corrected by the ratio the last recorded pairs showed. When
+it returns, write the actual beside it where the estimate was written, and with
+consent record both (`usage add agent_costs`). Several heavy gates run at once on
+one machine slow each other: price that contention, or run them in turn.
+
+**Usage data is local, per user and consented.** It lives outside every repository
+(`bundle.py usage show` says where) and nothing is stored without the user's
+consent: the default is nothing, and a missing consent means never asked. Only the
+tool writes it (`usage add`). It never leaves the machine, except a figure
+`usage measure` generalised and the user approved into one named record; a preference
+never leaves, even summarised. The close asks for consent (`usage needs-consent`).
+
+**Prevents:** a session that is confident and wrong because the fact it needed
+was in the part of the window it no longer reasons over, and a compaction that
+takes with it the only copy of what the session knew.
+
 ---
 
 ## Engineering standards
 
+<!-- release: short standards-intro -->
 The principles say what the repository must guarantee. This says what the code
 itself must look like. **These are the defaults the method assumes**; a host
 repository that has already decided differently keeps its decision (principle
@@ -1134,6 +1270,13 @@ repository that has already decided differently keeps its decision (principle
 
 Every standard here is stated as *what it prevents*, and every one of them is
 something an agent gets wrong in a characteristic way.
+<!-- release: as -->
+What the code itself must look like, each standard stated as *what it prevents*
+and each one something an agent gets wrong in a characteristic way. **These are
+the defaults the method assumes**; a host repository that has already decided
+differently keeps its decision (principle 19), and the substitution goes in the
+`adapted` list of `.agents/carrier.toml`.
+<!-- /release -->
 
 ### Tests
 
@@ -1195,8 +1338,10 @@ last one is not part of the pyramid; it is the thing the pyramid is holding up.
 - **Comment the why; the what is the code's job.** `// increment i` is noise;
   `// the API returns 1-based pages and 0 means "no more"` is irreplaceable.
 - **The reason travels with the number.** A constant whose comment records the
-  measurement that produced it defends itself at the exact moment someone is
-  about to change it — which no document elsewhere can do.
+  measurement that produced it — *"any lower opacity let the background through
+  and the title stopped being readable"* — defends itself at the exact moment
+  someone is about to change it, against the next session, in a way no document
+  elsewhere can.
 - **Every public symbol says what it is for**, in one line, including what it
   does *not* do. The negative half is usually the useful half.
 - **A docstring's example is a test when the language lets it be** (doctest,
@@ -1219,6 +1364,7 @@ last one is not part of the pyramid; it is the thing the pyramid is holding up.
 
 ### Evaluation — how you know it works
 
+<!-- release: short standards-evaluation -->
 Four layers, and they answer different questions. A repo needs all four; most
 have one and believe they have four.
 
@@ -1234,12 +1380,32 @@ tests whose subject is non-deterministic, and they follow the same discipline
 with two additions — a **frozen dataset** with the cases that have burned you,
 and a **recorded baseline** so a change is measured as a delta rather than
 argued about. Treat a dropped eval score exactly as a red test: it blocks.
+<!-- release: as -->
+Four layers, and they answer different questions. A repo needs all four; most
+have one and believe they have four. **The gate** — did we break a rule we
+already knew about: format, lint, types, tests, the structural audit. **The
+invariant test** — does the one thing that must always be true still hold:
+replay, round trip, seek-and-compare, clean-install smoke. **The pre-ship
+check** — does it work in the artefact we actually deliver: the built wheel, the
+bundle, the container (principle 7). **Looking at it** — is the thing we
+produced any good: render it, run it, read the output (principle 14).
 
-### The domain's own standards
+**For repositories that ship model behaviour, add a fifth: evals.** They are
+tests whose subject is non-deterministic, and they follow the same discipline
+with two additions — a **frozen dataset** with the cases that have burned you,
+and a **recorded baseline** so a change is measured as a delta rather than
+argued about. Treat a dropped eval score exactly as a red test: it blocks.
+<!-- /release -->
+
+---
+
+## The domain's own standards
 
 Every domain has practices that are not general software engineering and that an
 agent will not infer. **Find them in Phase 2 and write them into the root file**,
-because they are the ones a well-read generalist agent will confidently violate.
+because they are the ones a well-read generalist agent will confidently violate
+— and because a coding session then reads them from the root file, where they
+are this repository's own, instead of reading every domain's list every time.
 
 | Domain | The standards that are not optional there |
 |---|---|
