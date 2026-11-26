@@ -6246,6 +6246,112 @@ def now_tracked(repo: Path) -> list[str]:
     return [name for name in listed.split("\0") if name]
 
 
+
+COMPACT_WINDOW = 120
+_PROBE_ID = re.compile(r"\b[dispr]-[0-9a-f]{6}(?:-[0-9a-f]{6})?\b")
+_PROBE_PATH = re.compile(r"\b[\w.-]+/[\w./-]+\.\w{1,5}\b")
+_PROBE_FAILURE = re.compile(r"^.*(?:Traceback \(most recent|AssertionError|\bFAILED\b|  x |refused|Error:).*$", re.M)
+
+
+def _probe_facts(text: str) -> dict[str, set[str]]:
+    """The checkable things a piece of transcript names. Sets, so repetition does not inflate a count."""
+    return {"ids": set(_PROBE_ID.findall(text)),
+            "paths": set(_PROBE_PATH.findall(text)),
+            "failures": {line.strip()[:160] for line in _PROBE_FAILURE.findall(text) if line.strip()}}
+
+
+def _probe_records(path: Path) -> list[dict]:
+    records = []
+    for raw in path.read_text(encoding="utf-8", errors="replace").split("\n"):
+        try:
+            record = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict):
+            records.append(record)
+    return records
+
+
+def _probe_text(record: dict) -> str:
+    """Every string in one record, flattened. Crude on purpose: the probe counts what a reader would see,
+    and a fact named inside a tool result counts as named."""
+    out: list[str] = []
+    def walk(value: object) -> None:
+        if isinstance(value, str):
+            out.append(value)
+        elif isinstance(value, dict):
+            for item in value.values():
+                walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+    walk(record)
+    return "\n".join(out)
+
+
+def _is_summary(record: dict) -> bool:
+    """The record that carries the summary itself. A compaction also writes a boundary record a few
+    records earlier, which holds metadata and almost no text: counting that as a cut measured an empty
+    string against the window and reported everything as lost."""
+    return bool(record.get("isCompactSummary"))
+
+
+def _is_boundary(record: dict) -> bool:
+    return record.get("subtype") == "compact_boundary" or isinstance(record.get("compactMetadata"), dict)
+
+
+def compaction_probe(paths: list[Path], window: int = COMPACT_WINDOW) -> list[dict[str, int]]:
+    """One row per compaction found: how many facts in flight before the cut the summary still names.
+
+    `kept` over `named` is the survival rate for each kind. `rereads` counts the files read after the cut
+    that had already been read before it, which the study saw dominate the first reads after every cut.
+    """
+    rows = []
+    for path in paths:
+        records = _probe_records(path)
+        cuts = [i for i, r in enumerate(records) if _is_summary(r)]
+        bounds = [i for i, r in enumerate(records) if _is_boundary(r)]
+        for n, cut in enumerate(cuts, 1):
+            edge = max((b for b in bounds if b < cut), default=cut)
+            before = "\n".join(_probe_text(r) for r in records[max(0, edge - window):edge])
+            summary = _probe_text(records[cut])
+            after = "\n".join(_probe_text(r) for r in records[cut + 1:cut + 1 + window])
+            named, kept = _probe_facts(before), _probe_facts(summary)
+            read_before = _probe_facts(before)["paths"]
+            read_after = _probe_facts(after)["paths"]
+            row = {"cut": n, "window": window}
+            for kind in ("ids", "paths", "failures"):
+                row[f"{kind}_named"] = len(named[kind])
+                row[f"{kind}_kept"] = len(named[kind] & kept[kind])
+            row["rereads"] = len(read_before & read_after)
+            row["after_files"] = len(read_after)
+            rows.append(row)
+    return rows
+
+
+def compaction_lines(rows: list[dict[str, int]]) -> list[str]:
+    """The probe's report. Counts only: nothing read from a transcript is ever printed."""
+    if not rows:
+        return ["  . no compaction found in these transcripts"]
+    lines = ["  cut | record ids | paths | exact failure text | files re-read after"]
+    totals = {k: 0 for k in ("ids_named", "ids_kept", "paths_named", "paths_kept",
+                             "failures_named", "failures_kept", "rereads", "after_files")}
+    for row in rows:
+        for key in totals:
+            totals[key] += row[key]
+        lines.append(f"  {row['cut']:>3} | {row['ids_kept']:>3}/{row['ids_named']:<4} "
+                     f"| {row['paths_kept']:>3}/{row['paths_named']:<4} "
+                     f"| {row['failures_kept']:>3}/{row['failures_named']:<4} "
+                     f"| {row['rereads']}/{row['after_files']}")
+    def rate(kept: str, named: str) -> str:
+        return f"{100 * totals[kept] // totals[named]}%" if totals[named] else "n/a"
+    lines.append(f"  kept over {len(rows)} compactions: record ids {rate('ids_kept', 'ids_named')}, "
+                 f"paths {rate('paths_kept', 'paths_named')}, "
+                 f"exact failure text {rate('failures_kept', 'failures_named')}; "
+                 f"files re-read after a cut {rate('rereads', 'after_files')}")
+    return lines
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bundle.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -6439,6 +6545,13 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--done", action="store_true", help="remove this session's state (what `close` runs)")
     p.add_argument("--session", help="the session id (default: the harness's)")
     p.add_argument("--repo", default=".")
+    p = sub.add_parser("compaction", help="what each compaction's summary still named, as counts; reads local "
+                       "transcripts and prints no text from them")
+    p.add_argument("dirs", nargs="*", metavar="PROJECT_DIR",
+                   help="transcript folders (default: REPO's in ~/.claude/projects, and its worktrees')")
+    p.add_argument("--window", type=int, default=COMPACT_WINDOW, metavar="N",
+                   help=f"records each side of a cut that count as in flight (default {COMPACT_WINDOW})")
+    p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
     p.add_argument("--memory", help="the memory folder (default: the assistant's, for REPO)")
@@ -7189,6 +7302,17 @@ def _run(args: argparse.Namespace) -> int:
         for line in lines:
             print(line)
         print(f"now: {len(now_files(repo))} live-state files, this session's first")
+        return 0
+    if args.command == "compaction":
+        folders = [Path(d) for d in args.dirs] or transcript_dirs(Path(args.repo))
+        files = sorted(p for d in folders if d.is_dir() for p in d.glob("*.jsonl"))
+        if not files:
+            print(f"no transcripts for this repository under {Path('~/.claude/projects')}: give PROJECT_DIR")
+            return 0
+        rows = compaction_probe(files, args.window)
+        for line in compaction_lines(rows):
+            print(line)
+        print(f"compaction: {len(rows)} compactions over {len(files)} transcripts; counts only, no text read is printed")
         return 0
     if args.command == "memory-diff":
         repo = Path(args.repo).resolve()

@@ -4552,3 +4552,54 @@ class QuestionGuard(Base):
         wired = [(g.get("matcher"), h["command"]) for g in hooks["PreToolUse"] for h in g["hooks"]]
         self.assertTrue(any(m == "AskUserQuestion" and "question_guard.py" in c for m, c in wired), wired)
         self.assertTrue(any("privacy_guard.py" in c for _, c in wired), "the privacy gate is not displaced")
+
+
+class CompactionProbe(Base):
+    """`bundle.py compaction`: what a summary still named, as counts. Its contract is that it prints
+    numbers and never a word it read, because a transcript carries identity and private names."""
+
+    SECRET = "the-" + "private-" + "repository"
+
+    def a_transcript(self, kept: list[str], lost: list[str]) -> Path:
+        folder = self.root / "projects" / "one"
+        folder.mkdir(parents=True)
+        path = folder / "session.jsonl"
+        before = [{"type": "assistant", "message": {"content": [
+            {"type": "text", "text": f"{self.SECRET} working on {item}"}]}} for item in kept + lost]
+        records = [*before,
+                   {"type": "system", "subtype": "compact_boundary", "compactMetadata": {"trigger": "auto"}},
+                   {"type": "user", "isCompactSummary": True, "message": {"content": [
+                       {"type": "text", "text": "Summary. It still names " + " and ".join(kept)}]}},
+                   {"type": "assistant", "message": {"content": [{"type": "text", "text": "after the cut"}]}}]
+        path.write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+        return folder
+
+    def test_it_counts_what_the_summary_kept_and_what_it_lost(self) -> None:
+        folder = self.a_transcript(kept=["d-5ed7e8-0b3eda", "meta/roadmap.md"],
+                                   lost=["i-5ed7e8-9ef5d1", "sources/bundle/README.md"])
+        rows = B.compaction_probe(sorted(folder.glob("*.jsonl")))
+        self.assertEqual(1, len(rows), rows)
+        self.assertEqual((2, 1), (rows[0]["ids_named"], rows[0]["ids_kept"]))
+        self.assertEqual((2, 1), (rows[0]["paths_named"], rows[0]["paths_kept"]))
+
+    def test_a_boundary_record_is_not_counted_as_a_second_compaction(self) -> None:
+        # The boundary holds metadata and almost no text; counting it as a cut measured the window
+        # against an empty string and reported everything as lost.
+        folder = self.a_transcript(kept=["d-5ed7e8-0b3eda"], lost=[])
+        self.assertEqual(1, len(B.compaction_probe(sorted(folder.glob("*.jsonl")))))
+
+    def test_the_report_prints_no_word_it_read(self) -> None:
+        folder = self.a_transcript(kept=["d-5ed7e8-0b3eda"], lost=["i-5ed7e8-9ef5d1"])
+        code, out = run("compaction", *[str(folder)])
+        self.assertEqual(0, code, out)
+        self.assertNotIn(self.SECRET, out)
+        for leaked in ("d-5ed7e8-0b3eda", "i-5ed7e8-9ef5d1", "meta/roadmap.md", "Summary"):
+            self.assertNotIn(leaked, out, f"the probe printed {leaked!r}, which it read from a transcript")
+        self.assertIn("counts only", out)
+
+    def test_no_transcript_is_said_so_and_is_not_an_error(self) -> None:
+        empty = self.root / "none"
+        empty.mkdir()
+        code, out = run("compaction", str(empty))
+        self.assertEqual(0, code, out)
+        self.assertIn("no transcripts", out)
