@@ -9,6 +9,16 @@ version it holds with `bundle.py changelog --since <its version>`.
 
 ## [Unreleased]
 
+## [0.0.37] - 2026-11-26
+
+**What a carrier runs at this update: `install-skills`, whose banner now carries a hash so a hand edit is refused
+rather than overwritten.** The harvest and the update become followable with no one to answer, and the update's
+harvest runs in a session of its own; a proposal may name a `topic:`; the tools gain `red-check` (a fix's tests must
+fail on its parent), `shell-check` (zsh) and a privacy ratchet over tracked files; four queued extensions enter their
+notes. A carrier may add a `[red_check]` table to its `carrier.toml` to have its fix commits judged; without one,
+`red-check` reports itself not configured. Still a patch: criterion 2 of the first minor was re-run on fresh copies
+and its four remaining doubts fixed, not re-run after them; criterion 3 is unmet and 1 unproven.
+
 ### Added
 
 - **A proposal's optional `topic:`** (`d-5ed7e8-9f14d5`): `propose --topic SLUG` names which part of the target a
