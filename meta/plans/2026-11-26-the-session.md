@@ -47,7 +47,7 @@ none: no device or production system is touched in this phase.
 
 - T3 the plan of the cut: each block of the coding read, its tokens, what it says, where it would move, what could be lost · done: walked, the cut a build rule
 - T4 the topic map by mechanism, checked against the notes' occurrences across domains · done: walked, export deferred
-- T5 design round: a plan proposes, prices and measures, and proposes its split (`i-5ed7e8-be0f54`, `i-5ed7e8-023814`) · waiting
+- T5 design round: a plan proposes, prices and measures, and proposes its split (`i-5ed7e8-be0f54`, `i-5ed7e8-023814`) · done: walked (`d-5ed7e8-4b1883` to `d-5ed7e8-344610`)
 - T6 design round: persistent delegates (`i-5ed7e8-d6ecfe`) · waiting
 - → P1, P2
 
@@ -61,7 +61,8 @@ none: no device or production system is touched in this phase.
 - T11 the compaction probe, run on the transcripts already here · waiting
 - T12 the research's findings queued as candidates · waiting
 - T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
-- T15 the `lanes` skill, from the two design rounds · waiting
+- T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · waiting
+- T18 the `plan` skill and `bundle.py plan calibrate` · waiting
 - T16 the `ship` and `cut` skills · waiting
 - T13 the phase's review by severity · waiting
 - → P3
@@ -80,7 +81,7 @@ none: no device or production system is touched in this phase.
 - **Risks the review probes:** the cut loses a rule (`docs fingerprint` over every moved block, and the owner reads
   the plan of the cut first); a topic map by domain would drop a card that crosses domains (checked against
   occurrences); a hook that blocks every question or every session start (each fails open, as the zsh guard does);
-  the state file leaking private detail (git-ignored, never travels); four new skill descriptions need about 800 characters where 16 remain (the descriptions are trimmed in T7, or the cap is the owner's to raise); T7 and T9 both touch method text (the loop in
+  the state file leaking private detail (git-ignored, never travels); five new skill descriptions need about a thousand characters where a few remain (the descriptions are trimmed in T7, or the cap is the owner's to raise); T7 and T9 both touch method text (the loop in
   T7, `decision-review` and principle 15 in T9: disjoint files).
 - **Spike:** T11's probe on the existing transcripts measures the baseline the hooks are judged against.
 - **Fresh read:** before T7, a fresh-context agent reads this plan and the plan of the cut.
@@ -94,7 +95,7 @@ none: no device or production system is touched in this phase.
 | 2 | The cut of 0.0.37 | done | P0 | 20 | 25 | 60 | 70 | 0 |
 | 3 | The plan of the cut | done | P1 | 60 | 20 | 150 | 140 | 1 |
 | 4 | The topic map by mechanism | done | P1 | 45 | 20 | 120 | 150 | 1 |
-| 5 | Design round: planning that measures and splits | waiting | P2 | 40 | | 80 | | 0 |
+| 5 | Design round: planning that measures and splits | done | P2 | 40 | 15 | 80 | 60 | 0 |
 | 6 | Design round: persistent delegates | waiting | P2 | 60 | | 150 | | 0 |
 | 7 | The cut as a build rule, the principle, the loop's line | waiting | P3 | 165 | | 430 | | 2 |
 | 8 | Live state and the compaction hooks | waiting | P3 | 120 | | 250 | | 2 |
@@ -103,9 +104,10 @@ none: no device or production system is touched in this phase.
 | 11 | The compaction probe | waiting | P3 | 45 | | 120 | | 1 |
 | 12 | The research's candidates queued | waiting | P3 | 15 | | 40 | | 0 |
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
-| 15 | The `lanes` skill | waiting | P3 | 45 | | 120 | | 1 |
+| 15 | The `lanes` skill and `lanes check` | waiting | P3 | 105 | | 270 | | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
 | 17 | `seen_in` and the cross-domain requests | waiting | P3 | 105 | | 250 | | 1 |
+| 18 | The `plan` skill and `plan calibrate` | waiting | P3 | 105 | | 250 | | 1 |
 | 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
 Calibration: phase 2's review rounds ran at about twice their estimate, each round's fixes to a new check opening
