@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (287)
+## Candidates in the queue (288)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -304,10 +304,11 @@ None.
 - `reordering-a-float-sum-changes-it` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
 - `a-benchmark-measures-what-it-ran` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
 - `a-guarantee-stops-at-its-own-boundary` — K, since 0.0.38 · lacks an occurrence in a carrier; the sources read at abstract or summary level for some boundaries …
+- `a-newest-first-log-conflicts-on-every-parallel-merge` — M, since 0.0.38 · lacks a second carrier; the one-file-per-entry option built and measured
 
-## Offered again, to merge (1)
+## Offered again, to merge (0)
 
-- `a-newest-first-log-conflicts-on-every-parallel-merge` — another occurrence to merge
+None.
 
 ## Answered: admitted, folded, refused or dropped (343)
 

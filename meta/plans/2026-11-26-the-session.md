@@ -1,13 +1,13 @@
 # Plan: the session — development flow, questions to the owner, and context
 
 State on 2026-11-26: a phase inserted before phases 3 to 5 of the *Next* plan, at the owner's request; its decisions
-walked and confirmed (the nine rows of 2026-11-26 that cite `meta/reviews/2026-11-26-context-and-compaction.md` or the
+walked and confirmed (the rows of 2026-11-26 that cite `meta/reviews/2026-11-26-context-and-compaction.md` or the
 phase on the session, in `meta/decisions.md`); **the owner is involved at every design round and guard**, so nothing
 here runs unattended.
 
 ## The question now
 
-**How far is the phase from done? About fifteen hours of agent time, in three stages, each opened by the owner.**
+**How far is the phase from done? About sixteen hours of agent time left, the build only, by the table below.**
 
 1. **Before it:** the intermittent `red-check` verdict, then the cut of 0.0.37 with phases 1 and 2.
 2. **Design, with the owner:** the plan of the cut and the topic map, then two design rounds (planning that
@@ -21,7 +21,7 @@ Note: the coding session reads about 10.1k of its 10.1k cap until the cut lands;
 
 - **Inputs:** the research on context and compaction, the decisions of 2026-11-26, the earlier rule on questions
   (`d-5ed7e8-0fec6e`), the roadmap items `i-5ed7e8-be0f54`, `-023814`, `-d6ecfe`, `-55e022`, `-4a5e6d`, `-46b707`.
-- **Decided:** every choice above; open: what the cut moves, and the topic map, both shown to the owner first.
+- **Decided:** every choice above, the plan of the cut and the topic map (walked), T5, T6, the live state's files and the questions before the build (`d-5ed7e8-7a4324`, `-ba8042`, `-e6530d`, `-9c3436`).
 
 ## Device runs
 
@@ -53,7 +53,7 @@ none: no device or production system is touched in this phase.
 
 ### Build
 
-- T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · waiting
+- T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the short `release_description` of each skill (`d-5ed7e8-7a4324`), the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · waiting
 - T17 `seen_in` on every note and the cross-domain requests the router must reach, the clock case first (`d-5ed7e8-ab488f`, `d-5ed7e8-45fdf9`) · waiting
 - T8 `bundle.py now`, the deducing hook, `PreCompact` and `SessionStart(compact)` in the home · waiting
 - T9 `decision-review` writes each answer as it arrives; the question rules; the question-tool hook · waiting
@@ -62,7 +62,7 @@ none: no device or production system is touched in this phase.
 - T12 the research's findings queued as candidates · waiting
 - T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
 - T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · waiting
-- T18 the `plan` skill and `bundle.py plan calibrate` · waiting
+- T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · waiting
 - T16 the `ship` and `cut` skills · waiting
 - T13 the phase's review by severity · waiting
 - → P3
@@ -81,7 +81,7 @@ none: no device or production system is touched in this phase.
 - **Risks the review probes:** the cut loses a rule (`docs fingerprint` over every moved block, and the owner reads
   the plan of the cut first); a topic map by domain would drop a card that crosses domains (checked against
   occurrences); a hook that blocks every question or every session start (each fails open, as the zsh guard does);
-  the state file leaking private detail (git-ignored, never travels); five new skill descriptions need about a thousand characters where a few remain (the descriptions are trimmed in T7, or the cap is the owner's to raise); T7 and T9 both touch method text (the loop in
+  the state file leaking private detail (git-ignored, never travels); five new skill descriptions need about a thousand more of the cap where a few remain (decided, `d-5ed7e8-7a4324`: each skill keeps its full description and gains a short `release_description`, the cap raised to about three thousand two hundred over the release, in T7); T7 and T9 both touch method text (the loop in
   T7, `decision-review` and principle 15 in T9: disjoint files).
 - **Spike:** T11's probe on the existing transcripts measures the baseline the hooks are judged against.
 - **Fresh read:** before T7, a fresh-context agent reads this plan and the plan of the cut.
@@ -107,7 +107,7 @@ none: no device or production system is touched in this phase.
 | 15 | The `lanes` skill and `lanes check` | waiting | P3 | 105 | | 270 | | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
 | 17 | `seen_in` and the cross-domain requests | waiting | P3 | 105 | | 250 | | 1 |
-| 18 | The `plan` skill and `plan calibrate` | waiting | P3 | 105 | | 250 | | 1 |
+| 18 | The `plan` skill, `plan calibrate` and the unattended mode | waiting | P3 | 165 | | 400 | | 1 |
 | 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
 Calibration: phase 2's review rounds ran at about twice their estimate, each round's fixes to a new check opening

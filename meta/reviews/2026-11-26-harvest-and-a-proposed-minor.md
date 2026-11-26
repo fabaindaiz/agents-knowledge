@@ -13,7 +13,7 @@ plans priced in measured units and review rounds by severity all landed after it
 | Verdict | Count | Where it went |
 |---|---|---|
 | Queued, new | 3 | `a-newest-first-log-conflicts-on-every-parallel-merge` (with a record-rewrite proposal and `changelog-order-is-checked` merged in), `a-decision-page-is-kept-with-its-decision` (with the page that renders and measures each option), `an-agent-credits-its-call-to-the-person` |
-| Merged into a queued candidate | 15 | review, delegates, plans, capacity on one machine, the unread index, the coexistence step |
+| Merged into a queued candidate | 14 | review, delegates, plans, capacity on one machine, the unread index, the coexistence step |
 | An extension of a note | 1 | `merge-by-shared-fact-not-shared-shape`: a documented disagreement between two surfaces is a break |
 | Experiment runs | 2 | both confirm; one may widen its note's boundary from *compared for equality* to *refuses a newer version* |
 | Refused, already in the method | 5 | each with its reason in `meta/tracking/received.md` |

@@ -365,6 +365,7 @@ By slug and kind; the claim and what each lacks stay in the home's queue.
 | `reordering-a-float-sum-changes-it` | K |
 | `a-benchmark-measures-what-it-ran` | K |
 | `a-guarantee-stops-at-its-own-boundary` | K |
+| `a-newest-first-log-conflicts-on-every-parallel-merge` | M |
 
 ## Answered: admitted, folded, refused or discarded, not to offer again
 

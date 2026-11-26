@@ -76,6 +76,20 @@ never committed; the names of private carriers are in the local private-terms li
 
 ## Next
 
+- **`i-5ed7e8-592937` · A domain word beside a record id fails the privacy check while records are written.** Counted
+  2026-11-26: three incidents in one session (decision and roadmap rows naming a kind of loop, a kind of device and a
+  controlling role), each reworded by hand after a commit was refused; no earlier entry mentions it. A writer of
+  records does not see the rule until the check fails. **Proposed:** `bundle.py id` (or the decision-row writer) runs
+  the `id-beside-domain` rule over the row it mints for, before the row is written, and prints the word to replace.
+  *Estimate:* 30 min, 80k tokens. *Collides with:* nothing.
+- **`i-5ed7e8-c7e6b2` · A delegated draft of method text broke the rule on the two forms: the second incident.** The rule
+  (compression is a build rule on the original; text is never moved out of an original to shrink the release) was
+  corrected by the owner on 2026-09-28 and again on 2026-11-26, when a delegated plan of the cut proposed deleting and
+  moving text in `sources/` and this session did not catch it. A delegate does not load the owner's standing rules
+  unless its brief carries them. **Proposed:** the delegate-brief form in the `brief` skill (T14) carries, for any
+  brief that drafts or plans changes to `sources/`, the two-forms rule in one line. *Estimate:* 10 min inside T14.
+  *Collides with:* T14.
+
 - **`i-5ed7e8-d23f66` · An unattended mode that keeps the normal flow and spends the owner's attention once.** The owner's
   suggestion, 2026-11-26: before leaving, the session asks every pending question at once and starts the plan; a
   question that arises later is parked for the owner's return, never asked while away, and the session continues

@@ -14,7 +14,7 @@ version it holds with `bundle.py changelog --since <its version>`.
 changed: no method text, no tool, no layout. This release receives thirty-seven proposals (one carrier's harvest of
 twenty-five and the home's own twelve) so that each carrier can prune what it offered, and records where each went in
 `meta/tracking/received.md`. Three new candidates are queued (a newest-first record log that conflicts on every
-parallel merge; a decision page kept with its decision; an agent crediting its own call to the person), fifteen
+parallel merge; a decision page kept with its decision; an agent crediting its own call to the person), fourteen
 proposals are merged into queued candidates, one extends a note, two experiment runs confirm their notes, five are
 refused as already in the method, and eleven optimisation candidates join the queue lacking an occurrence. Related
 candidates that give complementary information are merged rather than kept apart. The per-release cost pilot was not
