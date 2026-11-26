@@ -35,6 +35,8 @@ The missing direction: **the record must also survive the operation failing.** D
 
 A decision per outbound call instead of a default, and the discipline to keep it visible in review. Plus the monitoring the third boundary above demands, which is the part usually skipped — and skipping it converts a stability pattern into a way of not knowing.
 
+And the pattern has a cost of its own: **a call inside a log-and-continue block cannot be told, from outside, between working and never having worked.** The net that keeps the operation alive also hides the call's own defects from every test that asserts only that nothing raised. So each wrapped call gets a test that it does its work, with the net made visible under test (re-raised or recorded).
+
 ## Where it came from
 
 A service where webhook delivery was wrapped and logged rather than raised, recorded explicitly as a guardrail: a failed notification never fails the operation it reports on. The history behind it showed the same call moving from raising, to logging an error, to logging at info over several commits — the shape of a team learning this the slow way.
@@ -60,5 +62,7 @@ What *would* settle it: count outbound calls in a service, classify each as crit
 **2026-10-08, offered at 0.0.31 — a notification after a saved change, in a service repository.** A request saved a state change and then notified a device; when the device was unreachable the request answered with a server error although the change was saved. Found in a code review and recorded as debt, not fixed and not yet tested. The fix proposed reports the saved state and a separate notified flag, as a sibling path in the same service already does.
 
 **A further occurrence, 2026-10-15, recorded as debt and not yet fixed:** a request saved a state change and then notified a device; when the device was unreachable the request answered with a server error although the change was saved. The fix reports the saved state and a separate notified flag, as a sibling path in the same service already does.
+
+**2026-09-22, applied at 0.0.37 — the cost, in an edge service.** The only query built with a disjunction sat inside such a block and had never been executed: nothing outside could tell. It works, and tests now say so.
 
 **2026-11-24 — two occurrences in one repository's status reporters, within a few days; another repository of the same owner, so not a second independent carrier.** A reporter for a watchdog read a configuration attribute that does not exist until a plugin is configured; the safety net around it turned the error into a one-line warning, so seven new tests failed with an empty recorder while the test that the reporter cannot take the watchdog down passed. And a reporting call sat outside the reporter's own net, inside the constructors of several managers, so a failing side channel could have failed the operation; wrapped after review. The net is right in production but hides the reporter's own bug from a test that only asserts "it does not raise": test the reporter with the net visible (assert the report is produced, make the net re-raise or record under test) and cover the call sites outside the net. In the same family, test recorders that ignored the component name left a typo in a topic green until pinned.

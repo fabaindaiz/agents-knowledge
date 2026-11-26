@@ -165,21 +165,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   that step is green by omission, so it looks useful and is never exercised. *Estimate:* a session for the
   measurement, and the rung is a paragraph. *Collides with:* the enforcement ladder, which today only adds.
 
-- **`i-5ed7e8-fe15a8` · The fifty-four oldest candidates, read, and three defects the queue itself carries.**
-  Reviewed on 2026-11-24 (`meta/reviews/2026-11-24-oldest-candidates.md`): every row whose *Since* is the
-  twentieth or twenty-first patch, twelve or thirteen releases of waiting. The largest harvest so far rewrote
-  four of the fifty-four and cleared none: everything it added is marked in the rows themselves as one owner's,
-  so it adds occurrences, not sources. Seven are blocked by the owner-agreement item alone, fifteen want a
-  second repository, eight want a measurement nobody has run, and six want only a release's decision. Six could
-  be decided at the next intake, all extensions of active notes whose literature the note already carries, two
-  of them with a recorded experiment that confirms a form the note does not yet hold. **The queue's own
-  defects, which matter beyond those rows:** one row cites two slugs that exist nowhere — as a note, a row or a
-  history entry — one of them described as folded at a release; two rows are the same claim written twice; and
-  one row's *Lacks* asks for evidence its own *Evidence* column now carries. The slug check written the same
-  day does not catch these, because it reads only rows claiming a note was admitted. *Estimate:* the six
-  decisions belong to an intake, one turn each; the three defects are about twenty minutes. *Collides with:*
-  the next intake, which rewrites the same rows.
-
 - **`i-5ed7e8-23e94e` · Re-examine the export cap once the changelog can be archived again.** The cap was
   raised to 1,250,000 bytes on 2026-11-24 (`d-5ed7e8-929f2a`) after the alternative — archiving the oldest
   changelog sections into the home — was rejected on a tool defect, `i-5ed7e8-5e0415`, and not on its merits.
@@ -264,11 +249,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-36d9b1` · `user-walk` reaches its trigger gate.** 0.0.31's eval left it at a lenient fire of 0.58 and the owner's own words at 0.29, its cases taken by a debugging and a brainstorming skill that ask to run first, a
   longer description gaining nothing (`meta/reviews/2026-10-09-trigger-eval-and-audits-0.0.31.md`). Try a routing line in a carrier's root file (what a person does or meets in the app goes to `user-walk`, which opens with its pre-review), measured with the same cases. *Estimate:* an hour and a run of about ten minutes.
   *Collides with:* the root file's budget, the `user-walk` description.
-- **`i-5ed7e8-1e9c1c` · A prose reduction pass is checked cut by cut by a reader other than its writer.** Twice in
-  0.0.31 a pass listed each cut as `removed: … (restated by …)` and still dropped a rule (the incoming tool's exception;
-  five rules), found only by a later review. *Estimate:* a paragraph in `prompt-sync.md` and a proposal; or a script
-  that lists each removed sentence's rule words (numbers, commands, ids) and greps the rest for them, about two
-  hours. *Collides with:* the next reduction pass.
 - **`i-5ed7e8-6cf312` · `bundle.py new entry` refuses a missing log in one line, and the home names its session
   log.** **Half done on 2026-11-24:** this repository now names its session log, and the file exists with its first entry. The other half stands and is worse than recorded — asked to write into a log that does not exist, the command does not refuse in one line, it raises an unhandled error and prints a traceback. Today it raises a traceback; the home keeps its hand-offs in `meta/archive/roadmap-states.md`, which the
   close skill's step 3 does not know. *Estimate:* an hour with a test. *Collides with:* `new entry`, the close skill.
@@ -346,14 +326,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   `git commit` refuses a command where a gate's output is piped before `&& git commit`, unless `pipefail` is set;
   about half an hour with a planted test. *Collision:* the hook's other checks. *Again on 2026-10-07:* the unit tests piped into `tail` before
   `&&` in a chained commit; they passed, so nothing landed red. See `i-5ed7e8-bd65a0`, which removes the typed chain.
-- **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** *Half done on 2026-10-08:* `review.py` now records a failed session as an error and retries it on resume; a command is judged whole. Left: standard error not drained, canaries all errored, a stopped run's verdict, the harness hash on resume. An isolated review of
-  the code merged that night (a mid-size model) found, besides the three fixed before the merge: `evals/review.py`
-  scores a session that exited in error as a valid trial and never retries an errored one on resume (high, medium;
-  checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but three, all `R2`, reached
-  the turn limit without naming the target; D2 was read with and without them, `evals/REPORT.md` §4.13); `trigger.py` judges a command cut to 200 characters, does not drain standard error,
-  calls a run valid when every canary errored, and prints a verdict for a run stopped by errors (low); the
-  harness's frozen hash is not checked when a run resumes (low). A possible gap, an overlay's new file missing from
-  the reviewer's diff, was checked: no diff adds a file. *Remedy:* each under a test, before the next pilot run.
 - **`i-5ed7e8-bd65a0` · A home command that runs the gate and commits the named files.** Two frictions recur in the
   typed chain `tests && check && git add && git commit`: a gate piped through a filter (`i-5ed7e8-89ec30`, four
   occurrences in the archived hand-offs) and an edit chained into the same command as `git`, which the privacy hook
@@ -660,6 +632,36 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **2026-11-26: phase 2's records lane** (`meta/plans/2026-11-26-next-phase-2.md`, task 7 and 8): four queued extensions admitted into their notes and the queue's three defects fixed; the eval instrument's four remaining defects fixed; `docs fingerprint` named in `prompt-sync.md`. The items, whole:
+  - **`i-5ed7e8-fe15a8` · The fifty-four oldest candidates, read, and three defects the queue itself carries.**
+    Reviewed on 2026-11-24 (`meta/reviews/2026-11-24-oldest-candidates.md`): every row whose *Since* is the
+    twentieth or twenty-first patch, twelve or thirteen releases of waiting. The largest harvest so far rewrote
+    four of the fifty-four and cleared none: everything it added is marked in the rows themselves as one owner's,
+    so it adds occurrences, not sources. Seven are blocked by the owner-agreement item alone, fifteen want a
+    second repository, eight want a measurement nobody has run, and six want only a release's decision. Six could
+    be decided at the next intake, all extensions of active notes whose literature the note already carries, two
+    of them with a recorded experiment that confirms a form the note does not yet hold. **The queue's own
+    defects, which matter beyond those rows:** one row cites two slugs that exist nowhere — as a note, a row or a
+    history entry — one of them described as folded at a release; two rows are the same claim written twice; and
+    one row's *Lacks* asks for evidence its own *Evidence* column now carries. The slug check written the same
+    day does not catch these, because it reads only rows claiming a note was admitted. *Estimate:* the six
+    decisions belong to an intake, one turn each; the three defects are about twenty minutes. *Collides with:*
+    the next intake, which rewrites the same rows.
+
+  - **`i-5ed7e8-1e9c1c` · A prose reduction pass is checked cut by cut by a reader other than its writer.** Twice in
+    0.0.31 a pass listed each cut as `removed: … (restated by …)` and still dropped a rule (the incoming tool's exception;
+    five rules), found only by a later review. *Estimate:* a paragraph in `prompt-sync.md` and a proposal; or a script
+    that lists each removed sentence's rule words (numbers, commands, ids) and greps the rest for them, about two
+    hours. *Collides with:* the next reduction pass.
+  - **`i-5ed7e8-e09738` · The eval instruments' findings deferred at the close of 2026-10-07.** *Half done on 2026-10-08:* `review.py` now records a failed session as an error and retries it on resume; a command is judged whole. Left: standard error not drained, canaries all errored, a stopped run's verdict, the harness hash on resume. An isolated review of
+    the code merged that night (a mid-size model) found, besides the three fixed before the merge: `evals/review.py`
+    scores a session that exited in error as a valid trial and never retries an errored one on resume (high, medium;
+    checked against the data: no trial of `review-1` or `review-2` crashed or timed out, but three, all `R2`, reached
+    the turn limit without naming the target; D2 was read with and without them, `evals/REPORT.md` §4.13); `trigger.py` judges a command cut to 200 characters, does not drain standard error,
+    calls a run valid when every canary errored, and prints a verdict for a run stopped by errors (low); the
+    harness's frozen hash is not checked when a run resumes (low). A possible gap, an overlay's new file missing from
+    the reviewer's diff, was checked: no diff adds a file. *Remedy:* each under a test, before the next pilot run.
 
 - **2026-11-25: fifteen *Next* items found done, obsolete or closed by the triage** (`meta/reviews/2026-11-25-next-triage.md`, phase 1 task 1), moved here whole:
   - **`i-5ed7e8-2ebcee` · A command that carries a push is refused whole, and the writes in it never land.** **Done 2026-11-25 in 0.0.35:** the close skill and `prompt-sync.md` spell the push as a step of its own.

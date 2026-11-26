@@ -90,3 +90,15 @@ class ReviewPilot(Base):
                                                                    [{"type": "result", "subtype": "error_during_execution", "is_error": True}]))
         lines = [json.dumps({"trial": "a"}), json.dumps({"trial": "b", "harness_error": "x"})]
         self.assertEqual(R.done_trials(lines), {"a"})
+
+    def test_a_resume_refuses_a_harness_changed_since_the_plan(self) -> None:
+        import argparse
+        import hashlib
+        from pathlib import Path
+        run = self.root / "run"
+        run.mkdir()
+        module = hashlib.sha256(Path(R.__file__).read_bytes()).hexdigest()[:16]
+        (run / "plan.json").write_text(json.dumps({"module_hash": module, "harness_hash": "0" * 16, "trials": []}))
+        with self.assertRaises(SystemExit) as raised:
+            R.cmd_run(argparse.Namespace(run=str(run)))
+        self.assertIn("harness", str(raised.exception))

@@ -21,6 +21,8 @@ And an absence assertion needs something to be absent. **In a fixture world that
 
 The same shape appears wherever a narrowing clause can be omitted: a tenant filter, an `active` flag, a date range, a permission check, a `WHERE` on a soft-delete column, a role list that defaults to empty-means-all, the scope of a scan that checks a thing exists somewhere in a repository. In each case the bug produces a superset, and a superset looks like success.
 
+The clause need not sit in a data query. An **optional predicate parameter** whose default answers "not satisfied" (an *already applied?* check that defaults to *never*) widens what **executes** rather than what is returned: every caller that takes the default re-runs its work, safe only as far as each step is idempotent by construction. And a widened clause in the **guard of an irreversible physical effect** (the status test that decides whether an action is already under way) is the costliest form, since what it lets through cannot be filtered out afterwards.
+
 ## When it does NOT apply
 
 - **When the constraint is structural rather than a clause** — a foreign key, a view that cannot be queried without its predicate, row-level security enforced by the database. Then omitting it is not expressible, which is the real fix (make the bad state unrepresentable rather than remembered).

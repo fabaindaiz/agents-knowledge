@@ -187,6 +187,8 @@ def cmd_run(args) -> int:
     plan = json.loads((run / "plan.json").read_text())
     if hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16] != plan["module_hash"]:
         raise SystemExit("evals/review.py changed since the plan was frozen; write a new plan")
+    if hashlib.sha256((HERE / "harness.py").read_bytes()).hexdigest()[:16] != plan.get("harness_hash"):
+        raise SystemExit("evals/harness.py changed since the plan was frozen; write a new plan")
     done = set()
     if (run / "results.jsonl").exists():
         done = done_trials((run / "results.jsonl").read_text().splitlines())

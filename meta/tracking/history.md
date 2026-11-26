@@ -6,6 +6,22 @@ slug in backticks, in the first cell of a table row: that is how `release.py int
 answered here, and how the build lists it in the ledger, `INDEX.md`. Nothing is dropped by age; a
 row here is a release's decision, with its reason.
 
+## Taken out of the queue for the release 0.0.37
+
+Four of the six oldest extensions, each waiting only for a release since 0.0.21, admitted into their notes by the
+owner's decision (`d-5ed7e8-0b7fb2`, from `meta/reviews/2026-11-24-oldest-candidates.md`); the other two stay
+queued, each lacking a second occurrence. The queue's own defects that review found are fixed in the same pass
+(`d-5ed7e8-938d7a`).
+
+| Candidate | Where it went |
+|---|---|
+| `nested-partial-update-replaces` | **extended**, applying the queued 0.0.21 row: the embedded document store's semantics, measured rather than assumed (a nested object replaced whole at its level, unnamed top-level keys kept), in the note's *Evidence* from the run of 2026-09-22 in `experiments.md` |
+| `absent-constraint-widens` | **extended**, applying the queued 0.0.21 row: two forms outside a data query, an optional predicate whose default answers "not satisfied" (widening what executes) and a widened clause in the guard of an irreversible physical effect that the existing suite did not see, the second from the run of 2026-09-22 in `experiments.md` |
+| `best-effort-side-channels` | **extended**, applying the queued 0.0.21 row: the pattern's own cost in *What it costs*, a wrapped call that cannot be told from outside between working and never having worked, with the occurrence of 2026-11-24 already in the note as its second |
+| `ratchet-in-a-pinned-environment` | **extended** with the half of the queued 0.0.21 row the note did not carry (counting inside the check and baselining findings were already in it): the count is recorded when the rule is introduced, and taken on a clean export of the commit it is recorded at. The queued `a-ratchet-baseline-must-be-tracked`, a further occurrence of measuring the real count first, stays a row of its own |
+| `a-changelog-needs-a-sequence-check` | **merged** into the queued `changelog-order-is-checked`: one claim in two rows, offered again at 0.0.33 under a new name; its claim and evidence are in that row |
+| `a-budget-at-its-ceiling-is-a-queue` | **merged** into the queued `a-budgeted-root-file-needs-a-named-displacement-target` by the release of 2026-09-23, which found both rows describing one file; recorded here at 0.0.37, since that merge left the slug in the row's first cell and no line in this history |
+
 ## Offered again, merged or applied at 0.0.35
 
 | Proposal | Where it went |

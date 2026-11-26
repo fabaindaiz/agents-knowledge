@@ -30,6 +30,11 @@ version it holds with `bundle.py changelog --since <its version>`.
 - **The re-run on fresh copies closed the last gaps**: the opening questions' stop yields to an unattended run; a period of
   the bundle's own updates alone is nothing to harvest; each harvest's log entry has its own title, so its own id;
   an unattended update never takes step 5's approval; a release exported elsewhere runs its own `export`.
+- **Four notes extended with the oldest queued extensions** (`d-5ed7e8-0b7fb2`): `nested-partial-update-replaces`
+  (an embedded store's semantics, measured), `absent-constraint-widens` (an optional predicate that widens what
+  executes, and the guard of an irreversible physical effect), `best-effort-side-channels` (the pattern's own cost:
+  a wrapped call cannot be told from outside between working and never having worked) and
+  `ratchet-in-a-pinned-environment` (the count recorded when the rule is introduced, on a clean export).
 
 ### Fixed
 

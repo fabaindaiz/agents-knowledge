@@ -15,7 +15,7 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (280)
+## Candidates in the queue (275)
 
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
@@ -33,7 +33,7 @@ None.
 - `derive-dependent-config` — K, since 0.0.20 · lacks a boundary is already known (derivation couples controls)
 - `append-only-collides-with-erasure` — K, since 0.0.20 · lacks an incident; it is a recorded open collision
 - `obligations-accrue-across-versions` — K, since 0.0.20 · lacks a second occurrence
-- `changelog-order-is-checked` — M, since 0.0.20 · lacks level 2 so far; one repository has several entries out of order
+- `changelog-order-is-checked` — M, since 0.0.20 · lacks a carrier under a second owner: every occurrence so far, this row's and the merged row's, is one owner's (`i-5ed7e8-9a72da`)
 - `privileged-call-inside-the-host-gesture` — K, since 0.0.20 · lacks a measurement on the target runtime (the design is unverified there); generality beyond browsers
 - `classify-client-storage-by-rebuild-cost` — K, since 0.0.20 · lacks an eviction occurrence (the policy is still an open question there)
 - `accept-only-what-can-win` — K, since 0.0.20 · lacks an incident
@@ -45,8 +45,8 @@ None.
 - `changelog-ships-field` — M, since 0.0.20 · lacks evidence the field caught anything; the restated action went stale in the one repository that uses it
 - `non-developer-guide-by-symptom` — M, since 0.0.20 · lacks a second guide
 - `no-modification-time-no-window` — K, since 0.0.20 · lacks literature (CDC, change-data-capture); a second repository
-- `bumping-a-monotone-counter-is-not-idempotent` — M, since 0.0.20 · lacks **the second occurrence arrived; what it still lacks is a second *tool***, which is the same gap `a-default-scope-is-the-widest-one` …
-- `a-budgeted-root-file-needs-a-named-displacement-target` — M, since 0.0.20 · lacks a second repository; and whether it is a form of `a-second-source-of-truth-diverges-in-silence` rather than a claim of its own. …
+- `bumping-a-monotone-counter-is-not-idempotent` — M, since 0.0.20 · lacks **its second tool arrived at 0.0.33** (two writers of one monotone field on a target's updater, a different tool and mechanism from …
+- `a-budgeted-root-file-needs-a-named-displacement-target` — M, since 0.0.20 · lacks a second repository; and whether it is a form of a second source of truth diverging in silence rather than a claim of its own (a slug …
 - `conformance-to-an-artefact-spec-is-swept-not-remembered` — M, since 0.0.20 · lacks a second repository, and a boundary on how much of the sweep belongs in the shared method versus in the carrier's own gate — a spec …
 - `edit-tools-for-unrebuildable-artefacts-default-to-reporting` — M, since 0.0.20 · lacks a ruling on whether a second person of a shared repository, who wrote the rule there (0.0.34), counts as another owner; otherwise a …
 - `address-by-content-coordinates-not-by-artefact-id` — K, since 0.0.20 · lacks a second repository. It reads close to *natural keys over surrogate keys*, and the literature on that was not consulted; what may be …
@@ -65,12 +65,8 @@ None.
 - `configuration-read-at-import-is-an-environment-test` — K, since 0.0.21 · lacks a second occurrence; literature (the twelve-factor method states the principle, not this consequence)
 - `a-projection-turns-not-requested-into-absent` — K, since 0.0.21 · lacks a second occurrence; overlaps `absence-is-a-third-value` strongly enough that it may be an extension
 - `a-shared-rule-has-one-enforcer-per-copy` — K / M, since 0.0.21 · lacks a second occurrence outside a bundle distribution; it is the dual of `copied-instruction-claims-its-origin` and may belong to it
-- `absence-is-a-third-value` — K, since 0.0.21 · lacks a release to apply it, after deciding `a-projection-turns-not-requested-into-absent` above, which may be the same evidence
-- `a-check-must-be-seen-to-fail` — K, since 0.0.21 · lacks a release to apply it
-- `absent-constraint-widens` — K, since 0.0.21 · lacks a release to apply it
-- `ratchet-in-a-pinned-environment` — K, since 0.0.21 · lacks a release to apply it
-- `best-effort-side-channels` — K, since 0.0.21 · lacks a release to apply it
-- `nested-partial-update-replaces` — K, since 0.0.21 · lacks a release to apply it
+- `absence-is-a-third-value` — K, since 0.0.21 · lacks a second occurrence, and first the decision on `a-projection-turns-not-requested-into-absent` above, which may be the same evidence …
+- `a-check-must-be-seen-to-fail` — K, since 0.0.21 · lacks a second occurrence: kept queued at 0.0.37 (`d-5ed7e8-0b7fb2`), its one occurrence, a rename that missed one match site, being …
 - `adversarial-review-per-attack-surface-before-a-tag` — M, since 0.0.23 · lacks a comparison with k independent generalists at equal cost (the literature says what holds either way: independence, merged findings …
 - `an-update-is-driven-by-the-new-side` — K, since 0.0.23 · lacks a second occurrence, and literature on self-updating clients
 - `a-repair-request-runs-once-per-load` — K, since 0.0.23 · lacks a second occurrence; it may be an occurrence of `retry-over-irreversible-effect`
@@ -257,7 +253,6 @@ None.
 - `a-gate-outside-its-runner-reports-the-machine` — M, since 0.0.33 · lacks a carrier under a second owner
 - `verify-a-fix-in-the-defects-own-measure` — K, since 0.0.33 · lacks a carrier under a second owner
 - `a-single-consumer-device-has-no-arbiter` — K, since 0.0.33 · lacks a carrier under a second owner
-- `a-changelog-needs-a-sequence-check` — M, since 0.0.33 · lacks a carrier under a second owner
 - `a-ratchet-baseline-must-be-tracked` — M, since 0.0.33 · lacks a carrier under a second owner
 - `retained-state-carries-birth-boot-and-cadence` — K, since 0.0.33 · lacks a carrier under a second owner
 - `format-only-the-changed-files-by-command` — M, since 0.0.33 · lacks a carrier under a second owner
@@ -302,8 +297,14 @@ None.
 
 None.
 
-## Answered: admitted, folded, refused or dropped (335)
+## Answered: admitted, folded, refused or dropped (341)
 
+- `nested-partial-update-replaces` — **extended**, applying the queued 0.0.21 row: the embedded document store's semantics, measured rather than assumed (a nested object …
+- `absent-constraint-widens` — **extended**, applying the queued 0.0.21 row: two forms outside a data query, an optional predicate whose default answers "not satisfied" …
+- `best-effort-side-channels` — **extended**, applying the queued 0.0.21 row: the pattern's own cost in *What it costs*, a wrapped call that cannot be told from outside …
+- `ratchet-in-a-pinned-environment` — **extended** with the half of the queued 0.0.21 row the note did not carry (counting inside the check and baselining findings were already …
+- `a-changelog-needs-a-sequence-check` — **merged** into the queued `changelog-order-is-checked`: one claim in two rows, offered again at 0.0.33 under a new name; its claim and …
+- `a-budget-at-its-ceiling-is-a-queue` — **merged** into the queued `a-budgeted-root-file-needs-a-named-displacement-target` by the release of 2026-09-23, which found both rows …
 - `reproduce-the-checkout-not-only-the-environment` — **merged into the note as four more occurrences at 0.0.34**, all one owner's: a tree changed while the gate runs, a suite that reads files …
 - `a-check-must-be-seen-to-fail` — **merged into the note as two more occurrences at 0.0.34**: test-first slipping where the red run is slow, with its two remedies, and a …
 - `derive-state-from-one-clock` — **merged into the note as another occurrence at 0.0.34**: a wait measured by wall-clock subtraction across a time-synchronisation step

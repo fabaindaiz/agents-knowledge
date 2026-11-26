@@ -30,3 +30,5 @@ The missing direction: **the record must also survive the operation failing.** D
 ## What it costs
 
 A decision per outbound call instead of a default, and the discipline to keep it visible in review. Plus the monitoring the third boundary above demands, which is the part usually skipped — and skipping it converts a stability pattern into a way of not knowing.
+
+And the pattern has a cost of its own: **a call inside a log-and-continue block cannot be told, from outside, between working and never having worked.** The net that keeps the operation alive also hides the call's own defects from every test that asserts only that nothing raised. So each wrapped call gets a test that it does its work, with the net made visible under test (re-raised or recorded).

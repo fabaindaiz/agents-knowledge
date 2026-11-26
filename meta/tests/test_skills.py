@@ -932,6 +932,59 @@ class TriggerEval(Base):
         self.assertFalse(broken["passed"])
         self.assertEqual(broken["cases"], 8)
 
+    def test_a_run_whose_every_canary_errored_is_invalid(self) -> None:
+        clear = [{"expect": True, "fired": True}] * 4 + [{"expect": False, "fired": False}] * 4
+        errored = self.T.verdict(clear + [{"expect": True, "canary": True, "fired": False, "error": "no init event"}] * 2)
+        self.assertFalse(errored["valid"])
+        self.assertFalse(errored["passed"])
+        self.assertTrue(self.T.verdict(clear)["valid"])  # a case file with no canary at all stays valid
+
+    def fake_claude(self, body: str) -> Path:
+        """An executable standing in for the host: `--version` answers, every other call runs `body`."""
+        import stat
+        import sys
+        path = self.root / "fake-claude"
+        path.write_text(f"#!{sys.executable}\nimport json, sys\nif '--version' in sys.argv:\n    print('0.0')\n"
+                        f"    sys.exit(0)\n{body}\n", encoding="utf-8")
+        path.chmod(path.stat().st_mode | stat.S_IXUSR)
+        return path
+
+    def test_a_session_that_writes_much_to_standard_error_is_read_whole(self) -> None:
+        import time
+        init = json.dumps({"type": "system", "subtype": "init", "model": "m"})
+        call = json.dumps({"type": "assistant", "message": {"content": [
+            {"type": "tool_use", "name": "Skill", "input": {"skill": "close"}}]}})
+        claude = self.fake_claude(f"sys.stderr.write('x' * 400000)\nsys.stderr.flush()\n"
+                                  f"print({init!r})\nprint({call!r})\nsys.stdout.flush()")
+        skill = self.root / "SKILL.md"
+        skill.write_text("---\nname: close\n---\n", encoding="utf-8")
+        start = time.monotonic()
+        ran = self.T.run_case(str(claude), skill, "close", "close it", 5, session_timeout=8)
+        self.assertLess(time.monotonic() - start, 6)  # not ended by the watchdog
+        self.assertEqual(ran["calls"], [("Skill", "close")])
+        self.assertIsNone(ran["error"])
+
+    def test_a_run_stopped_by_errors_prints_no_verdict(self) -> None:
+        claude = self.fake_claude("sys.exit(1)")
+        skill = self.root / "SKILL.md"
+        skill.write_text("---\nname: close\n---\n", encoding="utf-8")
+        cases = self.root / "cases.json"
+        cases.write_text(json.dumps([{"request": "close it", "expect": True},
+                                     {"request": "push", "expect": False}] * 3), encoding="utf-8")
+        out = self.root / "out.json"
+        printed = io.StringIO()
+        with contextlib.redirect_stdout(printed):
+            code = self.T.main(["--skill", str(skill), "--cases", str(cases), "--claude", str(claude),
+                                "--max-errors", "2", "--out", str(out)])
+        self.assertEqual(code, 2)
+        self.assertNotIn("pass (gate", printed.getvalue())
+        self.assertNotIn("fail (gate", printed.getvalue())
+        self.assertIn("no verdict", printed.getvalue())
+        verdict = json.loads(out.read_text(encoding="utf-8"))["verdict"]
+        self.assertTrue(verdict["stopped"])
+        self.assertFalse(verdict["passed"])
+        self.assertFalse(verdict["valid"])
+
     def test_ambiguous_cases_are_reported_apart_and_never_decide(self) -> None:
         clear = [{"expect": True, "fired": True, "lenient": True}] * 4 + [{"expect": False, "fired": False}] * 4
         unsure = [{"expect": True, "ambiguous": True, "fired": False}] * 3 + [{"expect": False, "ambiguous": True, "fired": True}]

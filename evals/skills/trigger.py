@@ -16,9 +16,9 @@ instructions, plugins and other skills) stays loaded on purpose: that is the com
 Every tool but the few that only read or choose is refused, a connector's included; a shell command runs
 only when it reads (`ls`, `cat`, `git status`, ... with no redirection or chaining), and is recorded. A session that never
 started or ended in an error before any tool call is an error, left out of every rate, and a few in a row stop
-the run. Reading the skill's file counts as invoking it. With `--router`, a skill that asks to run before any
+the run, which then gives no verdict. Reading the skill's file counts as invoking it. With `--router`, a skill that asks to run before any
 response is looked past (the routed metric). A case marked `"canary": true` names the skill outright: if one
-does not fire, the run is invalid, since the setup, not the description, is what failed.
+does not fire, or every one errored, the run is invalid, since the setup, not the description, is what failed.
 
 A pass is a strict fire rate of at least 0.8 on the requests that expect it, a misfire rate of at most 0.1 on
 the near misses, and at least 0.8 on the cases marked `"owner": true` (the owner's own words) when there are
@@ -186,12 +186,14 @@ def _rate(rows: list[dict], key: str) -> tuple[float, tuple[float, float]]:
     return (round(k / len(rows), 3) if rows else 0.0), wilson(k, len(rows))
 
 
-def verdict(results: list[dict], gate: str = "strict", max_misfire: float = MISFIRE) -> dict:
+def verdict(results: list[dict], gate: str = "strict", max_misfire: float = MISFIRE, stopped: bool = False) -> dict:
     """The rates on the cases that expect the skill and on the near misses, with intervals, and the pass.
 
     The gate is strict (the skill as the first call) unless `gate="lenient"`: for a skill whose requests point at
     material a session reads first, a fire after reads and before any write counts, for the near misses as much as
     for the expected cases (`meta/reviews/2026-10-07-trigger-eval-adversarial.md`, stage 2b).
+
+    A run `stopped` by consecutive errors measured too little to decide: it is neither valid nor passed.
 
     `max_misfire` relaxes only the near misses' bound, where a decision prefers a skill that fires slightly too
     often to one that misses (`d-5ed7e8-7a95b5`).
@@ -200,10 +202,11 @@ def verdict(results: list[dict], gate: str = "strict", max_misfire: float = MISF
     the session agreed with the label, and never decides the pass.
     """
     errors = [r for r in results if r.get("error")]
-    canaries = [r for r in results if r.get("canary") and not r.get("error")]
+    planted = [r for r in results if r.get("canary")]
+    canaries = [r for r in planted if not r.get("error")]
     unsure = [r for r in results if r.get("ambiguous") and not r.get("error")]
     results = [r for r in results if not (r.get("ambiguous") or r.get("canary") or r.get("error"))]
-    valid = all(r.get("fired") for r in canaries)
+    valid = all(r.get("fired") for r in canaries) and (bool(canaries) or not planted)  # every canary errored: nothing shown
     expected = [r for r in results if r["expect"]]
     near = [r for r in results if not r["expect"]]
     owner = [r for r in expected if r.get("owner")]
@@ -213,12 +216,14 @@ def verdict(results: list[dict], gate: str = "strict", max_misfire: float = MISF
     owner_fire, owner_interval = _rate(owner, "fired")
     key = "lenient" if gate == "lenient" else "fired"
     gated_fire, gated_misfire, gated_owner = _rate(expected, key)[0], _rate(near, key)[0], _rate(owner, key)[0]
+    valid = valid and not stopped
     passed = valid and gated_fire >= FIRE and gated_misfire <= max_misfire and (not owner or gated_owner >= FIRE)
     return {"fire": fire, "fire_interval": fire_interval, "misfire": misfire, "misfire_interval": misfire_interval,
             "lenient_fire": lenient, "lenient_interval": lenient_interval,
             "owner_fire": owner_fire if owner else None, "owner_interval": owner_interval if owner else None,
-            "gate": gate, "max_misfire": max_misfire, "lenient_misfire": _rate(near, "lenient")[0], "passed": passed, "valid": valid, "cases": len(results), "errors": len(errors),
-            "canary": {"cases": len(canaries), "fired": sum(bool(r.get("fired")) for r in canaries)},
+            "gate": gate, "max_misfire": max_misfire, "lenient_misfire": _rate(near, "lenient")[0], "passed": passed, "valid": valid, "stopped": stopped, "cases": len(results), "errors": len(errors),
+            "canary": {"cases": len(canaries), "fired": sum(bool(r.get("fired")) for r in canaries),
+                       "errors": len(planted) - len(canaries)},
             "ambiguous": {"cases": len(unsure), "agreed": sum(bool(r.get("fired")) == r["expect"] for r in unsure)}}
 
 
@@ -268,6 +273,9 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
         with subprocess.Popen(command(claude, request, model), cwd=work, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, text=True) as proc:
             seen: list[str] = []
+            errors: list[str] = []  # drained as it comes: a full pipe would block the session until the watchdog
+            drain = threading.Thread(target=lambda: errors.extend(proc.stderr), daemon=True)
+            drain.start()
             watchdog = threading.Timer(session_timeout, proc.kill)  # a session that hangs ends as an error
             watchdog.start()
             try:
@@ -279,8 +287,9 @@ def run_case(claude: str, skill: Path, name: str, request: str, timeout: int,
             finally:
                 watchdog.cancel()
                 proc.kill()
-                stderr = proc.stderr.read() if proc.stderr else ""
                 proc.wait(timeout=timeout)
+                drain.join(timeout=timeout)
+                stderr = "".join(errors)
         return {"calls": tool_calls(seen), "error": session_error(seen, stderr), "info": session_info(seen)}
     finally:
         shutil.rmtree(work, ignore_errors=True)
@@ -341,16 +350,22 @@ def main(argv: list[str] | None = None) -> int:
                 break
         if streak >= args.max_errors:
             break
-    result = verdict(results, args.gate, args.max_misfire)
-    print(f"fire {result['fire']} {result['fire_interval']} (at least {FIRE}), lenient {result['lenient_fire']} "
-          f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {result['max_misfire']})"
-          + (f", owner's words {result['owner_fire']} {result['owner_interval']}" if result["owner_fire"] is not None else "")
-          + f": {'pass' if result['passed'] else 'fail'} (gate: {result['gate']})"
-          + (f"; ambiguous, apart: {result['ambiguous']['agreed']}/{result['ambiguous']['cases']} agreed with the label"
-             if result["ambiguous"]["cases"] else "")
-          + (f"; canaries {result['canary']['fired']}/{result['canary']['cases']}"
-             + ("" if result["valid"] else ", so the run is INVALID") if result["canary"]["cases"] else "")
-          + (f"; {result['errors']} errors left out" if result["errors"] else ""))
+    stopped = streak >= args.max_errors
+    result = verdict(results, args.gate, args.max_misfire, stopped)
+    if stopped:
+        print(f"no verdict: the run stopped after {len(results)} sessions, {result['errors']} of them errors")
+    else:
+        print(f"fire {result['fire']} {result['fire_interval']} (at least {FIRE}), lenient {result['lenient_fire']} "
+              f"{result['lenient_interval']}, misfire {result['misfire']} {result['misfire_interval']} (at most {result['max_misfire']})"
+              + (f", owner's words {result['owner_fire']} {result['owner_interval']}" if result["owner_fire"] is not None else "")
+              + f": {'pass' if result['passed'] else 'fail'} (gate: {result['gate']})"
+              + (f"; ambiguous, apart: {result['ambiguous']['agreed']}/{result['ambiguous']['cases']} agreed with the label"
+                 if result["ambiguous"]["cases"] else "")
+              + (f"; canaries {result['canary']['fired']}/{result['canary']['cases']}"
+                 + ("" if result["valid"] else ", so the run is INVALID") if result["canary"]["cases"] else "")
+              + (f"; every canary errored ({result['canary']['errors']}), so the run is INVALID"
+                 if result["canary"]["errors"] and not result["canary"]["cases"] else "")
+              + (f"; {result['errors']} errors left out" if result["errors"] else ""))
     if args.router:
         routed = [r for r in results if r["expect"] and not (r.get("error") or r.get("ambiguous") or r.get("canary"))]
         print(f"routed fire, past {', '.join(args.router)}: {sum(bool(r['routed']) for r in routed)}/{len(routed)}")
