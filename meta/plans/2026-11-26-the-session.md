@@ -7,7 +7,7 @@ here runs unattended.
 
 ## The question now
 
-**How far is the phase from done? About twelve hours of agent time, in three stages, each opened by the owner.**
+**How far is the phase from done? About fifteen hours of agent time, in three stages, each opened by the owner.**
 
 1. **Before it:** the intermittent `red-check` verdict, then the cut of 0.0.37 with phases 1 and 2.
 2. **Design, with the owner:** the plan of the cut and the topic map, then two design rounds (planning that
@@ -59,6 +59,9 @@ none: no device or production system is touched in this phase.
 - T10 the audit of where binding text sits (skills' heads, no `paths:` rule) · waiting
 - T11 the compaction probe, run on the transcripts already here · waiting
 - T12 the research's findings queued as candidates · waiting
+- T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
+- T15 the `lanes` skill, from the two design rounds · waiting
+- T16 the `ship` and `cut` skills · waiting
 - T13 the phase's review by severity · waiting
 - → P3
 
@@ -76,7 +79,7 @@ none: no device or production system is touched in this phase.
 - **Risks the review probes:** the cut loses a rule (`docs fingerprint` over every moved block, and the owner reads
   the plan of the cut first); a topic map by domain would drop a card that crosses domains (checked against
   occurrences); a hook that blocks every question or every session start (each fails open, as the zsh guard does);
-  the state file leaking private detail (git-ignored, never travels); T7 and T9 both touch method text (the loop in
+  the state file leaking private detail (git-ignored, never travels); four new skill descriptions need about 800 characters where 16 remain (the descriptions are trimmed in T7, or the cap is the owner's to raise); T7 and T9 both touch method text (the loop in
   T7, `decision-review` and principle 15 in T9: disjoint files).
 - **Spike:** T11's probe on the existing transcripts measures the baseline the hooks are judged against.
 - **Fresh read:** before T7, a fresh-context agent reads this plan and the plan of the cut.
@@ -98,7 +101,10 @@ none: no device or production system is touched in this phase.
 | 10 | Where binding text sits | waiting | P3 | 30 | | 60 | | 1 |
 | 11 | The compaction probe | waiting | P3 | 45 | | 120 | | 1 |
 | 12 | The research's candidates queued | waiting | P3 | 15 | | 40 | | 0 |
-| 13 | The phase's review | waiting | P3 | 60 | | 400 | | 3 |
+| 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
+| 15 | The `lanes` skill | waiting | P3 | 45 | | 120 | | 1 |
+| 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
+| 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
 Calibration: phase 2's review rounds ran at about twice their estimate, each round's fixes to a new check opening
 findings of their own; T8 and T9 build checks of that kind, so their rounds are priced at two and the review at three.

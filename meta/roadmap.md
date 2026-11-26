@@ -73,6 +73,12 @@ never committed; the names of private carriers are in the local private-terms li
 
 Items still here that 0.0.23 shipped move to *Done* at its close.
 
+- **`i-5ed7e8-7cb101` · Three more routine skills, after the phase on the session.** `carry` (the release into carriers:
+  gather, the one table, splice, prune, each carrier's gate, register, align), `review-rounds` (severity rounds with a
+  fresh-context reviewer, until only lows, capped), `research` (a dated document, primary sources, each claim's
+  strength, readers in parallel). Ranked from a keyword count of the owner's turns (rough, not incidents); each
+  repeats a procedure done by hand several times. *Estimate:* about 45 min each; each description needs room in the
+  descriptions' cap. *Collides with:* `meta/method/prompt-sync.md` (carry), the close skill (review rounds).
 - **`i-5ed7e8-1914cd` · A delegate's isolated worktree begins at an older commit than the branch it was cut from: eight lanes of
   2026-11-25 and -26.** Each started at the remote main or the last pushed head, not at the local branch, and had to
   run `git checkout --detach <sha>` first, which every brief carried after the first time; one lane's `reset` was
