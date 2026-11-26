@@ -1,8 +1,8 @@
 ---
 bundle: "agent-guides"
 home: "r-5ed7e8"
-parent: "v0.0.36"
-version: "0.0.37"
+parent: "v0.0.37"
+version: "0.0.38"
 released: "2026-11-26"
 ---
 
