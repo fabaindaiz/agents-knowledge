@@ -23,8 +23,7 @@ something else depends on — because that is what decides its order.
 **Later the same day (mid-session, superseding what follows until the close rewrites this):** the flake is fixed
 (`9e6bc33`), 0.0.37 is cut, merged to `main`, pushed with its tag and the template refreshed; twelve optimisation
 candidates are proposed by the home; the plan of the cut and the topic map are walked and confirmed
-(`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`; the cut is a build rule, `d-5ed7e8-9f47b1`). **Next:** the two
-design rounds T5 and T6 with the owner, then the build (`meta/plans/2026-11-26-the-session.md`).
+(`meta/plans/2026-11-26-cut-plan.md`, `-topic-map.md`; the cut is a build rule, `d-5ed7e8-9f47b1`). T5, T6 and the live state's files are walked too; **next:** the build, the text lane delegated (`meta/plans/2026-11-26-the-session.md`). **Waiting outside:** one carrier's harvest is in progress; gather it afresh when the owner says it is ready (an earlier read-only gather was discarded).
 
 **State on 2026-11-26: phases 1 and 2 of the *Next* plan are done on `plan/next-phases`, committed, not pushed, not
 cut.** Phase 1 (`meta/plans/2026-11-25-next-phase-1.md`): the harvest and the update followable unattended, criterion 2
