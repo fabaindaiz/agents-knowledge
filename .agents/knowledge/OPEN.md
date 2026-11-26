@@ -78,6 +78,10 @@ By slug and kind; the claim and what each lacks stay in the home's queue.
 
 | Candidate | Kind |
 |---|---|
+| `a-summary-keeps-the-label-and-drops-the-text` | K |
+| `what-is-read-again-after-a-cut-was-already-read` | K |
+| `an-answer-without-its-question-is-not-a-record` | M |
+| `a-long-body-is-cut-from-the-bottom` | M |
 | `rank-on-raw-probability-on-calibrated` | K |
 | `append-only-at-a-fixed-schema` | K |
 | `split-by-time-neither-side-for-straddlers` | K |

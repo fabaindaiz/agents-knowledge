@@ -15,8 +15,12 @@ None.
 - `one-path-for-every-source` — Merged 2026-09-24 into same-answer-or-refuse as its first remedy (remove the second path, else hold it to exact agreement); its measured … · superseded by `same-answer-or-refuse`
 - `store-choices-not-defaults` — Merged 2026-09-24 into persist-inputs-derive-verdicts, of which it was the application to preferences (a stored default is a frozen … · superseded by `persist-inputs-derive-verdicts`
 
-## Candidates in the queue (288)
+## Candidates in the queue (292)
 
+- `a-summary-keeps-the-label-and-drops-the-text` — K, since 0.0.39 · lacks a second source: counted over three compactions of one session, in one assistant's harness
+- `what-is-read-again-after-a-cut-was-already-read` — K, since 0.0.39 · lacks a number from a second repository; the local figure is 13 % of files read after a cut
+- `an-answer-without-its-question-is-not-a-record` — M, since 0.0.39 · lacks an occurrence outside this line; fixed here by a skill change, so the evidence is now of the fix, not the fault
+- `a-long-body-is-cut-from-the-bottom` — M, since 0.0.39 · lacks a measurement rather than an audit: the local audit located the sentences but did not show one being dropped
 - `rank-on-raw-probability-on-calibrated` — K, since 0.0.20 · lacks generality (ML-narrow); fits `metric-against-trivial-predictor` as a boundary
 - `append-only-at-a-fixed-schema` — K, since 0.0.20 · lacks an incident with a number; overlaps `no-simultaneous-deploy`
 - `split-by-time-neither-side-for-straddlers` — K, since 0.0.20 · lacks novelty (temporal splits are known); the "neither side" nuance could extend `population-by-outcome`

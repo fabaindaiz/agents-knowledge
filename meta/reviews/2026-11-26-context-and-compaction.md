@@ -96,6 +96,28 @@ the summary had nine fixed sections and kept a verbatim tail.
 After each cut, most of the first file reads re-read files already read (they were needed to edit: the summary holds
 pointers, not contents). No instruction had to be repeated by the owner.
 
+## 3b. The same question, counted (2026-11-26, after the hooks were built)
+
+Proposal 5 below asked for the hand reading of §3 to become a count. `bundle.py compaction` is that
+probe: for each compaction it takes what the window before the cut named, and asks how much of it the
+summary still names. It prints counts only — a transcript carries the account's identity and whatever
+was pasted into the session, so nothing it reads is ever printed.
+
+Over three compactions of this repository's own sessions, **before any hook was active**:
+
+| What was in flight before the cut | What the summary still named |
+|---|---:|
+| Record ids | 66 % |
+| File paths | 17 % |
+| **The exact text of a failure** | **0 %, of twelve** |
+| Files read after the cut that had been read before it | 13 % |
+
+This is the baseline the hooks of T8 are judged against, and it agrees with the hand reading: ids
+survive because they are short and repeated, and the exact text of a failure never survives — it is
+reduced to a label, which is why `PreCompact` asks for it verbatim. Two cautions: three compactions of
+one session is a sample of one session, and the probe counts a fact as *named* wherever it appears,
+including inside a tool result, so the figures are an upper bound on what a reader would have seen.
+
 ## 4. What this means for the method (proposals, for the decision walk)
 
 1. **The session's state lives in files at every step, not only at the close.** The decisions log already holds
