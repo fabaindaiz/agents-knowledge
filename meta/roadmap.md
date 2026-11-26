@@ -467,8 +467,7 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
 - **`i-5ed7e8-543516` · Publish the release page for each tag**, with its CHANGELOG section, so a reader
   who does not clone sees what changed. *Waits on:* a machine with the forge's CLI, or the web.
 - **`i-5ed7e8-688897` · Residuals of the 0.0.22 and 0.0.23 adversarial reviews, none of which can lose a carrier's record.**
-  From `i-5ed7e8-d3ee51` (`d-5ed7e8-c11cbb`), each reproduced there: a release's own `incoming/*.md` unflagged by
-  `verify --release`; a refused-files list that can never be complete; the YAML subset proven against PyYAML only by
+  From `i-5ed7e8-d3ee51` (`d-5ed7e8-c11cbb`), each reproduced there (the `verify --release` one was already fixed by 0.0.2x and is pinned by a test since phase 1; `install-skills` over a hand edit fixed in phase 1, though a `SKILL.md` whose line endings git converts to CRLF no longer matches its hash and is refused): a refused-files list that can never be complete; the YAML subset proven against PyYAML only by
   `check_yaml.py`; a converted carrier's own links to moved files (its gate catches them); the banner in a `.md` opening
   with an unclosed thematic break and after a shebang's encoding line; the session loop's steps 3 and 4 citing full
   notes; the working invocation's `Reads:` not reaching the *Done* checklist (over the coding budget). From the 0.0.36 adversarial review: `install-skills` overwrites a hand-edited `SKILL.md` that keeps its banner, which `verify` flags only before the install. *Estimate:* the
