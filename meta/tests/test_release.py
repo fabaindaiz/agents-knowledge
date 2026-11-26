@@ -629,7 +629,7 @@ class Carry(Base):
         repo = make_carrier(self.root, "one")
         B.mint_carrier_id(repo, upstream="r-aaaaaa")
         self.splice(repo)
-        rid, noun = "r-" + "4c1d2e", "pay" + "ments service"
+        rid, noun = "r-" + "4c1d2e", "pay" + "roll service"
         a_proposal(repo / ".agents", f"The findings of {rid} came from\nthe {noun}, generalised.", target="nearby-one")
         commit(repo, "harvest")
         self.R.gather([repo], self.root / "out", self.home)

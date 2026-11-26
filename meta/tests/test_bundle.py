@@ -521,7 +521,7 @@ class Privacy(Base):
         "currency": "It saved " + "$" + "12" + ",400" + " a month.",
         "timezone": "Runs at 03:00 " + "UTC" + "-3" + " every night.",
         "version-pin": "Pinned to " + "somelib" + "==" + "2.4.1" + " since then.",
-        "id-beside-domain": "r-" + "4c1d2e" + " is the " + "pay" + "ments service.",
+        "id-beside-domain": "r-" + "4c1d2e" + " is the " + "pay" + "roll service.",
     }
 
     @staticmethod
@@ -575,7 +575,7 @@ class Privacy(Base):
                 self.assertEqual(self.rules(B.privacy_check(agents)), rule)
 
     def test_an_id_and_its_description_on_adjacent_lines_warn_and_never_fail(self) -> None:
-        rid, noun = "r-" + "4c1d2e", "pay" + "ments service"
+        rid, noun = "r-" + "4c1d2e", "pay" + "roll service"
         cases = {"wrapped": (f"The findings of {rid} came from\nthe {noun}, generalised.", ["id-beside-domain-nearby"], []),
                  "a table row each": (f"| {rid} | one |\n| the {noun} | two |", ["id-beside-domain-nearby"], []),
                  "another paragraph": (f"The findings of {rid} came from here.\n\nThe {noun} is another matter.", [], []),
@@ -686,12 +686,20 @@ class Privacy(Base):
     def test_the_false_positives_the_home_recorded_pass_and_the_leaks_beside_them_still_fail(self) -> None:
         """i-5ed7e8-b8c4b2: eight false positives over three sessions, each worked around by rewording."""
         an_id = "d-5ed7e8-" + "2ca3ef"
-        # a domain noun used as a unit after a number, the git word for a working copy, technical debt
+        # These three cost a refused commit each until 2026-11-26, when the words themselves left the list
+        # (`d-5ed7e8-966ff3`): a unit of length, git's working copy, technical debt. They pass now because
+        # the noun is gone, not because a narrow idiom catches them, which is why the wording is kept here.
         self.assertEqual(B._ids_beside_domains(f"{an_id} took about 40 " + "characters of width"), [])
         self.assertEqual(B._ids_beside_domains(f"{an_id} left the main " + "checkout behind"), [])
         self.assertEqual(B._ids_beside_domains(f"{an_id} pays the technical " + "debt"), [])
-        self.assertNotEqual(B._ids_beside_domains(f"{an_id} is the " + "music app"), [])
-        self.assertNotEqual(B._ids_beside_domains(f"{an_id} sends the " + "debt reminders"), [])
+        # And the ordinary software words the same reading removed: naming one says how a repository is
+        # built, never whose data it holds.
+        for ordinary in ("music app", "pre-flight step", "device " + "controller", "the " + "updater"):
+            self.assertEqual(B._ids_beside_domains(f"{an_id} is the {ordinary}"), [], ordinary)
+        # What the list is for still fails: the sector, not the shape.
+        self.assertNotEqual(B._ids_beside_domains(f"{an_id} sends the " + "pay" + "roll reminders"), [])
+        self.assertNotEqual(B._ids_beside_domains(f"{an_id} is the " + "pati" + "ent portal"), [])
+        self.assertNotEqual(B._ids_beside_domains(f"{an_id} issues " + "prepaid cards"), [])
         # a release number after release, requires or cuts is the bundle's, not a dependency pin
         for said in ("the release ", "it requires ", "the home cuts ", "the next minor ", "Release "):
             self.assertEqual(B._version_pins(said + "0.1" + ".0"), [], said)
@@ -703,9 +711,14 @@ class Privacy(Base):
     def test_the_review_of_the_false_positive_fixes_found_leaks_they_let_through(self) -> None:
         """The isolated review of 0.0.35: each exception was wider than the false positive it answered."""
         an_id = "d-5ed7e8-" + "2ca3ef"
-        for leak in ("serves 300 " + "patients", "moved 5 " + "payments", "a 12-" + "patient trial",
-                     "the high-tech " + "banking app", "tech " + "payment rails", "the " + "checkout flow"):
+        for leak in ("serves 300 " + "patients", "a 12-" + "patient trial", "the high-tech " + "banking app"):
             self.assertNotEqual(B._ids_beside_domains(f"{an_id} {leak}"), [], leak)
+        # Three of this review's six leaks stopped being leaks on 2026-11-26, by the owner's reading
+        # (`d-5ed7e8-966ff3`) and not by an exception slipping: the words themselves left the list, because
+        # they name a common software concept rather than whose data a repository holds. They are kept here
+        # so that a later reader sees the narrowing was decided, and can reverse it by restoring the words.
+        for allowed in ("moved 5 " + "payments", "tech " + "payment rails", "the " + "checkout flow"):
+            self.assertEqual(B._ids_beside_domains(f"{an_id} {allowed}"), [], allowed)
         self.assertEqual(B._ids_beside_domains(f"{an_id} wraps at 80 " + "characters"), [])
         for pin in ("django requires " + "4.2" + ".1", "Node version " + "18.17" + ".1",
                     "stripe release " + "7.1" + ".0", "libfoo patch " + "1.2" + ".3"):

@@ -367,20 +367,14 @@ VERSION_PIN = re.compile(
 
 CARRIER_OR_RECORD_ID = re.compile(r"(?<![\w-])(?:r-([0-9a-f]{6})|[dis]-([0-9a-f]{6})-[0-9a-f]{3,6})(?![\w-])")
 EXAMPLE_ID_HEX = frozenset({"abcdef", "aaaaaa", "bbbbbb", "cccccc", "000000", "fedcba"})
-DOMAIN_NOUNS = (
-    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "credit-card", "debit-card", "card number", "cardholder", "prepaid card",
-    "card issuing", "card issuer", "card present", "card-present", "card-not-present", "wallet", "invoice", "billing", "tax", "payroll",
-    "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
-    "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
-    "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
-    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "checkout", "merchant", "retail",
-    "restaurant", "booking", "hotel", "flight", "dating", "social network")
+DOMAIN_NOUNS = ("bank", "banking", "loan", "fraud", "credit card", "debit card", "credit-card", "debit-card",
+    "card number", "cardholder", "prepaid card", "card issuing", "card issuer", "card present", "card-present",
+    "card-not-present", "wallet", "invoice", "tax", "payroll", "insurance", "trading", "crypto", "national id",
+    "passport", "citizen", "election", "voter", "court", "patient", "clinic", "hospital", "medical", "pharmacy",
+    "student", "school", "university", "vehicle", "merchant", "retail", "restaurant", "hotel", "dating",
+    "social network")
 DOMAIN_NOUN = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in DOMAIN_NOUNS) + r")(?:e?s)?\b", re.IGNORECASE)
-DOMAIN_NOUN_IDIOM = {
-    "character": re.compile(r"\d[\d.,]*\s*-?\s*$"),
-    "debt": re.compile(r"\b(?:technical|tech)\s+$", re.IGNORECASE),
-    "checkout": re.compile(r"\b(?:git|main|local|fresh|clean|working|sparse|own|repository's|repo's)\s+$", re.IGNORECASE),
-}
+DOMAIN_NOUN_IDIOM: dict[str, re.Pattern[str]] = {}
 
 
 def _idiom(text: str, m: re.Match) -> bool:

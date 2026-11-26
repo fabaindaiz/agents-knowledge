@@ -425,23 +425,19 @@ VERSION_PIN = re.compile(
 CARRIER_OR_RECORD_ID = re.compile(r"(?<![\w-])(?:r-([0-9a-f]{6})|[dis]-([0-9a-f]{6})-[0-9a-f]{3,6})(?![\w-])")
 # The hex of ids written as examples (`r-abcdef`, `d-abcdef-123456`): obviously nobody's.
 EXAMPLE_ID_HEX = frozenset({"abcdef", "aaaaaa", "bbbbbb", "cccccc", "000000", "fedcba"})
-DOMAIN_NOUNS = (
-    "payment", "bank", "banking", "loan", "credit", "debt", "fraud", "credit card", "debit card", "credit-card", "debit-card", "card number", "cardholder", "prepaid card",
-    "card issuing", "card issuer", "card present", "card-present", "card-not-present", "wallet", "invoice", "billing", "tax", "payroll",
-    "insurance", "trading", "crypto", "national id", "passport", "citizen", "election", "voter", "court", "patient", "clinic",
-    "hospital", "medical", "pharmacy", "student", "school", "university", "song", "music", "playlist", "album", "game",
-    "character", "scene", "video", "podcast", "movie", "phone", "mobile", "tablet", "firmware", "iot", "controller", "sensor",
-    "updater", "device fleet", "fleet", "vehicle", "drone", "robot", "printer", "cart", "checkout", "merchant", "retail",
-    "restaurant", "booking", "hotel", "flight", "dating", "social network")
+DOMAIN_NOUNS = ("bank", "banking", "loan", "fraud", "credit card", "debit card", "credit-card", "debit-card",
+    "card number", "cardholder", "prepaid card", "card issuing", "card issuer", "card present", "card-present",
+    "card-not-present", "wallet", "invoice", "tax", "payroll", "insurance", "trading", "crypto", "national id",
+    "passport", "citizen", "election", "voter", "court", "patient", "clinic", "hospital", "medical", "pharmacy",
+    "student", "school", "university", "vehicle", "merchant", "retail", "restaurant", "hotel", "dating",
+    "social network")
 DOMAIN_NOUN = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in DOMAIN_NOUNS) + r")(?:e?s)?\b", re.IGNORECASE)
-# Where a noun names no domain (i-5ed7e8-b8c4b2), each exception as narrow as the false positive it answers
-# (the 0.0.35 review found wider ones let real evidence through): characters as a unit of length after a
-# number, *technical debt*, and git's working copy (a main, local or fresh checkout).
-DOMAIN_NOUN_IDIOM = {
-    "character": re.compile(r"\d[\d.,]*\s*-?\s*$"),
-    "debt": re.compile(r"\b(?:technical|tech)\s+$", re.IGNORECASE),
-    "checkout": re.compile(r"\b(?:git|main|local|fresh|clean|working|sparse|own|repository's|repo's)\s+$", re.IGNORECASE),
-}
+# Where a noun names no domain, each exception as narrow as the false positive it answers (the 0.0.35
+# review found wider ones let real evidence through). Empty since the owner's reading of 2026-11-26
+# (`d-5ed7e8-966ff3`): the three words these answered — a unit of length, *technical debt*, git's working
+# copy — are ordinary software words and left the list itself, which is the cheaper fix. The table stays
+# because the next false positive may be a word that does name a domain in some other sentence.
+DOMAIN_NOUN_IDIOM: dict[str, re.Pattern[str]] = {}
 
 
 def _idiom(text: str, m: re.Match) -> bool:
