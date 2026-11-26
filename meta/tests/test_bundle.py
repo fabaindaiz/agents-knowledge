@@ -4328,3 +4328,104 @@ class RedCheck(Base):
         step = {s.name: s for s in B.close_report(repo, base)}["red-check"]
         self.assertTrue(step.failed, step)
         self.assertEqual({s.name: s for s in B.close_report(repo)}["red-check"].failed, False)
+
+
+class LiveState(Base):
+    """`bundle.py now`: one file per session in the git folder, atomic, never tracked, never merged."""
+
+    def a_repo(self) -> Path:
+        repo = init_repo(self.root / "live")
+        commit(repo, "first")
+        return repo
+
+    def test_a_write_lands_in_the_git_folder_and_git_never_tracks_it(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-one"}):
+            path, warnings = B.now_write(repo, {"task": "the step running now"})
+        self.assertEqual([], warnings)
+        common = Path(B.git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip())
+        self.assertEqual(common / "agent-guides/now/s-one.md", path)
+        self.assertTrue(path.is_file())
+        # The folder sits inside .git, so nothing under it can be added to the index at all.
+        self.assertEqual("", B.git(repo, "ls-files", "-z", "*agent-guides/now/*"))
+        self.assertEqual([], B.now_tracked(repo))
+
+    def test_a_field_written_reads_back_and_an_unwritten_field_is_kept(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-one"}):
+            B.now_write(repo, {"task": "first step", "verified": "the gate passed"})
+            B.now_write(repo, {"task": "second step"})  # verified not given: it must survive
+            fields = B.now_read(Path(B.git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip())
+                                / "agent-guides/now/s-one.md")
+        self.assertEqual("second step", fields["task"])
+        self.assertEqual("the gate passed", fields["verified"])
+
+    def test_a_private_term_refuses_the_write_rather_than_being_repeated_at_every_compaction(self) -> None:
+        repo = self.a_repo()
+        terms = Path(os.environ["XDG_CONFIG_HOME"]) / "agent-guides/private-terms.txt"
+        terms.parent.mkdir(parents=True, exist_ok=True)
+        terms.write_text("".join(["secret", "cooler", "co"]) + "\n", encoding="utf-8")
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-one"}), \
+                self.assertRaises(B.RefusedError):
+            B.now_write(repo, {"task": "touching " + "".join(["secret", "cooler", "co"]) + " today"})
+        # Nothing was left behind: not the state file, and not the probe the check reads.
+        folder = Path(B.git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()) / "agent-guides/now"
+        self.assertEqual([], sorted(p.name for p in folder.iterdir()) if folder.is_dir() else [])
+
+    def test_another_session_is_one_line_and_its_state_is_never_merged_into_this_one(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-other"}):
+            B.now_write(repo, {"task": "the other lane"})
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-mine"}):
+            B.now_write(repo, {"task": "my lane"})
+            lines = B.now_lines(repo)
+        self.assertIn("  . task: my lane", lines)
+        self.assertTrue(any("also active s-other" in line for line in lines), lines)
+        self.assertFalse(any(line == "  . task: the other lane" for line in lines), lines)
+
+    def test_an_active_session_cannot_be_adopted_and_an_ended_one_can(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-gone"}):
+            B.now_write(repo, {"task": "work left behind"})
+        folder = Path(B.git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()) / "agent-guides/now"
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-mine"}), \
+                self.assertRaises(B.RefusedError):
+            B.now_adopt(repo, "s-gone")  # its pid is this process: still active
+        # Make it inactive: no live pid, and a write older than the stale window.
+        text = (folder / "s-gone.md").read_text(encoding="utf-8")
+        old = (datetime.datetime.now(datetime.timezone.utc)
+               - datetime.timedelta(minutes=B.NOW_STALE_MINUTES + 5)).isoformat(timespec="seconds")
+        text = re.sub(r"- \*\*pid:\*\* .*", "- **pid:** 0", text)
+        text = re.sub(r"- \*\*written:\*\* .*", f"- **written:** {old}", text)
+        (folder / "s-gone.md").write_text(text, encoding="utf-8")
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-mine"}):
+            B.now_adopt(repo, "s-gone")
+            fields = B.now_read(folder / "s-mine.md")
+        self.assertEqual("work left behind", fields["task"])
+        self.assertFalse((folder / "s-gone.md").exists(), "the adopted file is not left to be adopted twice")
+
+    def test_a_malformed_file_reads_as_empty_rather_than_breaking_a_session_start(self) -> None:
+        repo = self.a_repo()
+        folder = Path(B.git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()) / "agent-guides/now"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "s-broken.md").write_bytes(b"\xff\xfe not markdown at all")
+        self.assertEqual({}, B.now_read(folder / "s-broken.md"))
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-mine"}):
+            B.now_lines(repo)  # must not raise
+
+    def test_the_option_that_records_a_command_does_not_erase_the_subcommand(self) -> None:
+        # `--command` would take the subparsers' own dest and leave `command` None, dispatching to nothing.
+        args = B._parser().parse_args(["now", "--write", "--cmd", "pytest -q"])
+        self.assertEqual("now", args.command)
+        self.assertEqual("pytest -q", args.verified_command)
+
+    def test_a_live_state_file_copied_into_the_tree_fails_the_check_that_reads_everything_tracked(self) -> None:
+        repo = init_repo(self.root / "leaked")
+        inside = repo / "agent-guides/now"
+        inside.mkdir(parents=True)
+        (inside / "s-one.md").write_text("- **task:** whatever\n", encoding="utf-8")
+        commit(repo, "a live state committed by hand")
+        self.assertEqual(["agent-guides/now/s-one.md"], B.now_tracked(repo))
+        code, out = run("privacy", "--tracked", "--repo", str(repo))
+        self.assertEqual(1, code, out)
+        self.assertIn("a session's live state is tracked", out)

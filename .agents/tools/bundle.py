@@ -6026,6 +6026,214 @@ def usage_command(repo, action, rest, as_json=None, memory=None, today=None):
         raise RefusedError(f"usage {action}: arguments as `--help` shows ({error})") from error
 
 
+
+NOW_DIRNAME = "agent-guides/now"
+NOW_STALE_MINUTES = 30
+NOW_OLD_DAYS = 14
+NOW_FIELDS = ("session", "pid", "written", "branch", "plan", "task", "files", "scratch",
+              "verified", "command", "questions", "delegates", "failure")
+NOW_FREE_TEXT = ("task", "verified", "command", "failure", "delegates")
+
+
+def _now_dir(repo: Path) -> Path:
+    """`<git-common-dir>/agent-guides/now`, the one place a live-state file may sit.
+
+    The common dir, not the worktree's own: a lane working in a linked worktree writes where the session that
+    integrates the lanes will look (`d-5ed7e8-b2eb58`).
+    """
+    common = git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()
+    return Path(common) / NOW_DIRNAME
+
+
+def now_session_id(given: str | None = None) -> str:
+    """This session's id: the one given, else the harness's, else the process id.
+
+    Never invented from the clock: two sessions started in the same second would collide, and a session that
+    is restarted must find its own file again.
+    """
+    name = given or os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("AGENT_SESSION_ID") or f"pid-{os.getpid()}"
+    safe = re.sub(r"[^A-Za-z0-9._-]", "-", name).strip("-")
+    return safe[:64] or f"pid-{os.getpid()}"
+
+
+def _pid_alive(pid: int) -> bool:
+    """Whether `pid` is a process on this machine. A pid from another machine is meaningless, which is why a
+    file also carries its last write: the age is what decides when the pid cannot be trusted."""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def now_read(path: Path) -> dict[str, str]:
+    """A live-state file's fields. Unknown lines are kept out; a malformed file reads as empty rather than
+    raising, because the hook that reads it must never be the thing that breaks a session start."""
+    fields: dict[str, str] = {}
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return fields
+    for line in text.splitlines():
+        match = re.match(r"^-\s+\*\*(\w+):\*\*\s*(.*)$", line)
+        if match and match.group(1) in NOW_FIELDS:
+            fields[match.group(1)] = match.group(2).strip()
+    return fields
+
+
+def now_is_active(fields: dict[str, str], now: datetime.datetime | None = None) -> bool:
+    """Active while the recorded process runs here, else while the last write is under `NOW_STALE_MINUTES`
+    old (`d-5ed7e8-e02834`)."""
+    try:
+        if _pid_alive(int(fields.get("pid", "0") or 0)):
+            return True
+    except ValueError:
+        pass
+    written = fields.get("written", "")
+    try:
+        when = datetime.datetime.fromisoformat(written)
+    except ValueError:
+        return False
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=datetime.timezone.utc)
+    moment = now or datetime.datetime.now(datetime.timezone.utc)
+    return (moment - when).total_seconds() < NOW_STALE_MINUTES * 60
+
+
+def now_render(fields: dict[str, str]) -> str:
+    """The file's text: Markdown, fixed fields, nothing else. Read without interpretation by the hook and by
+    `brief`, so the form is part of the contract and not a convenience."""
+    lines = ["# The live state of one session", "",
+             "Written by `bundle.py now --write`. Local to this machine, never tracked, never exported.", ""]
+    lines += [f"- **{key}:** {fields.get(key, '')}" for key in NOW_FIELDS]
+    return "\n".join(lines) + "\n"
+
+
+def now_write(repo: Path, values: dict[str, str], session: str | None = None,
+              report: "PrivacyReport | None" = None) -> tuple[Path, list[str]]:
+    """Replace this session's live-state file atomically, and return it with any privacy warning.
+
+    Refuses on a privacy FAIL over the free text (`d-5ed7e8-0ffe65`): this text is re-injected at every
+    compaction, so a private term written here would be repeated for the rest of the session.
+    """
+    folder = _now_dir(repo)
+    folder.mkdir(parents=True, exist_ok=True)
+    sid = now_session_id(session)
+    path = folder / f"{sid}.md"
+    fields = now_read(path)
+    fields.update({k: v for k, v in values.items() if v is not None})
+    fields["session"] = sid
+    fields["pid"] = str(os.getpid())
+    fields["written"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+    free = "\n".join(fields.get(key, "") for key in NOW_FREE_TEXT)
+    warnings: list[str] = []
+    if free.strip():
+        probe = folder / f".{sid}.privacy"
+        probe.write_text(free + "\n", encoding="utf-8")
+        try:
+            found = report or privacy_check(paths=[probe])
+            if found.failures:
+                raise RefusedError("now --write: the text would leak a private term; generalise it first: "
+                                   + "; ".join(f"{f.rule}: {f.match}" for f in found.failures[:3]))
+            warnings = [f"WARN {f.rule}: {f.match}" for f in found.warnings]
+        finally:
+            probe.unlink(missing_ok=True)
+
+    temp = folder / f".{sid}.{os.getpid()}.tmp"
+    temp.write_text(now_render(fields), encoding="utf-8")
+    temp.replace(path)
+    return path, warnings
+
+
+def now_files(repo: Path) -> list[tuple[Path, dict[str, str]]]:
+    folder = _now_dir(repo)
+    if not folder.is_dir():
+        return []
+    return sorted(((p, now_read(p)) for p in folder.glob("*.md")), key=lambda pair: pair[0].name)
+
+
+def now_lines(repo: Path, session: str | None = None, now: datetime.datetime | None = None) -> list[str]:
+    """This session's state in full, then one line for each other active session, then the inactive ones with
+    their age (`d-5ed7e8-eab6e7`, `d-5ed7e8-df8065`). Nothing is merged and nothing is removed."""
+    sid = now_session_id(session)
+    moment = now or datetime.datetime.now(datetime.timezone.utc)
+    mine, others, idle = None, [], []
+    for path, fields in now_files(repo):
+        if path.stem == sid:
+            mine = fields
+        elif now_is_active(fields, moment):
+            others.append(fields)
+        else:
+            idle.append((path, fields))
+    lines: list[str] = []
+    if mine:
+        lines += [f"  . {key}: {mine.get(key, '')}" for key in NOW_FIELDS if mine.get(key)]
+    else:
+        lines.append(f"  . no live state written yet for session {sid}")
+    for fields in others:
+        lines.append(f"  . also active {fields.get('session', '?')}: {fields.get('task', '(no task)')} "
+                     f"[{fields.get('branch', '?')}]")
+    for path, fields in idle:
+        try:
+            when = datetime.datetime.fromisoformat(fields.get("written", ""))
+            when = when.replace(tzinfo=when.tzinfo or datetime.timezone.utc)
+            age = f"{(moment - when).days}d"
+            old = (moment - when).days >= NOW_OLD_DAYS
+        except ValueError:
+            age, old = "unknown age", False
+        mark = "!" if old else "."
+        lines.append(f"  {mark} inactive {path.stem} ({age}): {fields.get('task', '(no task)')}"
+                     + (f" - older than {NOW_OLD_DAYS} days; remove it yourself if it is done" if old else "")
+                     + f" - adopt with `now --adopt {path.stem}`")
+    return lines
+
+
+def now_adopt(repo: Path, other: str, session: str | None = None) -> Path:
+    """Take an ended session's state as this session's, explicitly and never by itself (`d-5ed7e8-df8065`).
+
+    Refuses to adopt a session that is still active: two live sessions writing one state is the collision the
+    one-file-per-session rule exists to prevent.
+    """
+    folder = _now_dir(repo)
+    source = folder / f"{other}.md"
+    if not source.is_file():
+        raise RefusedError(f"now --adopt: no live state named {other} in {folder}")
+    fields = now_read(source)
+    if now_is_active(fields):
+        raise RefusedError(f"now --adopt: session {other} is still active; its state is not yours to take")
+    path, _ = now_write(repo, {k: v for k, v in fields.items() if k not in ("session", "pid", "written")},
+                        session=session)
+    source.unlink(missing_ok=True)
+    return path
+
+
+def now_done(repo: Path, session: str | None = None) -> Path | None:
+    """Remove this session's file. `close` calls it after what is durable has moved into the hand-off."""
+    path = _now_dir(repo) / f"{now_session_id(session)}.md"
+    if not path.is_file():
+        return None
+    path.unlink()
+    return path
+
+
+def now_tracked(repo: Path) -> list[str]:
+    """Any live-state file git tracks. It should be impossible, since the folder sits in the git directory; it
+    is checked because a copy made by hand into the tree would travel, and this text never travels
+    (`d-5ed7e8-0ffe65`)."""
+    try:
+        listed = git(repo, "ls-files", "-z", f"*{NOW_DIRNAME}/*.md")
+    except (RefusedError, OSError, subprocess.CalledProcessError):
+        return []
+    return [name for name in listed.split("\0") if name]
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bundle.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -6196,6 +6404,22 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--waits", help="with --write: what waits on this machine, naming no carrier and no path")
     p.add_argument("--check", action="store_true", help="check every row of the register (exit 1 on any problem)")
     p.add_argument("--file", default=MACHINE_REGISTER, help=f"the register, relative to --repo (default {MACHINE_REGISTER})")
+    p.add_argument("--repo", default=".")
+    p = sub.add_parser("now", help="the live state of this session: what only the agent knows, in a file a compaction cannot lose")
+    p.add_argument("--write", action="store_true", help="write or replace this session's state from the options below")
+    p.add_argument("--task", help="the step running now, in one line")
+    p.add_argument("--plan", help="the plan this work follows, repository-relative")
+    p.add_argument("--branch", help="the branch being written (default: the repository's current branch)")
+    p.add_argument("--files", help="the files in play and why, repository-relative")
+    p.add_argument("--scratch", help="scratch paths, written as $TMPDIR/... and never as a home path")
+    p.add_argument("--verified", help="the last fact actually verified")
+    p.add_argument("--cmd", dest="verified_command", help="the command that verified it")
+    p.add_argument("--questions", help="the ids of the questions still open")
+    p.add_argument("--delegates", help="each delegate still out: task, scratch, last message, what closes it")
+    p.add_argument("--failure", help="an open failure's exact text")
+    p.add_argument("--adopt", metavar="ID", help="take an ended session's state as this one's; never automatic")
+    p.add_argument("--done", action="store_true", help="remove this session's state (what `close` runs)")
+    p.add_argument("--session", help="the session id (default: the harness's)")
     p.add_argument("--repo", default=".")
     p = sub.add_parser("memory-diff", help="each local assistant memory, and whether the repository holds what it names")
     p.add_argument("--repo", default=str(OWN_REPO))
@@ -6583,6 +6807,10 @@ def _run(args: argparse.Namespace) -> int:
             if args.paths or args.commits:
                 raise RefusedError("privacy: --tracked reads what git tracks; give it alone, not with --paths or --commits")
             args.paths = [str(f) for f in tracked_files(Path(args.repo))]
+            for name in now_tracked(Path(args.repo)):
+                print(f"  x FAIL {name} live-state: a session's live state is tracked; it never travels")
+            if now_tracked(Path(args.repo)):
+                return 1
             if not args.paths:
                 print("privacy over 0 files tracked outside .agents/: nothing to read")
                 return 0
@@ -6914,6 +7142,35 @@ def _run(args: argparse.Namespace) -> int:
             print("this machine has no id: run `bundle.py machine --mint` once")
             return 1
         print(f"this machine is {own}; carriers: {machine_carriers() or 'none in the manifest'}")
+        return 0
+    if args.command == "now":
+        repo = Path(args.repo)
+        if args.adopt:
+            print(f"  . adopted {args.adopt} as this session's state: {now_adopt(repo, args.adopt, args.session)}")
+            return 0
+        if args.done:
+            gone = now_done(repo, args.session)
+            print(f"  . removed {gone}" if gone else "  . no live state to remove")
+            return 0
+        if args.write:
+            values = {key: getattr(args, key) for key in
+                      ("task", "plan", "branch", "files", "scratch", "verified", "questions",
+                       "delegates", "failure")}
+            values["command"] = args.verified_command
+            if values.get("branch") is None:
+                try:
+                    values["branch"] = git(repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
+                except (RefusedError, OSError, subprocess.CalledProcessError):
+                    values["branch"] = ""
+            path, warnings = now_write(repo, values, args.session)
+            for warning in warnings:
+                print(f"  ! {warning}")
+            print(f"now: written to {path}")
+            return 0
+        lines = now_lines(repo, args.session)
+        for line in lines:
+            print(line)
+        print(f"now: {len(now_files(repo))} live-state files, this session's first")
         return 0
     if args.command == "memory-diff":
         repo = Path(args.repo).resolve()
