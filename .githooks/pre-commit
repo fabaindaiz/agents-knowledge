@@ -3,6 +3,39 @@
 # published files must pass `bundle.py privacy` (see AGENTS.md). Enabled per clone with
 #   git config core.hooksPath .githooks
 # Overriding a finding needs the user's explicit instruction and a `privacy-allow: <reason>` marker.
-exec python3 "$(git rev-parse --show-toplevel)/.claude/hooks/privacy_guard.py" gate <<JSON
+top="$(git rev-parse --show-toplevel)"
+# The release folder must be what its sources build (i-5ed7e8-a4c2b2), read on what is being committed: the
+# index git hands this hook (GIT_INDEX_FILE, also for `git commit -- FILE`) is exported to a scratch folder and
+# `build --check` runs there, so a source committed without its built release is refused, and unfinished work
+# left in the working tree neither passes nor fails the commit. Read on the build's own exit status, never
+# through a filter. About two seconds.
+py=""
+for candidate in python3 python3.14 python3.13 python3.12 python3.11; do
+  if command -v "$candidate" >/dev/null 2>&1 \
+     && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
+    py="$candidate"
+    break
+  fi
+done
+if [ -z "$py" ]; then
+  echo "pre-commit: no Python 3.11 or newer found, so release.py build --check cannot run; commit refused" >&2
+  exit 1
+fi
+tmp="$(mktemp -d "${TMPDIR:-/tmp}/pre-commit.XXXXXX")" || exit 1
+trap 'rm -rf "$tmp"' EXIT
+trap 'exit 1' HUP INT TERM
+if ! git checkout-index -a --prefix="$tmp/"; then
+  echo "pre-commit: the index could not be exported for release.py build --check; commit refused" >&2
+  exit 1
+fi
+if ! out="$("$py" "$tmp/meta/tools/release.py" build --check 2>&1)"; then
+  printf '%s\n' "$out" >&2
+  echo "pre-commit: what is being committed holds a release folder that is not what its sources build;" \
+       "run \`release.py build\` and commit its files too" >&2
+  exit 1
+fi
+rm -rf "$tmp"
+trap - EXIT HUP INT TERM
+exec python3 "$top/.claude/hooks/privacy_guard.py" gate <<JSON
 {"tool_input": {"command": "git commit"}}
 JSON

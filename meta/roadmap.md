@@ -28,14 +28,12 @@ fix's tests re-run on its parent), `shell-check` (zsh), the privacy ratchet, `re
 queued extensions admitted, the queue's and the evals' defects. Four review rounds; the last left one finding open, an
 intermittent `red-check` verdict on one commit (`i-5ed7e8-33c9b5`).
 
-**Waiting on the owner, in the morning:**
-1. **Approve the two guard wirings** in `meta/plans/2026-11-26-phase-2-guards/`: the zsh check in
-   `.claude/hooks/privacy_guard.py` and `build --check` (on an export of the index) in `.githooks/pre-commit`. Both are
-   guards the permission rules ask before editing, so the night prepared them and applied neither; once approved,
-   `git apply` each, then commit.
-2. **The cut of 0.0.37** with phases 1 and 2, and whether to push the branch.
-3. **The private-terms list** is the owner's alone (`d-5ed7e8-4c5c53`); eight carriers of this machine have no term
-   there, named to the owner in the session.
+**Waiting on the owner:** the cut of 0.0.37, decided at the close to follow the open flake; the private-terms list is
+the owner's alone (`d-5ed7e8-4c5c53`), eight carriers of this machine having no term there; the ratchet's path question
+(in `i-5ed7e8-33c9b5`). The two guard wirings were applied at the close, at the owner's word.
+
+**First step next session:** the open flake (`i-5ed7e8-33c9b5`): run commit `1cf8db0`'s ten tests in a loop under
+`red-check`'s export, output kept, until one fails; fix it test first; then the cut of 0.0.37 on the owner's word.
 
 **Next, in order:** the open flake (`i-5ed7e8-33c9b5`); phase 3's decision walk (method decisions, bounded by the
 coding budget); phases 4 and 5; then the pilot splice of one or two carriers (`d-5ed7e8-f6858b`). Still the owner's:
@@ -122,13 +120,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   different ids; nothing for a host other than Claude Code. The owner chose to record them and cut 0.0.36
   (`d-5ed7e8-e09f5f`). *Estimate:* the text fixes 45 min wall, 150k tokens, one round; the re-run on fresh copies
   30 min, 250k tokens. *Collides with:* the update and harvest sessions' token budgets.
-- **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
-  session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
-  ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own
-  prediction. What would: the host's command hook refuses a command that expands an unquoted variable holding
-  spaces where zsh is the shell, naming the fix (an argument vector, or `${=var}`), with a test of each form.
-  Received as `p-069d110c27`. *Estimate:* 30–45 min wall, 100k tokens, one review round. *Collides with:* the
-  privacy guard, the other command hook, which must keep running first.
 - **`i-5ed7e8-a3a0a1` · Private channels for what does not travel between machines: research, then a pilot.** The owner's
   note at `d-5ed7e8-5751b6`: the manifest, the private-terms list and the agent's local memory never travel
   through a public repository; which private channels could carry them (a private configuration repository, an
@@ -357,11 +348,6 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   into one candidate per file (eight to `prompt-bootstrap` at 0.0.26), and a refused one is recorded under
   that name; 0.0.26 recorded them by id by hand. Give `propose` a topic slug beside the file, and have
   `intake` key on it. *Collision:* the proposal format, and every carrier's harvest.
-- **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
-  privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
-  (and was pushed, because the check that failed was piped through a filter; proposal
-  `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
-  it refuse. *Collision:* every commit here gets slower by one build check.
 - **`i-5ed7e8-3e6760` · What makes a release productive: the criteria for the first minor release.** *Kept by the owner on 2026-10-07:* 0.0.30 ships under its own number, with everything pending; 0.1.0 is the first monthly release that meets all five, each checked at the cut. Today criterion 3 fails (the pilots measure about ×2.1 to ×2.3) and 0.0.30 resets criterion 4 (a `log` field in `carrier.toml`). How the bundle is
   used decides what "ready" means: every coding session in every carrier loads its root line and, on a
   change that touches state, a contract, data, security or verification, the index and its cards; each
@@ -616,6 +602,20 @@ Items still here that 0.0.23 shipped move to *Done* at its close.
   a saving again; what replaces it is `i-5ed7e8-1a57cc` and the phased session.
 
 ## Done
+
+- **2026-11-26: the two guard wirings applied at the owner's word** at the close: the zsh check in the command hook and `build --check` on an export of the index in the pre-commit hook, each probed live. The items, whole:
+  - **`i-5ed7e8-4cf7df` · Under zsh, an unquoted list variable in the agent's own command, three incidents.** Counted in the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
+    session log: twice on 2026-11-25 in the 0.0.34 work, and once more at the 0.0.35 close, within the hour the
+    ladder gained a sentence about it (`prompt-context.md`). The text did not hold, which is the ladder's own
+    prediction. What would: the host's command hook refuses a command that expands an unquoted variable holding
+    spaces where zsh is the shell, naming the fix (an argument vector, or `${=var}`), with a test of each form.
+    Received as `p-069d110c27`. *Estimate:* 30–45 min wall, 100k tokens, one review round. *Collides with:* the
+    privacy guard, the other command hook, which must keep running first.
+  - **`i-5ed7e8-a4c2b2` · The home's pre-commit hook runs `release.py build --check`.** It runs only the **2026-11-26: the check is built and tested; its wiring into the guard waits for the owner's approval of the edit** (`meta/plans/2026-11-26-phase-2-guards/`).
+    privacy gate, so a commit whose release folder is behind its sources passed it at the close of 0.0.25
+    (and was pushed, because the check that failed was piped through a filter; proposal
+    `a-filtered-gate-cannot-block`). Add the build check to the hook and plant a stale generated file to see
+    it refuse. *Collision:* every commit here gets slower by one build check.
 
 - **2026-11-26: phase 2's tool lanes** (`meta/plans/2026-11-26-next-phase-2.md`): `bundle.py red-check` (`d-5ed7e8-8c417c`), the privacy ratchet (`d-5ed7e8-af36e9`), `release.py commit` and `release.py dequeue`. The items, whole:
   - **`i-5ed7e8-468621` · A fix's test written beside it, so its red is never seen: three incidents in one session.**
