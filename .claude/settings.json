@@ -6,6 +6,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/privacy_guard.py\" remind"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/state_guard.py\" restore"
           }
         ]
       }
@@ -19,6 +23,17 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/privacy_guard.py\" gate",
             "timeout": 120,
             "statusMessage": "Privacy check before git commit/push"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/state_guard.py\" keep",
+            "timeout": 30
           }
         ]
       }

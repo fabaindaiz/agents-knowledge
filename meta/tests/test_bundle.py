@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import types
 from unittest import mock
 from pathlib import Path
@@ -4429,3 +4430,49 @@ class LiveState(Base):
         code, out = run("privacy", "--tracked", "--repo", str(repo))
         self.assertEqual(1, code, out)
         self.assertIn("a session's live state is tracked", out)
+
+
+class StateGuard(Base):
+    """`.claude/hooks/state_guard.py`: the live state across a compaction. Its whole contract is that it
+    never stops a session, so every probe here is a way of breaking it that must still exit 0."""
+
+    GUARD = ROOT / ".claude/hooks/state_guard.py"
+
+    def run_guard(self, what: str, stdin: str = "", root: str | None = None) -> subprocess.CompletedProcess:
+        environment = dict(os.environ, CLAUDE_PROJECT_DIR=root if root is not None else str(ROOT))
+        return subprocess.run([sys.executable, str(self.GUARD), what], input=stdin, capture_output=True,
+                              text=True, env=environment, timeout=60)
+
+    def test_it_exists_and_both_modes_exit_zero(self) -> None:
+        self.assertTrue(self.GUARD.is_file(), "the hook the settings name must be in the repository")
+        for what in ("keep", "restore"):
+            done = self.run_guard(what, '{"source":"compact"}')
+            self.assertEqual(0, done.returncode, done.stderr)
+
+    def test_the_precompact_mode_names_what_the_summary_must_carry(self) -> None:
+        done = self.run_guard("keep", '{"trigger":"auto"}')
+        self.assertIn("BEFORE COMPACTING", done.stdout)
+        for owed in ("exact text", "which question", "delegate", "verified"):
+            self.assertIn(owed, done.stdout)
+
+    def test_it_fails_open_on_junk_stdin_a_missing_root_and_an_unknown_mode(self) -> None:
+        for what, stdin, root in (("restore", "not json at all", None),
+                                  ("restore", "", "/nonexistent-project-dir"),
+                                  ("keep", "", "/nonexistent-project-dir"),
+                                  ("totally-unknown-mode", "{}", None)):
+            done = self.run_guard(what, stdin, root)
+            self.assertEqual(0, done.returncode, f"{what}/{root}: {done.stderr}")
+
+    def test_a_session_start_that_is_not_a_known_source_says_nothing(self) -> None:
+        done = self.run_guard("restore", '{"source":"something-new-the-harness-added"}')
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual("", done.stdout.strip())
+
+    def test_the_settings_name_the_hook_in_both_places(self) -> None:
+        hooks = json.loads((ROOT / ".claude/settings.json").read_text(encoding="utf-8"))["hooks"]
+        starts = [h["command"] for group in hooks["SessionStart"] for h in group["hooks"]]
+        compacts = [h["command"] for group in hooks["PreCompact"] for h in group["hooks"]]
+        self.assertTrue(any("state_guard.py\" restore" in c for c in starts), starts)
+        self.assertTrue(any("state_guard.py\" keep" in c for c in compacts), compacts)
+        # The privacy reminder is not displaced by the new one.
+        self.assertTrue(any("privacy_guard.py\" remind" in c for c in starts), starts)
