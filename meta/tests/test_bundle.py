@@ -1670,6 +1670,63 @@ class Trailers(Base):
         return repo
 
 
+class PlanCalibrate(Base):
+    """`plan calibrate`: the ratio of actual to estimate from earlier plans' own columns, applied to what
+    has not started and never written over an estimate (`d-5ed7e8-d4c952`, and the owner on 2026-11-27:
+    rewriting an estimate during a run destroys the only honest comparison the project has)."""
+
+    HEAD = ("| # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |\n"
+            "|---|---|---|---|---|---|---|---|---|\n")
+
+    def plan(self, rows: str) -> Path:
+        path = self.root / "a-plan.md"
+        path.write_text("# A plan\n\n## Tasks\n\n" + self.HEAD + rows)
+        return path
+
+    def test_the_ratio_comes_from_finished_rows_and_projects_the_ones_not_started(self) -> None:
+        plan = self.plan(
+            "| 1 | Done one | done | M1 | 100 | 25 | 200 | 100 | 0 |\n"
+            "| 2 | Done two | done | M1 | 60 | 20 | 120 | | 1 |\n"
+            "| 3 | Waiting | waiting | M2 | 80 | | 160 | | 1 |\n")
+
+        report = B.plan_calibration(plan)
+
+        self.assertEqual(report.pairs, 2)
+        self.assertAlmostEqual(report.ratio, (0.25 + 1 / 3) / 2, places=4)  # (25/100 + 20/60) / 2
+        self.assertEqual(report.remaining_estimate, 80)
+        self.assertAlmostEqual(report.remaining_projected, 80 * (0.25 + 1 / 3) / 2, places=4)
+
+    def test_a_row_with_no_actual_is_not_a_pair_and_a_plan_with_none_refuses_to_project(self) -> None:
+        plan = self.plan("| 1 | Waiting | waiting | M1 | 100 | | 200 | | 0 |\n")
+
+        report = B.plan_calibration(plan)
+
+        self.assertEqual(report.pairs, 0)
+        self.assertIsNone(report.ratio)
+        self.assertIsNone(report.remaining_projected)
+
+    def test_calibrate_never_rewrites_the_plan(self) -> None:
+        """The estimates stay as they were made, so the comparison stands as it was made."""
+        plan = self.plan("| 1 | Done | done | M1 | 100 | 25 | 200 | 100 | 0 |\n"
+                         "| 2 | Waiting | waiting | M2 | 80 | | 160 | | 1 |\n")
+        before = plan.read_text()
+
+        B.plan_calibration(plan)
+        lines, code = B.plan_calibrate_lines(plan)
+
+        self.assertEqual(plan.read_text(), before)
+        self.assertEqual(code, 0)
+        self.assertTrue(any("not written into the plan" in line for line in lines), lines)
+
+    def test_a_non_numeric_cell_is_skipped_rather_than_crashing_the_report(self) -> None:
+        plan = self.plan("| 1 | With seven | done | M1 | 30 | with 7 | 60 | with 7 | 0 |\n"
+                         "| 2 | Real | done | M1 | 100 | 25 | 200 | 100 | 0 |\n")
+
+        report = B.plan_calibration(plan)
+
+        self.assertEqual(report.pairs, 1)
+
+
 class LiveStateIdentity(Base):
     """How a session names its live-state file. Found broken in use on 2026-11-27: with no harness session
     id, the fallback was the writing process's pid, and every tool call is its own short-lived process, so

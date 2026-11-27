@@ -1,0 +1,56 @@
+---
+name: plan
+description: "Use when the user asks for a plan for work that will take more than one sitting, asks what a piece of work would cost, or asks to run a plan unattended. It prices each task, measures the plan against what earlier plans actually took, declares the gates that stop an unattended run, and proposes the split. Not for a task that fits in one answer, and not for reviewing decisions already written, which is decision-review."
+release_description: "Use when the user asks for a plan for work beyond one sitting, asks what it would cost, or asks to run a plan unattended: prices each task, measures it against earlier plans, declares the gates, proposes the split. Not for one-answer work."
+allowed-tools: Bash, Read, Grep, Glob
+---
+
+# Plan
+
+A plan is worth what it predicts. So it carries its own measurements, it says in advance where it must
+stop, and it never quietly improves its own forecast.
+
+## 1. Measure before showing anything
+
+Run `bundle.py plan calibrate` over the plans this repository already has. It prints the ratio of actual
+to estimate over their finished rows. **State that ratio in the plan**, beside the estimates, and leave
+every estimate as it was made: the comparison is the only honest thing a plan's table holds, and an
+estimate rewritten mid-run destroys it.
+
+An estimate with no measured ratio behind it says so.
+
+## 2. Answer what a probe can answer before asking the user
+
+An unknown a read-only probe settles in minutes is settled, not asked. One that would move tasks around
+opens a priced spike with its own row. Everything else goes to the user.
+
+## 3. Declare the gates, in *The owner's*
+
+A gate is a decision the run may not take: a design rule, a contrast, a figure in the frame, a merge, a
+release, a real device, a production system, anything not reversible in ten minutes. Each one names the
+tasks that wait on it.
+
+**A gate discovered by walking into it was not declared, and the run has already guessed.**
+
+## 4. Propose the split
+
+By disjoint file sets, one branch per lane, each priced with its model. The `lanes` skill does this and
+writes the declaration the close checks.
+
+## 5. Running unattended
+
+Only when the user asks for it. Then:
+
+- **At a gate, that task stops. The run goes on** with every task that does not depend on it.
+- **Questions are kept for one message**, grouped by theme, each with its options, their prices and the
+  recommendation — never asked one at a time across a long run.
+- **A decision reversible in ten minutes is taken**, recorded as a row whose reason is the agent's and
+  unconfirmed, and listed for the user to reverse. Nothing else is.
+- **A failing gate stops the run**, not just the task: a red check means the next task starts from a
+  broken base.
+- The run reports what it did **and what it did not**, by task, with each estimate beside what it took.
+
+## 6. Close the loop
+
+When the plan ends, write each task's actual beside its estimate, and the rounds each review took. The
+next plan's calibration is only as good as that column.

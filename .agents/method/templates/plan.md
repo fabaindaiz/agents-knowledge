@@ -40,7 +40,12 @@ Note: <what that gives the owner, and what comes after it>.
 
 ## The owner's
 
-- [<when: now | when you like | before X | to decide>] **<the thing>**: <what it takes from the owner>.
+**Every gate is written here before the work starts.** An agent running unattended stops the task that
+reaches a gate and goes on with the tasks that do not depend on it, keeping its questions for one message.
+A gate discovered by walking into it is a gate that was not declared, and the run has already guessed.
+
+- [<when: now | when you like | before X | to decide>] **<the thing>**: <what it takes from the owner>,
+  <and which tasks wait on it>.
 
 ## Needs, risks and the fresh read
 

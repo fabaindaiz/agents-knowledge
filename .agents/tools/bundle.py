@@ -6595,6 +6595,62 @@ LANES_FENCE = re.compile(r"```toml\n# lanes\n(.*?)```", re.S)
 LANES_GENERATED = (".agents/",)
 
 
+
+@dataclasses.dataclass(frozen=True)
+class PlanCalibration:
+    pairs: int
+    ratio: float | None
+    remaining_estimate: float
+    remaining_projected: float | None
+    rows: int
+
+
+def _plan_number(cell: str) -> float | None:
+    """A measured cell, or None. A cell may hold a word ("with 7", "—"): it is skipped, not guessed at."""
+    text = cell.strip().replace(",", "")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def plan_calibration(plan: Path) -> PlanCalibration:
+    """Actual against estimate over a plan's finished rows, and what that says about what has not started."""
+    ratios: list[float] = []
+    remaining = 0.0
+    rows = 0
+    for line in plan.read_text(encoding="utf-8").split("\n"):
+        if not line.startswith("| ") or TABLE_SEPARATOR.match(line.strip()):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 6 or cells[0].lower() in {"#", "id"}:
+            continue
+        estimate, actual = _plan_number(cells[4]), _plan_number(cells[5])
+        if estimate is None or estimate <= 0:
+            continue
+        rows += 1
+        if actual is None:
+            remaining += estimate
+        else:
+            ratios.append(actual / estimate)
+    ratio = sum(ratios) / len(ratios) if ratios else None
+    return PlanCalibration(pairs=len(ratios), ratio=ratio, remaining_estimate=remaining,
+                           remaining_projected=remaining * ratio if ratio is not None else None, rows=rows)
+
+
+def plan_calibrate_lines(plan: Path) -> tuple[list[str], int]:
+    found = plan_calibration(plan)
+    lines = [f"plan: {plan.name}, {found.rows} tasks with an estimate"]
+    if found.ratio is None:
+        lines.append("  no finished task has an actual beside its estimate yet, so nothing is projected")
+    else:
+        lines.append(f"  measured: actual is {found.ratio:.2f} of estimate over {found.pairs} finished tasks")
+        lines.append(f"  not started: {found.remaining_estimate:.0f} estimated, "
+                     f"{found.remaining_projected:.0f} at the measured ratio")
+    lines.append("  not written into the plan: an estimate stays as it was made, so the comparison stands as it was made")
+    return (lines, 0)
+
+
 def lanes_declared(text: str) -> dict[str, dict]:
     """The lanes a plan declares: a fenced TOML block whose first line is `# lanes`, one table per lane
     with its `branch` and its `files` globs. No block means no declaration, which the caller reports."""
@@ -6851,8 +6907,10 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("files", nargs="+")
     p.add_argument("--rev", help="fingerprint: compare FILE with its text at this git revision")
     p = sub.add_parser("plan", help="plan page: a plan file's fixed sections (method/templates/plan.md) rendered as a page on "
-                       "the shipped template, standard library only; exit 1 while a section is missing or a placeholder left")
-    p.add_argument("action", choices=("page",))
+                       "the shipped template, standard library only; exit 1 while a section is missing or a placeholder left. "
+                       "plan calibrate: the ratio of actual to estimate over its finished rows, and what that says about what "
+                       "has not started; it writes nothing")
+    p.add_argument("action", choices=("page", "calibrate"))
     p.add_argument("file")
     p.add_argument("--out", help="the page to write (default: standard output); keep it outside the repository")
     p.add_argument("--template", help="another page template with {{title}}, {{lead}} and {{body}}")
@@ -7581,6 +7639,11 @@ def _run(args: argparse.Namespace) -> int:
                                       if problems else "nothing that carries meaning changed"))
         return 1 if problems else 0
     if args.command == "plan":
+        if args.action == "calibrate":
+            lines, code = plan_calibrate_lines(Path(args.file))
+            for line in lines:
+                print(line)
+            return code
         page, problems = plan_page(Path(args.file), Path(args.template) if args.template else None, args.lang)
         for line in problems:
             print("  x " + line)

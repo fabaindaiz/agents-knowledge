@@ -183,6 +183,17 @@ row. It does not take the twenty-nine unconfirmed decision reasons, which are th
 not claim that finishing it makes the bundle demonstrably useful: lanes R, P and C make the project honest
 and legible, and only lane E, followed by a run the owner authorises, can make the central claim testable.
 
+## What the plan's own calibration says, 2026-11-27
+
+`bundle.py plan calibrate` over this plan's five finished rows: **actual is 1.06 of estimate** — lane R took
+six per cent longer than it was priced at, not a fraction of it. Over the phase plan's thirteen finished
+rows the ratio is **0.53**.
+
+**This corrects a claim repeated through two sessions.** "Wall time runs at a quarter to a third of
+estimate" came from the build's first four tasks, which were the fastest four and three of them delegated.
+It was then restated as if it held for the plan. It does not, and the estimates in both tables are left
+exactly as they were made so that the next correction is possible too.
+
 ## Lane R as it ran, 2026-11-27
 
 Estimated an hour; took about one hour and ten minutes, and two of its five tasks were not what the plan

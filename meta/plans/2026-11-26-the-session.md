@@ -114,7 +114,10 @@ Calibration: phase 2's review rounds ran at about twice their estimate, each rou
 findings of their own; T8 and T9 build checks of that kind, so their rounds are priced at two and the review at three.
 
 **Measured on 2026-11-26, the build's first four tasks.** Wall time came in at a quarter to a third of the
-estimate on every one, the delegated lane at a fifth; tokens came in below the estimate where they could be
+estimate on every one, the delegated lane at a fifth. **Corrected 2026-11-27 by `bundle.py plan calibrate`
+over all thirteen finished rows: actual is 0.53 of estimate, not a quarter to a third.** The first four
+were the fastest four, and the figure was repeated through the session as if it held for the plan. It does
+not; tokens came in below the estimate where they could be
 separated, and the main thread's cannot be, so they are written `—` rather than guessed. Review rounds were
 priced at two each and took one. The estimates in this table were never revised during the run, so the
 comparison stands as it was made.
