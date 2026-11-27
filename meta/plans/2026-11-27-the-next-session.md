@@ -221,7 +221,14 @@ every lane rebuilds it.
 # lanes
 [main-thread]
 branch = "plan/next-phases"
-files = ["evals/**", "meta/**", "sources/bundle/**", "MANIFEST.md", "AGENTS.md", ".claude/**"]
+files = ["evals/**", "meta/plans/**", "meta/reviews/**", "meta/decisions.md", "meta/tests/test_bundle.py",
+         "sources/bundle/tools/bundle.py", "sources/bundle/method/skills/plan/**",
+         "sources/bundle/method/templates/**", "MANIFEST.md", "AGENTS.md", ".claude/**"]
+
+[skills]
+branch = "task/t16-ship-and-cut"
+files = ["sources/bundle/method/skills/ship/**", "meta/method/skills/**", "meta/tools/release.py",
+         "meta/tests/test_release.py"]
 
 ```
 
