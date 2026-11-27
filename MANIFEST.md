@@ -55,17 +55,19 @@ enter. Changing it takes a decision row by the owner in `meta/decisions.md`. It 
 
 ## Limits
 
-The checked ones fail `release.py check`; the measured one is read from the release's cost pilot.
+The checked ones fail `release.py check`; the measured one is read from the release's cost pilot. **Every figure in
+the *Today* column carries the date it was measured** (`d-5ed7e8-f5564d`): without it a figure ages silently, which
+is how four of these came to be wrong at once.
 
 | Limit | Today | Cap | How |
 |---|---:|---:|---|
-| Export, shipped bytes | about 1,017 KB | 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`): the footprint is not what a session pays for — the context limits below are, and they bind. The room is not a budget: each growth is justified on its own, and what a session reads is still shrunk before anything is added. May grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
-| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens), measured over the release: a skill's original keeps the full description it is worked on and the home installs from, and ships the short `release_description` beside it (`d-5ed7e8-7a4324`) | about 1,690 chars | 3,200 in total (`d-5ed7e8-7a4324`, raising it for the phase's new skills); each by its kind: a long process 750, a light skill 250, an agent run on request 250, a delegated agent 200 (`d-5ed7e8-cf8021`) | checked |
-| A coding session's reads | about 10k tokens (estimate) | 10,100 | checked (existing) |
+| Export, shipped bytes | about 1.16 MB, measured 2026-11-27: about 95 % of the cap | 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`): the footprint is not what a session pays for — the context limits below are, and they bind. The room is not a budget: each growth is justified on its own, and what a session reads is still shrunk before anything is added. May grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
+| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens), measured over the release: a skill's original keeps the full description it is worked on and the home installs from, and ships the short `release_description` beside it (`d-5ed7e8-7a4324`) | about 1,940 chars, measured 2026-11-27 | 3,200 in total (`d-5ed7e8-7a4324`, raising it for the phase's new skills); each by its kind: a long process 750, a light skill 250, an agent run on request 250, a delegated agent 200 (`d-5ed7e8-cf8021`) | checked |
+| A coding session's reads | about 6.9k tokens, measured 2026-11-27 after the cut | 10,100 | checked (existing) |
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |
 | One card | at most 360 | 360 | checked (existing) |
-| The roadmap's hand-off, *Where we are* | about 2,900 words | 500 words | checked |
-| Cost against `minimal`, non-trivial tasks | about ×2.1 to ×2.3 | no release costs more than ×1.10 of the previous, in the same run; aim ×1.5 | measured, every release |
+| The roadmap's hand-off, *Where we are* | about 480 words, measured 2026-11-27 | 500 words | checked |
+| Cost against `minimal`, non-trivial tasks | ×2.74 [2.14, 3.57], measured on 0.0.30; **eight releases have shipped unmeasured since** (`d-5ed7e8-6a5524`) | no release costs more than ×1.10 of the previous, in the same run; aim ×1.5 | measured, every release |
 
 ## Direction
 
@@ -80,5 +82,7 @@ The checked ones fail `release.py check`; the measured one is read from the rele
   registered before its trials, its discriminating tasks still passing (`d-5ed7e8-7cac23`); a release whose cost
   rises does not ship. When a skill's description changes: that skill's trigger eval runs again. Once: an external
   benchmark at a frozen tag (`d-5ed7e8-d47ee1`).
-- **One release a month**, carrying what accumulated; a fix for a privacy leak or a data loss ships as a patch at
-  any time.
+- **A release is cut when there is something to carry**, which in practice has been several a week while the method
+  is being built (twelve tags between 2026-10-05 and 2026-11-26) and would be rarer once it settles; a fix for a
+  privacy leak or a data loss ships as a patch at any time. The promise was *one release a month* and was not kept,
+  so it now says what is done (`d-5ed7e8-8e6b7a`).
