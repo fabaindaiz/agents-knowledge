@@ -1670,6 +1670,40 @@ class Trailers(Base):
         return repo
 
 
+class LiveStateIdentity(Base):
+    """How a session names its live-state file. Found broken in use on 2026-11-27: with no harness session
+    id, the fallback was the writing process's pid, and every tool call is its own short-lived process, so
+    each write minted a new file and no reader could ever find this session's state. Six files had
+    accumulated in one clone in one day. A guard at rung 3 that behaves as rung 0."""
+
+    def test_without_a_harness_id_every_call_shares_one_id_instead_of_minting_its_own(self) -> None:
+        for name in ("CLAUDE_SESSION_ID", "AGENT_SESSION_ID"):
+            self.addCleanup(os.environ.pop, name, None) if name not in os.environ else None
+            os.environ.pop(name, None)
+
+        first, second = B.now_session_id(), B.now_session_id()
+
+        self.assertEqual(first, second)
+        self.assertNotIn("pid-", first)
+
+    def test_the_harness_id_still_wins_and_separates_two_sessions(self) -> None:
+        os.environ["CLAUDE_SESSION_ID"] = "abc-123"
+        self.addCleanup(os.environ.pop, "CLAUDE_SESSION_ID", None)
+
+        self.assertEqual(B.now_session_id(), "abc-123")
+        self.assertEqual(B.now_session_id("given-one"), "given-one")
+
+    def test_a_write_and_a_read_from_two_processes_find_the_same_file(self) -> None:
+        os.environ.pop("CLAUDE_SESSION_ID", None)
+        os.environ.pop("AGENT_SESSION_ID", None)
+        repo = init_repo(self.root / "shared")
+        B.now_write(repo, {"task": "one", "plan": "p.md"})
+
+        # a second call, as a second process would make it: no id in hand, nothing passed
+        self.assertEqual(B.now_read(B._now_dir(repo) / f"{B.now_session_id()}.md").get("task"), "one")
+        self.assertEqual(len(list(B._now_dir(repo).glob("*.md"))), 1)
+
+
 class Lanes(Base):
     """`lanes check`: a plan declares each part's files as globs, and before a merge each lane's changed
     files are compared with its declaration and with the other lanes' (`d-5ed7e8-8e7d36`)."""
@@ -1749,6 +1783,59 @@ files = ["tools/*.py"]
         findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
 
         self.assertEqual([f for f in findings if "SHA256SUMS" in f], [], findings)
+
+    def test_a_declared_shared_file_is_not_an_overlap_and_an_undeclared_one_still_is(self) -> None:
+        """A legitimate overlap is written in the plan with its reason, the way a privacy allowance is, so
+        that it is reviewable; one that lives only in the controller's head is not (`d-5ed7e8-8e7d36`)."""
+        repo, base = self.repo_with_lanes()
+        (repo / "plan.md").write_text(self.PLAN.replace(
+            'files = ["tools/*.py"]',
+            'files = ["tools/*.py", "method/**"]\nshared = ["method/a.md"]').replace(
+            'files = ["method/**"]',
+            'files = ["method/**", "tools/*.py"]\nshared = ["method/a.md"]'))
+        commit(repo, "both declare, one shared")
+        base = git(repo, "rev-parse", "HEAD").strip()
+        self.branch(repo, "lane-text", {"method/a.md": "text\n", "tools/t.py": "text too\n"})
+        self.branch(repo, "lane-state", {"method/a.md": "state\n", "tools/t.py": "state too\n"})
+
+        findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
+
+        self.assertEqual([f for f in findings if "method/a.md" in f], [], findings)
+        self.assertTrue(any("tools/t.py" in f for f in findings), findings)
+
+    def test_the_close_runs_the_lanes_check_and_finds_the_plan_in_the_live_state(self) -> None:
+        """`lanes check` depended on someone remembering it, which is rung 0 dressed as rung 2. It runs
+        inside `close`, which already runs the deterministic checks, and the plan it reads is the one the
+        live state names (`d-5ed7e8-8e7d36`)."""
+        repo, base = self.repo_with_lanes()
+        self.branch(repo, "lane-text", {"method/a.md": "edited\n", "tools/t.py": "not mine\n"})
+        self.branch(repo, "lane-state", {"tools/t.py": "edited\n"})
+
+        step = B.lanes_step(repo, base, plan=repo / "plan.md")
+
+        self.assertEqual(step.name, "lanes")
+        self.assertTrue(step.failed, step.lines)
+        self.assertTrue(any("tools/t.py" in line for line in step.lines), step.lines)
+
+    def test_the_close_says_so_rather_than_failing_when_no_plan_declares_lanes(self) -> None:
+        repo, _ = self.repo_with_lanes()
+
+        step = B.lanes_step(repo, None, plan=None)
+
+        self.assertFalse(step.failed, step.lines)
+
+    def test_the_plan_is_found_through_the_live_state_and_a_session_without_one_is_not_a_crash(self) -> None:
+        """The unit test above passes the plan in, so it never reaches the lookup; a smoke test found the
+        lookup calling `now_read` with the wrong arguments. This one reaches it."""
+        repo, _ = self.repo_with_lanes()
+
+        self.assertIsNone(B.lanes_plan(repo))
+
+        B.now_write(repo, {"plan": "plan.md", "task": "t"})
+        self.assertEqual(B.lanes_plan(repo), repo / "plan.md")
+
+        B.now_write(repo, {"plan": "no/such/plan.md", "task": "t"})
+        self.assertIsNone(B.lanes_plan(repo))
 
     def test_a_plan_with_no_lanes_block_says_so_rather_than_passing_silently(self) -> None:
         self.assertEqual(B.lanes_declared("# A plan with no lanes\n\nnothing here\n"), {})

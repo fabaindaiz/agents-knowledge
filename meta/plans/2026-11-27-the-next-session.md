@@ -223,10 +223,11 @@ every lane rebuilds it.
 branch = "plan/next-phases"
 files = ["evals/**", "meta/**", "sources/bundle/**", "MANIFEST.md", "AGENTS.md", ".claude/**"]
 
-[notes]
-branch = "t17-seen-in"
-files = ["sources/notes/**", "meta/tools/release.py", "meta/tests/test_release.py"]
 ```
+
+The `notes` lane (`sources/notes/**`, the build's note check) was merged on 2026-11-27 and its branch
+deleted, so it is no longer declared: a lane leaves the block when it lands, and the check then has nothing
+to say about it.
 
 **The first run of this check caught its own author.** The block first declared `evidence` and `phase` as
 two lanes, both on `plan/next-phases`, and the check reported every file of both as written by two lanes.

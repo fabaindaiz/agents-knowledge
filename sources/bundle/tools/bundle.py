@@ -5022,6 +5022,7 @@ def close_report(repo: Path, base: str | None = None) -> list[CloseStep]:
         if memory.is_dir() else []
     steps.append(CloseStep("memory", False, tuple(f"only on this machine: {m.name}" for m in lone) or ("nothing only on this machine",)))
     steps.append(machine_step(repo))
+    steps.append(lanes_step(repo, base, lanes_plan(repo)))
     if rev:
         red = red_check(repo, rev)
         steps.append(CloseStep("red-check", bool(red.failed), tuple(red.lines())))
@@ -6664,15 +6665,26 @@ def _now_dir(repo: Path) -> Path:
     return Path(common) / NOW_DIRNAME
 
 
+NOW_LOCAL_ID = "local"
+
+
 def now_session_id(given: str | None = None) -> str:
-    """This session's id: the one given, else the harness's, else the process id.
+    """This session's id: the one given, else the harness's, else one shared id for this clone.
 
     Never invented from the clock: two sessions started in the same second would collide, and a session that
     is restarted must find its own file again.
+
+    **It was the writing process's pid, and that was wrong in use** (found 2026-11-27). Every tool call runs
+    in its own short-lived process, so a pid-named file was minted on each write and no later call could
+    find it: six files accumulated in one clone in one day and the state was never read back once. The pid
+    separated two sessions running in one clone, but a host that tells us nothing about the session cannot
+    separate them anyway, and minting a file per call is strictly worse than sharing one. So with no id from
+    the harness, every call in a clone uses `local`; two sessions there share a file, and the file's own
+    `session` field says `local`, so a reader can see which case it is in.
     """
-    name = given or os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("AGENT_SESSION_ID") or f"pid-{os.getpid()}"
+    name = given or os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("AGENT_SESSION_ID") or NOW_LOCAL_ID
     safe = re.sub(r"[^A-Za-z0-9._-]", "-", name).strip("-")
-    return safe[:64] or f"pid-{os.getpid()}"
+    return safe[:64] or NOW_LOCAL_ID
 
 
 def _pid_alive(pid: int) -> bool:
@@ -7030,10 +7042,46 @@ def lanes_findings(repo: Path, lanes: dict[str, dict], base: str) -> list[str]:
         for path in files:
             if not path.startswith(LANES_GENERATED):
                 seen.setdefault(path, []).append(name)
+    # An overlap is sometimes deliberate — two parts that both append to one record. It is declared in the
+    # plan, with the lane that shares it, the way a privacy allowance is declared on its line: an exception
+    # written where the plan is reviewed, never one that lives only in the controller's head.
+    shared = {str(path) for table in lanes.values() for path in table.get("shared") or []}
     for path, names in seen.items():
-        if len(names) > 1:
+        if len(names) > 1 and path not in shared:
             findings.append(f"`{path}` was changed by lanes {' and '.join(sorted(names))}: two parts write one file")
     return findings
+
+
+def lanes_plan(repo: Path) -> Path | None:
+    """The plan a close checks the lanes of: the one this session's live state names. A session that
+    declared no plan has no lanes to check, and says so rather than guessing among the plans on disk."""
+    # `now_read` takes the file, not the session: a smoke test caught this, the unit test having passed the
+    # plan in explicitly and never reached here. A path this function cannot read is no plan, not a crash.
+    # `_now_dir` runs git, which fails where there is no repository: a close must degrade step by step, so
+    # anything unreadable here is "no plan declared" and the close goes on, as every other step does.
+    try:
+        state = now_read(_now_dir(repo) / f"{now_session_id()}.md")
+    except (subprocess.CalledProcessError, OSError):
+        return None
+    named = (state or {}).get("plan") or ""
+    if not named:
+        return None
+    path = repo / named
+    return path if path.is_file() else None
+
+
+def lanes_step(repo: Path, base: str | None, plan: Path | None) -> CloseStep:
+    """`lanes check` as a step of the close. A rule written alone was forgotten four times in one carrier,
+    so it runs with the other deterministic checks rather than when someone remembers it."""
+    if plan is None:
+        return CloseStep("lanes", False, ("this session's live state names no plan, so no lanes are declared",))
+    if not base:
+        return CloseStep("lanes", False, ("no base given",))
+    lanes = lanes_declared(plan.read_text(encoding="utf-8"))
+    if not lanes:
+        return CloseStep("lanes", False, (f"{plan.name} declares no lanes",))
+    findings = lanes_findings(repo, lanes, base)
+    return CloseStep("lanes", bool(findings), tuple(findings) or (f"{len(lanes)} lanes, each inside its own files",))
 
 
 def lanes_lines(repo: Path, plan: Path, base: str) -> tuple[list[str], int]:
