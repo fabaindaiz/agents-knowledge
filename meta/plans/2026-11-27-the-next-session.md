@@ -37,7 +37,7 @@ is the owner's decision at the end of its own plan, not a step here.
 
 ## Milestones
 
-- **N1** · the records true and the two stale frame figures corrected · waiting
+- **N1** · the records true and the two stale frame figures corrected · **done 2026-11-27** (`4fc5032`, `198d74b`)
 - **N2** · the phase finished: T14 to T18, T13, and the coding budget lowered · waiting
 - **N3** · the discriminating set built and the new contrast registered · waiting — its own plan
 - **N4** · the page rewritten against the presentation research · waiting
@@ -157,11 +157,11 @@ the bundle's sources; lane E writes `evals/` alone.
 
 | # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
 |---|---|---|---|---|---|---|---|---|
-| R1 | The two stale experiment headers | waiting | N1 | 30 | | 40 | | 0 |
-| R2 | The two orphan slugs | waiting | N1 | 10 | | 10 | | 0 |
-| R3 | The five stale enforcers | waiting | N1 | 15 | | 20 | | 1 |
-| R4 | The two stale frame figures | waiting | N1 | 15 | | 20 | | 1 |
-| R5 | The cadence promise | waiting | N1 | 15 | | 15 | | 1 |
+| R1 | The two stale experiment headers | done | N1 | 30 | 12 | 40 | — | 0 |
+| R2 | The two orphan slugs | done | N1 | 10 | 25 | 10 | — | 1 |
+| R3 | The five stale enforcers | done | N1 | 15 | 18 | 20 | — | 0 |
+| R4 | The frame's figures, with their dates | done | N1 | 15 | 14 | 20 | — | 1 |
+| R5 | The cadence promise | done | N1 | 15 | 4 | 15 | — | 1 |
 | P1 | T17 `seen_in` and cross-domain requests | waiting | N2 | 105 | | 250 | | 1 |
 | P2 | T14 the `brief` skill | waiting | N2 | 60 | | 150 | | 1 |
 | P3 | T15 the `lanes` skill and `lanes check` | waiting | N2 | 105 | | 270 | | 1 |
@@ -182,3 +182,22 @@ It does not run a trial, cut a release, push anything, or change a figure in the
 row. It does not take the twenty-nine unconfirmed decision reasons, which are their own session. And it does
 not claim that finishing it makes the bundle demonstrably useful: lanes R, P and C make the project honest
 and legible, and only lane E, followed by a run the owner authorises, can make the central claim testable.
+
+## Lane R as it ran, 2026-11-27
+
+Estimated an hour; took about one hour and ten minutes, and two of its five tasks were not what the plan
+said they were.
+
+- **R2 was not bad data.** Both orphan slugs name experiments on **rules of the method**, not on notes, and
+  the column they sit in is headed *Note*. They are now written `method:<name>`, which the slug pattern
+  already passes over — a red run proved that a guard for it would be dead code, and the guard was deleted
+  before it was committed. The convention is stated in the file's own header and in the shipped `OPEN.md`.
+- **R3 was not stale data either.** Four of the five rows are a **superseded** decision naming the list its
+  own successor deleted, and the fifth names two proposals pruned after they were received. The check now
+  exempts a superseded or deprecated row's enforcer, exactly as it already exempted its reason, and the
+  fifth row points at `meta/tracking/received.md`. Seen to fail first.
+- **R4 grew.** Four of the five figures in the limits table were wrong, not two, and the export turned out
+  to sit at about 95 % of its cap. Every figure now carries its measurement date (`d-5ed7e8-f5564d`).
+- **What this says about the register.** Two of five rows in `meta/reviews/2026-11-26-weak-points-before-presenting.md`
+  described the symptom a check printed rather than the defect behind it. A row of that register is a lead,
+  not a diagnosis, and the next lane should expect the same.
