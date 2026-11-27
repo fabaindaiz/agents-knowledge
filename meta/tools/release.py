@@ -9,6 +9,7 @@ than copying from it, so every rule both need exists once.
     python3 meta/tools/release.py build [--check]         generated knowledge and SHA256SUMS, from sources/
     python3 meta/tools/release.py release X.Y.Z           version, date, build; prints the tag to create
     python3 meta/tools/release.py check                   the home's CI: verify, build --check, privacy, links, its decisions log
+    python3 meta/tools/release.py install-home-skills [--check]   the skills only the home runs, into .claude/skills/
     python3 meta/tools/release.py gather [REPO...] --out DIR [--packs FILE...]   phase 1: each carrier and its proposals
     python3 meta/tools/release.py intake DIR              the gathered proposals into meta/tracking/, as received
     python3 meta/tools/release.py lost BASE SNAPSHOT...   lines a carrier added that the home does not hold
@@ -1033,6 +1034,80 @@ def home_link_problems(root: Path = ROOT) -> list[str]:
     return problems
 
 
+# --- the home's own skills ----------------------------------------------------------------------------
+# A procedure only the home runs (cutting a release) is a skill like any other, and must reach
+# `.claude/skills/` to fire — but it is not part of the bundle: no carrier runs it, and it may not cost a
+# byte of the export. So its base lives in `meta/method/skills/<name>/SKILL.md`, outside `sources/`, and
+# `release.py` installs it. `bundle.py install-skills` is untouched: it reads only the release's bases, and
+# its `installed_skill_problems` skips a `.claude/skills/<name>/SKILL.md` that does not carry the bundle's
+# own banner, which is why this one carries a banner of its own. The staleness check is here instead
+# (`home_skill_problems`, run by `check`), with the same hash seal, so a hand edit under the banner is caught.
+HOME_SKILLS = "meta/method/skills"
+HOME_SKILL_BANNER = ("Installed by release.py install-home-skills from {original}; edit that file, never this one. "
+                     "A skill only the home runs: it never ships")
+
+
+def home_skills(root: Path = ROOT) -> dict[str, Path]:
+    """{name: its base} for every skill only the home runs."""
+    return {p.parent.name: p for p in sorted((root / HOME_SKILLS).glob("*/SKILL.md"))}
+
+
+def render_home_skill(root: Path, name: str, base: Path, into: str = B.SKILLS_INTO) -> str:
+    """The text installed for one home-only skill: its base, the carrier's `LOCAL.md` applied, sealed by its hash."""
+    local = root / into / name / "LOCAL.md"
+    banner = HOME_SKILL_BANNER.format(original=base.relative_to(root).as_posix())
+    return B._sealed(B.merge_skill(base.read_text(encoding="utf-8"),
+                                   local.read_text(encoding="utf-8") if local.is_file() else None, banner))
+
+
+def _home_installed(text: str, name: str) -> bool:
+    return text.startswith("---\n# " + HOME_SKILL_BANNER.format(original=f"{HOME_SKILLS}/{name}/SKILL.md"))
+
+
+def install_home_skills(root: Path = ROOT, into: str = B.SKILLS_INTO) -> list[str]:
+    """Writes every home-only skill into the assistant's folder; returns the paths written, relative to the root.
+
+    A file there that this command did not write is refused: it is the repository's own, or the bundle's, and
+    its rules belong in the `LOCAL.md` beside it.
+    """
+    written = []
+    for name, base in home_skills(root).items():
+        target = root / into / name / "SKILL.md"
+        current = target.read_text(encoding="utf-8") if target.is_file() else None
+        if current is not None and not _home_installed(current, name):
+            raise RefusedError(f"{into}/{name}/SKILL.md: not installed from {HOME_SKILLS}/{name}/SKILL.md; "
+                               "move what it says into the LOCAL.md beside it, then remove it")
+        text = render_home_skill(root, name, base, into)
+        if current != text:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8")
+        written.append(f"{into}/{name}/SKILL.md")
+    return written
+
+
+def home_skill_problems(root: Path = ROOT, into: str = B.SKILLS_INTO) -> list[str]:
+    """Every home-only skill that is not installed, is behind its base, or was edited under its banner."""
+    problems = []
+    for name, base in home_skills(root).items():
+        rel = f"{into}/{name}/SKILL.md"
+        target = root / rel
+        if not target.is_file():
+            problems.append(f"home skill {name!r}: {rel} is not installed from {base.relative_to(root).as_posix()}; "
+                            "run `release.py install-home-skills`")
+            continue
+        text = target.read_text(encoding="utf-8")
+        if not _home_installed(text, name):
+            problems.append(f"home skill {name!r}: {rel} was not written from {base.relative_to(root).as_posix()}; "
+                            "move what it says into the LOCAL.md beside it, then remove it")
+        elif B._hand_edited(text):
+            problems.append(f"home skill {name!r}: {rel} was installed, then edited by hand; "
+                            "move the edit into its base or its LOCAL.md, then install again")
+        elif text != render_home_skill(root, name, base, into):
+            problems.append(f"home skill {name!r}: {rel} is behind {base.relative_to(root).as_posix()}; "
+                            "run `release.py install-home-skills`")
+    return problems
+
+
 def home_session_problems(root: Path = ROOT) -> list[str]:
     problems = []
     for name, (rel, index) in HOME_SESSIONS.items():
@@ -1104,7 +1179,7 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     ratchet, ratchet_notes = home_privacy(root, home)
     problems += ratchet
     problems += B.invisible_characters(root, [p.relative_to(root).as_posix() for p in home_files(root)])
-    problems += home_link_problems(root) + home_session_problems(root) + B.budget_problems(bundle)
+    problems += home_link_problems(root) + home_session_problems(root) + home_skill_problems(root) + B.budget_problems(bundle)
     problems += [f"meta/tracking/candidates.md: {s}: *Since* is not a release version" for s in funnel(root)["since_invalid"]]
     problems += queue_problems(root) + manifest_problems(root) + answered_still_queued(root)
     slug_problems, slug_warnings = tracking_slug_problems(root)
@@ -1246,7 +1321,9 @@ DESCRIPTIONS_CAP = 3_200
 DESCRIPTION_KIND_CAPS = {"long process": 750, "light skill": 250, "agent on request": 250, "delegated agent": 200}
 DESCRIPTION_KINDS = {"close": "long process", "decision-review": "long process", "user-walk": "long process",
                      "edit-docs": "long process",
-                     "next": "light skill", "lanes": "light skill", "plan": "long process", "knowledge-reviewer": "agent on request", "researcher": "delegated agent"}
+                     "next": "light skill", "lanes": "light skill", "ship": "light skill",
+                     "plan": "long process",
+                     "knowledge-reviewer": "agent on request", "researcher": "delegated agent"}
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*
 
 
@@ -2377,6 +2454,8 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("release", help="version and date into the README, then build; prints the tag command")
     p.add_argument("version", metavar="X.Y.Z")
     sub.add_parser("check", help="the home's CI: verify, build --check, privacy and links of meta/ and sources/, budgets, meta/decisions.md")
+    p = sub.add_parser("install-home-skills", help="the skills only the home runs, from meta/method/skills/, into .claude/skills/; --check")
+    p.add_argument("--check", action="store_true", help="report what is missing, stale or hand-edited; write nothing")
     p = sub.add_parser("gather", help="phase 1: each carrier against its release tag, and its proposals (writes only --out)")
     p.add_argument("repos", nargs="*")
     p.add_argument("--out", required=True)
@@ -2437,6 +2516,18 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901, PLR0911, PLR0912 
                 print(line)
             print("home check: " + ("passed" if not problems else f"{len(problems)} problems"))
             return 1 if problems else 0
+        if args.command == "install-home-skills":
+            if args.check:
+                problems = home_skill_problems(ROOT)
+                for line in problems:
+                    print("  x " + line)
+                print("home skills: " + ("current" if not problems else f"{len(problems)} problems"))
+                return 1 if problems else 0
+            written = install_home_skills(ROOT)
+            for rel in written:
+                print(rel)
+            print(f"home skills: {len(written)} installed")
+            return 0
         if args.command == "gather":
             scope = B.workspace(args.repos)
             for line in B._scope_report(scope, "gathered"):

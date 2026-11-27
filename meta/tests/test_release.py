@@ -1835,3 +1835,63 @@ class CheckRunsRedCheck(Base):
         self.assertTrue([n for n in notes if "red-check" in n and "no base" in n and "judged nothing" in n], notes)
         _, notes = R.baseline_growth(repo)
         self.assertTrue([n for n in notes if "baseline" in n and "no base" in n and "judged nothing" in n], notes)
+
+
+class HomeOnlySkills(Base):
+    """A skill only the home runs (`meta/method/skills/<name>/SKILL.md`): installed by `release.py`, never shipped."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.home = make_home(self.root)
+        self.original = self.home / "meta/method/skills/cut/SKILL.md"
+        self.original.parent.mkdir(parents=True)
+        self.original.write_text('---\nname: cut\ndescription: "Cut a release of the bundle."\n---\n\n# Cut\n\nThe steps.\n')
+
+    def test_it_installs_into_the_assistant_s_folder_and_names_its_original(self) -> None:
+        R = release()
+        written = R.install_home_skills(self.home)
+        self.assertEqual(written, [".claude/skills/cut/SKILL.md"])
+        text = (self.home / ".claude/skills/cut/SKILL.md").read_text()
+        self.assertIn("meta/method/skills/cut/SKILL.md", text)
+        self.assertIn("The steps.", text)
+        self.assertIn("description: Cut a release of the bundle.", text)
+
+    def test_it_never_reaches_the_export(self) -> None:
+        R = release()
+        R.install_home_skills(self.home)
+        R.build(self.home)
+        self.assertFalse((self.home / ".agents/method/skills/cut").exists())
+        self.assertFalse([r for r in B.shipped(self.home / ".agents") if "skills/cut" in r])
+
+    def test_the_bundle_s_own_skill_check_leaves_it_alone(self) -> None:
+        R = release()
+        R.install_home_skills(self.home)
+        self.assertEqual(B.installed_skill_problems(self.home, self.home / ".agents"), [])
+        self.assertEqual(B.verify_problems(self.home / ".agents"), [])
+
+    def test_stale_or_hand_edited_is_a_problem_until_it_is_installed_again(self) -> None:
+        R = release()
+        self.assertIn("not installed", "\n".join(R.home_skill_problems(self.home)))
+        R.install_home_skills(self.home)
+        self.assertEqual(R.home_skill_problems(self.home), [])
+        self.original.write_text(self.original.read_text() + "\nAnother step.\n")
+        self.assertIn("meta/method/skills/cut/SKILL.md", "\n".join(R.home_skill_problems(self.home)))
+        R.install_home_skills(self.home)
+        self.assertEqual(R.home_skill_problems(self.home), [])
+        installed = self.home / ".claude/skills/cut/SKILL.md"
+        installed.write_text(installed.read_text() + "\nA hand edit.\n")
+        self.assertIn("edited by hand", "\n".join(R.home_skill_problems(self.home)))
+
+    def test_check_reports_it_and_the_command_line_checks_without_writing(self) -> None:
+        R = release()
+        self.assertIn("home skill", "\n".join(R.check(self.home)[0]))
+        out = io.StringIO()
+        with mock.patch.object(R, "ROOT", self.home), contextlib.redirect_stdout(out):
+            code = R.main(["install-home-skills", "--check"])
+        self.assertEqual(code, 1, out.getvalue())
+        self.assertFalse((self.home / ".claude/skills/cut").exists())
+        with mock.patch.object(R, "ROOT", self.home), contextlib.redirect_stdout(out):
+            self.assertEqual(R.main(["install-home-skills"]), 0)
+        self.assertTrue((self.home / ".claude/skills/cut/SKILL.md").is_file())
+        with mock.patch.object(R, "ROOT", self.home), contextlib.redirect_stdout(out):
+            self.assertEqual(R.main(["install-home-skills", "--check"]), 0)

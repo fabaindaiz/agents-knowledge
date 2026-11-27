@@ -40,6 +40,9 @@ named), then install with `--force`.
 | `next` | the user asks what to do now or next, or which process fits: what was read, three actions with cost and why now, one question; the processes and how to start each are in `../guide.md` |
 | `decision-review` | before planning: every decision of a spec or design listed, then the human's walked one per turn, each shown by example (`prompt-context.md` §15) |
 | `edit-docs` | improving, proofreading or formatting existing documentation, level by level, the meaning kept checked by `bundle.py docs` |
+| `plan` | work beyond one sitting, or a question about what it would cost: each task priced, the plan measured against what earlier plans took (`bundle.py plan calibrate`), the gates declared, the split proposed |
+| `lanes` | the user asks to split work between parallel agents: the split proposed by disjoint file sets, each lane priced, the declaration written that `close` checks |
+| `ship` | work is to leave the session: a hand-off when it is not finished, build and deploy when it is. `close` is preferred whenever the session is actually ending |
 | `user-walk` | before building a user-facing flow: the ideal path, then every delay, interruption, setback, failure and misuse, as failing tests; and a batch of observations from real use |
 
 ## Skills from elsewhere, and the moment each fits

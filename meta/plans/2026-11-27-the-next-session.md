@@ -234,18 +234,27 @@ every lane rebuilds it.
 branch = "plan/next-phases"
 files = ["evals/**", "meta/plans/**", "meta/reviews/**", "meta/decisions.md", "meta/tests/test_bundle.py",
          "sources/bundle/tools/bundle.py", "sources/bundle/method/skills/plan/**",
-         "sources/bundle/method/templates/**", "MANIFEST.md", "AGENTS.md", ".claude/**"]
+         "sources/bundle/method/skills/README.md", "sources/bundle/method/templates/**",
+         "meta/tools/release.py", "MANIFEST.md", "AGENTS.md", ".claude/**"]
+shared = ["meta/tools/release.py"]
 
 [skills]
 branch = "task/t16-ship-and-cut"
 files = ["sources/bundle/method/skills/ship/**", "meta/method/skills/**", "meta/tools/release.py",
-         "meta/tests/test_release.py"]
+         "meta/tests/test_release.py", ".claude/skills/ship/**", ".claude/skills/cut/**"]
+shared = ["meta/tools/release.py"]
 
 ```
 
 The `notes` lane (`sources/notes/**`, the build's note check) was merged on 2026-11-27 and its branch
 deleted, so it is no longer declared: a lane leaves the block when it lands, and the check then has nothing
 to say about it.
+
+**And then it caught the author again, the other way round.** `meta/tools/release.py` was declared to the
+`skills` lane, and the main thread edited the same line of it an hour later — one line of `DESCRIPTION_KINDS`,
+which the delegate also had to touch to register its own skill. The check named both lanes and the file.
+The overlap was real and narrow, so it is declared in `shared` with this as its reason, rather than
+pretended away. The main thread crossed into the delegate's lane, not the reverse.
 
 **The first run of this check caught its own author.** The block first declared `evidence` and `phase` as
 two lanes, both on `plan/next-phases`, and the check reported every file of both as written by two lanes.
