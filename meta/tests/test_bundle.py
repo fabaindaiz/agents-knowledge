@@ -1670,6 +1670,90 @@ class Trailers(Base):
         return repo
 
 
+class Lanes(Base):
+    """`lanes check`: a plan declares each part's files as globs, and before a merge each lane's changed
+    files are compared with its declaration and with the other lanes' (`d-5ed7e8-8e7d36`)."""
+
+    PLAN = """# A plan with lanes
+
+## The split
+
+```toml
+# lanes
+[text]
+branch = "lane-text"
+files = ["method/**"]
+
+[state]
+branch = "lane-state"
+files = ["tools/*.py"]
+```
+"""
+
+    def repo_with_lanes(self) -> tuple[Path, str]:
+        repo = init_repo(self.root / "lanes")
+        (repo / "method").mkdir()
+        (repo / "tools").mkdir()
+        (repo / "method/a.md").write_text("a\n")
+        (repo / "tools/t.py").write_text("t\n")
+        (repo / "plan.md").write_text(self.PLAN)
+        base = commit(repo, "base")
+        return repo, base
+
+    def branch(self, repo: Path, name: str, files: dict[str, str]) -> None:
+        git(repo, "checkout", "-q", "-b", name)
+        for rel, text in files.items():
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+            (repo / rel).write_text(text)
+        commit(repo, name)
+        git(repo, "checkout", "-q", "-")
+
+    def test_each_lane_inside_its_globs_and_apart_from_the_others_passes(self) -> None:
+        repo, base = self.repo_with_lanes()
+        self.branch(repo, "lane-text", {"method/a.md": "edited\n"})
+        self.branch(repo, "lane-state", {"tools/t.py": "edited\n"})
+
+        findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
+
+        self.assertEqual(findings, [], findings)
+
+    def test_a_file_outside_a_lanes_declaration_is_a_finding(self) -> None:
+        repo, base = self.repo_with_lanes()
+        self.branch(repo, "lane-text", {"method/a.md": "edited\n", "tools/t.py": "not mine\n"})
+        self.branch(repo, "lane-state", {"tools/t.py": "edited\n"})
+
+        findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
+
+        self.assertTrue(any("tools/t.py" in f and "text" in f and "declares" in f for f in findings), findings)
+
+    def test_two_lanes_changing_one_file_is_a_finding_naming_both(self) -> None:
+        repo, base = self.repo_with_lanes()
+        # both lanes declare it: the overlap, not the declaration, is what fails
+        (repo / "plan.md").write_text(self.PLAN.replace('files = ["tools/*.py"]', 'files = ["tools/*.py", "method/**"]'))
+        commit(repo, "both declare method")
+        base = git(repo, "rev-parse", "HEAD").strip()
+        self.branch(repo, "lane-text", {"method/a.md": "text edited\n"})
+        self.branch(repo, "lane-state", {"method/a.md": "state edited\n"})
+
+        findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
+
+        self.assertTrue(any("method/a.md" in f and "text" in f and "state" in f for f in findings), findings)
+
+    def test_the_generated_release_is_exempt_from_the_overlap_since_every_lane_rebuilds_it(self) -> None:
+        """Every lane runs the build, so `.agents/` always overlaps; failing on it would make the check
+        fire on every run and teach the reader to ignore it. It is reported as a note instead."""
+        repo, base = self.repo_with_lanes()
+        self.branch(repo, "lane-text", {"method/a.md": "edited\n", ".agents/SHA256SUMS": "one\n"})
+        self.branch(repo, "lane-state", {"tools/t.py": "edited\n", ".agents/SHA256SUMS": "two\n"})
+
+        findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
+
+        self.assertEqual([f for f in findings if "SHA256SUMS" in f], [], findings)
+
+    def test_a_plan_with_no_lanes_block_says_so_rather_than_passing_silently(self) -> None:
+        self.assertEqual(B.lanes_declared("# A plan with no lanes\n\nnothing here\n"), {})
+
+
 class Decisions(Base):
     """The decisions log: a Status cell a tool reads, supersession both ways, and a person over an agent."""
 

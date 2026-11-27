@@ -98,6 +98,7 @@ import ast
 import builtins
 import collections
 import datetime
+import fnmatch
 import functools
 import hashlib
 import html
@@ -6974,6 +6975,78 @@ def compaction_lines(rows: list[dict[str, int]]) -> list[str]:
     return lines
 
 
+# --- lanes: a plan declares each part's files, and no two parts write the same one (`d-5ed7e8-8e7d36`).
+# A rule written alone was forgotten four times in one carrier, so it is a command rather than a sentence.
+
+LANES_FENCE = re.compile(r"```toml\n# lanes\n(.*?)```", re.S)
+# Every lane runs the build, so the generated release overlaps on every run. Failing on it would make the
+# check fire each time it is used, which is how a check teaches its reader to ignore it: it is noted instead.
+LANES_GENERATED = (".agents/",)
+
+
+def lanes_declared(text: str) -> dict[str, dict]:
+    """The lanes a plan declares: a fenced TOML block whose first line is `# lanes`, one table per lane
+    with its `branch` and its `files` globs. No block means no declaration, which the caller reports."""
+    found = LANES_FENCE.search(text)
+    if not found:
+        return {}
+    try:
+        data = tomllib.loads(found.group(1))
+    except tomllib.TOMLDecodeError as bad:
+        raise Refusal(f"the plan's lanes block is not TOML: {bad}") from bad
+    return {name: table for name, table in data.items() if isinstance(table, dict)}
+
+
+def _lane_changes(repo: Path, branch: str, base: str) -> list[str]:
+    listed = git(repo, "diff", "--name-only", f"{base}...{branch}")
+    return [line for line in listed.split("\n") if line.strip()]
+
+
+def lanes_findings(repo: Path, lanes: dict[str, dict], base: str) -> list[str]:
+    """Each lane's changed files against its own declaration and against the other lanes'."""
+    findings: list[str] = []
+    changed: dict[str, list[str]] = {}
+    for name, table in lanes.items():
+        branch = str(table.get("branch") or name)
+        globs = [str(g) for g in table.get("files") or []]
+        try:
+            files = _lane_changes(repo, branch, base)
+        except (subprocess.CalledProcessError, OSError) as bad:
+            findings.append(f"lane {name}: its branch `{branch}` cannot be read here ({bad.__class__.__name__}); "
+                            f"a lane not on this machine is not checked")
+            continue
+        changed[name] = files
+        for path in files:
+            if path.startswith(LANES_GENERATED):
+                continue
+            # `fnmatch` lets `*` cross a path separator, so `tools/*.py` also matches `tools/sub/x.py`.
+            # The declaration is a guard against a lane straying into another's area, not a path grammar,
+            # and a looser match errs toward passing a file the lane legitimately owns.
+            if not any(fnmatch.fnmatch(path, g) for g in globs):
+                findings.append(f"lane {name}: changed `{path}`, which none of the files it declares "
+                                f"({', '.join(globs) or 'none'}) matches")
+    seen: dict[str, list[str]] = {}
+    for name, files in changed.items():
+        for path in files:
+            if not path.startswith(LANES_GENERATED):
+                seen.setdefault(path, []).append(name)
+    for path, names in seen.items():
+        if len(names) > 1:
+            findings.append(f"`{path}` was changed by lanes {' and '.join(sorted(names))}: two parts write one file")
+    return findings
+
+
+def lanes_lines(repo: Path, plan: Path, base: str) -> tuple[list[str], int]:
+    lanes = lanes_declared(plan.read_text(encoding="utf-8"))
+    if not lanes:
+        return ([f"lanes: {plan} declares no lanes; a plan with parts declares each part's files"], 0)
+    findings = lanes_findings(repo, lanes, base)
+    lines = [f"  x {finding}" for finding in findings]
+    lines.append(f"lanes over {len(lanes)} lanes from {base}: "
+                 + (f"{len(findings)} overlaps or strays" if findings else "each inside its own files"))
+    return (lines, 1 if findings else 0)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bundle.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -7102,6 +7175,12 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--shell", help="the shell the command runs in (default: $CLAUDE_CODE_SHELL, else $SHELL); "
                                    "anything but zsh passes")
     p.add_argument("--hook", action="store_true", help="read a PreToolUse payload on stdin instead of CMD")
+    p = sub.add_parser("lanes", help="a plan's parts against what each one changed: a file outside a lane's "
+                       "declaration, or one two lanes both wrote (exit 1 on either)")
+    p.add_argument("lanes_action", choices=["check"], metavar="check")
+    p.add_argument("plan", type=Path, help="the plan that declares the lanes")
+    p.add_argument("--base", required=True, help="the commit every lane branched from")
+    p.add_argument("--repo", default=str(OWN_REPO))
     p = sub.add_parser("lookup", help="the index's rows a change matches, from its words, files or diff; nothing when none")
     p.add_argument("words", nargs="*", help="what the change does, in words")
     p.add_argument("--files", nargs="*", type=Path, help="files the change will touch")
@@ -7481,6 +7560,11 @@ def _run(args: argparse.Namespace) -> int:  # noqa: C901, PLR0911, PLR0912 -- on
             print(f"  x {finding.message}")
         print(f"shell-check: {len(findings)} unquoted expansions of a spaced value" if findings else "shell-check: clean")
         return 1 if findings else 0
+    if args.command == "lanes":
+        lines, code = lanes_lines(Path(args.repo), args.plan, args.base)
+        for line in lines:
+            print(line)
+        return code
     if args.command == "verify":
         tree = Path(args.tree)
         privacy = privacy_check(tree) if not is_legacy(_a_bundle(tree)) else None

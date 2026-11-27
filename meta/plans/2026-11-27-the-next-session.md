@@ -213,6 +213,26 @@ owner set**, by disjoint file sets, with every owner gate left standing — noth
 | **C · the page** | delegated | one HTML file in a scratch folder outside the repository | the smaller model | 120 min, about 150k | nothing; the controller publishes and the owner reads |
 | **P · the phase** | the main thread, in series | `sources/bundle/`, `meta/tests/` | the larger model | 565 min by the table, nearer three hours by calibration | the unattended mode's design round, inside P5 |
 
+Declared for `bundle.py lanes check`, which compares each lane's changed files with this block and with
+the other lanes' before a merge (`d-5ed7e8-8e7d36`). The generated release is exempt from the overlap rule:
+every lane rebuilds it.
+
+```toml
+# lanes
+[main-thread]
+branch = "plan/next-phases"
+files = ["evals/**", "meta/**", "sources/bundle/**", "MANIFEST.md", "AGENTS.md", ".claude/**"]
+
+[notes]
+branch = "t17-seen-in"
+files = ["sources/notes/**", "meta/tools/release.py", "meta/tests/test_release.py"]
+```
+
+**The first run of this check caught its own author.** The block first declared `evidence` and `phase` as
+two lanes, both on `plan/next-phases`, and the check reported every file of both as written by two lanes.
+It was right: work done in series in one thread on one branch is one lane, however the plan groups it.
+A lane is a branch, not a chapter.
+
 **The order in the main thread:** P1 (T17), P2 (T14), P3 (T15), P4 (T16), then **stop before P5's design
 round**, then P6 (T13, the phase's review) and P7 (the budget). P5's build waits on that round, so the review
 runs over what exists and says what it did not cover.
