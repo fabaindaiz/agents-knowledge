@@ -1833,7 +1833,12 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
                     else:
                         counts["unconfirmed"] += 1
                         warnings.append(f"{where}: {row.id}: why unconfirmed; a person confirms it or gives the reason")
-                for token in re.findall(r"`([^`\s]+)`", row.enforced):
+                # A superseded or deprecated row's enforcer is history, like its reason above: the row that
+                # replaced it has often deleted the very file it names, and asking a reader to repair that
+                # asks them to rewrite what used to be true. A live row is still checked, since one naming a
+                # file that does not exist reads as rung 3 and behaves as rung 0.
+                enforced = "" if row.state.startswith(("superseded", "deprecated")) else row.enforced
+                for token in re.findall(r"`([^`\s]+)`", enforced):
                     if any(c in token for c in "*?[") or not _PATHLIKE.match(token):
                         continue
                     if (root / token).exists():

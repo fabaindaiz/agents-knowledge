@@ -1688,6 +1688,22 @@ class Decisions(Base):
     def check(self, path: Path) -> tuple[list[str], list[str], dict]:
         return B.decision_check([path], today=self.TODAY)
 
+    def test_a_superseded_rows_enforcer_may_be_gone_while_a_live_row_must_still_have_one(self) -> None:
+        """A superseded row's enforcer is history: the row that replaced it often deleted the very file it
+        names, and warning about that asks a reader to repair a record of what used to be true. A live row
+        naming a file that does not exist is still the thing worth reporting, since it reads as rung 3 and
+        behaves as rung 0."""
+        path = self.log(
+            "| d-abcdef-111111 | superseded by d-abcdef-222222 2026-10-01 · h1 | The build checks the cues against a list"
+            " | it drifted | `tools/gone.txt` |\n"
+            "| d-abcdef-222222 | accepted 2026-10-02 · h1 | The check is removed and its list deleted | it cost more than it caught | `tools/audit.py` |\n"
+            "| d-abcdef-333333 | accepted 2026-10-03 · h1 | A live rule | because | `tools/also-gone.txt` |\n")
+
+        _, warnings, _ = self.check(path)
+
+        self.assertFalse(any("gone.txt`, which is no file here" in w and "d-abcdef-111111" in w for w in warnings), warnings)
+        self.assertTrue(any("also-gone.txt" in w and "d-abcdef-333333" in w for w in warnings), warnings)
+
     def test_a_well_formed_log_passes_and_its_rows_are_counted(self) -> None:
         path = self.log(
             "| d-abcdef-111111 | accepted 2026-09-01 · h1 | Writes go through one store | a second path drifted twice; accepting: one extra hop | `tools/audit.py` |\n"

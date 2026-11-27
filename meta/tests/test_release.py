@@ -1063,6 +1063,30 @@ class TrackingSlugs(Base):
         self.assertEqual(len(warnings), 1, warnings)
         self.assertIn("a-ghost-note", warnings[0])
 
+    def test_a_method_rule_experiment_is_marked_and_an_invented_note_slug_is_still_reported(self) -> None:
+        """The column is headed *Note*, so an experiment on a method rule writes `method:<slug>` and is not
+        resolved against the notes. This needs no code: the slug pattern already excludes anything holding a
+        colon, which a red run proved when the same test passed with the guard removed. The test is kept as a
+        characterisation of the convention, so that narrowing the pattern later cannot silently orphan those
+        rows. Every other slug is resolved, and an invented one is still reported."""
+        R = release()
+        home = make_home(self.root)
+        track = home / "meta/tracking"
+        (track / "history.md").write_text("| Candidate | Where it went |\n|---|---|\n")
+        (track / "experiments.md").write_text(
+            "## Queued\n\n| Note | Experiment | Cost | Would change |\n|---|---|---|---|\n"
+            "| method:a-method-rule | count them | per session | whether the rule earns its place |\n"
+            "| a-queued-ghost | run it | x | y |\n\n"
+            "## Run\n\n| Date | Note | Where | What was run | Result | Verdict |\n|---|---|---|---|---|---|\n"
+            "| 2026-01-01 | method:a-method-rule | somewhere | a count | a result | confirms |\n"
+            "| 2026-01-02 | a-run-of-nothing | somewhere | a count | a result | confirms |\n")
+
+        _, warnings = R.tracking_slug_problems(home)
+
+        self.assertFalse(any("a-method-rule" in w for w in warnings), warnings)
+        self.assertTrue(any("a-queued-ghost" in w for w in warnings), warnings)
+        self.assertTrue(any("a-run-of-nothing" in w for w in warnings), warnings)
+
 
 class Ledger(Base):
     def test_nothing_is_discarded_by_age_and_the_ledger_names_every_idea_met(self) -> None:

@@ -5,7 +5,7 @@ different questions and must not be read as one.
 
 | Study | Question | Pre-registration | State |
 |---|---|---|---|
-| **1: instruction transfer** (roadmap `i-5ed7e8-0d9b6a`) | On a task where a note applies, does its content change the decision, rather than the extra context or the routing? | [`PROTOCOL.md`](PROTOCOL.md) | five exploratory pilots, reported in [`REPORT.md`](REPORT.md); confirmatory run not started |
+| **1: instruction transfer** (roadmap `i-5ed7e8-0d9b6a`) | On a task where a note applies, does its content change the decision, rather than the extra context or the routing? | [`PROTOCOL.md`](PROTOCOL.md) | twelve exploratory pilot runs and three reviewer runs, reported in [`REPORT.md`](REPORT.md) §4.1 to §4.16 — five measure efficacy, the rest the cost of a release or a variant; confirmatory run not started |
 | **2: general performance** (roadmap `i-5ed7e8-bf5663`) | On work nobody chose to suit the bundle, does carrying it change success, and at what cost? | [`PROTOCOL-general.md`](PROTOCOL-general.md) | draft 2, reviewed adversarially and checked against its data sources; not frozen, no data |
 
 **Why two.** Study 1's tasks were written from the notes, each hidden test checks its note's claim,

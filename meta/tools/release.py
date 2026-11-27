@@ -674,7 +674,8 @@ def render_open(meta_dir: Path) -> str:
         "",
         "Generated at each release from the home repository's records, each cell shortened. A harvest reads it "
         "before offering anything: an experiment queued here is one this repository may be able to run, and a "
-        "candidate listed here is extended with a new occurrence (`extends <slug>`), not offered again.",
+        "candidate listed here is extended with a new occurrence (`extends <slug>`), not offered again. A slug "
+        "written `method:<name>` is an experiment on a rule of the method rather than on a note.",
         "",
         "## Experiments waiting to be run",
         "",

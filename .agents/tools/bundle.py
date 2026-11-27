@@ -1674,7 +1674,8 @@ def decision_check(files: list[Path], today: datetime.date | None = None) -> tup
                     else:
                         counts["unconfirmed"] += 1
                         warnings.append(f"{where}: {row.id}: why unconfirmed; a person confirms it or gives the reason")
-                for token in re.findall(r"`([^`\s]+)`", row.enforced):
+                enforced = "" if row.state.startswith(("superseded", "deprecated")) else row.enforced
+                for token in re.findall(r"`([^`\s]+)`", enforced):
                     if any(c in token for c in "*?[") or not _PATHLIKE.match(token):
                         continue
                     if (root / token).exists():

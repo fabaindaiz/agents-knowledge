@@ -1,6 +1,8 @@
 # Does an engineering-judgment bundle change what a coding agent does? A pilot study
 
-**Status: exploratory pilots complete (five runs); confirmatory run not started.** This report records the pilot runs of the experiment
+**Status: twelve exploratory pilot runs and three reviewer runs; confirmatory run not started.** Five of the
+pilots measure efficacy (pilots 1 to 5, the first two on a defective instrument); the other seven measure the
+cost of a release or of a variant of it. The runs are listed in §3 and reported in §4.1 to §4.16. This report records the pilot runs of the experiment
 pre-registered in [`PROTOCOL.md`](PROTOCOL.md) (roadmap item `i-5ed7e8-0d9b6a`). Nothing here is a
 confirmatory result. It is written as it happens, including what went wrong in the instrument, and
 it is updated after every run; the changelog at the end dates each revision.
@@ -20,7 +22,8 @@ success and raise inference cost by about a fifth. This bundle makes a narrower 
 notes change an agent's decision in the cases where the textbook answer is wrong. We built a harness that
 tests that claim with hidden-test graders, six arms that separate the notes' content from context length
 and from routing, and task families where a note should help, where it should be ignored, and where it is
-irrelevant; we ran five exploratory pilots (612 trials, two models, 27 tasks).
+irrelevant; we ran five efficacy pilots (612 trials, two models, 27 tasks), and seven further pilots and three reviewer
+runs that measure the cost of a release or of a variant of it (234 and 240 trials).
 
 **On tasks where the decisive fact sat beside the code, the frontier model never needed the notes** (it
 passed all 216 such trials, in every arm); this was a design error of ours, since it measured whether the agent
@@ -113,6 +116,22 @@ of per-task means.
 | pilot-3 | Haiku 4.5 | 11 | 2 | 126 | corrected | a few dollars |
 | pilot-4 | Sonnet 5 | 11 | 2 | 126 | corrected | about ten dollars |
 | pilot-5 | Sonnet 5 | 16 (the eight traps at L1 and L2) | 2 | 192 | corrected | under twenty dollars |
+| pilot-6 | Sonnet 5 | 6 | 2 | 36 | corrected | a few dollars |
+| pilot-7 | Sonnet 5 | 6 | 2 | 24 | corrected | a few dollars |
+| pilot-8 | Sonnet 5 | 6 | 2 | 24 | corrected | a few dollars |
+| pilot-9 | Sonnet 5 | 6 | 2 | 36 | corrected | a few dollars |
+| pilot-10 | Sonnet 5 | 6 | 2 | 24 | corrected | a few dollars |
+| pilot-11 | Sonnet 5 | 6 | 3 | 54 | corrected | about ten dollars |
+| pilot-12 | Sonnet 5 | 3 | 4 | 36 | corrected | a few dollars |
+| review-1 | Sonnet 5 | the reviewer's own load | 2 | 60 | corrected | a few dollars |
+| review-2 | Sonnet 5 | the reviewer's own load | 4 | 120 | corrected | about ten dollars |
+| review-3 | Sonnet 5 | the reviewer's own load | 2 | 60 | corrected | a few dollars |
+
+The first five rows are the efficacy pilots; the rest measure the cost of a release or of a variant of it, and
+only pilots 6 to 9 reuse the efficacy tasks. A tenth run, `pilot-9-aborted`, stopped after eight trials and is
+not analysed anywhere. Trial counts are the trials each run's own directory holds, counted at the writing of
+this line; pilots 6, 7 and 8 have no run directory on the machine where it was counted, and their counts are
+the ones their own sections state.
 
 The runs used a subscription, so the cost figures are Claude Code's own estimates at API prices, not
 an amount paid; a trial costs cents. Costs are compared as ratios throughout.
