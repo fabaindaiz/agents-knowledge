@@ -60,10 +60,10 @@ none: no device or production system is touched in this phase.
 - T10 the audit of where binding text sits (skills' heads, no `paths:` rule) · done with T7: no `paths:`-scoped rule and no nested instruction file here; the binding sentences sit late in the long skills, the sharpest past 90 % of `close`. Its proposal, a short standing block under each long skill's heading, is **not built**
 - T11 the compaction probe, run on the transcripts already here · done (`0a46bbe`): the first draft counted every compaction twice, taking the boundary record as a cut beside the summary, and carried a noise measure that was removed with its reason
 - T12 the research's findings queued as candidates · done (`4bb8632`): four candidates, inserted at the first of the table's two headers
-- T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
+- T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · **waiting, and not buildable as written**: it is one line of a larger redesign item (the router, `brief` and `lookup`, budgets set by a pilot) with no walked design of its own. It needs a design round before it is a build
 - T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · **done** (`ad1b5c5`, `a548bfe`): the command seen to fail first, the check a step of `close` (`d-5ed7e8-8e7d36`), a deliberate overlap declared in the plan, and a secondary skill that proposes the split on request. The design round took three decisions with the owner. Smoke-testing it found the live state broken on a host that reports no session id (`d-5ed7e8-b39039`)
-- T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · waiting
-- T16 the `ship` and `cut` skills · waiting
+- T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · **done** (`fe5a738`): calibrate reports and never rewrites an estimate (`d-5ed7e8-80caa7`), the unattended mode stops the task that reaches a declared gate and goes on with the rest (`d-5ed7e8-2ffc89`), and the template now requires every gate to be declared before the work starts. Its first run corrected a figure this session had repeated twice
+- T16 the `ship` and `cut` skills · **done** (`0936cf8`, merged): `cut` lives in `meta/method/skills/` and costs the export nothing, installed by a new `release.py install-home-skills` with its own banner so the bundle's own skill check leaves it alone; `ship` ships, as the gate between in progress and outside, with the hand-off exit and the sending exit and `close` preferred whenever the session is ending
 - T13 the phase's review by severity · waiting
 - → P3
 
@@ -105,9 +105,9 @@ none: no device or production system is touched in this phase.
 | 12 | The research's candidates queued | done | P3 | 15 | 9 | 40 | — | 0 |
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
 | 15 | The `lanes` skill and `lanes check` | done | P3 | 105 | 78 | 270 | — | 1 |
-| 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
+| 16 | The `ship` and `cut` skills | done | P3 | 60 | 11 | 150 | 143 | 1 |
 | 17 | `seen_in` and the cross-domain requests | part 1 done | P3 | 105 | 12 | 250 | 189 | 1 |
-| 18 | The `plan` skill, `plan calibrate` and the unattended mode | waiting | P3 | 165 | | 400 | | 1 |
+| 18 | The `plan` skill, `plan calibrate` and the unattended mode | done | P3 | 165 | 41 | 400 | — | 1 |
 | 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
 Calibration: phase 2's review rounds ran at about twice their estimate, each round's fixes to a new check opening
