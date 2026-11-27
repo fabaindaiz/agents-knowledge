@@ -31,7 +31,7 @@ none. No device or production system is touched. The trial run itself is deferre
 
 ## Milestones
 
-- **M1** · why the three discriminated, and the rest did not · waiting
+- **M1** · why the three discriminated, and the rest did not · **done 2026-11-27**: `meta/reviews/2026-11-27-why-three-of-sixteen-discriminated.md`. Distance was not the variable; the pointer is
 - **M2** · the design rule that follows, written into the protocol as an amendment · waiting
 - **M3** · ten discriminating tasks built and dry-checked against `harness.py check` · waiting
 - **M4** · the new primary contrast registered, before any trial · waiting
@@ -101,7 +101,7 @@ none. No device or production system is touched. The trial run itself is deferre
 
 | # | Task | State | Milestone | Est. (min) | Actual (min) | Est. (ktok) | Actual (ktok) | Rounds |
 |---|---|---|---|---|---|---|---|---|
-| D1 | Why three discriminated and thirteen did not | waiting | M1 | 90 | | 200 | | 1 |
+| D1 | Why three discriminated and thirteen did not | done | M1 | 90 | 2 | 200 | 104 | 1 |
 | D2 | The design rule, as a dated amendment | waiting | M2 | 45 | | 100 | | 1 |
 | D3 | What counts as an independent task | waiting | M2 | 30 | | 60 | | 1 |
 | B1 | Build to ten discriminating candidates | waiting | M3 | 420 | | 600 | | 2 |
