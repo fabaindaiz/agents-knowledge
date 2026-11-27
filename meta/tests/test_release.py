@@ -1081,12 +1081,12 @@ class TrackingSlugs(Base):
         self.assertEqual(len(warnings), 1, warnings)
         self.assertIn("a-ghost-note", warnings[0])
 
-    def test_a_method_rule_experiment_is_marked_and_an_invented_note_slug_is_still_reported(self) -> None:
-        """The column is headed *Note*, so an experiment on a method rule writes `method:<slug>` and is not
-        resolved against the notes. This needs no code: the slug pattern already excludes anything holding a
-        colon, which a red run proved when the same test passed with the guard removed. The test is kept as a
-        characterisation of the convention, so that narrowing the pattern later cannot silently orphan those
-        rows. Every other slug is resolved, and an invented one is still reported."""
+    def test_a_method_slug_resolves_against_the_queue_and_cannot_silence_an_invented_one(self) -> None:
+        """The column is headed *Note*, so an experiment on a rule of the method writes `method:<slug>` and
+        resolves against this file's own *Queued* table. The first attempt at this merely skipped anything
+        holding a colon, which made the prefix a silencer: any invented slug could be hidden by writing
+        `method:` in front of it, and a `method:` run with no queued row was never reported. Found by the
+        phase's review on 2026-11-27."""
         R = release()
         home = make_home(self.root)
         track = home / "meta/tracking"
@@ -1097,13 +1097,16 @@ class TrackingSlugs(Base):
             "| a-queued-ghost | run it | x | y |\n\n"
             "## Run\n\n| Date | Note | Where | What was run | Result | Verdict |\n|---|---|---|---|---|---|\n"
             "| 2026-01-01 | method:a-method-rule | somewhere | a count | a result | confirms |\n"
-            "| 2026-01-02 | a-run-of-nothing | somewhere | a count | a result | confirms |\n")
+            "| 2026-01-02 | method:never-queued | somewhere | a count | a result | confirms |\n"
+            "| 2026-01-03 | a-run-of-nothing | somewhere | a count | a result | confirms |\n")
 
         _, warnings = R.tracking_slug_problems(home)
 
-        self.assertFalse(any("a-method-rule" in w for w in warnings), warnings)
-        self.assertTrue(any("a-queued-ghost" in w for w in warnings), warnings)
-        self.assertTrue(any("a-run-of-nothing" in w for w in warnings), warnings)
+        joined = "\n".join(warnings)
+        self.assertNotIn("method:a-method-rule", joined, warnings)      # queued, so resolved
+        self.assertIn("method:never-queued", joined, warnings)          # the prefix is not a silencer
+        self.assertIn("a-queued-ghost", joined, warnings)               # a queued row still resolves to a note
+        self.assertIn("a-run-of-nothing", joined, warnings)
 
 
 class Ledger(Base):

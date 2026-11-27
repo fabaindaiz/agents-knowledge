@@ -1293,11 +1293,26 @@ def tracking_slug_problems(root: Path = ROOT) -> tuple[list[str], list[str]]:
             problems.append(f"meta/tracking/history.md: {r[0]}: says it was admitted as a note, and no note file "
                             f"carries {r[0]} or any slug the row cites")
     resolvable = notes | queued | history
-    for r in rows("experiments.md"):
+    # An experiment on a rule of the method is not an experiment on a note, and the column is headed *Note*:
+    # it writes `method:<slug>` and resolves against this file's own *Queued* table, its only definition.
+    # **The prefix must not be a way out.** Marking the rows alone relied on the pattern below rejecting a
+    # colon, so any invented slug could be silenced by writing `method:` in front of it, and a `method:` run
+    # with no queued row was never reported: a rule naming an enforcer that does not do the job (found by
+    # the phase's review, 2026-11-27). So the prefix is matched, and resolved against the queue.
+    experiment_rows = rows("experiments.md")
+    queued_methods = {r[0].strip("`") for r in experiment_rows
+                      if r and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", r[0]) and r[0].strip("`").startswith("method:")}
+    for r in experiment_rows:
         col = 1 if r and re.fullmatch(r"\d{4}-\d{2}-\d{2}", r[0]) else 0
         slug = r[col].strip("`") if len(r) > col else ""
-        warning = f"meta/tracking/experiments.md: {slug}: names no note in any state, queued candidate or answered slug"
-        if re.fullmatch(r"[a-z0-9][\w-]*-[\w-]*", slug) and slug not in resolvable and warning not in warnings:
+        if not re.fullmatch(r"(?:method:)?[a-z0-9][\w-]*-[\w-]*", slug):
+            continue
+        a_method = slug.startswith("method:")
+        known = queued_methods if a_method else resolvable
+        what = ("queued experiment on a rule of the method, in this file's own Queued table" if a_method
+                else "note in any state, queued candidate or answered slug")
+        warning = f"meta/tracking/experiments.md: {slug}: names no {what}"
+        if slug not in known and warning not in warnings:
             warnings.append(warning)
     path = tracking / "retired.md"
     for target in (re.findall(r"\]\(([^)]*sources/notes/[^)]+\.md)\)", path.read_text(encoding="utf-8")) if path.is_file() else []):

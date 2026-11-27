@@ -128,8 +128,8 @@ of per-task means.
 | review-3 | Sonnet 5 | the reviewer's own load | 2 | 60 | corrected | a few dollars |
 
 The first five rows are the efficacy pilots; the rest measure the cost of a release or of a variant of it, and
-only pilots 6 to 9 reuse the efficacy tasks. A tenth run, `pilot-9-aborted`, stopped after eight trials and is
-not analysed anywhere. Trial counts are the trials each run's own directory holds, counted at the writing of
+only pilots 6 to 9 reuse the efficacy tasks. A further run, `pilot-9-aborted`, stopped after 11 of its 36 trials, 7 of them
+valid (`PROTOCOL.md`, Deviations), and is not analysed anywhere. Trial counts are the trials each run's own directory holds, counted at the writing of
 this line; pilots 6, 7 and 8 have no run directory on the machine where it was counted, and their counts are
 the ones their own sections state.
 

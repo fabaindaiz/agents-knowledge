@@ -88,6 +88,14 @@ never committed; the names of private carriers are in the local private-terms li
   private carrier's code to another provider as oracle and judge, after a protocol registered in `evals/` with a budget
   cap and only on tasks that carrier's owner approves one by one: `d-5ed7e8-79a26e`. Nothing left open here.
 
+- **`i-5ed7e8-876368` · `release.py check` compares `MANIFEST.md`'s *Today* cells with what it already
+  computes.** Counted 2026-11-27: the four measured cells were all wrong at once, the decision that answered it
+  (`d-5ed7e8-f5564d`) could only add a date, and **within one day the descriptions cell was a third low again** —
+  three skills landed after it was written. The check already computes the export's size and the descriptions
+  total for its own budgets, so the comparison is nearly free; the only design question is the tolerance, since a
+  cell reading "about 6.9k" must not fail on its exact token count. **Proposed:** each measured cell carries its figure in a form
+  the check can parse, and `check` fails when it disagrees by more than its own stated rounding. *Estimate:* an
+  hour with tests. *Collides with:* nothing.
 - **`i-5ed7e8-49b3cc` · `plan page` emits a whole HTML document where the publishing tool wants a page body.**
   Counted 2026-11-26: twice in one session the rendered page had to be flattened by hand — its doctype, head and
   body wrapper removed — before it could be published, and the second time the page was rewritten from the plan

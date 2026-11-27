@@ -267,8 +267,10 @@ from the edited file) and L2 (in documentation), on the expectation that the far
 arms.
 
 **What the data show.** Of the sixteen distance variants, three separated the arms; thirteen passed in every
-arm and measured nothing. In the three arms that carry no note there were 96 trials and 17 failures, and
-**every failure falls in those three variants**. Diagnosed in
+arm and measured nothing. In the three arms that carry **no note of any kind** — `none`, `minimal` and
+`oracle_placebo`, the last being `minimal` plus one irrelevant note — there were 96 trials and 17 failures,
+and **every failure falls in those three variants**. The arms are named because a reader taking "no note"
+to include `ablated` (the bundle with the target notes deleted) counts 12, not 17. Diagnosed in
 `meta/reviews/2026-11-27-why-three-of-sixteen-discriminated.md`, counted twice over
 `evals/runs/pilot-5-distance/results.jsonl`.
 

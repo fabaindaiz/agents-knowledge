@@ -110,9 +110,12 @@ none. No device or production system is touched. The trial run itself is deferre
 | C1 | Register the new primary contrast | waiting | M4 | 45 | | 80 | | 1 |
 | C2 | Price the run for the owner | waiting | M5 | 30 | | 40 | | 1 |
 
-About thirteen agent hours by this table. **Calibration, from the four tasks measured on 2026-11-26:** wall
-time ran at a quarter to a third of estimate and the delegated lane at a fifth, so the honest expectation is
-nearer four hours; the estimates are left as made, so the comparison stands.
+About thirteen agent hours by this table. **Calibration, corrected 2026-11-27 by `bundle.py plan calibrate`
+over the phase plan's fifteen finished rows: actual is 0.49 of estimate.** The figure this paragraph used
+to carry — a quarter to a third, from four tasks — came from the fastest four and was repeated as if it
+held for a plan; at the measured ratio the honest expectation here is nearer six or seven hours, not four.
+This plan's own rows cannot calibrate it yet: one finished row gives 0.02, which is no estimate at all.
+The estimates are left as made, so the comparison stands.
 
 **What this plan deliberately does not do.** It does not run a trial, change a figure in the frame, or
 touch the claim that the bundle helps. Ten tasks make an effect *findable*; they do not make it exist.

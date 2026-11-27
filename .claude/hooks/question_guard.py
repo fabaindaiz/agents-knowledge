@@ -56,7 +56,11 @@ def problems(questions: list[dict]) -> tuple[list[str], list[str]]:
         options = [o for o in question.get("options", []) if isinstance(o, dict)]
         labels = " | ".join(str(o.get("label", "")) for o in options)
         where = f"question {index} ({header or text[:40]!r})"
-        if not EXEMPT.search(text) and not EXEMPT.search(header) and not REVIEW_MORE.search(labels):
+        # Read from the header alone. Searching the whole question text exempted any Spanish decision
+        # question holding `hecho` or `confirm*` — two of the commonest words in one — so the guard was
+        # off for the normal case and on for the exception (the phase's review, 2026-11-27). The header
+        # is short and chosen on purpose, so a question declares itself a fact question there.
+        if not EXEMPT.search(header) and not REVIEW_MORE.search(labels):
             refusals.append(f"{where}: no *review more* answer among its options. Every decision "
                             "question carries it; a fact question and a run's opening questions do not "
                             "(d-5ed7e8-0fec6e).")

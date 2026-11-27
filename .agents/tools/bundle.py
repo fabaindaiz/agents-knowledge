@@ -6271,7 +6271,7 @@ NOW_STALE_MINUTES = 30
 NOW_OLD_DAYS = 14
 NOW_FIELDS = ("session", "pid", "written", "branch", "plan", "task", "files", "scratch",
               "verified", "command", "questions", "delegates", "failure")
-NOW_FREE_TEXT = ("task", "verified", "command", "failure", "delegates")
+NOW_FREE_TEXT = tuple(f for f in NOW_FIELDS if f not in ("pid", "written"))
 
 
 def _now_dir(repo: Path) -> Path:
@@ -6300,8 +6300,13 @@ def now_session_id(given: str | None = None) -> str:
     separate them anyway, and minting a file per call is strictly worse than sharing one. So with no id from
     the harness, every call in a clone uses `local`; two sessions there share a file, and the file's own
     `session` field says `local`, so a reader can see which case it is in.
+
+    **That reasoning was right and its premise was wrong** (the phase's review, 2026-11-27): the host does
+    export a session id, under `CLAUDE_CODE_SESSION_ID`, and the chain was reading a name nothing sets. With
+    the right name read first, `local` is the last resort it was meant to be rather than the normal case.
     """
-    name = given or os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("AGENT_SESSION_ID") or NOW_LOCAL_ID
+    name = (given or os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
+            or os.environ.get("AGENT_SESSION_ID") or NOW_LOCAL_ID)
     safe = re.sub(r"[^A-Za-z0-9._-]", "-", name).strip("-")
     return safe[:64] or NOW_LOCAL_ID
 
@@ -6619,11 +6624,17 @@ def plan_calibration(plan: Path) -> PlanCalibration:
     ratios: list[float] = []
     remaining = 0.0
     rows = 0
+    in_tasks = False
     for line in plan.read_text(encoding="utf-8").split("\n"):
-        if not line.startswith("| ") or TABLE_SEPARATOR.match(line.strip()):
+        if not line.startswith("| "):
             continue
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) < 6 or cells[0].lower() in {"#", "id"}:
+        if len(cells) > 5 and cells[4].lower().startswith("est.") and cells[5].lower().startswith("actual"):
+            in_tasks = True
+            continue
+        if cells and cells[0].startswith("-") or TABLE_SEPARATOR.match(line.strip()):
+            continue
+        if not in_tasks or len(cells) < 6 or cells[0].lower() in {"#", "id"}:
             continue
         estimate, actual = _plan_number(cells[4]), _plan_number(cells[5])
         if estimate is None or estimate <= 0:
@@ -6660,7 +6671,7 @@ def lanes_declared(text: str) -> dict[str, dict]:
     try:
         data = tomllib.loads(found.group(1))
     except tomllib.TOMLDecodeError as bad:
-        raise Refusal(f"the plan's lanes block is not TOML: {bad}") from bad
+        raise RefusedError(f"the plan's lanes block is not TOML: {bad}") from bad
     return {name: table for name, table in data.items() if isinstance(table, dict)}
 
 
@@ -6722,10 +6733,13 @@ def lanes_step(repo: Path, base: str | None, plan: Path | None) -> CloseStep:
         return CloseStep("lanes", False, ("this session's live state names no plan, so no lanes are declared",))
     if not base:
         return CloseStep("lanes", False, ("no base given",))
-    lanes = lanes_declared(plan.read_text(encoding="utf-8"))
-    if not lanes:
-        return CloseStep("lanes", False, (f"{plan.name} declares no lanes",))
-    findings = lanes_findings(repo, lanes, base)
+    try:
+        lanes = lanes_declared(plan.read_text(encoding="utf-8"))
+        if not lanes:
+            return CloseStep("lanes", False, (f"{plan.name} declares no lanes",))
+        findings = lanes_findings(repo, lanes, base)
+    except (RefusedError, OSError, UnicodeDecodeError, subprocess.CalledProcessError) as bad:
+        return CloseStep("lanes", True, (f"{plan.name}: the plan's lanes could not be read: {bad}",))
     return CloseStep("lanes", bool(findings), tuple(findings) or (f"{len(lanes)} lanes, each inside its own files",))
 
 
@@ -7709,6 +7723,12 @@ def _run(args: argparse.Namespace) -> int:
                 print(f"  ! {warning}")
             print(f"now: written to {path}")
             return 0
+        given = [key for key in NOW_FREE_TEXT + ("plan", "branch")
+                 if getattr(args, "verified_command" if key == "command" else key, None)]
+        if given:
+            print(f"  x now: {', '.join(sorted(given))} given with no --write, so nothing was written; "
+                  f"add --write to replace this session's state")
+            return 2
         lines = now_lines(repo, args.session)
         for line in lines:
             print(line)

@@ -56,7 +56,7 @@ Writes `evals/README.md`, `evals/REPORT.md` (heads only), `meta/decisions.md`, `
 - **R2 B7: the two orphan slugs** in `meta/tracking/experiments.md` that name no note, candidate or answered
   idea. Resolve or remove; the check warns on every run until they go.
 - **R3 B6, the cheap half: the five decision rows naming an enforcing file that no longer exists.** Point each
-  at what enforces it today, or lower its rung honestly. The other twenty-nine rows, whose reason no person
+  at what enforces it today, or lower its rung honestly. The other twenty-eight rows, whose reason no person
   confirmed, are a decision walk and are **not** in this lane.
 - **R4 The two stale `MANIFEST.md` figures.** Recompute both from `release.py report` and write them with the
   date of the measurement. Changing `MANIFEST.md` takes a decision row by the owner, so this lands as a
@@ -130,7 +130,7 @@ Writes the adoption artifact alone, and nothing in the repository.
   - *Lane P's six tasks are the same shape as the four that already overran their review rounds.* The phase's
     own calibration priced review rounds at two and they took one; P6 is priced at three and should be left
     there until a round proves otherwise.
-  - *Lane R quietly becomes a decision walk.* R3 is five rows, not thirty-four. The twenty-nine unconfirmed
+  - *Lane R quietly becomes a decision walk.* R3 is five rows, not thirty-four. The twenty-eight unconfirmed
     reasons are their own session and are named here so that they are not swept into an hour's work.
   - *Lane C rewrites the page into marketing.* The research's one measured finding is that shorter and
     non-marketing reads more easily; the test is that every adjective in the evidence section has been
@@ -179,7 +179,7 @@ expectation is nearer seven to nine hours. The estimates are left as made so the
 ## What this plan deliberately does not do
 
 It does not run a trial, cut a release, push anything, or change a figure in the frame without a decision
-row. It does not take the twenty-nine unconfirmed decision reasons, which are their own session. And it does
+row. It does not take the twenty-eight unconfirmed decision reasons, which are their own session. And it does
 not claim that finishing it makes the bundle demonstrably useful: lanes R, P and C make the project honest
 and legible, and only lane E, followed by a run the owner authorises, can make the central claim testable.
 

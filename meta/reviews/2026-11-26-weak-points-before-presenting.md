@@ -28,7 +28,7 @@ The ordering is by what a sceptic reaches first, not by what is cheapest.
 | B3 | The experiment's own README and the head of its report say "five exploratory pilots"; it runs to twelve and the reviewer runs. | Rewrite both headers from the body. | Half an hour |
 | B4 | Criterion 2, *the procedure is followed without guessing*, is unmet: a review of 2026-11-26 found a dozen gaps in the harvest and update texts. | Close those gaps, then re-run the criterion's own test: an agent follows the written method on a copy with nothing invented. | A day, plus a run |
 | B5 | Criterion 1, *the loop has turned for real*, is unproven: no two carriers have gone through the whole cycle over two consecutive releases. | The pilot cohort chosen on 2026-11-26 is the path; it needs two releases carried into at least two of them, with nothing lost or taken in twice. | Two release cycles |
-| B6 | Twenty-nine decision rows give a reason no person confirmed, and five name an enforcing file that no longer exists. | Walk the rows; the five stale enforcers are minutes. | The five: minutes. The twenty-nine: a decision walk |
+| B6 | Twenty-eight decision rows give a reason no person confirmed, and twenty of those are an agent's own, which no one else can confirm, and five name an enforcing file that no longer exists. | Walk the rows; the five stale enforcers are minutes. | The five: minutes. The twenty-eight: a decision walk |
 | B7 | Two slugs in the experiment table name no note, candidate or answered idea. | Resolve or remove them; the check warns on every run. | Minutes |
 
 ## C. How it is presented

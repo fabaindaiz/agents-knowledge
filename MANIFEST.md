@@ -57,12 +57,15 @@ enter. Changing it takes a decision row by the owner in `meta/decisions.md`. It 
 
 The checked ones fail `release.py check`; the measured one is read from the release's cost pilot. **Every figure in
 the *Today* column carries the date it was measured** (`d-5ed7e8-f5564d`): without it a figure ages silently, which
-is how four of these came to be wrong at once.
+is how four of these came to be wrong at once. **The date is not enough, and the phase's review proved it within a
+day:** three skills landed after these cells were written and the descriptions figure was a third low again. Until a
+check compares each cell with what `release.py` already computes (`i-5ed7e8-876368`), this row is prose that a reader
+must re-measure.
 
 | Limit | Today | Cap | How |
 |---|---:|---:|---|
-| Export, shipped bytes | about 1.16 MB, measured 2026-11-27: about 95 % of the cap | 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`): the footprint is not what a session pays for — the context limits below are, and they bind. The room is not a budget: each growth is justified on its own, and what a session reads is still shrunk before anything is added. May grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
-| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens), measured over the release: a skill's original keeps the full description it is worked on and the home installs from, and ships the short `release_description` beside it (`d-5ed7e8-7a4324`) | about 1,940 chars, measured 2026-11-27 | 3,200 in total (`d-5ed7e8-7a4324`, raising it for the phase's new skills); each by its kind: a long process 750, a light skill 250, an agent run on request 250, a delegated agent 200 (`d-5ed7e8-cf8021`) | checked |
+| Export, shipped bytes | 1,209,663 bytes, measured 2026-11-27 at the end of the phase: **96.7 % of the cap** | 1,250,000 bytes (`d-5ed7e8-929f2a`, superseding `d-5ed7e8-efd0e2`): the footprint is not what a session pays for — the context limits below are, and they bind. The room is not a budget: each growth is justified on its own, and what a session reads is still shrunk before anything is added. May grow between releases and is brought back under the cap before the cut | warned by `check`, refused by `release` |
+| Skill and agent descriptions, loaded on every turn in a carrier (its wiring adds about 490 tokens), measured over the release: a skill's original keeps the full description it is worked on and the home installs from, and ships the short `release_description` beside it (`d-5ed7e8-7a4324`) | 2,635 chars, measured 2026-11-27 after T16 | 3,200 in total (`d-5ed7e8-7a4324`, raising it for the phase's new skills); each by its kind: a long process 750, a light skill 250, an agent run on request 250, a delegated agent 200 (`d-5ed7e8-cf8021`) | checked |
 | A coding session's reads | about 6.9k tokens, measured 2026-11-27 after the cut | 10,100 | checked (existing) |
 | The reviewer before its first card | about 6.7k | 6,900 | checked (existing) |
 | One card | at most 360 | 360 | checked (existing) |

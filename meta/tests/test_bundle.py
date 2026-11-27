@@ -1718,6 +1718,25 @@ class PlanCalibrate(Base):
         self.assertEqual(code, 0)
         self.assertTrue(any("not written into the plan" in line for line in lines), lines)
 
+    def test_only_the_tasks_table_is_read_and_a_cost_ledger_is_not_mistaken_for_it(self) -> None:
+        """It walked every line starting `| ` and took columns five and six of whatever it found, so a cost
+        ledger — which the owner's own rules require a plan to keep — was read as finished tasks. Found by
+        the phase's review, 2026-11-27, on a plan with one unfinished task that reported two finished ones."""
+        path = self.root / "ledger-plan.md"
+        path.write_text(
+            "# A plan\n\n## Cost ledger\n\n"
+            "| Task | Model | Started | Lane | Total | Remaining | Notes |\n|---|---|---|---|---|---|---|\n"
+            "| One | opus | 10:00 | a | 180 | 320 | — |\n"
+            "| Two | sonnet | 11:00 | b | 90 | 160 | — |\n\n"
+            "## Tasks\n\n" + self.HEAD +
+            "| 1 | The only task | waiting | M1 | 100 | | 200 | | 0 |\n")
+
+        report = B.plan_calibration(path)
+
+        self.assertEqual(report.rows, 1)
+        self.assertEqual(report.pairs, 0)
+        self.assertEqual(report.remaining_estimate, 100)
+
     def test_a_non_numeric_cell_is_skipped_rather_than_crashing_the_report(self) -> None:
         plan = self.plan("| 1 | With seven | done | M1 | 30 | with 7 | 60 | with 7 | 0 |\n"
                          "| 2 | Real | done | M1 | 100 | 25 | 200 | 100 | 0 |\n")
@@ -1725,6 +1744,41 @@ class PlanCalibrate(Base):
         report = B.plan_calibration(plan)
 
         self.assertEqual(report.pairs, 1)
+
+
+class LiveStateWrite(Base):
+    """`now` with values but no `--write` dropped them, printed the *old* state back and exited 0 — an
+    agent reading its own output had every reason to think it had written. For a file whose whole purpose
+    is to survive a compaction, a silent no-op is the worst outcome. Found by the phase's review,
+    2026-11-27."""
+
+    def test_values_without_write_are_refused_rather_than_dropped(self) -> None:
+        repo = init_repo(self.root / "nw")
+
+        code, out = run("now", "--task", "the step that would be lost", "--repo", str(repo))
+
+        self.assertEqual(2, code, out)
+        self.assertIn("--write", out)
+
+    def test_reading_the_state_with_no_values_still_works(self) -> None:
+        repo = init_repo(self.root / "nr")
+
+        code, _ = run("now", "--repo", str(repo))
+
+        self.assertEqual(0, code)
+
+
+class LiveStatePrivacy(Base):
+    """The live state is re-injected into the context at every session start and every compaction, so a
+    private term written into it is repeated, not written once. The guard read five of its seven free-text
+    fields: `files` and `scratch` — the two that carry paths, and the two whose own help text promises a
+    home path is never written — went past it. Found by the phase's review, 2026-11-27."""
+
+    def test_every_free_text_field_is_read_before_a_write_including_the_two_that_carry_paths(self) -> None:
+        self.assertIn("files", B.NOW_FREE_TEXT)
+        self.assertIn("scratch", B.NOW_FREE_TEXT)
+        # every field a caller can set; only the two the tool computes are exempt
+        self.assertEqual(set(B.NOW_FIELDS) - set(B.NOW_FREE_TEXT), {"pid", "written"})
 
 
 class LiveStateIdentity(Base):
@@ -1743,12 +1797,22 @@ class LiveStateIdentity(Base):
         self.assertEqual(first, second)
         self.assertNotIn("pid-", first)
 
-    def test_the_harness_id_still_wins_and_separates_two_sessions(self) -> None:
-        os.environ["CLAUDE_SESSION_ID"] = "abc-123"
-        self.addCleanup(os.environ.pop, "CLAUDE_SESSION_ID", None)
+    def test_the_harness_id_wins_and_the_variable_is_the_one_the_harness_really_exports(self) -> None:
+        """The chain read `CLAUDE_SESSION_ID`, which nothing sets; the harness exports
+        `CLAUDE_CODE_SESSION_ID`. The earlier test set the wrong name itself, so it passed whether or not
+        the lookup matched any real host — and the fallback was then justified by "a host that tells us
+        nothing about the session", of a host that does. Found by the phase's review, 2026-11-27."""
+        for name in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "AGENT_SESSION_ID"):
+            os.environ.pop(name, None)
+            self.addCleanup(os.environ.pop, name, None)
 
+        os.environ["CLAUDE_CODE_SESSION_ID"] = "abc-123"
         self.assertEqual(B.now_session_id(), "abc-123")
         self.assertEqual(B.now_session_id("given-one"), "given-one")
+        del os.environ["CLAUDE_CODE_SESSION_ID"]
+
+        os.environ["AGENT_SESSION_ID"] = "other-1"
+        self.assertEqual(B.now_session_id(), "other-1")
 
     def test_a_write_and_a_read_from_two_processes_find_the_same_file(self) -> None:
         os.environ.pop("CLAUDE_SESSION_ID", None)
@@ -1840,6 +1904,35 @@ files = ["tools/*.py"]
         findings = B.lanes_findings(repo, B.lanes_declared((repo / "plan.md").read_text()), base)
 
         self.assertEqual([f for f in findings if "SHA256SUMS" in f], [], findings)
+
+    def test_a_malformed_lanes_block_is_a_failed_step_and_not_a_dead_close(self) -> None:
+        """The parser's one error path raised a name that does not exist, so a malformed block took the
+        whole close down and every other step's result with it — verify, trailers, ids, decisions, all run
+        and all lost. Found by the phase's review, 2026-11-27; it is the shape the close already learned
+        once, re-introduced by the step added for it."""
+        repo, base = self.repo_with_lanes()
+        (repo / "plan.md").write_text("# A plan\n\n```toml\n# lanes\n[text\nbranch = \"x\"\n```\n")
+        commit(repo, "a malformed block")
+        base = git(repo, "rev-parse", "HEAD").strip()
+
+        step = B.lanes_step(repo, base, plan=repo / "plan.md")
+
+        self.assertTrue(step.failed, step.lines)
+        self.assertTrue(any("could not be read" in line for line in step.lines), step.lines)
+
+    def test_the_close_itself_carries_a_lanes_step(self) -> None:
+        """T15's whole point is that the check runs inside the close rather than when someone remembers it,
+        and no test read a `lanes` step out of `close_report`: deleting the line that adds it broke nothing
+        behavioural. Found by the phase's review, 2026-11-27."""
+        repo, base = self.repo_with_lanes()
+        self.branch(repo, "lane-text", {"method/a.md": "edited\n", "tools/t.py": "not mine\n"})
+        self.branch(repo, "lane-state", {"tools/t.py": "edited\n"})
+        B.now_write(repo, {"plan": "plan.md", "task": "t"})
+
+        steps = {s.name: s for s in B.close_report(repo, base)}
+
+        self.assertIn("lanes", steps)
+        self.assertTrue(steps["lanes"].failed, steps["lanes"].lines)
 
     def test_a_declared_shared_file_is_not_an_overlap_and_an_undeclared_one_still_is(self) -> None:
         """A legitimate overlap is written in the plan with its reason, the way a privacy allowance is, so
@@ -4750,6 +4843,15 @@ class RedCheck(Base):
 class LiveState(Base):
     """`bundle.py now`: one file per session in the git folder, atomic, never tracked, never merged."""
 
+    def setUp(self) -> None:  # noqa: N802 -- unittest's name
+        super().setUp()
+        # These tests name their own sessions. The host exports `CLAUDE_CODE_SESSION_ID`, so leaving it set
+        # made every call that omits a session land in this conversation's own file instead of the test's.
+        for name in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "AGENT_SESSION_ID"):
+            if name in os.environ:
+                self.addCleanup(os.environ.__setitem__, name, os.environ[name])
+                del os.environ[name]
+
     def a_repo(self) -> Path:
         repo = init_repo(self.root / "live")
         commit(repo, "first")
@@ -4928,6 +5030,22 @@ class QuestionGuard(Base):
     def test_a_fact_question_needs_no_review_more(self) -> None:
         done = self.ask([self.question([self.PRICED], text="Confirm the fact", header="Fact")])
         self.assertEqual(0, done.returncode, done.stderr)
+
+    def test_a_decision_question_that_merely_contains_an_exempt_word_is_still_refused(self) -> None:
+        """The exemption was searched over the whole question text, and `hecho` and `confirm*` are among
+        the commonest words in a Spanish decision question — which is the language these sessions are held
+        in, so the guard was off for the normal case and on for the exception. It is read from the header
+        now, which is short and chosen on purpose. Found by the phase's review, 2026-11-27."""
+        for text in ("¿Qué hacemos con lo hecho hasta ahora: seguir o revertir?",
+                     "Confirma el alcance: ¿A o B?",
+                     "Confirm the scope: A or B?"):
+            done = self.ask([self.question([self.PRICED], text=text, header="Alcance")])
+            self.assertEqual(2, done.returncode, f"{text}: {done.stdout} {done.stderr}")
+
+    def test_the_header_is_what_declares_a_fact_question(self) -> None:
+        for header in ("Fact", "Hecho", "Pre-flight"):
+            done = self.ask([self.question([self.PRICED], text="¿A o B?", header=header)])
+            self.assertEqual(0, done.returncode, f"{header}: {done.stdout} {done.stderr}")
 
     def test_an_option_with_no_case_and_no_price_warns_but_does_not_block(self) -> None:
         done = self.ask([self.question([{"label": "A", "description": "Just do it."}, self.MORE])])
