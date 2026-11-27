@@ -10,6 +10,7 @@ about:
 rests_on: "hermetic builds"
 strength: "practice"
 our_evidence: "measured in one owner's repositories; four of them, counted as one source"
+seen_in: ["tooling"]
 boundary: "A hermetic build, which has already paid this cost by declaring its inputs · a repository with no ignored inputs at all · a copy made by copying the whole directory rather than by checking out, which carries the ignored files and loses the isolation instead"
 cues: ["worktree", "fresh clone", "container build", "gitignore", "local config", "sdk path", "gate fails in CI", "works on my machine", "delegate", "sandbox", "path audit", "isolated review", "ci only failure"]
 ---

@@ -58,6 +58,7 @@ about:
 rests_on: "A paper"
 strength: "well established"
 our_evidence: "reasoned"
+seen_in: ["web-service"]
 {extra}---
 
 # {slug}
@@ -374,6 +375,23 @@ class Build(Base):
             self.R.build(self.home)
         both.write_text(full_note("gamma", boundary="Only prose here."))
         with self.assertRaisesRegex(self.R.BuildError, "needs a `boundary:`"):
+            self.R.build(self.home)
+
+    def test_a_note_that_records_occurrences_names_the_domains_it_was_seen_in(self) -> None:
+        path = self.home / "sources/notes/active/alpha.md"
+        without = path.read_text().replace('seen_in: ["web-service"]\n', "")
+        path.write_text(without)
+        with self.assertRaisesRegex(self.R.BuildError, "records occurrences and has no `seen_in`"):
+            self.R.build(self.home)
+
+        # An empty list is a present field: the honest answer when the evidence names no domain.
+        path.write_text(without.replace('our_evidence: "reasoned"', 'our_evidence: "reasoned"\nseen_in: []'))
+        self.R.build(self.home)
+        path.write_text(without.replace('our_evidence: "reasoned"', 'our_evidence: "reasoned"\nseen_in: ["banking"]'))
+        with self.assertRaisesRegex(self.R.BuildError, "banking"):
+            self.R.build(self.home)
+        path.write_text(without.replace('our_evidence: "reasoned"', 'our_evidence: "reasoned"\nseen_in: "web-service"'))
+        with self.assertRaisesRegex(self.R.BuildError, "list of domain kinds"):
             self.R.build(self.home)
 
     def test_a_note_in_review_is_marked_where_it_is_routed(self) -> None:

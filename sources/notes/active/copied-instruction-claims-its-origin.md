@@ -9,6 +9,7 @@ about:
   - {do: "Copy an instruction, rule, config file or script from another repository, or derive an artefact from another", wrong_when: "the copy is made for its shape and read later for its content, and nothing marks which facts were about the origin"}
 rests_on: "Aghajani et al. 2019; Lethbridge et al. 2003 — **drift research, a weaker claim**: none on copies"
 our_evidence: "occurrences in four repositories, and three copies of one bundle; no rate"
+seen_in: ["web-service", "data-pipeline", "embedded", "tooling"]
 boundary: "A bundle designed to travel, its repository-specific fields enumerated and its content free of local nouns · even then, those fields are never taken from upstream"
 cues: ["copied from", "copy config", "template repo", "claude.md", "agents.md", "stale commands", "boilerplate", "metadata copy", "fork", "makefile copied", "readme paths", "cargo cult", "derived artefact", "allowlist fields"]
 ---

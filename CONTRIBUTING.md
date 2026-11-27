@@ -46,6 +46,7 @@ frontmatter is YAML, strings double-quoted:
 | `check` | how to verify the note was followed |
 | `about` | `[{do, wrong_when}]`: the *about to do* rows that route to it |
 | `rests_on`, `strength`, `our_evidence` | its main source, how strong that is (optional), and what backs it here |
+| `seen_in` | the kinds of repository its occurrences sit in (`web-service`, `data-pipeline`, `analytics-ml`, `embedded`, `mobile-app`, `interactive-client`, `tooling`), kinds only and never a name; `[]` when the evidence names none |
 | `boundary` | only when *When it does NOT apply* is prose; otherwise its bold lead-ins are the boundary |
 | `retired_because`, `superseded_by` | for a retired note |
 

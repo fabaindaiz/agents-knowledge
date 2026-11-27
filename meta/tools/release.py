@@ -135,6 +135,11 @@ BOUNDARY_SECTION = "When it does NOT apply"
 # The phases of work, in the order `INDEX.md` lists them. A note's `phases` field names them by key.
 PHASES = ("plan", "dataset", "implement", "tests", "review", "verify", "debug")
 CONFIDENCE = ("measured", "reasoned", "inherited")
+# The kinds of repository a note's occurrences may name, in `seen_in`. Closed: a kind is a role, never a
+# repository, product or owner, so the field can ship nothing private and the export's risk test
+# (`d-5ed7e8-ab488f`) is a check rather than a reading. An empty list is the honest answer for a note
+# whose recorded occurrences name no kind; a missing field is not.
+SEEN_IN = ("web-service", "data-pipeline", "analytics-ml", "embedded", "mobile-app", "interactive-client", "tooling")
 REQUIRED = ("slug", "topic", "claim", "confidence", "check")
 SHIPPED_FIELDS = ("slug", "topic", "claim", "confidence", "check", "boundary")
 # Every file of the release says it is one, and no original does (`form_problems`): the two forms of the
@@ -463,6 +468,17 @@ def principles(notes: list[Note]) -> dict[str, list[Note]]:
     return out
 
 
+def records_occurrences(note: Note) -> bool:
+    """Whether a note records occurrences of its own: a shipped note with an `our_evidence:` field, or
+    with anything written under *Where it came from* or *Evidence*. Those are the three places an
+    occurrence is written down, so the test needs no reading of what they say."""
+    if note.state not in SHIPPED_STATES:
+        return False
+    if str(note.meta.get("our_evidence") or "").strip():
+        return True
+    return any("".join(_section_lines(note.body, s) or []).strip() for s in ("Where it came from", "Evidence"))
+
+
 def _note_problems(note: Note) -> list[str]:
     meta, problems = note.meta, []
     missing = [k for k in REQUIRED if not str(meta.get(k) or "").strip()]
@@ -481,6 +497,15 @@ def _note_problems(note: Note) -> list[str]:
     for row in meta.get("about") or []:
         if not isinstance(row, dict) or set(row) != {"do", "wrong_when"}:
             problems.append(f"{note.where}: every `about` row is {{do, wrong_when}}")
+    if records_occurrences(note):
+        if "seen_in" not in meta:
+            problems.append(f"{note.where}: records occurrences and has no `seen_in`; name the kinds of repository "
+                            f"they sit in ({', '.join(SEEN_IN)}), or `seen_in: []` when the evidence names none")
+        elif not isinstance(meta["seen_in"], list) or any(not isinstance(k, str) for k in meta["seen_in"]):
+            problems.append(f"{note.where}: `seen_in` is a list of domain kinds")
+        else:
+            problems += [f"{note.where}: `seen_in` holds {k!r}, which is not one of {', '.join(SEEN_IN)}"
+                         for k in meta["seen_in"] if k not in SEEN_IN]
     stray = [text for _, level, text in _headings(note.body) if level != 2 and text.strip() in EVIDENCE_SECTIONS]
     problems += [f"{note.where}: *{text}* is not a level-2 heading, so the build would ship it" for text in stray]
     if note.state in SHIPPED_STATES:

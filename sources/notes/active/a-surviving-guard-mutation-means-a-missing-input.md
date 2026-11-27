@@ -10,6 +10,7 @@ about:
 rests_on: "equivalent-mutant undecidability (Budd & Angluin 1982); RIPR, Li & Offutt 2017"
 strength: "well established"
 our_evidence: "occurrences in two repositories; no rate"
+seen_in: ["web-service", "data-pipeline", "embedded", "mobile-app"]
 cues: ["mutation test", "surviving mutant", "remove guard", "dead code", "unused branch", "if guard", "mutmut", "no test fails", "unreachable", "delete check", "simplify condition", "edge case input", "equivalent mutant"]
 ---
 

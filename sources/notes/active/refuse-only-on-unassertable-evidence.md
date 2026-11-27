@@ -10,6 +10,7 @@ about:
 rests_on: "Gómez-Boix et al. 2018"
 strength: "measured externally"
 our_evidence: "reasoned; no lockout observed"
+seen_in: ["web-service"]
 cues: ["block user", "ban", "lockout", "deny", "ip block", "email match", "name match", "fraud signal", "account suspend", "auto reject", "blocklist", "device fingerprint", "collide", "rate limit by ip", "captcha"]
 ---
 

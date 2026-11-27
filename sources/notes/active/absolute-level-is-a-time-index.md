@@ -10,6 +10,7 @@ about:
 rests_on: "adversarial validation"
 strength: "folk practice"
 our_evidence: "measured in one repository"
+seen_in: ["analytics-ml"]
 cues: ["feature engineering", "cumulative count", "total_count", "account age", "days since", "ratio feature", "training features", "model feature", "lifetime total", "normalize by population", "time drift", "add feature", "num_events"]
 ---
 

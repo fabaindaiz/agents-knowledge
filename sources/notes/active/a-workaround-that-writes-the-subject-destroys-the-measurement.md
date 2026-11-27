@@ -11,6 +11,7 @@ about:
 rests_on: "the probe effect and the Heisenbug: measuring a system alters it (named, their primaries unread)"
 strength: "one encyclopaedia article read at the source, whose own primary references were not read; the case here, where the probe is the candidate fix, is in none of it"
 our_evidence: "two repositories, two incidents, one of them with a watch of hours after the fix"
+seen_in: ["embedded"]
 boundary: "A state already lost (nothing is left to measure, so the workaround is free) · a reproduction on a copy nobody else depends on · a cause already established, where the workaround is the fix and is applied as one"
 cues: ["live system", "production", "read-only session", "probe", "diagnose", "it keeps resetting", "set it by hand", "restart it", "install the tool", "workaround", "intermittent", "disappears when I look", "watcher", "root cause"]
 ---
