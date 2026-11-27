@@ -10,6 +10,7 @@ about:
 rests_on: "end-to-end argument, Saltzer, Reed & Clark 1984; trueness versus precision, JCGM 200"
 strength: "established"
 our_evidence: "measured in two repositories, two domains"
+seen_in: ["data-pipeline", "embedded", "interactive-client", "tooling"]
 cues: ["decode", "decoder", "encoding param", "charset", "wrong key", "estimator", "confidence flag", "checksum", "fingerprint", "calibration", "quality score", "sample rate", "stability flag", "known answer"]
 ---
 

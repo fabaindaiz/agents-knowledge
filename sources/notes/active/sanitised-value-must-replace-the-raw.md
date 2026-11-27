@@ -10,6 +10,7 @@ about:
 rests_on: "King 2019; LangSec shotgun parsing (2016)"
 strength: "practice and a named weakness class"
 our_evidence: "one occurrence"
+seen_in: ["embedded"]
 boundary: "When both values are genuinely needed, for an error message or an audit record · then the original is named for what it is, so using it is a decision"
 cues: ["clamp", "min(", "max(", "sanitize", "validate input", "default value", "raw value", "shadow variable", "limit parameter", "page size limit", "per_page", "int()", "normalize", "safe_value", "strip"]
 ---

@@ -10,6 +10,7 @@ about:
 rests_on: "Pennarun 2018 on mtime"
 strength: "practitioner"
 our_evidence: "measured in four repositories; occurrences in three more"
+seen_in: ["web-service", "data-pipeline", "analytics-ml", "mobile-app", "interactive-client", "tooling"]
 cues: ["cache", "mtime", "timestamp", "precompressed", ".gz", "build artifact", "stale cache", "invalidate", "make target", "etag", "if modified", "baked", "generated file", "cache key", "newer than"]
 ---
 

@@ -10,6 +10,7 @@ about:
 rests_on: "SQL three-valued logic"
 strength: "settled"
 our_evidence: "occurrences in at least six repositories; no count"
+seen_in: ["web-service", "data-pipeline", "embedded", "mobile-app", "interactive-client", "tooling"]
 boundary: "Fields the schema requires at write time, where making absence impossible is the fix"
 cues: ["is none", "is null", "missing field", "optional field", "default false", "get with default", "null vs empty", "isnull", "coalesce", "key missing", "undefined", "not set", "schemaless", "exists clause"]
 ---

@@ -12,6 +12,7 @@ about:
 rests_on: "Sagas (1987), write-ahead logging (ARIES, 1992)"
 strength: "well established"
 our_evidence: "occurrences in two repositories; no crash injected"
+seen_in: ["web-service", "embedded", "interactive-client"]
 cues: ["ack", "acknowledge message", "at-least-once", "two writes", "transaction", "commit then publish", "outbox", "crash between", "redelivery", "queue consumer", "dual write", "write order", "message visibility timeout", "consumer offset commit"]
 ---
 

@@ -10,6 +10,7 @@ about:
 rests_on: "Brier 1950 skill scores; Saito & Rehmsmeier 2015"
 strength: "well established"
 our_evidence: "measured in one repository"
+seen_in: ["analytics-ml", "embedded"]
 boundary: "Balanced labels, where standard metrics are already informative (the extra row is usually kept anyway)"
 cues: ["accuracy", "auc", "f1", "baseline", "base rate", "dummy classifier", "model metric", "rare label", "imbalanced", "confidence interval", "run to run noise", "precision recall", "constant predictor", "add label", "seed"]
 ---

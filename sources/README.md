@@ -20,6 +20,7 @@ A frontmatter block in YAML (strings double-quoted; `meta/tools/check_yaml.py` p
 | `about` | the *about to do* rows: a list of `{do, wrong_when}` |
 | `rests_on`, `strength` | what the claim rests on, and (optional) how well that is established |
 | `our_evidence` | what we demonstrated, in a few words |
+| `seen_in` | the kinds of repository the recorded occurrences sit in: any of `web-service`, `data-pipeline`, `analytics-ml`, `embedded`, `mobile-app`, `interactive-client`, `tooling` — kinds only, never a repository, product or owner. Required on a shipped note that records occurrences; `seen_in: []` is the honest answer when the evidence names no kind |
 | `boundary` | the card's *Not when*, **only** when *When it does NOT apply* is prose; otherwise the build takes the bold lead-in of each of its bullets, and having both is refused |
 | `retired_because`, `superseded_by` | on a retired note only: the evidence that removed it, and the note that replaced it |
 
