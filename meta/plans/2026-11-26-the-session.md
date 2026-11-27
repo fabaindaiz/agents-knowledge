@@ -54,14 +54,14 @@ none: no device or production system is touched in this phase.
 ### Build
 
 - T7 the cut as a build rule (`d-5ed7e8-9f47b1`): the release markers and their ledger, the short `release_description` of each skill (`d-5ed7e8-7a4324`), the blocks marked, `method/topics/environment.md`, the new principle, the loop's one line · done on `text-lane-t7-t10`, **merged 2026-11-26**: the coding read about 10.1k → about 7.1k tokens, 25 ledger rows, of which the owner approved 10 drops and restored 5. The fifth restitution came from the controller's own re-read, not the delegate's report: a trigger the ledger had classified as a rule, which a skill's body can never fire
-- T17 `seen_in` on every note and the cross-domain requests the router must reach, the clock case first (`d-5ed7e8-ab488f`, `d-5ed7e8-45fdf9`) · waiting
+- T17 `seen_in` on every note and the cross-domain requests the router must reach, the clock case first (`d-5ed7e8-ab488f`, `d-5ed7e8-45fdf9`) · **part 1 done** (`d98e881`, merged): the field on all 53 notes, the check inside `_note_problems` so it runs from `build` and `build --check`, the field kept out of `SHIPPED_FIELDS` so the export is unchanged. **Part 2, the cross-domain requests and the router check, is not built.** The delegate expected many notes to need an empty field and found none: every active note names the role of at least one repository, so the classification rests on the notes' own words
 - T8 `bundle.py now`, the deducing hook, `PreCompact` and `SessionStart(compact)` in the home · done (`038bd46`, `29ed64f`), 13 tests; both guards shown to the owner and approved at the prompt. A probe found the fail-open net swallowing the guard's own refusal, so it caught `SystemExit` and blocked nothing
 - T9 `decision-review` writes each answer as it arrives; the question rules; the question-tool hook · done (`54a6631`), 8 tests; the guard refuses a question with no *review more* and a batch over four, and warns where an option names no case or price. The session that built it had broken that rule three times the same day
 - T10 the audit of where binding text sits (skills' heads, no `paths:` rule) · done with T7: no `paths:`-scoped rule and no nested instruction file here; the binding sentences sit late in the long skills, the sharpest past 90 % of `close`. Its proposal, a short standing block under each long skill's heading, is **not built**
 - T11 the compaction probe, run on the transcripts already here · done (`0a46bbe`): the first draft counted every compaction twice, taking the boundary record as a cut beside the summary, and carried a noise measure that was removed with its reason
 - T12 the research's findings queued as candidates · done (`4bb8632`): four candidates, inserted at the first of the table's two headers
 - T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
-- T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · waiting
+- T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · **the command done** (`ad1b5c5`), seen to fail first; **the skill is not built**, and it is a design round, not a build
 - T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · waiting
 - T16 the `ship` and `cut` skills · waiting
 - T13 the phase's review by severity · waiting
@@ -104,9 +104,9 @@ none: no device or production system is touched in this phase.
 | 11 | The compaction probe | done | P3 | 45 | 28 | 120 | — | 1 |
 | 12 | The research's candidates queued | done | P3 | 15 | 9 | 40 | — | 0 |
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
-| 15 | The `lanes` skill and `lanes check` | waiting | P3 | 105 | | 270 | | 1 |
+| 15 | The `lanes` skill and `lanes check` | the command done | P3 | 105 | 34 | 270 | — | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
-| 17 | `seen_in` and the cross-domain requests | waiting | P3 | 105 | | 250 | | 1 |
+| 17 | `seen_in` and the cross-domain requests | part 1 done | P3 | 105 | 12 | 250 | 189 | 1 |
 | 18 | The `plan` skill, `plan calibrate` and the unattended mode | waiting | P3 | 165 | | 400 | | 1 |
 | 13 | The phase's review | waiting | P3 | 70 | | 450 | | 3 |
 
@@ -118,3 +118,15 @@ estimate on every one, the delegated lane at a fifth; tokens came in below the e
 separated, and the main thread's cannot be, so they are written `—` rather than guessed. Review rounds were
 priced at two each and took one. The estimates in this table were never revised during the run, so the
 comparison stands as it was made.
+
+## What the autonomous run of 2026-11-27 found about this plan
+
+**Four of the six remaining tasks are designs, not builds, and the plan priced them as builds.** T15 and
+T18 each have a walked decision behind them (`d-5ed7e8-8e7d36`, `d-5ed7e8-d4c952`) and their **commands**
+can be built from it; their **skills** cannot, because a skill is a process the owner runs and the method
+requires anything about how the owner interacts to be designed with the owner, one decision per turn.
+T14 (`brief`) and T16 (`ship` and `cut`) have no walked design at all: T14 is one line of a larger redesign
+item, and a `cut` skill would encode the home's own release procedure, which no carrier runs.
+
+So the honest remainder of this phase is: one command built (`lanes check`), one command buildable
+(`plan calibrate`), and **four design rounds with the owner** before any of the four skills exists.
