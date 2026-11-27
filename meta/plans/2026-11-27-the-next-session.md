@@ -201,3 +201,24 @@ said they were.
 - **What this says about the register.** Two of five rows in `meta/reviews/2026-11-26-weak-points-before-presenting.md`
   described the symptom a check printed rather than the defect behind it. A row of that register is a lead,
   not a diagnosis, and the next lane should expect the same.
+
+## The autonomous run, 2026-11-27
+
+At the owner's instruction: build the split and continue without asking. **Three workstreams, the limit the
+owner set**, by disjoint file sets, with every owner gate left standing — nothing below crosses one.
+
+| Stream | Where | Writes | Model | Est. | Stops at |
+|---|---|---|---|---|---|
+| **E · D1** | delegated, read-only | nothing; reports a table | the smaller model | 90 min, about 200k | the design rule, which is the owner's (M2) |
+| **C · the page** | delegated | one HTML file in a scratch folder outside the repository | the smaller model | 120 min, about 150k | nothing; the controller publishes and the owner reads |
+| **P · the phase** | the main thread, in series | `sources/bundle/`, `meta/tests/` | the larger model | 565 min by the table, nearer three hours by calibration | the unattended mode's design round, inside P5 |
+
+**The order in the main thread:** P1 (T17), P2 (T14), P3 (T15), P4 (T16), then **stop before P5's design
+round**, then P6 (T13, the phase's review) and P7 (the budget). P5's build waits on that round, so the review
+runs over what exists and says what it did not cover.
+
+**Gates that stay closed without the owner's word:** P5's design round; lane E's design rule (M2), its new
+primary contrast (M4) and the trial itself (M5); any release cut; any merge to the main branch or tag.
+
+**What would stop the run early:** the export is at about 95 % of its cap, so if P1 pushes the release over
+it, the run stops and the cut comes before anything else is added.
