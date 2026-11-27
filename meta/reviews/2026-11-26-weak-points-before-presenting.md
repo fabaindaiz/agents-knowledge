@@ -37,6 +37,39 @@ Being researched separately on 2026-11-26. The page that exists today is honest 
 converts a sceptical reader, or only satisfies one who already agreed, is not known and is the question
 the research was asked.
 
+
+## What 2026-11-27 changed in this table
+
+**A3's diagnosis is done, and it moved A2 and A5 with it.**
+`meta/reviews/2026-11-27-why-three-of-sixteen-discriminated.md` found that **the variable the design varied
+was not the one that mattered**: distance from the edited file does not decide whether a task discriminates.
+What decides it is whether anything the agent reads already names or offers the safe action — a parameter in
+a signature, a sibling that does it, a fixture, a phrase in the request. Seventeen of seventeen failures in
+the arms without a note fall in the three variants that have no such pointer; every trial of the other thirteen
+passed. Counted twice, by two agents, over the same file.
+
+What it does to each row:
+
+- **A3** — the count of discriminating tasks is **two independent traps, not three**: two of the three are
+  one trap at two distances, and seven of the eight pairs are concordant. The ceiling is therefore worse
+  than the row said. But the tasks can now be *designed* rather than fished for, which is the difference
+  between about fifty attempts and about twelve. **The rule is not approved and nothing is built on it.**
+- **A2** — the new primary contrast can now be stated in terms of the pointer rather than of distance,
+  which is the first time the registered contrast has had a mechanism behind it.
+- **A5** — boundary tasks at distance were the planned shape for measuring harm. Distance being the wrong
+  axis, the boundary tasks should vary the pointer too, or they will measure as little as the thirteen did.
+- **A1, A4, A6, A7** — unchanged. A1 still needs a run.
+
+**B2, B3, B6 and B7 are done** (2026-11-27, lane R of the next session's plan), and two of them were not what
+this table said: B6's five rows were a *superseded* decision naming the list its own successor deleted, and
+B7's two slugs were experiments on rules of the method rather than on notes. Both were fixed in the checks,
+not in the data. **A row of this register is a lead, not a diagnosis**, and the next lane should expect the
+same.
+
+**B1 is done differently than this table proposed.** The frame now carries the measured ×2.74 with its
+interval, the release it was measured on, and the count of releases shipped unmeasured since, rather than
+waiting for a new measurement to replace a stale band (`d-5ed7e8-6a5524`).
+
 ## What this list is not
 
 It is not a plan. Nothing here is scheduled, and the owner takes them one at a time. A row leaves this
