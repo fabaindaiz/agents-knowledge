@@ -255,6 +255,58 @@ The verdict feeds the bundle through its own channels, not by editing it: a note
 the knowledge base's lifecycle (`sources/README.md`), and anything that changes the method goes
 to `meta/roadmap.md` or `meta/tracking/candidates.md`.
 
+## Amendments
+
+**The registered text above is not edited.** An amendment is dated and sits here, so a later reader sees
+that the design changed and when. A figure in `REPORT.md` says which analysis produced it.
+
+### 2026-11-27 — a variant discriminates by the pointer, not by distance (`d-5ed7e8-58ed2b`)
+
+**What the registered design assumed.** Tasks came in two distance variants, L1 (the decisive fact one hop
+from the edited file) and L2 (in documentation), on the expectation that the far variant would separate the
+arms.
+
+**What the data show.** Of the sixteen distance variants, three separated the arms; thirteen passed in every
+arm and measured nothing. In the three arms that carry no note there were 96 trials and 17 failures, and
+**every failure falls in those three variants**. Diagnosed in
+`meta/reviews/2026-11-27-why-three-of-sixteen-discriminated.md`, counted twice over
+`evals/runs/pilot-5-distance/results.jsonl`.
+
+**The rule this registers, for writing a variant.** A variant discriminates when **the unsafe action is
+licensed by the local convention — the request's literal wording, or the precedent in the code the agent
+copies — and nothing the agent reads names or offers the safe action**. Before a variant is written, two
+checks are applied to the files the agent must open:
+
+- **(a)** does the prompt, or the code adjacent to the edit, do the unsafe thing?
+- **(b)** is there nothing in the signatures, fixtures, sibling implementations or request wording that
+  names the safe thing?
+
+Only yes-and-yes is expected to discriminate. The two seed cases are `contacts-second-source` and
+`refund-webhook` at L2.
+
+**What is not yet isolated, and what runs first.** The one within-trap contrast that moves,
+`refund-webhook` L1 to L2, removes the sibling precedent *and* moves the fact into documentation: the two
+changes are confounded, so the rule is supported but not isolated. **The first trials of the next run are
+the ablation that would break it**, before any claim rests on a task written to this rule: in a variant
+that passes today, remove the pointer alone — `idempotency_key` from `PaymentGateway.charge`, or `push` and
+`digest` from the settings fixture — and run only the arms without the note, two trials each. If the rule
+holds, those now fail. If they still pass, the rule is wrong and the tasks written to it are not evidence.
+
+### 2026-11-27 — the analysis unit is the trap (`d-5ed7e8-7d6edf`)
+
+The two distance variants of one trap are **one unit**, not two. They share the prompt word for word, the
+hidden tests, the naive and reference solutions and the target note; only the fact's location differs, and
+the pointers are mostly shared. Seven of the eight pairs are concordant, and the one split pair is
+`refund-webhook`, where the pointer changed too.
+
+Consequences, stated rather than left to be inferred:
+
+- The present set is **eight traps of which two discriminate**, not three discriminating tasks.
+- The analysis plan's floor of eight tasks means **eight traps**. Reaching it means writing six new traps,
+  not eighteen new variants.
+- Distance stays as a within-trap modifier and is reported as such; the paired L1/L2 contrast is
+  informative only for a pair whose two levels differ in the pointer.
+
 ## Deviations
 
 - **2026-09-24, pilot only — configuration isolation.** No separate login or API key was available, so the
