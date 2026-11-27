@@ -61,7 +61,7 @@ none: no device or production system is touched in this phase.
 - T11 the compaction probe, run on the transcripts already here · done (`0a46bbe`): the first draft counted every compaction twice, taking the boundary record as a cut beside the summary, and carried a noise measure that was removed with its reason
 - T12 the research's findings queued as candidates · done (`4bb8632`): four candidates, inserted at the first of the table's two headers
 - T14 the `brief` skill, over the live state and `bundle.py brief` (`i-5ed7e8-46b707`) · waiting
-- T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · **the command done** (`ad1b5c5`), seen to fail first; **the skill is not built**, and it is a design round, not a build
+- T15 the `lanes` skill, from the two design rounds, and `bundle.py lanes check` · **done** (`ad1b5c5`, `a548bfe`): the command seen to fail first, the check a step of `close` (`d-5ed7e8-8e7d36`), a deliberate overlap declared in the plan, and a secondary skill that proposes the split on request. The design round took three decisions with the owner. Smoke-testing it found the live state broken on a host that reports no session id (`d-5ed7e8-b39039`)
 - T18 the `plan` skill, `bundle.py plan calibrate` and its unattended mode (`i-5ed7e8-d23f66`) · waiting
 - T16 the `ship` and `cut` skills · waiting
 - T13 the phase's review by severity · waiting
@@ -104,7 +104,7 @@ none: no device or production system is touched in this phase.
 | 11 | The compaction probe | done | P3 | 45 | 28 | 120 | — | 1 |
 | 12 | The research's candidates queued | done | P3 | 15 | 9 | 40 | — | 0 |
 | 14 | The `brief` skill | waiting | P3 | 60 | | 150 | | 1 |
-| 15 | The `lanes` skill and `lanes check` | the command done | P3 | 105 | 34 | 270 | — | 1 |
+| 15 | The `lanes` skill and `lanes check` | done | P3 | 105 | 78 | 270 | — | 1 |
 | 16 | The `ship` and `cut` skills | waiting | P3 | 60 | | 150 | | 1 |
 | 17 | `seen_in` and the cross-domain requests | part 1 done | P3 | 105 | 12 | 250 | 189 | 1 |
 | 18 | The `plan` skill, `plan calibrate` and the unattended mode | waiting | P3 | 165 | | 400 | | 1 |
