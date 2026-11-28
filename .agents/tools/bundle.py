@@ -6407,6 +6407,64 @@ def now_write(repo: Path, values: dict[str, str], session: str | None = None,
     return path, warnings
 
 
+BRIEF_GAPS = {
+    "task": "<< the task, in one line: what comes back, not how to get it >>",
+    "reads": "<< the files to read first, and why each one >>",
+    "settled": "<< what is already settled, so it is not re-derived >>",
+    "avoid": "<< what this delegate must not change: the files another lane holds >>",
+    "scratch": "<< the scratch directory, outside the repository: everything written goes there >>",
+    "price": "<< the estimate before launching: model, tokens, wall time >>",
+    "report": "<< what comes back, and in what form >>",
+}
+BRIEF_ORDER = ("reads", "settled", "avoid", "scratch", "price", "report")
+BRIEF_LABELS = {"reads": "Read first", "settled": "Already settled", "avoid": "Do not touch",
+                "scratch": "Scratch", "price": "Price", "report": "Report back"}
+
+
+def brief_values(state: dict[str, str], given: dict[str, str]) -> dict[str, str]:
+    """What each section of the brief says: what the session gave, else what the live state knows.
+
+    The live state is this session's own record of where it is, so the fields a brief would otherwise be
+    retyped from — the plan, the files in play, the last fact actually verified and the command that
+    verified it — are taken from it rather than from memory, which is where they went wrong.
+    """
+    settled = state.get("verified", "").strip()
+    command = state.get("command", "").strip()
+    if settled and command:
+        settled = f"{settled} — verified by `{command}`"
+    found = {"reads": state.get("files", ""), "settled": settled, "scratch": state.get("scratch", "")}
+    out = {}
+    for key in ("task",) + BRIEF_ORDER:
+        value = (given.get(key) or "").strip() or found.get(key, "").strip()
+        out[key] = value or BRIEF_GAPS[key]
+    return out
+
+
+def brief_lines(repo: Path, given: dict[str, str], session: str | None = None) -> list[str]:
+    """The brief itself, ready to paste into the call that launches the delegate.
+
+    A missing live-state file is not an error: the session that most needs its brief composed for it is
+    the one that never wrote its state, so everything it cannot fill becomes a gap and nothing raises.
+    """
+    state: dict[str, str] = {}
+    try:
+        state = now_read(_now_dir(repo) / f"{now_session_id(session)}.md")
+    except (RefusedError, OSError, subprocess.CalledProcessError):
+        pass
+    values = brief_values(state, given)
+    branch = (given.get("branch") or state.get("branch") or "").strip()
+    plan = (given.get("plan") or state.get("plan") or "").strip()
+    lines = [f"# Brief: {values['task']}", ""]
+    if branch:
+        lines.append(f"- **Branch:** {branch}")
+    if plan:
+        lines.append(f"- **Plan:** {plan}")
+    lines += [f"- **{BRIEF_LABELS[key]}:** {values[key]}" for key in BRIEF_ORDER]
+    lines += ["", "Every `<< ... >>` above is a gap this session must fill before the delegate is launched, "
+                  "or say in its place why it is empty. Nothing here is checked: the gap is the only guard."]
+    return lines
+
+
 def now_files(repo: Path) -> list[tuple[Path, dict[str, str]]]:
     folder = _now_dir(repo)
     if not folder.is_dir():
@@ -6942,6 +7000,16 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--check", action="store_true", help="check every row of the register (exit 1 on any problem)")
     p.add_argument("--file", default=MACHINE_REGISTER, help=f"the register, relative to --repo (default {MACHINE_REGISTER})")
     p.add_argument("--repo", default=".")
+    p = sub.add_parser("brief", help="the brief a delegated agent receives, composed from this session's live state")
+    p.add_argument("--task", help="the task, in one line: what comes back, not how to get it")
+    p.add_argument("--reads", help="the files the delegate reads first, and why each one")
+    p.add_argument("--settled", help="what is already settled, so the delegate does not re-derive it")
+    p.add_argument("--avoid", help="what this delegate must not change")
+    p.add_argument("--scratch", help="the scratch directory, outside the repository")
+    p.add_argument("--price", help="the estimate before launching: model, tokens, wall time")
+    p.add_argument("--report", help="what comes back, and in what form")
+    p.add_argument("--session", help="read another session's live state instead of this one's")
+    p.add_argument("--repo", default=".", help="the repository (default: the working directory)")
     p = sub.add_parser("now", help="the live state of this session: what only the agent knows, in a file a compaction cannot lose")
     p.add_argument("--write", action="store_true", help="write or replace this session's state from the options below")
     p.add_argument("--task", help="the step running now, in one line")
@@ -7698,6 +7766,12 @@ def _run(args: argparse.Namespace) -> int:
             print("this machine has no id: run `bundle.py machine --mint` once")
             return 1
         print(f"this machine is {own}; carriers: {machine_carriers() or 'none in the manifest'}")
+        return 0
+    if args.command == "brief":
+        repo = Path(args.repo).resolve()
+        given = {key: getattr(args, key, None) for key in ("task",) + BRIEF_ORDER}
+        for line in brief_lines(repo, given, args.session):
+            print(line)
         return 0
     if args.command == "now":
         repo = Path(args.repo)

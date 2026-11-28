@@ -1336,7 +1336,7 @@ DESCRIPTIONS_CAP = 3_200
 DESCRIPTION_KIND_CAPS = {"long process": 750, "light skill": 250, "agent on request": 250, "delegated agent": 200}
 DESCRIPTION_KINDS = {"close": "long process", "decision-review": "long process", "user-walk": "long process",
                      "edit-docs": "long process",
-                     "next": "light skill", "lanes": "light skill", "ship": "light skill",
+                     "next": "light skill", "brief": "light skill", "lanes": "light skill", "ship": "light skill",
                      "plan": "long process",
                      "knowledge-reviewer": "agent on request", "researcher": "delegated agent"}
 HANDOFF_CAP = 500  # words in the roadmap's *Where we are*

@@ -5124,3 +5124,83 @@ class CompactionProbe(Base):
         code, out = run("compaction", str(empty))
         self.assertEqual(0, code, out)
         self.assertIn("no transcripts", out)
+
+
+class Brief(Base):
+    """`bundle.py brief`: the brief a delegated agent receives, composed from the live state instead of
+    retyped from memory (T14, designed with the owner 2026-11-27).
+
+    The owner chose a composer, not a gate: it never refuses an incomplete brief. That makes the visible
+    gap the only thing standing between a hurried session and a delegate launched with no scratch
+    directory and no price, so these tests are about the gaps as much as about the fields.
+    """
+
+    def setUp(self) -> None:  # noqa: N802 -- unittest's name
+        super().setUp()
+        for name in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "AGENT_SESSION_ID"):
+            if name in os.environ:
+                self.addCleanup(os.environ.__setitem__, name, os.environ[name])
+                del os.environ[name]
+
+    def a_repo(self) -> Path:
+        repo = init_repo(self.root / "brief")
+        commit(repo, "first")
+        return repo
+
+    def test_the_live_state_fills_the_fields_the_session_would_otherwise_retype(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-b"}):
+            B.now_write(repo, {"plan": "meta/plans/a-plan.md", "files": "tools/one.py, the parser",
+                               "verified": "the gate passed", "command": "release.py check"})
+            code, out = run("brief", "--task", "split the parser", "--repo", str(repo))
+
+        self.assertEqual(0, code, out)
+        self.assertIn("split the parser", out)
+        self.assertIn("meta/plans/a-plan.md", out)
+        self.assertIn("tools/one.py, the parser", out)
+        self.assertIn("the gate passed", out)
+        self.assertIn("release.py check", out)
+
+    def test_a_field_the_session_never_gave_is_left_as_a_visible_gap(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-b"}):
+            code, out = run("brief", "--task", "read the notes", "--repo", str(repo))
+
+        self.assertEqual(0, code, out)
+        for gap in (B.BRIEF_GAPS["scratch"], B.BRIEF_GAPS["price"], B.BRIEF_GAPS["avoid"]):
+            self.assertIn(gap, out)
+
+    def test_the_scratch_gap_says_outside_the_repository_because_nothing_enforces_it(self) -> None:
+        self.assertIn("outside the repository", B.BRIEF_GAPS["scratch"])
+
+    def test_a_given_value_replaces_its_gap_and_the_gap_is_gone(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-b"}):
+            code, out = run("brief", "--task", "read the notes", "--price", "sonnet, 80k, 25 min",
+                            "--scratch", "$TMPDIR/delegate-one", "--repo", str(repo))
+
+        self.assertEqual(0, code, out)
+        self.assertIn("sonnet, 80k, 25 min", out)
+        self.assertIn("$TMPDIR/delegate-one", out)
+        self.assertNotIn(B.BRIEF_GAPS["price"], out)
+        self.assertNotIn(B.BRIEF_GAPS["scratch"], out)
+
+    def test_with_no_live_state_at_all_it_still_prints_a_whole_brief(self) -> None:
+        """The session that most needs the brief composed for it is the one that never wrote its state."""
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-missing"}):
+            code, out = run("brief", "--task", "the task", "--repo", str(repo))
+
+        self.assertEqual(0, code, out)
+        self.assertIn("the task", out)
+        # every gap but the task's, counted on the fields alone: the closing legend names `<< ... >>` too
+        fields = [line for line in out.splitlines() if line.startswith("- **")]
+        self.assertEqual(len(B.BRIEF_GAPS) - 1, sum(1 for line in fields if "<<" in line), out)
+
+    def test_the_task_itself_is_a_gap_when_it_is_not_given_rather_than_an_empty_heading(self) -> None:
+        repo = self.a_repo()
+        with mock.patch.dict(os.environ, {"AGENT_SESSION_ID": "s-b"}):
+            code, out = run("brief", "--repo", str(repo))
+
+        self.assertEqual(0, code, out)
+        self.assertIn(B.BRIEF_GAPS["task"], out)

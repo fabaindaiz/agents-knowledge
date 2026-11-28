@@ -43,6 +43,7 @@ named), then install with `--force`.
 | `edit-docs` | improving, proofreading or formatting existing documentation, level by level, the meaning kept checked by `bundle.py docs` |
 | `plan` | work beyond one sitting, or a question about what it would cost: each task priced, the plan measured against what earlier plans took (`bundle.py plan calibrate`), the gates declared, the split proposed |
 | `lanes` | the user asks to split work between parallel agents: the split proposed by disjoint file sets, each lane priced, the declaration written that `close` checks |
+| `brief` | work is about to be handed to a delegated agent or a lane: the brief composed from the live state (`bundle.py brief`), with a visible gap wherever only the session knows — the scratch directory, the price, what not to change |
 | `ship` | work is to leave the session: a hand-off when it is not finished, build and deploy when it is. `close` is preferred whenever the session is actually ending |
 | `user-walk` | before building a user-facing flow: the ideal path, then every delay, interruption, setback, failure and misuse, as failing tests; and a batch of observations from real use |
 
